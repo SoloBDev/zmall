@@ -33,8 +33,8 @@ class _ReportScreenState extends State<ReportScreen> {
             value: widget.price,
             transactionId: widget.orderPaymentUniqueId)
         .whenComplete(() => print("purchase logged"));
-    /*    _fcm.subscribeToTopic(
-        Provider.of<ZMetaData>(context, listen: false).country); */
+    _fcm.subscribeToTopic(
+        Provider.of<ZMetaData>(context, listen: false).country);
   }
 
   @override

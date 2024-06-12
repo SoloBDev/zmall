@@ -533,13 +533,17 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
   }
 
   Future<dynamic> verificationSms(String phone, String otp) async {
+    /*  var message =
+        Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
+            ? "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP"
+            : "Verification code valid for 10 minutes / OTP"; */
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/send_sms_with_message";
     String token = Uuid().v4();
     Map data = {
       "code": "${token}_zmall",
       "phone": phone,
-      "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp"
+      "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ  : $otp"
     };
     var body = json.encode(data);
     try {

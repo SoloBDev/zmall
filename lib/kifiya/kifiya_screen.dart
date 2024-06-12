@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, unused_element
 
 import 'dart:async';
 import 'dart:convert';
@@ -387,19 +387,6 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
           style: TextStyle(color: kBlackColor),
         ),
         elevation: 1.0,
-     /*     actions: [
-          TextButton(
-              onPressed: () {
-                //66505b6762ea627fe6f78552
-                print("price ${widget.price}");
-                print("orderPaymentId ${widget.orderPaymentId}");
-                print("orderPaymentUniqueId ${widget.orderPaymentUniqueId}");
-                print("onlyCashless ${widget.onlyCashless}");
-                print("vehicleId ${widget.vehicleId}");
-                print("phone ${userData['user']['phone']}");
-              },
-              child: Text('print'))
-        ],  */
       ),
       body: ModalProgressHUD(
         inAsyncCall: _loading,
@@ -506,41 +493,46 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                 .toLowerCase() ==
                                             "cash"
                                         ? 'images/cod.png'
-                                        : paymentResponse['payment_gateway']
-                                                        [index]['name']
-                                                    .toString()
-                                                    .toLowerCase() ==
-                                                "santimpay"
-                                            ? 'images/santim.png'
+
+                                        ///******************MOMO***********************
+                                        // /* : paymentResponse['payment_gateway']
+                                        //                 [index]['name']
+                                        //             .toString()
+                                        //             .toLowerCase() ==
+                                        //         "momo"
+                                        //     ? 'images/momo.png'
+                                        ///******************MOMO***********************
                                             : paymentResponse['payment_gateway']
                                                             [index]['name']
                                                         .toString()
                                                         .toLowerCase() ==
-                                                    "etta card"
-                                                ? 'images/dashen.png'
+                                                    "santimpay"
+                                                ? 'images/santim.png'
                                                 : paymentResponse['payment_gateway']
                                                                 [index]['name']
                                                             .toString()
                                                             .toLowerCase() ==
-                                                        "cbe birr"
-                                                    ? 'images/cbebirr.png'
-                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "ethswitch"
-                                                        ? 'images/ethswitch.png'
-                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "chapa"
-                                                            ? 'images/chapa.png'
-                                                            : paymentResponse['payment_gateway'][index]['name'] == "Amole"
-                                                                ? 'images/amole.png'
-                                                                : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "boa"
-                                                                    ? 'images/boa.png'
-                                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "zemen"
-                                                                        ? 'images/zemen.png'
-                                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "awash"
-                                                                            ? 'images/awash.png'
-                                                                            : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "etta card"
-                                                                                ? 'images/zmall.jpg'
-                                                                                : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "dashen"
-                                                                                    ? 'images/dashen.png'
-                                                                                    : 'images/telebirr.png',
+                                                        "etta card"
+                                                    ? 'images/dashen.png'
+                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "cbe birr"
+                                                        ? 'images/cbebirr.png'
+                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "ethswitch"
+                                                            ? 'images/ethswitch.png'
+                                                            : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "chapa"
+                                                                ? 'images/chapa.png'
+                                                                : paymentResponse['payment_gateway'][index]['name'] == "Amole"
+                                                                    ? 'images/amole.png'
+                                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "boa"
+                                                                        ? 'images/boa.png'
+                                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "zemen"
+                                                                            ? 'images/zemen.png'
+                                                                            : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "awash"
+                                                                                ? 'images/awash.png'
+                                                                                : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "etta card"
+                                                                                    ? 'images/zmall.jpg'
+                                                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "dashen"
+                                                                                        ? 'images/dashen.png'
+                                                                                        : 'images/telebirr.png',
                                 title: paymentResponse['payment_gateway'][index]['description'].toString().toUpperCase(),
                                 kifiyaMethod: kifiyaMethod,
                                 press: () async {
@@ -566,7 +558,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     } else {
                                       await useBorsa();
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name']
+                                  } else if (paymentResponse['payment_gateway']
+                                              [index]['name']
                                           .toString()
                                           .toLowerCase() ==
                                       "wallet") {
@@ -871,8 +864,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                             phone:
                                                                 userData['user']
                                                                     ['phone'],
-                                                            // phone: "964345364",
-                                                            orderPaymentId: widget
+                                                                                   orderPaymentId: widget
                                                                 .orderPaymentId!,
                                                           );
                                                         },
@@ -955,7 +947,6 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                             phone:
                                                                 userData['user']
                                                                     ['phone'],
-                                                            // phone: "964345364",
                                                             orderPaymentId: widget
                                                                 .orderPaymentId!,
                                                           );
@@ -1179,8 +1170,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                                     'user'][
                                                                 'server_token'],
                                                             url:
-                                                          "http://196.189.44.60:8069/telebirr/ussd/send_sms",
-                                                                //"https://pgw.shekla.app/telebirr/ussd/send_sms",
+                                                                "http://196.189.44.60:8069/telebirr/ussd/send_sms", // New configuration
+                                                            // "https://pgw.shekla.app/telebirr/ussd/send_sms",
+
                                                             hisab:
                                                                 widget.price!,
                                                             traceNo: widget
@@ -1210,7 +1202,98 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "zemen") {
+                                  }
+
+                                  ///**************************MoMo***************************************
+                                 
+                                //    else if (paymentResponse['payment_gateway']
+                                //               [index]['name']
+                                //           .toString()
+                                //           .toLowerCase() ==
+                                //       "momo") {
+                                //     var data = await useBorsa();
+                                //     if (data != null && data['success']) {
+                                //       showDialog(
+                                //           context: context,
+                                //           builder: (context) {
+                                //             return AlertDialog(
+                                //               title: Text("Pay Using MoMo"),
+                                //               content: Text(
+                                //                   "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using MoMo?"),
+                                //               actions: [
+                                //                 TextButton(
+                                //                   child: Text(
+                                //                     Provider.of<ZLanguage>(
+                                //                             context)
+                                //                         .cancel,
+                                //                     style: TextStyle(
+                                //                         color: kSecondaryColor),
+                                //                   ),
+                                //                   onPressed: () {
+                                //                     Navigator.of(context).pop();
+                                //                   },
+                                //                 ),
+                                //                 TextButton(
+                                //                   child: Text(
+                                //                     Provider.of<ZLanguage>(
+                                //                             context)
+                                //                         .cont,
+                                //                     style: TextStyle(
+                                //                         color: kBlackColor),
+                                //                   ),
+                                //                   onPressed: () {
+                                //                     Navigator.of(context).pop();
+                                //                     Navigator.push(
+                                //                       context,
+                                //                       MaterialPageRoute(
+                                //                         builder: (context) {
+                                //                           return MoMoUssd(
+                                //                             userId:
+                                //                                 userData['user']
+                                //                                     ['_id'],
+                                //                             serverToken: userData[
+                                //                                     'user'][
+                                //                                 'server_token'],
+                                //                             url:
+                                //                                 'https://pgw.shekla.app/momo/makepayment',
+                                //                             hisab:
+                                //                                 widget.price!,
+                                //                             traceNo: widget
+                                //                                 .orderPaymentUniqueId!,
+                                //                             phone:
+                                //                                 userData['user']
+                                //                                     ['phone'],
+                                //                             orderPaymentId: widget
+                                //                                 .orderPaymentId!,
+                                //                           );
+                                //                         },
+                                //                       ),
+                                //                     ).then((value) {
+                                //                       _boaVerify();
+                                //                     });
+                                //                   },
+                                //                 )
+                                //               ],
+                                //             );
+                                //           });
+                                //     } else {
+                                //       ScaffoldMessenger.of(context)
+                                //           .showSnackBar(Service.showMessage(
+                                //               "Something went wrong! Please try again!",
+                                //               true));
+                                //       setState(() {
+                                //         kifiyaMethod = -1;
+                                //       });
+                                //     }
+                                //   } 
+
+                                  ///*******************************MoMo*******************************
+
+                                  else if (paymentResponse['payment_gateway']
+                                              [index]['name']
+                                          .toString()
+                                          .toLowerCase() ==
+                                      "zemen") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1289,7 +1372,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "dashen") {
+                                  } else if (paymentResponse['payment_gateway']
+                                              [index]['name']
+                                          .toString()
+                                          .toLowerCase() ==
+                                      "dashen") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(

@@ -46,10 +46,8 @@ class _SearchScreenState extends State<SearchScreen> {
   /////new
   bool isStoreSelected = false;
   bool isCatagorySelected = false;
-  bool isLoggedIn = false;
-  var userData;
   var storeDeliveryId;
-  var selectedCatagory = -1;
+  var selectedCatagory = 0;
   List<dynamic> _searchResult = [];
   List<dynamic> stores = [];
   @override
@@ -229,26 +227,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
 ////////////////////////////////////////////////////////////////////////////////
-/*   void isLogged() async {
-    var data = await Service.readBool('logged');
-    if (data != null) {
-      setState(() {
-        isLoggedIn = data;
-      });
-      getUser();
-    } else {
-      print("No logged user found");
-    }
-  }
-
-  void getUser() async {
-    var data = await Service.read('user');
-    if (data != null) {
-      setState(() {
-        userData = data;
-      });
-    }
-  } */
 
   void _getCompanyList() async {
     getAppKeys();
@@ -358,6 +336,8 @@ class _SearchScreenState extends State<SearchScreen> {
               onTap: () {
                 setState(() {
                   isStoreSelected = !isStoreSelected;
+                  storeDeliveryId = widget.categories[0]['_id'];
+                  _getCompanyList();
                 });
               },
               child: Container(
@@ -476,6 +456,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             return GestureDetector(
                               onTap: () {
                                 _searchResult.clear;
+
                                 setState(() {
                                   storeDeliveryId =
                                       widget.categories[index]['_id'];
@@ -1030,7 +1011,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 )
                               : Center(
                                   child: Text(
-                                    "\n\n\n\n${Provider.of<ZLanguage>(context).nothingFound} please select the catagory",
+                                    "\n\n\n\n${Provider.of<ZLanguage>(context).nothingFound}",
                                     textAlign: TextAlign.center,
                                   ),
                                 )
@@ -1271,7 +1252,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ],
                     ),
                   ),
-                  Text(
+                      Text(
                     "${(_searchResult[index]['similarity']).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
                     style: Theme.of(context).textTheme.caption?.copyWith(
                           color: (_searchResult[index]['similarity']).toInt() >
@@ -1286,7 +1267,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       ? kSecondaryColor
                                       : kGreyColor,
                         ),
-                  ),
+                  ), 
                 ],
               ),
             ),

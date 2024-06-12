@@ -51,7 +51,6 @@ class _StoreMapViewState extends State<StoreMapView> {
   void checkLocation() async {
     setState(() {
       _loading = true;
-      logger.d('loading1 $_loading');
     });
     _doLocationTask();
   }
@@ -69,7 +68,6 @@ class _StoreMapViewState extends State<StoreMapView> {
             _loading = false;
           });
         });
-        logger.d('loading2 $_loading');
       } else {
         LocationPermission serviceStatus =
             await FlLocation.requestLocationPermission();
@@ -82,8 +80,6 @@ class _StoreMapViewState extends State<StoreMapView> {
               _loading = false;
             });
           });
-
-          logger.d('loading3 $_loading');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
               "Location service disabled. Please enable and try again", true));
@@ -102,7 +98,6 @@ class _StoreMapViewState extends State<StoreMapView> {
             _loading = false;
           });
         });
-        logger.d('loading4 $_loading');
       } else {
         // Handle permission denial
         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
@@ -213,7 +208,6 @@ class _StoreMapViewState extends State<StoreMapView> {
 
   @override
   Widget build(BuildContext context) {
-    logger.d('loading  ***$_loading***');
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryTitle['delivery_name'],

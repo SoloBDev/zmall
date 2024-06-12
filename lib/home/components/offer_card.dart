@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
-import 'package:zmall/location/components/provider_location.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/size_config.dart';
@@ -16,7 +15,8 @@ class SpecialOfferCard extends StatelessWidget {
     required this.newPrice,
     required this.originalPrice,
     required this.storeName,
-    required this.press, required this.storePress,
+    required this.press,
+    required this.storePress,
   }) : super(key: key);
 
   final String imageUrl;
@@ -141,12 +141,10 @@ class SpecialOfferCard extends StatelessWidget {
                         onTap: storePress,
                         child: Text(
                           storeName,
-
-
                           style: Theme.of(context).textTheme.caption?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: kSecondaryColor.withOpacity(0.7),
-                              // decoration: TextDecoration.underline,
+                                // decoration: TextDecoration.underline,
                               ),
                           maxLines: 1,
                         ),
@@ -175,6 +173,19 @@ class SpecialOfferCard extends StatelessWidget {
                     ),
                   )
                 : Container(),
+            // isDiscounted
+            //     ? Positioned(
+            //         right: 0,
+            //         child: Container(
+            //           height: getProportionateScreenWidth(kDefaultPadding * 3),
+            //           width: getProportionateScreenWidth(kDefaultPadding * 3),
+            //           //
+            //           child: Center(
+            //               child:
+            //                   Image.asset("images/store_tags/$featuredTag.png")),
+            //         ),
+            //       )
+            //     : Container(),
           ],
         ),
       ),

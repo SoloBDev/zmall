@@ -78,19 +78,68 @@ class _HomeBodyState extends State<HomeBody> {
   bool is_abroad = false;
   Cart? cart;
   DateTime predictStart = DateTime(2023, 08, 6);
-  DateTime predictEnd = DateTime(2024, 06, 30);
-
+  DateTime predictEnd = DateTime(2025, 06, 30);
+  DateTime euroPredictStart = DateTime(2024, 06, 10);
+  DateTime euroPredictEnd = DateTime(2024, 07, 15);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   LocationPermission _permissionStatus = LocationPermission.denied;
 
-////////////////////////////////////////////////newly added
+//////////////////newly added
   var userLastOrder;
   var userLocation;
   var userOrderStatus;
   var orderTo;
   var orderFrom;
   Timer? timer;
+//////////////////////////////
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCart();
+    isAbroad();
+    CoreServices.registerNotification(context);
+    MyApp.messaging.triggerEvent("at_home");
+    _getToken();
+    getUser();
+    getLocalPromotionalItems();
+    getLocalPromotionalStores();
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("Opened by notification open by app");
+
+      MyApp.analytics.logEvent(name: "notification_opened");
+      if (message.data != null && !is_abroad) {
+        var notificationData = message.data;
+        if (notificationData['item_id'] != null) {
+          print("Navigate to item screen...");
+          _getItemInformation(notificationData['item_id']);
+        } else if (notificationData['store_id'] != null) {
+          print("Navigate to store...");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return NotificationStore(storeId: notificationData['store_id']);
+              },
+            ),
+          );
+        } else if (notificationData['redirect'] != null) {
+          launchRedirect(notificationData['redirect']);
+        }
+      }
+    });
+    if (widget.isLaunched) {
+      print("=> \tChecking for version update");
+      getAppKeys();
+    }
+    getCategories();
+    getServices();
+    getNearByServices();
+    getNearByMerchants();
+  }
+
+  ////////////////newly added
   void _startTimer() async {
     if (userLastOrder != null) {
       double distance = Service.calculateDistance(
@@ -108,7 +157,9 @@ class _HomeBodyState extends State<HomeBody> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: const Text('Location Changed ⚠️'),
+                  title: const Text(
+                    'Location Changed !',
+                  ),
                   content: Text(
                     "Just to inform you, there has been a change in your location by ${distance.toStringAsFixed(3)} Km since your last order.",
                   ),
@@ -119,7 +170,7 @@ class _HomeBodyState extends State<HomeBody> {
                       onPressed: () {
                         _startTimer();
                         print(
-                            'Current location $latitude $longitude\n Delvery location  ${userLocation[0]} ${userLocation[1]}\n User distance from delvery location  ${distance}\n User order status  ${userLastOrder['order_status']}\n Order from  ***${orderFrom}*** to ***${orderTo}***\n User id ${userData['user']['_id']} and Server token ${userData['user']['server_token']}');
+                            '*** User order status  ${userLastOrder['order_status']}*** Order from  ***${orderFrom}*** to ***${orderTo}***');
 
                         Navigator.of(context).pop();
                       },
@@ -165,7 +216,7 @@ class _HomeBodyState extends State<HomeBody> {
     }
   }
 
-////////////////////////////////////////////////////
+//////////////////////////////////
   void _requestLocationPermission() async {
     _permissionStatus = await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.always ||
@@ -247,53 +298,6 @@ class _HomeBodyState extends State<HomeBody> {
     Service.launchInWebViewOrVC(url);
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    getCart();
-    isAbroad();
-    CoreServices.registerNotification(context);
-    MyApp.messaging.triggerEvent("at_home");
-    _getToken();
-    getUser();
-    getLocalPromotionalItems();
-    getLocalPromotionalStores();
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Opened by notification open by app");
-
-      MyApp.analytics.logEvent(name: "notification_opened");
-      if (message.data != null && !is_abroad) {
-        var notificationData = message.data;
-        if (notificationData['item_id'] != null) {
-          print("Navigate to item screen...");
-          _getItemInformation(notificationData['item_id']);
-        } else if (notificationData['store_id'] != null) {
-          print("Navigate to store...");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return NotificationStore(storeId: notificationData['store_id']);
-              },
-            ),
-          );
-        } else if (notificationData['redirect'] != null) {
-          launchRedirect(notificationData['redirect']);
-        }
-      }
-    });
-    if (widget.isLaunched) {
-      print("=> \tChecking for version update");
-      getAppKeys();
-    }
-    getCategories();
-    getServices();
-    getNearByServices();
-    getNearByMerchants();
-
-    super.initState();
-  }
-
   _getToken() {
     _firebaseMessaging.getToken().then((value) {
       if (value != null && userData != null) {
@@ -328,6 +332,9 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void _getUserDetails(userId, serverToken) async {
+    setState(() {
+      _loading = false;
+    });
     var data = await CoreServices.getUserDetail(userId, serverToken, context);
     if (data != null && data['success']) {
       setState(() {
@@ -911,7 +918,7 @@ class _HomeBodyState extends State<HomeBody> {
   @override
   void dispose() {
     // TODO: implement dispose
-    timer!.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -1001,23 +1008,6 @@ class _HomeBodyState extends State<HomeBody> {
         actions: [
           InkWell(
             onTap: () {
-              if (userLastOrder != null) {
-                double distance = Service.calculateDistance(
-                    userLocation[0], // 9.019328241817204
-                    userLocation[1], //38.814131654798985
-                    latitude, // 9.0051283
-                    longitude // 38.76749
-
-                    );
-
-                // print('last order  ${userLastOrder}');
-                print(
-                    ' Current location $latitude $longitude\n Delvery location  ${userLocation[0]} ${userLocation[1]}\n User distance from delvery location  ${distance}\n User order status  ${userLastOrder['order_status']}\n Order from  ***${orderFrom}*** to ***${orderTo}***\n User id ${userData['user']['_id']} and Server token ${userData['user']['server_token']}');
-              } else {
-                print(
-                    'User id ${userData['user']['_id']} and Server token ${userData['user']['server_token']}');
-              }
-
               Navigator.pushNamed(context, CartScreen.routeName)
                   .then((value) => getCart());
             },
@@ -1099,8 +1089,8 @@ class _HomeBodyState extends State<HomeBody> {
                                     MaterialPageRoute(
                                       builder: (context) {
                                         return SearchScreen(
-                                          cityId: responseData['city']['_id'],
-                                          categories: categories,
+                                          cityId: responseData['city']['_id']!,
+                                          categories: categories!,
                                           latitude: Provider.of<ZMetaData>(
                                                   context,
                                                   listen: false)
@@ -2037,13 +2027,22 @@ class _HomeBodyState extends State<HomeBody> {
                                         kDefaultPadding),
                                   ),
                                   child: SectionTitle(
-                                    sectionTitle:
-                                        "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
+                                    sectionTitle: DateTime.now()
+                                                .isBefore(euroPredictEnd) &&
+                                            DateTime.now()
+                                                .isAfter(euroPredictStart)
+                                        ? "UEFA Euro 2024"
+                                        : "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
                                     subTitle: " ",
                                   ),
                                 ),
                                 CustomBanner(
-                                  imageUrl: 'images/predict_pl.png',
+                                  imageUrl:
+                                      DateTime.now().isBefore(euroPredictEnd) &&
+                                              DateTime.now()
+                                                  .isAfter(euroPredictStart)
+                                          ? 'images/pl_logos/banner.png'
+                                          : 'images/predict_pl.png',
                                   title: "Predict & Win",
                                   subtitle: "",
                                   press: () async {

@@ -61,7 +61,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
 
   void _initTelebirr() async {
     var data = await initTelebirr();
-    if (data != null && data['success']) {
+    if (data != null && data['result']['success']) {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "${data['message']}. Waiting for payment to be completed", false,
           duration: 6));
@@ -134,25 +134,30 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
   }
 
   Future<dynamic> initTelebirr() async {
+    print("price ${widget.hisab}");
     setState(() {
       _loading = true;
     });
     var url = widget.url;
 
+    //New configuration
     Map data = {
-      "traceNo": "zmall-${widget.traceNo}",
+      "traceNo": widget.traceNo,
       "amount": widget.hisab,
-      "phone": "251${widget.phone}", //"989825320",
+      "phone": "251${widget.phone}",
       "payerId": "22",
       "appId": "1234",
-      "apiKey": "90e503b019a811ef9bc8005056a4ed36"
+      "apiKey": "90e503b019a811ef9bc8005056a4ed36",
+      "zmall": true
     };
-    /* Map data = {
-      "trace_no": widget.traceNo,
-      "amount": widget.hisab,
-      "phone": widget.phone,
-      "appId": "1234" 
-    };*/
+    /*  
+    //Old configuration.
+    //  Map data = {
+    //   "trace_no": widget.traceNo,
+    //   "amount": widget.hisab,
+    //   "phone": widget.phone,
+    //   "appId": "1234"
+    }; */
 
     var body = json.encode(data);
     try {
@@ -178,7 +183,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
       setState(() {
         this._loading = false;
       });
-      print('responce ${response.body}');
+
       return json.decode(response.body);
     } catch (e) {
       print(e);

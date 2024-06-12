@@ -12,7 +12,6 @@ import 'package:zmall/service.dart';
 import 'package:http/http.dart' as http;
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/custom_list_tile.dart';
-import 'package:zmall/store/store_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   static String routeName = '/favorites';

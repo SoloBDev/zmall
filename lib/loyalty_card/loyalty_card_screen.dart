@@ -1,12 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
-import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/loyalty_card/add_new_card.dart';
-import 'package:zmall/models/language.dart';
-import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 

@@ -14,7 +14,6 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/delivery/delivery_screen.dart';
-import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
@@ -43,14 +42,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   var storeName;
   var userData;
   var extraItems;
-  List extraItemsList = [];
-  late AnimationController controller;
-  double walletBalance = 0.0;
-  String payeePhone = "964345364";
-  String payerPassword = "";
-  bool transferLoading = false;
-  bool isDonation = false;
-  bool isCheckout = false;
+  //double walletBalance = 0.0;
+  //String payeePhone = "964345364";
+  //String payerPassword = "";
+  //bool transferLoading = false;
+  //bool isDonation = false;
+  //bool isCheckout = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -59,7 +56,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     _getStoreExtraItemList();
     getAppKeys();
     _loading = false;
-    _getTransactions();
+    // _getTransactions();
   }
 
   void calculatePrice() {
@@ -83,7 +80,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         setState(() {
           cart = Cart.fromJson(data);
           cart!.serverToken = userData['user']['server_token'];
-          walletBalance = double.parse(userData['user']['wallet'].toString());
+          //walletBalance = double.parse(userData['user']['wallet'].toString());
           storeID = cart!.storeId!;
           Service.save('cart', cart);
         });
@@ -115,8 +112,6 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
             storeDetail['store']['is_provide_laundry_service'];
         storeLocations = storeDetail['store']['location'];
         storeName = storeDetail['store']['name'];
-        isDonation =
-            storeName.toString().toLowerCase() == 'donation' ? true : false;
       });
       Service.save('cart', cart!.toJson());
     } else {
@@ -141,102 +136,6 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       FlLocation.requestLocationPermission();
     }
   }
-
-//////////////////////////////////////////////////////////////////newly added
-
-  void getUser() async {
-    var data = await Service.read('user');
-
-    if (data != null) {
-      setState(() {
-        userData = data;
-        walletBalance = double.parse(userData['user']['wallet'].toString());
-      });
-      getCart();
-    }
-  }
-
-  void addToCart(item, destination, storeLocation, storeId) {
-    cart = Cart(
-      userId: userData['user']['_id'],
-      items: [item],
-      serverToken: userData['user']['server_token'],
-      destinationAddress: destination,
-      storeId: storeId,
-      storeLocation: storeLocation,
-    );
-
-    Service.save('cart', cart!.toJson());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(Service.showMessage("Item added to cart!", false));
-  }
-
-  void _getStoreExtraItemList() async {
-    setState(() {
-      _loading = true;
-    });
-    var data = await getStoreExtraItemList();
-
-    if (data != null && data['success']) {
-      extraItems = data['items'];
-      extraItemsList = [...data['items']];
-      print(storeID);
-    } else {
-      setState(() {
-        _loading = false;
-      });
-    }
-  }
-
-  String _getPrice(item) {
-    if (item['price'] == null || item['price'] == 0) {
-      for (var i = 0; i < item['specifications'].length; i++) {
-        for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
-          if (item['specifications'][i]['list'][j]['is_default_selected']) {
-            return item['specifications'][i]['list'][j]['price']
-                .toStringAsFixed(2);
-          }
-        }
-      }
-    } else {
-      return item['price'].toStringAsFixed(2);
-    }
-    return "0.00";
-  }
-
-  void _getTransactions() async {
-    setState(() {
-      _loading = true;
-    });
-    var data = await transactionHistoryDetails();
-
-    if (data != null && data['success']) {
-      setState(() {
-        _loading = false;
-      });
-    } else {
-      if (data['error_code'] == 999) {
-        await Service.saveBool('logged', false);
-        await Service.remove('user');
-        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-      }
-      setState(() {
-        _loading = false;
-      });
-      if (errorCodes['${data['error_code']}'] != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("${errorCodes['${data['error_code']}']}"),
-          backgroundColor: kSecondaryColor,
-        ));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("No wallet transaction history"),
-          backgroundColor: kSecondaryColor,
-        ));
-      }
-    }
-  }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
@@ -311,6 +210,56 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     }
   }
 
+//////////////////////////////////////////////////////////////////newly added
+  void _getStoreExtraItemList() async {
+    setState(() {
+      _loading = true;
+    });
+    var data = await getStoreExtraItemList();
+
+    if (data != null && data['success']) {
+      extraItems = data['items'];
+      print(storeID);
+    } else {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  String _getPrice(item) {
+    if (item['price'] == null || item['price'] == 0) {
+      for (var i = 0; i < item['specifications'].length; i++) {
+        for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
+          if (item['specifications'][i]['list'][j]['is_default_selected']) {
+            return item['specifications'][i]['list'][j]['price']
+                .toStringAsFixed(2);
+          }
+        }
+      }
+    } else {
+      return item['price'].toStringAsFixed(2);
+    }
+    return "0.00";
+  }
+
+  void addToCart(item, destination, storeLocation, storeId) {
+    cart = Cart(
+      userId: userData['user']['_id'],
+      items: [item],
+      serverToken: userData['user']['server_token'],
+      destinationAddress: destination,
+      storeId: storeId,
+      storeLocation: storeLocation,
+    );
+
+    Service.save('cart', cart!.toJson());
+    ScaffoldMessenger.of(context)
+        .showSnackBar(Service.showMessage("Item added to cart!", false));
+  }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -338,14 +287,6 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(kDefaultPadding),
                         bottomRight: Radius.circular(kDefaultPadding)),
-                    /*  boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.8),
-                        //spreadRadius: 2,
-                        blurRadius: 1,
-                        offset: Offset(0, 3),
-                      ),
-                    ], */
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -456,8 +397,6 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                 ),
                                                 onPressed: item.quantity == 1
                                                     ? () {
-                                                        print(
-                                                            '*** Store *** ${cart!.toJson()}***  ${storeDetail['store']['company_name']} ${storeDetail['store']['phone']}');
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(Service
@@ -544,7 +483,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                   ),
                 ),
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////New customization
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -563,158 +502,116 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
-                    child: isCheckout
-                        ? showDonationView()
-                        : Column(
-                            children: [
-                              //
-                              extraItems != null
-                                  ? showExtraItemsHorizontal()
-                                  : SizedBox.shrink(),
-
-                              /*   TextButton(
-                                onPressed: () {
-                                  Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return NotificationStore(
-                                        storeId: cart!.storeId!);
-                                  }));
-                                },
-                                child: Text(
-                                  "Add more?",
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline),
+                    child:
+                        //   isCheckout
+                        // ? showDonationView()
+                        // :
+                        Column(
+                      children: [
+                        //
+                        extraItems != null
+                            ? showExtraItems()
+                            : SizedBox.shrink(),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 4),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 3)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "${Provider.of<ZLanguage>(context).cartTotal}: ",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1
+                                      ?.copyWith(color: kBlackColor),
                                 ),
-                              ), */
-                              SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 4),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding)),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 3)),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "${Provider.of<ZLanguage>(context).cartTotal}: ",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1
-                                            ?.copyWith(color: kBlackColor),
-                                      ),
-                                      Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headline6
-                                            ?.copyWith(
-                                                color: kBlackColor,
-                                                fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
+                                Text(
+                                  "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline6
+                                      ?.copyWith(
+                                          color: kBlackColor,
+                                          fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                              SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 4),
-                              ),
-
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding * 2),
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                ),
-                                child: CustomButton(
-                                  title:
-                                      Provider.of<ZLanguage>(context).checkout,
-                                  press: () async {
-                                    if (isDonation && !isCheckout) {
-                                      setState(() {
-                                        isCheckout = !isCheckout;
-                                      });
-                                    } else {
-                                      DateFormat dateFormat =
-                                          new DateFormat.Hm();
-                                      DateTime now = DateTime.now()
-                                          .toUtc()
-                                          .add(Duration(hours: 3));
-                                      var appClose =
-                                          await Service.read('app_close');
-                                      var appOpen =
-                                          await Service.read('app_open');
-                                      DateTime zmallClose =
-                                          dateFormat.parse(appClose);
-                                      DateTime zmallOpen =
-                                          dateFormat.parse(appOpen);
-
-                                      now = DateTime(now.year, now.month,
-                                          now.day, now.hour, now.minute);
-                                      zmallOpen = new DateTime(
-                                          now.year,
-                                          now.month,
-                                          now.day,
-                                          zmallOpen.hour,
-                                          zmallOpen.minute);
-                                      zmallClose = new DateTime(
-                                          now.year,
-                                          now.month,
-                                          now.day,
-                                          zmallClose.hour,
-                                          zmallClose.minute);
-
-                                      if (now.isAfter(zmallOpen) &&
-                                          now.isBefore(zmallClose)) {
-                                        if (isDonation) {
-                                          print('***This is Donation***');
-
-                                          //showDonation();
-
-                                          /*           Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return KifiyaScreen(
-                                          price: price,
-                                          orderPaymentId:
-                                              '${storeDetail['store']['store_delivery_id']}',
-                                          orderPaymentUniqueId:
-                                              'DONATION-${storeDetail['store']['unique_id']}',
-                                        );
-                                      },
-                                    ),
-                                  ); */
-                                        } else {
-                                          Navigator.pushNamed(context,
-                                              DeliveryScreen.routeName);
-                                        }
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          Service.showMessage(
-                                              "Sorry, we are currently closed. Please comeback soon.",
-                                              false,
-                                              duration: 3),
-                                        );
-                                      }
-                                    }
-                                  },
-                                  color: kSecondaryColor,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                        ),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 4),
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: getProportionateScreenWidth(
+                                kDefaultPadding * 2),
+                            vertical:
+                                getProportionateScreenHeight(kDefaultPadding),
+                          ),
+                          child: CustomButton(
+                            title: Provider.of<ZLanguage>(context).checkout,
+                            press: () async {
+                              //   if (isDonation && !isCheckout) {
+                              //   setState(() {
+                              //     isCheckout = !isCheckout;
+                              //   });
+                              // } else {
+                              DateFormat dateFormat = new DateFormat.Hm();
+                              DateTime now = DateTime.now()
+                                  .toUtc()
+                                  .add(Duration(hours: 3));
+                              var appClose = await Service.read('app_close');
+                              var appOpen = await Service.read('app_open');
+                              DateTime zmallClose = dateFormat.parse(appClose);
+                              DateTime zmallOpen = dateFormat.parse(appOpen);
+
+                              now = DateTime(now.year, now.month, now.day,
+                                  now.hour, now.minute);
+                              zmallOpen = new DateTime(now.year, now.month,
+                                  now.day, zmallOpen.hour, zmallOpen.minute);
+                              zmallClose = new DateTime(now.year, now.month,
+                                  now.day, zmallClose.hour, zmallClose.minute);
+
+                              if (now.isAfter(zmallOpen) &&
+                                  now.isBefore(zmallClose)) {
+                                Navigator.pushNamed(
+                                    context, DeliveryScreen.routeName);
+                                //   if (isDonation) {
+                                //   print('***This is Donation***');
+                                //   //showDonation();
+                                // } else {
+                                //   Navigator.pushNamed(
+                                //       context, DeliveryScreen.routeName);
+                                // }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  Service.showMessage(
+                                      "Sorry, we are currently closed. Please comeback soon.",
+                                      false,
+                                      duration: 3),
+                                );
+                              }
+                            },
+                            // },
+                            color: kSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////
               ],
             )
           : Center(
@@ -824,7 +721,6 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         this._loading = false;
       });
 
-      // logger.d(' Extra items: ***${json.decode(response.body)['items']}***');
       return json.decode(response.body);
     } catch (e) {
       print(e);
@@ -838,6 +734,288 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     }
   }
 
+  void _showDialog(item, destination, storeLocation, storeId) {
+    showDialog(
+        context: context,
+        builder: (BuildContext alertContext) {
+          return AlertDialog(
+            title: Text(Provider.of<ZLanguage>(context).warning),
+            content: Text(Provider.of<ZLanguage>(context).itemsFound),
+            actions: [
+              TextButton(
+                child: Text(
+                  Provider.of<ZLanguage>(context).cancel,
+                  style: TextStyle(
+                    color: kBlackColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(alertContext).pop();
+                },
+              ),
+              TextButton(
+                child: Text(
+                  Provider.of<ZLanguage>(context).clear,
+                  style: TextStyle(
+                    color: kSecondaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    cart!.toJson();
+                    Service.remove('cart');
+                    cart = Cart();
+                    addToCart(item, destination, storeLocation, storeId);
+                  });
+
+                  Navigator.of(alertContext).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget showExtraItems() {
+    bool isNull = extraItems.every((extraItem) => cart!.items!
+        .any((cartItem) => cartItem.toJson()['_id'] == extraItem['_id']));
+    return 
+     isNull ? SizedBox.shrink():
+    Column(
+      children: [
+        Text(
+          'Perfect Paring for Your Order!',
+        ),
+        const SizedBox(height: kDefaultPadding),
+        Container(
+          height: getProportionateScreenHeight(kDefaultPadding * 8),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(kDefaultPadding)),
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: extraItems.length,
+            itemBuilder: (context, index) {
+              bool isAppear = cart!.items!.any((element) =>
+                  element.toJson()['_id'] == extraItems[index]['_id']);
+
+              return isAppear
+                  ? SizedBox.shrink()
+                  : Column(
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl:
+                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
+                          imageBuilder: (context, imageProvider) => Container(
+                            width: getProportionateScreenWidth(
+                                kDefaultPadding * 3),
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding * 3),
+                            decoration: BoxDecoration(
+                              color: kWhiteColor,
+                              borderRadius: BorderRadius.circular(
+                                  getProportionateScreenHeight(
+                                      kDefaultPadding)),
+                              image: DecorationImage(
+                                fit: BoxFit.contain,
+                                image: imageProvider,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) => Center(
+                            child: Container(
+                              width: getProportionateScreenWidth(
+                                  kDefaultPadding * 3),
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 3),
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(kWhiteColor),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: getProportionateScreenWidth(
+                                kDefaultPadding * 3),
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding * 3),
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                fit: BoxFit.contain,
+                                image: AssetImage(zmallLogo),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 3),
+                        ),
+                        Text(
+                          extraItems[index]['name'],
+                          style: TextStyle(
+                            fontSize: getProportionateScreenWidth(
+                                kDefaultPadding * 0.9),
+                            color: kBlackColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          softWrap: true,
+                        ),
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 5)),
+                        Text(
+                          "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                          style: Theme.of(context).textTheme.button?.copyWith(
+                                color: kBlackColor,
+                              ),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            // Add to cart.....
+
+                            print('id... ${extraItems[index]['_id']}');
+                            Item item = Item(
+                              id: extraItems[index]['_id'],
+                              quantity: 1,
+                              specification: [],
+                              noteForItem: "",
+                              price: _getPrice(extraItems[index]) != null
+                                  ? double.parse(
+                                      _getPrice(extraItems[index]),
+                                    )
+                                  : 0,
+                              itemName: extraItems[index]['name'],
+                              imageURL: extraItems[index]['image_url'].length >
+                                      0
+                                  ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
+                                  : "https://ibb.co/vkhzjd6",
+                            );
+                            print('item... $item');
+                            StoreLocation storeLocation = StoreLocation(
+                                long: storeLocations[1],
+                                lat: storeLocations[0]);
+                            print('sLocation... $storeLocation');
+                            DestinationAddress destination = DestinationAddress(
+                              long:
+                                  Provider.of<ZMetaData>(context, listen: false)
+                                      .longitude,
+                              lat:
+                                  Provider.of<ZMetaData>(context, listen: false)
+                                      .latitude,
+                              name: "Current Location",
+                              note: "User current location",
+                            );
+                            print('DestinationAddress... $destination');
+                            if (cart != null && userData != null) {
+                              if (cart!.storeId! ==
+                                  extraItems[index]['store_id']) {
+                                setState(() {
+                                  cart!.items!.add(item);
+                                  Service.save('cart', cart)
+                                      .then((value) => calculatePrice())
+                                      .then((value) =>
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(Service.showMessage(
+                                                  "Item added to cart", false)))
+                                      .then((value) => setState(() {}));
+                                });
+                              } else {
+                                _showDialog(item, destination, storeLocation,
+                                    extraItems[index]['store_id']);
+                              }
+                            }
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: kBlackColor,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 4),
+                              ),
+                              child: Text(
+                                "${Provider.of<ZLanguage>(context).addToCart}",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption
+                                    ?.copyWith(
+                                      color: kPrimaryColor,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+            },
+            separatorBuilder: (BuildContext context, int index) => SizedBox(
+              width: getProportionateScreenWidth(kDefaultPadding / 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/* 
+
+  void getUser() async {
+    var data = await Service.read('user');
+
+    if (data != null) {
+      setState(() {
+        userData = data;
+        walletBalance = double.parse(userData['user']['wallet'].toString());
+      });
+      getCart();
+    }
+  }
+
+ 
+  
+
+  void _getTransactions() async {
+    setState(() {
+      _loading = true;
+    });
+    var data = await transactionHistoryDetails();
+
+    if (data != null && data['success']) {
+      setState(() {
+        _loading = false;
+      });
+    } else {
+      if (data['error_code'] == 999) {
+        await Service.saveBool('logged', false);
+        await Service.remove('user');
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      }
+      setState(() {
+        _loading = false;
+      });
+      if (errorCodes['${data['error_code']}'] != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("${errorCodes['${data['error_code']}']}"),
+          backgroundColor: kSecondaryColor,
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("No wallet transaction history"),
+          backgroundColor: kSecondaryColor,
+        ));
+      }
+    }
+  } 
+  
+  
+  
+  
+  
+  
   Future<dynamic> transactionHistoryDetails() async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_wallet_history";
@@ -1073,228 +1251,4 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     );
   }
 
-  void _showDialog(item, destination, storeLocation, storeId) {
-    showDialog(
-        context: context,
-        builder: (BuildContext alertContext) {
-          return AlertDialog(
-            title: Text(Provider.of<ZLanguage>(context).warning),
-            content: Text(Provider.of<ZLanguage>(context).itemsFound),
-            actions: [
-              TextButton(
-                child: Text(
-                  Provider.of<ZLanguage>(context).cancel,
-                  style: TextStyle(
-                    color: kBlackColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(alertContext).pop();
-                },
-              ),
-              TextButton(
-                child: Text(
-                  Provider.of<ZLanguage>(context).clear,
-                  style: TextStyle(
-                    color: kSecondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onPressed: () {
-                  setState(() {
-                    cart!.toJson();
-                    Service.remove('cart');
-                    cart = Cart();
-                    addToCart(item, destination, storeLocation, storeId);
-                  });
-
-                  Navigator.of(alertContext).pop();
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  Widget showExtraItemsHorizontal() {
-    return Column(
-      children: [
-        Text(
-          'Perfect Paring for Your Meal!',
-        ),
-        const SizedBox(height: kDefaultPadding),
-        Container(
-          height: getProportionateScreenHeight(kDefaultPadding * 8),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(kDefaultPadding)),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: extraItemsList.length,
-            itemBuilder: (context, index) {
-              bool isAppear = cart!.items!.any((element) =>
-                  element.toJson()['_id'] == extraItemsList[index]['_id']);
-              return isAppear
-                  ? SizedBox.shrink()
-                  : Column(
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl:
-                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItemsList[index]['image_url']}",
-                          imageBuilder: (context, imageProvider) => Container(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 3),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
-                            decoration: BoxDecoration(
-                              color: kWhiteColor,
-                              borderRadius: BorderRadius.circular(
-                                  getProportionateScreenHeight(
-                                      kDefaultPadding)),
-                              image: DecorationImage(
-                                fit: BoxFit.contain,
-                                image: imageProvider,
-                              ),
-                            ),
-                          ),
-                          placeholder: (context, url) => Center(
-                            child: Container(
-                              width: getProportionateScreenWidth(
-                                  kDefaultPadding * 3),
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding * 3),
-                              child: CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(kWhiteColor),
-                              ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 3),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                fit: BoxFit.contain,
-                                image: AssetImage(zmallLogo),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding / 3),
-                        ),
-                        Text(
-                          extraItemsList[index]['name'] ??
-                              extraItemsList[index]['item_name'],
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.9),
-                            color: kBlackColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          softWrap: true,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 5)),
-                        Text(
-                          "${_getPrice(extraItemsList[index]) != null ? _getPrice(extraItemsList[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                          style: Theme.of(context).textTheme.button?.copyWith(
-                                color: kBlackColor,
-                              ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            // Add to cart.....
-
-                            print('id... ${extraItemsList[index]['_id']}');
-                            Item item = Item(
-                              id: extraItemsList[index]['_id'],
-                              quantity: 1,
-                              specification: [],
-                              noteForItem: "",
-                              price: _getPrice(extraItemsList[index]) != null
-                                  ? double.parse(
-                                      _getPrice(extraItemsList[index]),
-                                    )
-                                  : 0,
-                              itemName: extraItemsList[index]['name'],
-                              imageURL: extraItemsList[index]['image_url']
-                                          .length >
-                                      0
-                                  ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItemsList[index]['image_url']}"
-                                  : "https://ibb.co/vkhzjd6",
-                            );
-                            print('item... $item');
-                            StoreLocation storeLocation = StoreLocation(
-                                long: storeLocations[1],
-                                lat: storeLocations[0]);
-                            print('sLocation... $storeLocation');
-                            DestinationAddress destination = DestinationAddress(
-                              long:
-                                  Provider.of<ZMetaData>(context, listen: false)
-                                      .longitude,
-                              lat:
-                                  Provider.of<ZMetaData>(context, listen: false)
-                                      .latitude,
-                              name: "Current Location",
-                              note: "User current location",
-                            );
-                            print('DestinationAddress... $destination');
-                            if (cart != null && userData != null) {
-                              if (cart!.storeId! ==
-                                  extraItemsList[index]['store_id']) {
-                                setState(() {
-                                  cart!.items!.add(item);
-                                  Service.save('cart', cart)
-                                      .then((value) => calculatePrice())
-                                      .then((value) =>
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(Service.showMessage(
-                                                  "Item added to cart", false)))
-                                      .then((value) => setState(() {}));
-                                });
-                              } else {
-                                _showDialog(item, destination, storeLocation,
-                                    extraItemsList[index]['store_id']);
-                              }
-                            }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: kBlackColor,
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 4),
-                              ),
-                              child: Text(
-                                "${Provider.of<ZLanguage>(context).addToCart}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption
-                                    ?.copyWith(
-                                      color: kPrimaryColor,
-                                    ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-
-              ///return null;
-            },
-            separatorBuilder: (BuildContext context, int index) => SizedBox(
-              width: getProportionateScreenWidth(kDefaultPadding / 2),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+   */

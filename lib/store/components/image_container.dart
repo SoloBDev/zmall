@@ -4,8 +4,10 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/size_config.dart';
 
 class ImageContainer extends StatelessWidget {
-  ImageContainer({Key? key, this.url}) : super(key: key);
+  ImageContainer({Key? key, this.url,}) : super(key: key);
   final String? url;
+  
+
 
   @override
   Widget build(BuildContext context) {
