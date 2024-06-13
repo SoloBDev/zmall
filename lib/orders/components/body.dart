@@ -156,7 +156,7 @@ class _BodyState extends State<Body> {
                                           ['store_name'],
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyText1
+                                      .bodyLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: kBlackColor,
@@ -170,7 +170,7 @@ class _BodyState extends State<Body> {
                                   "Order No. #${responseData['order_list'][index]['unique_id']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .subtitle2
+                                      .titleSmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -182,7 +182,7 @@ class _BodyState extends State<Body> {
                                   "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${int.parse(responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[0]) + 3}:${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[1]}:${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[2]}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -206,7 +206,7 @@ class _BodyState extends State<Body> {
                                       : "${order_status['${responseData['order_list'][index]['order_status']}']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: responseData['order_list'][index]
                                                     ['order_status'] ==
@@ -225,7 +225,7 @@ class _BodyState extends State<Body> {
                                 "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list'][index]['total_order_price'].toStringAsFixed(2)}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle2
+                                    .titleSmall
                                     ?.copyWith(
                                       color: kBlackColor,
                                       fontWeight: FontWeight.bold,
@@ -260,7 +260,7 @@ class _BodyState extends State<Body> {
                               kDefaultPadding / 3)),
                       Text(
                         "No Active Orders Found",
-                        style: Theme.of(context).textTheme.headline6?.copyWith(
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       )

@@ -495,7 +495,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                           .toUpperCase(),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .caption
+                                          .bodySmall
                                           ?.copyWith(
                                             fontWeight: isStoreSelected &&
                                                     selectedCatagory == index
@@ -651,7 +651,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color:
                                                                         kGreyColor,
@@ -686,7 +686,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color: (filteredResult['items']![index]['similarity'] * 100).toInt() >
                                                                             90
@@ -715,7 +715,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             .closed,
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .subtitle1
+                                                        .titleMedium
                                                         ?.copyWith(
                                                             fontWeight:
                                                                 FontWeight.w600,
@@ -838,7 +838,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .caption
+                                                                .bodySmall
                                                                 ?.copyWith(),
                                                           ),
                                                           SizedBox(
@@ -854,7 +854,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
-                                                                  .bodyText1
+                                                                  .bodyLarge
                                                                   ?.copyWith(
                                                                       fontWeight:
                                                                           FontWeight
@@ -880,7 +880,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                           //           style: Theme.of(
                                                           //                   context)
                                                           //               .textTheme
-                                                          //               .caption
+                                                          //               .bodySmall
                                                           //               ?.copyWith(
                                                           //                 color:
                                                           //                     kGreyColor,
@@ -917,7 +917,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                   style: Theme.of(
                                                                           context)
                                                                       .textTheme
-                                                                      .caption
+                                                                      .bodySmall
                                                                       ?.copyWith(
                                                                         color: (responseData['items'][index]['similarity'] * 100).toInt() >
                                                                                 90
@@ -945,7 +945,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .subtitle1
+                                                                .titleMedium
                                                                 ?.copyWith(
                                                                     fontWeight:
                                                                         FontWeight
@@ -1230,7 +1230,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         Text(
                           parsedRVAl,
                           style:
-                              Theme.of(context).textTheme.subtitle1?.copyWith(
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
                                     color: kSecondaryColor,
                                     fontSize: getProportionateScreenWidth(
                                         kDefaultPadding * .7),
@@ -1242,7 +1242,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               : Provider.of<ZLanguage>(context).closed,
                           style: Theme.of(context)
                               .textTheme
-                              .subtitle1
+                              .titleMedium
                               ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: isOpen[index]
@@ -1254,7 +1254,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                       Text(
                     "${(_searchResult[index]['similarity']).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
-                    style: Theme.of(context).textTheme.caption?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: (_searchResult[index]['similarity']).toInt() >
                                   90
                               ? Colors.green

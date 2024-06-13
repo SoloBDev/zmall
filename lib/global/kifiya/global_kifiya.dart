@@ -263,7 +263,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                       children: [
                         Text(
                           "How would you like to pay ብር ${widget.price}?",
-                          style: Theme.of(context).textTheme.headline6,
+                          style: Theme.of(context).textTheme.titleLarge,
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(
@@ -441,7 +441,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                         widget.onlyCashless
                             ? Text(
                                 "Store only allows digital payments.",
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.titleMedium,
                               )
                             : Container(),
                         widget.onlyCashless

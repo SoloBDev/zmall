@@ -97,7 +97,7 @@ class SpecialOfferCard extends StatelessWidget {
                                 kDefaultPadding / 5)),
                         child: Text(
                           itemName,
-                          style: Theme.of(context).textTheme.button?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.w900,
                                 color: kBlackColor,
                               ),
@@ -110,7 +110,7 @@ class SpecialOfferCard extends StatelessWidget {
                             Text(
                               "$originalPrice",
                               style:
-                                  Theme.of(context).textTheme.caption?.copyWith(
+                                  Theme.of(context).textTheme.bodySmall?.copyWith(
                                         decoration: TextDecoration.lineThrough,
                                         fontWeight: FontWeight.w500,
                                         color: kGreyColor,
@@ -123,7 +123,7 @@ class SpecialOfferCard extends StatelessWidget {
                           Text(
                             newPrice,
                             style:
-                                Theme.of(context).textTheme.caption?.copyWith(
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: kBlackColor,
                                       fontWeight: FontWeight.w900,
                                     ),
@@ -131,7 +131,7 @@ class SpecialOfferCard extends StatelessWidget {
                           Text(
                             "${Provider.of<ZMetaData>(context, listen: false).currency}",
                             style:
-                                Theme.of(context).textTheme.caption?.copyWith(
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: kBlackColor,
                                     ),
                           ),
@@ -141,7 +141,7 @@ class SpecialOfferCard extends StatelessWidget {
                         onTap: storePress,
                         child: Text(
                           storeName,
-                          style: Theme.of(context).textTheme.caption?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: kSecondaryColor.withOpacity(0.7),
                                 // decoration: TextDecoration.underline,
@@ -166,7 +166,7 @@ class SpecialOfferCard extends StatelessWidget {
                           "${(100.00 - (double.parse(newPrice) / double.parse(originalPrice) * 100)).toStringAsFixed(0)}% ${Provider.of<ZLanguage>(context, listen: true).discount}",
                           style: Theme.of(context)
                               .textTheme
-                              .caption
+                              .bodySmall
                               ?.copyWith(color: kPrimaryColor),
                         ),
                       ),

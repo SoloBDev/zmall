@@ -22,7 +22,7 @@ class TitleHeader extends StatelessWidget {
               "እንኳን ደህና መጡ",
               style: Theme.of(context)
                   .textTheme
-                  .subtitle2
+                  .titleSmall
                   ?.copyWith(color: kWhiteColor),
             ),
             Text(

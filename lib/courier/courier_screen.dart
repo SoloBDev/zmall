@@ -178,7 +178,7 @@ class _CourierScreenState extends State<CourierScreen> {
                               "Courier Delivery",
                               style: Theme.of(context)
                                   .textTheme
-                                  .headline5
+                                  .headlineSmall
                                   ?.copyWith(
                                     color: kPrimaryColor,
                                     fontWeight: FontWeight.bold,
@@ -267,7 +267,7 @@ class _CourierScreenState extends State<CourierScreen> {
                                 hintText: "Pick-up Address",
                                 hintStyle: Theme.of(context)
                                     .textTheme
-                                    .bodyText1
+                                    .bodyLarge
                                     ?.copyWith(color: kGreyColor),
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide.none,
@@ -348,7 +348,7 @@ class _CourierScreenState extends State<CourierScreen> {
                                 hintText: "Drop-off Address",
                                 hintStyle: Theme.of(context)
                                     .textTheme
-                                    .bodyText1
+                                    .bodyLarge
                                     ?.copyWith(color: kGreyColor),
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide.none,

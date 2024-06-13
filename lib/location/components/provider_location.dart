@@ -185,7 +185,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
                   widget.providerName!,
                   style: Theme.of(context)
                       .textTheme
-                      .headline6!
+                      .titleLarge!
                       .copyWith(fontWeight: FontWeight.w500),
                 ),
                 Row(
@@ -194,7 +194,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
                       "+251 ${widget.providerPhone}",
                       style: Theme.of(context)
                           .textTheme
-                          .subtitle1
+                          .titleMedium
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     IconButton(

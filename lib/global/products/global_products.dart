@@ -320,7 +320,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                               _searchResult[index]['details'],
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .caption!
+                                                  .bodySmall!
                                                   .copyWith(
                                                     color: kGreyColor,
                                                   ),
@@ -333,7 +333,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                         "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} Birr",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .subtitle1!
+                                            .titleMedium!
                                             .copyWith(
                                               color: kSecondaryColor,
                                               fontWeight: FontWeight.w500,
@@ -442,7 +442,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                                           [idx]['name'],
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .subtitle1!
+                                                          .titleMedium!
                                                           .copyWith(
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -472,7 +472,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .caption!
+                                                                .bodySmall!
                                                                 .copyWith(
                                                                   color:
                                                                       kGreyColor,
@@ -488,7 +488,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                                       "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} Birr",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .subtitle2!
+                                                          .titleSmall!
                                                           .copyWith(
                                                             color:
                                                                 kSecondaryColor,

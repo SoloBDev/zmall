@@ -358,7 +358,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         Text(
                             "By continuing your confirm that you agree with our",
-                            style: Theme.of(context).textTheme.caption),
+                            style: Theme.of(context).textTheme.bodySmall),
                         InkWell(
                           onTap: () {
                             Service.launchInWebViewOrVC(
@@ -368,7 +368,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             "Terms & Conditions",
                             overflow: TextOverflow.ellipsis,
                             style:
-                                Theme.of(context).textTheme.caption?.copyWith(
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: kSecondaryColor,
                                     ),
                             softWrap: true,

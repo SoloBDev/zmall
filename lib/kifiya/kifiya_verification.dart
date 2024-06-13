@@ -135,7 +135,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                     children: [
                       Text(
                         "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Tele Birr",
-                        style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       ),
@@ -166,7 +166,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                             "${widget.traceNo}",
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6
+                                .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -190,7 +190,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                             "Copy Reference Number",
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .bodySmall
                                 ?.copyWith(color: kSecondaryColor),
                           ),
                         ),
@@ -262,7 +262,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                           "How to pay with Telebirr?",
                           style: Theme.of(context)
                               .textTheme
-                              .headline6
+                              .titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -272,7 +272,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       ),
                       Text(
                         "1. Copy the reference number above ☝🏾",
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.start,
                       ),
                       SizedBox(
@@ -281,7 +281,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       ),
                       Text(
                         "2. Open Telebirr App and Login",
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.start,
                       ),
                       SizedBox(
@@ -291,13 +291,13 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       RichText(
                         text: TextSpan(
                             text: '3. Press ',
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                             children: <TextSpan>[
                               TextSpan(
                                 text: '"Pay with Telebirr"',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               )
                             ]),
@@ -309,13 +309,13 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       RichText(
                         text: TextSpan(
                             text: '4. Press ',
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                             children: <TextSpan>[
                               TextSpan(
                                 text: '"Utility Payment"',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               )
                             ]),
@@ -327,13 +327,13 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       RichText(
                         text: TextSpan(
                             text: '5. Press ',
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                             children: <TextSpan>[
                               TextSpan(
                                 text: '"ZMALL"',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               )
                             ]),
@@ -344,17 +344,17 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       ),
                       Text(
                         "6. Paste the reference number and proceed with payment",
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.start,
                       ),
                       Text(
                         "7. Press Verify to complete verification and create order.",
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.start,
                       ),
                       Text(
                         "8. In case payment verification fails please send your payment screenshot to our Telegram using the link below and place your order using CASH payment method.",
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         textAlign: TextAlign.start,
                       ),
                       GestureDetector(
@@ -365,7 +365,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                         child: Text(
                           "9. ZMall Delivery Telegram",
                           style:
-                              Theme.of(context).textTheme.subtitle1?.copyWith(
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     decoration: TextDecoration.underline,
                                     color: kSecondaryColor,

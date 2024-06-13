@@ -376,9 +376,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       ),
                                     ),
                                     style: ButtonStyle(
-                                      elevation: MaterialStateProperty.all(1.0),
+                                      elevation: WidgetStateProperty.all(1.0),
                                       backgroundColor:
-                                          MaterialStateProperty.all(
+                                          WidgetStateProperty.all(
                                               kPrimaryColor),
                                     ),
                                     onPressed: () async {
@@ -400,7 +400,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         _scheduledDate = pickedDate!.add(
                                             Duration(
                                                 hours: time!.hour,
-                                                minutes: time!.minute));
+                                                minutes: time.minute));
                                         cart!.isSchedule = true;
                                         cart!.scheduleStart = _scheduledDate;
                                       });
@@ -667,7 +667,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyText1
+                                          .bodyLarge
                                           ?.copyWith(
                                               fontWeight: FontWeight.w700),
                                     )
@@ -694,7 +694,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                           : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5
+                                          .headlineSmall
                                           ?.copyWith(
                                               fontWeight: FontWeight.bold),
                                     ),
@@ -843,7 +843,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                           .applyPromoCode,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .subtitle1
+                                          .titleMedium
                                           ?.copyWith(
                                             color: kSecondaryColor,
                                             decoration:
@@ -1120,7 +1120,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                               .addTip,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .subtitle1
+                                              .titleMedium
                                               ?.copyWith(
                                                 color: kSecondaryColor,
                                                 decoration:
@@ -1662,14 +1662,14 @@ class DetailsRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.subtitle2?.copyWith(
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
         ),
         Expanded(
           child: Text(
             subtitle,
-            style: Theme.of(context).textTheme.subtitle1?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: kSecondaryColor,
                 ),

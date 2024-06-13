@@ -130,7 +130,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                         Text(
                           "Current Balance",
                           style:
-                              Theme.of(context).textTheme.subtitle2?.copyWith(
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
                                     color: kGreyColor,
                                   ),
                         ),
@@ -138,7 +138,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                           text: TextSpan(
                             text: "ETB",
                             style:
-                                Theme.of(context).textTheme.subtitle1?.copyWith(
+                                Theme.of(context).textTheme.titleSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FontStyle.italic,
                                     ),
@@ -147,7 +147,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                 text: " ${currentBalance.toStringAsFixed(2)}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .headline5
+                                    .headlineSmall
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -193,7 +193,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       "Transfer",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5
+                                          .headlineSmall
                                           ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -420,7 +420,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                             : "- ",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .subtitle2
+                                            .titleSmall
                                             ?.copyWith(
                                                 fontWeight: FontWeight.bold),
                                         children: <TextSpan>[
@@ -428,7 +428,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                             text: " ETB ",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .subtitle2,
+                                                .titleSmall,
                                           ),
                                           TextSpan(
                                             text: responseData['wallet_history']
@@ -436,7 +436,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                                 .toStringAsFixed(2),
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline6
+                                                .titleLarge
                                                 ?.copyWith(
                                                     color: responseData['wallet_history']
                                                                     [index][
@@ -706,7 +706,7 @@ class CustomCard extends StatelessWidget {
                   title,
                   style: Theme.of(context)
                       .textTheme
-                      .headline5
+                      .headlineSmall
                       ?.copyWith(color: textColor, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(

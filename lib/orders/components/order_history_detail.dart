@@ -237,7 +237,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                   : "${responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name']}",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1
+                                                  .bodyLarge
                                                   ?.copyWith(
                                                     color: kBlackColor,
                                                     fontWeight: FontWeight.bold,
@@ -252,7 +252,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                   [0]['user_details']['name'],
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1
+                                                  .bodyLarge
                                                   ?.copyWith(
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -368,7 +368,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                   "${responseData['provider_detail']['first_name']}",
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1
+                                                      .bodyLarge
                                                       ?.copyWith(
                                                         color: kBlackColor,
                                                         fontWeight:
@@ -935,7 +935,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                   "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total'].toStringAsFixed(2)}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline5
+                                      .headlineSmall
                                       ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                                 Text(responseData['payment_gateway_name']
@@ -1043,7 +1043,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .subtitle1
+                                                                  .titleMedium
                                                                   ?.copyWith(
                                                                     fontWeight:
                                                                         FontWeight
@@ -1055,7 +1055,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .caption,
+                                                                  .bodySmall,
                                                         )
                                                       ],
                                                     ),

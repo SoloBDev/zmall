@@ -35,7 +35,7 @@ class _GlobalHomeState extends State<GlobalHome> {
         ),
         bottomNavigationBar: TabBar(
           labelColor: kSecondaryColor,
-          unselectedLabelStyle: Theme.of(context).textTheme.caption,
+          unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
           unselectedLabelColor: kGreyColor,
           indicatorColor: kSecondaryColor,
           tabs: <Widget>[

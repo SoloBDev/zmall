@@ -32,7 +32,7 @@ class StoreInfo extends StatelessWidget {
         children: [
           Text(
             store['name'],
-            style: Theme.of(context).textTheme.bodyText2?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: kBlackColor,
                 ),
@@ -40,7 +40,7 @@ class StoreInfo extends StatelessWidget {
           ),
           Text(
             parsedRVAl,
-            style: Theme.of(context).textTheme.subtitle1?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: kSecondaryColor,
                   fontSize: getProportionateScreenWidth(kDefaultPadding * .7),
                 ),
@@ -50,13 +50,13 @@ class StoreInfo extends StatelessWidget {
                   'Addis Ababa, Ethiopia',
                   style: Theme.of(context)
                       .textTheme
-                      .caption
+                      .bodySmall
                       ?.copyWith(color: kGreyColor),
                 )
               : store['distance'] != null
                   ? Text(
                       "${store['distance'].toStringAsFixed(2)} ${Provider.of<ZLanguage>(context).kmAway}",
-                      style: Theme.of(context).textTheme.caption?.copyWith(
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: kGreyColor,
                           ),
                     )
@@ -70,7 +70,7 @@ class StoreInfo extends StatelessWidget {
 //              ),
 //              Text(
 //                " ${store['user_rate'].toStringAsFixed(2)} (${store['user_rate_count']})",
-//                style: Theme.of(context).textTheme.subtitle1?.copyWith(
+//                style: Theme.of(context).textTheme.titleMedium?.copyWith(
 //                      color: kGreyColor,
 //                    ),
 //              )
@@ -92,7 +92,7 @@ class StoreInfo extends StatelessWidget {
                 : isOpen!
                     ? Provider.of<ZLanguage>(context).open
                     : Provider.of<ZLanguage>(context).closed,
-            style: Theme.of(context).textTheme.subtitle1?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: store['is_store_busy']
                     ? kYellowColor
@@ -139,13 +139,13 @@ class FavoriteStoreInfo extends StatelessWidget {
                   'Addis Ababa, Ethiopia',
                   style: Theme.of(context)
                       .textTheme
-                      .subtitle2
+                      .titleSmall
                       ?.copyWith(color: kGreyColor),
                 )
               : store['distance'] != null
                   ? Text(
                       "${store['distance'].toStringAsFixed(2)} ${Provider.of<ZLanguage>(context).kmAway}",
-                      style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: kGreyColor,
                           ),
                     )
@@ -159,7 +159,7 @@ class FavoriteStoreInfo extends StatelessWidget {
 //              ),
 //              Text(
 //                " ${store['user_rate'].toStringAsFixed(2)} (${store['user_rate_count']})",
-//                style: Theme.of(context).textTheme.subtitle1?.copyWith(
+//                style: Theme.of(context).textTheme.titleMedium?.copyWith(
 //                      color: kGreyColor,
 //                    ),
 //              )
@@ -177,7 +177,7 @@ class FavoriteStoreInfo extends StatelessWidget {
                 : isOpen!
                     ? Provider.of<ZLanguage>(context).open
                     : Provider.of<ZLanguage>(context).closed,
-            style: Theme.of(context).textTheme.subtitle1?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: store['is_store_busy']
                     ? kYellowColor
                     : isOpen!

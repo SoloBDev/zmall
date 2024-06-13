@@ -103,7 +103,7 @@ class _SantimPayState extends State<SantimPay> {
       body: InAppWebView(
         initialOptions: options,
         initialUrlRequest: URLRequest(
-          url: Uri.parse(initUrl
+          url: WebUri.uri(Uri.parse(initUrl)
           ),
         ),
       ),

@@ -976,7 +976,7 @@ class _HomeBodyState extends State<HomeBody> {
             ),
             Text(
               "D E L I V E R Y",
-              style: Theme.of(context).textTheme.caption,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
@@ -1161,7 +1161,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                 .nextOrderCashback,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .subtitle2
+                                        .titleSmall
                                         ?.copyWith(color: kBlackColor),
                                   )
                                 : Container(),
@@ -1188,7 +1188,7 @@ class _HomeBodyState extends State<HomeBody> {
                                       "$orderCount/${quotient + 1}0",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .caption
+                                          .bodySmall
                                           ?.copyWith(
                                             fontWeight: FontWeight.w600,
                                             color: kPrimaryColor,
@@ -1770,7 +1770,7 @@ class _HomeBodyState extends State<HomeBody> {
                                           maxLines: 1,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .caption
+                                              .bodySmall
                                               ?.copyWith(
                                                 color: kBlackColor,
                                                 fontWeight: FontWeight.w600,

@@ -19,7 +19,7 @@ class OrdersScreen extends StatelessWidget {
           bottom: TabBar(
             indicatorColor: kSecondaryColor,
             labelColor: kSecondaryColor,
-            unselectedLabelStyle: Theme.of(context).textTheme.caption,
+            unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
             unselectedLabelColor: kGreyColor,
             tabs: [
               Column(

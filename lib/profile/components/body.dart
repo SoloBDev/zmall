@@ -210,7 +210,7 @@ class _BodyState extends State<Body> {
                                 "${userData['user']['first_name']} ${userData['user']['last_name']} ",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .headline6
+                                    .titleLarge
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               userData['user'] != null &&
@@ -227,7 +227,7 @@ class _BodyState extends State<Body> {
                           ),
                           Text(
                             "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                            style: Theme.of(context).textTheme.subtitle2,
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
                           userData['user'] != null &&
                                   userData['user']['is_phone_number_verified']
@@ -408,17 +408,17 @@ class _BodyState extends State<Body> {
                                     "Verify Phone?",
                                     style: Theme.of(context)
                                         .textTheme
-                                        .caption
+                                        .bodySmall
                                         ?.copyWith(color: kSecondaryColor),
                                   ),
                                 ),
                           Text(
                             "${userData['user']['email']}",
-                            style: Theme.of(context).textTheme.subtitle1,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                           // Text(
                           //   "${userData['user']['city']}",
-                          //   style: Theme.of(context).textTheme.caption,
+                          //   style: Theme.of(context).textTheme.bodySmall,
                           // ),
                           TextButton(
                             onPressed: () {
@@ -474,7 +474,7 @@ class _BodyState extends State<Body> {
                                         .nextOrderCashback,
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .bodySmall
                                 ?.copyWith(color: Colors.black),
                           ),
                           SizedBox(
@@ -492,7 +492,7 @@ class _BodyState extends State<Body> {
                                           .wallet,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .subtitle1
+                                          .titleMedium
                                           ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -501,7 +501,7 @@ class _BodyState extends State<Body> {
                                       "${userData['user']['wallet'].toStringAsFixed(2)}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline6
+                                          .titleLarge
                                           ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -516,7 +516,7 @@ class _BodyState extends State<Body> {
                                           .referral,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .subtitle1
+                                          .titleMedium
                                           ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -525,7 +525,7 @@ class _BodyState extends State<Body> {
                                       "${userData['user']['total_referrals']}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline6
+                                          .titleLarge
                                           ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -659,7 +659,7 @@ class _BodyState extends State<Body> {
                         },
                         child: Text(
                           "Delete Account?",
-                          style: Theme.of(context).textTheme.caption?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: kGreyColor,
                               ),
                         )),

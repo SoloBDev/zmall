@@ -453,7 +453,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                 ? "Welcome, ${abroadData!.abroadName}"
                                 : "Welcome to ZMall Global",
                             style:
-                                Theme.of(context).textTheme.headline6?.copyWith(
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
                           ),
@@ -709,7 +709,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                         maxLines: 1,
                                         style: Theme.of(context)
                                             .textTheme
-                                            .caption
+                                            .bodySmall
                                             ?.copyWith(
                                               color: kBlackColor,
                                               fontWeight: FontWeight.w600,

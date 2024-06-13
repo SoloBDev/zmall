@@ -369,7 +369,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                             "${Provider.of<ZMetaData>(context, listen: false).currency} ${item.price!.toStringAsFixed(2)}",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .subtitle1
+                                                .titleMedium
                                                 ?.copyWith(
                                                   color: kGreyColor,
                                                   fontWeight: FontWeight.bold,
@@ -425,7 +425,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                               "${item.quantity}",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .subtitle1
+                                                  .titleMedium
                                                   ?.copyWith(
                                                     color: kBlackColor,
                                                     fontWeight: FontWeight.bold,
@@ -463,7 +463,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                 .remove,
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1
+                                                .bodyLarge
                                                 ?.copyWith(
                                                     color: kSecondaryColor),
                                           ),
@@ -531,14 +531,14 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                   "${Provider.of<ZLanguage>(context).cartTotal}: ",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyText1
+                                      .bodyLarge
                                       ?.copyWith(color: kBlackColor),
                                 ),
                                 Text(
                                   "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline6
+                                      .titleLarge
                                       ?.copyWith(
                                           color: kBlackColor,
                                           fontWeight: FontWeight.bold),
@@ -629,7 +629,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                   ),
                   Text(
                     "Empty Basket!",
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge,
                   )
                 ],
               ),
@@ -867,7 +867,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                 kDefaultPadding / 5)),
                         Text(
                           "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                          style: Theme.of(context).textTheme.button?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                 color: kBlackColor,
                               ),
                         ),
@@ -940,7 +940,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                 "${Provider.of<ZLanguage>(context).addToCart}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .caption
+                                    .bodySmall
                                     ?.copyWith(
                                       color: kPrimaryColor,
                                     ),

@@ -114,7 +114,7 @@ class _BodyState extends State<Body> {
                                       "ብር ${cart!.items![index].price!.toStringAsFixed(2)}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .subtitle1
+                                          .titleMedium
                                           ?.copyWith(
                                             color: kGreyColor,
                                             fontWeight: FontWeight.bold,
@@ -167,7 +167,7 @@ class _BodyState extends State<Body> {
                                         "${cart!.items![index].quantity}",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .subtitle1
+                                            .titleMedium
                                             ?.copyWith(
                                               color: kBlackColor,
                                               fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class _BodyState extends State<Body> {
                                       "Remove",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyText1
+                                          .bodyLarge
                                           ?.copyWith(color: kSecondaryColor),
                                     ),
                                   )
@@ -238,14 +238,14 @@ class _BodyState extends State<Body> {
                           "Cart Total: ",
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText1
+                              .bodyLarge
                               ?.copyWith(color: kBlackColor),
                         ),
                         Text(
                           "ብር ${price.toStringAsFixed(2)}",
                           style: Theme.of(context)
                               .textTheme
-                              .headline6
+                              .titleLarge
                               ?.copyWith(
                                   color: kBlackColor,
                                   fontWeight: FontWeight.bold),
@@ -289,7 +289,7 @@ class _BodyState extends State<Body> {
                           getProportionateScreenHeight(kDefaultPadding / 3)),
                   Text(
                     "Empty Basket",
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge,
                   )
                 ],
               ),

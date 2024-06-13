@@ -118,7 +118,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
           elevation: 1.0,
           bottom: TabBar(
             labelColor: Colors.lightBlueAccent,
-            unselectedLabelStyle: Theme.of(context).textTheme.caption,
+            unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
             unselectedLabelColor: kWhiteColor,
             indicatorColor: Colors.lightBlueAccent,
             tabs: [
@@ -262,7 +262,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   //   games[index]['home_team'],
                                                   //   style: Theme.of(context)
                                                   //       .textTheme
-                                                  //       .bodyText1
+                                                  //       .bodyLarge
                                                   //       ?.copyWith(
                                                   //           color:
                                                   //               kPrimaryColor,
@@ -280,7 +280,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   : "-",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline6
+                                                  .titleLarge
                                                   ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight: FontWeight.bold,
@@ -290,7 +290,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                               "\t:\t",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline6
+                                                  .titleLarge
                                                   ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight: FontWeight.bold,
@@ -303,7 +303,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   : "-",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline6
+                                                  .titleLarge
                                                   ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight: FontWeight.bold,
@@ -357,7 +357,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   //   games[index]['away_team'],
                                                   //   style: Theme.of(context)
                                                   //       .textTheme
-                                                  //       .bodyText1
+                                                  //       .bodyLarge
                                                   //       ?.copyWith(
                                                   //           color:
                                                   //               kPrimaryColor,
@@ -379,7 +379,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                         "${games[index]['game_time'].split('T')[0]} ${games[index]['game_time'].split('T')[1].split(".")[0]}",
                                         style: Theme.of(context)
                                             .textTheme
-                                            .caption
+                                            .bodySmall
                                             ?.copyWith(
                                               color: kWhiteColor,
                                               fontWeight: FontWeight.bold,
@@ -395,7 +395,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                             .toUpperCase(),
                                         style: Theme.of(context)
                                             .textTheme
-                                            .caption
+                                            .bodySmall
                                             ?.copyWith(
                                               color: kWhiteColor,
                                               fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                               "PREDICT & WIN",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .caption
+                                                  .bodySmall
                                                   ?.copyWith(
                                                     color: worldCupColor,
                                                     fontWeight: FontWeight.bold,
@@ -508,7 +508,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                             child: Text(
                               "Rules & Winnings",
                               style:
-                                  Theme.of(context).textTheme.caption?.copyWith(
+                                  Theme.of(context).textTheme.bodySmall?.copyWith(
                                         color: kGreyColor,
                                         decoration: TextDecoration.underline,
                                         decorationColor: kPrimaryColor,
@@ -637,7 +637,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 .toString(),
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1
+                                                .bodyLarge
                                                 ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight:
@@ -647,7 +647,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                             "Prediction",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1
+                                                .bodyLarge
                                                 ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight:
@@ -659,7 +659,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 .toString(),
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText1
+                                                .bodyLarge
                                                 ?.copyWith(
                                                     color: kPrimaryColor,
                                                     fontWeight:
@@ -686,7 +686,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   .toString(),
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1
+                                                  .bodyLarge
                                                   ?.copyWith(
                                                       color: kPrimaryColor,
                                                       fontWeight:
@@ -696,7 +696,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                               "Result",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1
+                                                  .bodyLarge
                                                   ?.copyWith(
                                                       color: kPrimaryColor,
                                                       fontWeight:
@@ -709,7 +709,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   .toString(),
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .bodyText1
+                                                  .bodyLarge
                                                   ?.copyWith(
                                                       color: kPrimaryColor,
                                                       fontWeight:
@@ -738,7 +738,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                               "WIN",
                                               style: Theme.of(context)
                                                   .textTheme
-                                                  .headline6
+                                                  .titleLarge
                                                   ?.copyWith(
                                                       color: Colors.green),
                                             )
@@ -748,7 +748,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   "LOSE",
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1
+                                                      .bodyLarge
                                                       ?.copyWith(
                                                           color:
                                                               kSecondaryColor),
@@ -757,7 +757,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                   "Result Pending...",
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1
+                                                      .bodyLarge
                                                       ?.copyWith(
                                                           color: kGreyColor),
                                                 ),
@@ -805,7 +805,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
               ),
               // Text(
               //   "Refresh",
-              //   style: Theme.of(context).textTheme.caption?.copyWith(
+              //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
               //         color: kPrimaryColor,
               //       ),
               // )

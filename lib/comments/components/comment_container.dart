@@ -42,7 +42,7 @@ class CommentContainer extends StatelessWidget {
                 children: [
                   Text(
                     userName,
-                    style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
@@ -60,12 +60,12 @@ class CommentContainer extends StatelessWidget {
               ),
               Text(
                 "${dateTime.split('T')[0]} ${int.parse(dateTime.split('T')[1].split('.')[0].split(':')[0]) + 3}:${dateTime.split('T')[1].split('.')[0].split(':')[1]}:${dateTime.split('T')[1].split('.')[0].split(':')[2]}",
-                style: Theme.of(context).textTheme.caption?.copyWith(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: kGreyColor,
                     ),
               ),
               SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 5)),
-              Text(comment, style: Theme.of(context).textTheme.bodyText1),
+              Text(comment, style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
         ),

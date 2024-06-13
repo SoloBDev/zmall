@@ -99,7 +99,7 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
       body: InAppWebView(
         initialOptions: options,
         initialUrlRequest: URLRequest(
-          url: Uri.parse(initUrl
+          url: WebUri.uri(Uri.parse(initUrl)
           ),
         ),
       ),

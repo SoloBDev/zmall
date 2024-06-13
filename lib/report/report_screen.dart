@@ -55,7 +55,7 @@ class _ReportScreenState extends State<ReportScreen> {
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
             Text(
               "Completed!",
-              style: Theme.of(context).textTheme.headline5?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: kSecondaryColor,
                     fontWeight: FontWeight.bold,
                   ),
@@ -63,7 +63,7 @@ class _ReportScreenState extends State<ReportScreen> {
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 4)),
             Text(
               "Order Created. Thank you for choosing ZMall",
-              style: Theme.of(context).textTheme.subtitle1,
+              style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             Spacer(flex: 2),

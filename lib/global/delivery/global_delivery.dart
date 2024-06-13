@@ -333,7 +333,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             "Sender Information",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline5
+                                                .headlineSmall
                                                 ?.copyWith(
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -470,7 +470,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             "Order For Others",
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .headline5
+                                                .headlineSmall
                                                 ?.copyWith(
                                                   fontWeight: FontWeight.bold,
                                                 ),

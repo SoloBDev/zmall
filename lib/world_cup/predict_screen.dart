@@ -220,7 +220,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                 ? widget.game['home_score'].toString()
                                 : "-",
                             style:
-                                Theme.of(context).textTheme.headline6?.copyWith(
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
                                       color: kPrimaryColor,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -228,7 +228,7 @@ class _PredictScreenState extends State<PredictScreen> {
                           Text(
                             "\t:\t",
                             style:
-                                Theme.of(context).textTheme.headline6?.copyWith(
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
                                       color: kPrimaryColor,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -238,7 +238,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                 ? widget.game['away_score'].toString()
                                 : "-",
                             style:
-                                Theme.of(context).textTheme.headline6?.copyWith(
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
                                       color: kPrimaryColor,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -289,7 +289,7 @@ class _PredictScreenState extends State<PredictScreen> {
                       color: kBlackColor.withOpacity(0.3),
                       child: Text(
                         "${widget.game['game_time'].split('T')[0]} ${widget.game['game_time'].split('T')[1].split(".")[0]}",
-                        style: Theme.of(context).textTheme.caption?.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: kWhiteColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -302,7 +302,7 @@ class _PredictScreenState extends State<PredictScreen> {
                       color: kBlackColor.withOpacity(0.2),
                       child: Text(
                         widget.game['stadium'].toString().toUpperCase(),
-                        style: Theme.of(context).textTheme.caption?.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: kWhiteColor,
                               fontWeight: FontWeight.bold,
                             ),
@@ -327,7 +327,7 @@ class _PredictScreenState extends State<PredictScreen> {
                     Text(
                       "Who will win the game?",
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500, color: kPrimaryColor),
                     ),
                     SizedBox(
@@ -448,7 +448,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               textAlign: TextAlign.center,
                               style: Theme.of(context)
                                   .textTheme
-                                  .bodyText1
+                                  .bodyLarge
                                   ?.copyWith(
                                     color: kPrimaryColor,
                                     fontWeight: FontWeight.bold,
@@ -531,7 +531,7 @@ class _PredictScreenState extends State<PredictScreen> {
                   children: [
                     Text(
                       "You think the score will be...",
-                      style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500, color: kPrimaryColor),
                     ),
                     SizedBox(
@@ -576,7 +576,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline6
+                                          .titleLarge
                                           ?.copyWith(
                                             color: kPrimaryColor,
                                             fontWeight: FontWeight.bold,
@@ -600,7 +600,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .headline6
+                                      .titleLarge
                                       ?.copyWith(
                                         color: kPrimaryColor,
                                         fontWeight: FontWeight.bold,
@@ -644,7 +644,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headline6
+                                        .titleLarge
                                         ?.copyWith(
                                           color: kPrimaryColor,
                                           fontWeight: FontWeight.bold,
@@ -691,7 +691,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline6
+                                          .titleLarge
                                           ?.copyWith(
                                             color: kPrimaryColor,
                                             fontWeight: FontWeight.bold,
@@ -715,7 +715,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headline6
+                                        .titleLarge
                                         ?.copyWith(
                                           color: kPrimaryColor,
                                           fontWeight: FontWeight.bold,
@@ -758,7 +758,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headline6
+                                        .titleLarge
                                         ?.copyWith(
                                           color: kPrimaryColor,
                                           fontWeight: FontWeight.bold,
@@ -805,7 +805,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                 "${(widget.game['home_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .caption
+                                    .bodySmall
                                     ?.copyWith(color: kPrimaryColor),
                                 textAlign: TextAlign.center,
                               ),
@@ -825,7 +825,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                 "${(widget.game['draw_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .caption
+                                    .bodySmall
                                     ?.copyWith(color: kPrimaryColor),
                                 textAlign: TextAlign.center,
                               ),
@@ -845,7 +845,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                 "${(widget.game['away_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .caption
+                                    .bodySmall
                                     ?.copyWith(color: kPrimaryColor),
                                 textAlign: TextAlign.center,
                               ),
@@ -884,7 +884,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               //   "${(widget.game['home_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                               //   style: Theme.of(context)
                               //       .textTheme
-                              //       .caption
+                              //       .bodySmall
                               //       .copyWith(color: kPrimaryColor),
                               //   textAlign: TextAlign.center,
                               // ),
@@ -903,7 +903,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               //   "${(widget.game['draw_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                               //   style: Theme.of(context)
                               //       .textTheme
-                              //       .caption
+                              //       .bodySmall
                               //       .copyWith(color: kPrimaryColor),
                               //   textAlign: TextAlign.center,
                               // ),
@@ -934,7 +934,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               //   "${(widget.game['away_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
                               //   style: Theme.of(context)
                               //       .textTheme
-                              //       .caption
+                              //       .bodySmall
                               //       .copyWith(color: kPrimaryColor),
                               //   textAlign: TextAlign.center,
                               // ),

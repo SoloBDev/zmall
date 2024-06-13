@@ -432,7 +432,7 @@ class _CourierDetailState extends State<CourierDetail> {
                     "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.courierData['total_order_price'].toStringAsFixed(2)}",
                     style: Theme.of(context)
                         .textTheme
-                        .headline5
+                        .headlineSmall
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],

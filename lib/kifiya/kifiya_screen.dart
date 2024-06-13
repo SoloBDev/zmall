@@ -404,7 +404,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                         "${Provider.of<ZLanguage>(context).howWouldYouPay} ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)}?",
                         style: Theme.of(context)
                             .textTheme
-                            .headline6
+                            .titleLarge
                             ?.copyWith(fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center,
                       ),
@@ -433,7 +433,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                             "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
                             style: Theme.of(context)
                                 .textTheme
-                                .headline6
+                                .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -456,7 +456,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                   .onlyDigitalPayments,
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
+                                  .titleMedium
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             )
                           : Container(),

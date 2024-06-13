@@ -157,7 +157,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                         abroadData != null ? abroadData!.abroadName! : "",
                         style: Theme.of(context)
                             .textTheme
-                            .headline6
+                            .titleLarge
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       abroadData != null && abroadData!.abroadPhone != null
@@ -172,11 +172,11 @@ class _GlobalProfileState extends State<GlobalProfile> {
                   ),
                   Text(
                     abroadData != null ? abroadData!.abroadPhone.toString() : "",
-                    style: Theme.of(context).textTheme.subtitle2,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Text(
                     abroadData != null ? abroadData!.abroadEmail! : "",
-                    style: Theme.of(context).textTheme.subtitle1,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                   // TextButton(
                   //   onPressed: () {

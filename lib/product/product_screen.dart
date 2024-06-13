@@ -294,7 +294,7 @@ class _ProductScreenState extends State<ProductScreen> {
           widget.store['name'],
           style: Theme.of(context)
               .textTheme
-              .subtitle1
+              .titleSmall
               ?.copyWith(color: kBlackColor),
         ),
         elevation: 0.0,
@@ -649,7 +649,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                 _searchResult[index]['details'],
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .caption
+                                                    .bodySmall
                                                     ?.copyWith(
                                                       color: kGreyColor,
                                                     ),
@@ -663,7 +663,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                           "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                           style: Theme.of(context)
                                               .textTheme
-                                              .subtitle1
+                                              .titleSmall
                                               ?.copyWith(
                                                 color: kSecondaryColor,
                                                 fontWeight: FontWeight.w500,
@@ -711,7 +711,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 "${products[index]["_id"]["name"]}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .headline6
+                                    .titleLarge
                                     ?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -810,7 +810,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color:
                                                                         kGreyColor,
@@ -822,7 +822,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                         "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                         style: Theme.of(context)
                                                             .textTheme
-                                                            .button
+                                                            .labelLarge
                                                             ?.copyWith(
                                                               color:
                                                                   kBlackColor,
@@ -1077,7 +1077,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color:
                                                                         kPrimaryColor,
@@ -1252,7 +1252,7 @@ class _ProductScreenState extends State<ProductScreen> {
                             //                                 style: Theme.of(
                             //                                         context)
                             //                                     .textTheme
-                            //                                     .caption
+                            //                                     .bodySmall
                             //                                     ?.copyWith(
                             //                                       color:
                             //                                           kGreyColor,

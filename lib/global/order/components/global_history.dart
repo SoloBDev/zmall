@@ -142,7 +142,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
                                   "Order No. #${responseData['order_list'][index]['unique_id']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .subtitle2
+                                      .titleSmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -154,7 +154,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
                                   "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0]}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -170,7 +170,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
                                       : "${order_status['${responseData['order_list'][index]['order_status']}']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: kSecondaryColor,
                                       ),
@@ -185,7 +185,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
                                 "ብር${responseData['order_list'][index]['total'].toStringAsFixed(2)}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle2
+                                    .titleSmall
                                     ?.copyWith(
                                       color: responseData['order_list'][index]
                                                   ['total'] ==
@@ -224,7 +224,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
                               kDefaultPadding / 3)),
                       Text(
                         "No Active Orders Found",
-                        style: Theme.of(context).textTheme.headline6?.copyWith(
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       )

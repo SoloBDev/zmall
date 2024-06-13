@@ -341,7 +341,7 @@ class _BodyState extends State<Body> {
               children: [
                 Text(
                   widget.item['name'],
-                  style: Theme.of(context).textTheme.headline5?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: kBlackColor,
                       ),
@@ -364,7 +364,7 @@ class _BodyState extends State<Body> {
                 ),
                 Text(
                   widget.item['details'].toString().replaceAll("\n", "").trim(),
-                  style: Theme.of(context).textTheme.bodyText2?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: kGreyColor,
                         fontWeight: FontWeight.w400,
                       ),
@@ -415,7 +415,7 @@ class _BodyState extends State<Body> {
                                           "${Provider.of<ZLanguage>(context).chooseOne} ${widget.item['specifications'][index]['range']}",
                                           style: Theme.of(context)
                                               .textTheme
-                                              .caption,
+                                              .bodySmall,
                                         )
                                       : Container(),
                                 ],
@@ -647,12 +647,12 @@ class _BodyState extends State<Body> {
                   "${Provider.of<ZLanguage>(context).price}:",
                   style: Theme.of(context)
                       .textTheme
-                      .bodyText1
+                      .bodyLarge
                       ?.copyWith(color: kBlackColor),
                 ),
                 Text(
                   "${Provider.of<ZMetaData>(context, listen: false).currency} ${price!.toStringAsFixed(2)}",
-                  style: Theme.of(context).textTheme.headline6?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: kBlackColor, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -694,7 +694,7 @@ class _BodyState extends State<Body> {
                               Provider.of<ZLanguage>(context).note,
                               style: Theme.of(context)
                                   .textTheme
-                                  .button
+                                  .labelLarge
                                   ?.copyWith(color: kPrimaryColor),
                               textAlign: TextAlign.center,
                             ),
@@ -882,7 +882,7 @@ class _BodyState extends State<Body> {
                                 kDefaultPadding / 3)),
                         child: Text(
                           quantity.toString(),
-                          style: Theme.of(context).textTheme.headline6,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
                       InkWell(

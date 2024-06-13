@@ -201,7 +201,7 @@ class _OrderDetailState extends State<OrderDetail> {
                               "Total Price : ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
                               style: Theme.of(context)
                                   .textTheme
-                                  .headline6
+                                  .titleLarge
                                   ?.copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: kPrimaryColor),
@@ -855,7 +855,7 @@ class _OrderDetailState extends State<OrderDetail> {
                                                 softWrap: true,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .subtitle1
+                                                    .titleMedium
                                                     ?.copyWith(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -865,7 +865,7 @@ class _OrderDetailState extends State<OrderDetail> {
                                                 "Quantity: ${widget.order['order_details'][index]['items'][idx]['quantity']}",
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .caption,
+                                                    .bodySmall,
                                               )
                                             ],
                                           ),
@@ -895,7 +895,7 @@ class _OrderDetailState extends State<OrderDetail> {
                       "Total Price : ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
                       style: Theme.of(context)
                           .textTheme
-                          .headline6
+                          .titleLarge
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),

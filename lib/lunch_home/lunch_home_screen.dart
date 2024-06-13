@@ -252,7 +252,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                 "Home Food = Soul Food",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .headline5!
+                                    .titleMedium!
                                     .copyWith(
                                       color: kPrimaryColor,
                                       fontWeight: FontWeight.bold,
@@ -544,7 +544,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                           "Select from existing contacts",
                           style: Theme.of(context)
                               .textTheme
-                              .caption!
+                              .bodySmall!
                               .copyWith(color: kBlackColor),
                         ),
                         if (senderUser.isNotEmpty && senderPhone.isNotEmpty ||
@@ -588,7 +588,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                             child: Text(
                               "Save Contact",
                               style:
-                                  Theme.of(context).textTheme.caption!.copyWith(
+                                  Theme.of(context).textTheme.bodySmall!.copyWith(
                                         color: kSecondaryColor,
                                       ),
                             ),
@@ -674,7 +674,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                                 .toUpperCase(),
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .caption!
+                                                .bodySmall!
                                                 .copyWith(
                                                   color: kBlackColor,
                                                   fontWeight: FontWeight.w500,
@@ -684,7 +684,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                             _homeContact!.list![index].name!,
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .button!
+                                                .labelLarge!
                                                 .copyWith(
                                                   color: kBlackColor,
                                                   fontWeight: FontWeight.bold,
@@ -709,7 +709,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                           ),
                           Text(
                             "Double tap to remove...",
-                            style: Theme.of(context).textTheme.overline,
+                            style: Theme.of(context).textTheme.labelSmall,
                           ),
                         ],
                       ),
@@ -742,7 +742,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                           "Schedule Order?",
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText1!
+                              .bodyLarge!
                               .copyWith(fontWeight: FontWeight.bold),
                         ),
                         GestureDetector(

@@ -99,8 +99,7 @@ class _ChapaScreenState extends State<ChapaScreen> {
       body: InAppWebView(
         initialOptions: options,
         initialUrlRequest: URLRequest(
-          url: Uri.parse(initUrl
-          ),
+          url: WebUri.uri(Uri.parse(initUrl)),
         ),
       ),
       // withZoom: true,

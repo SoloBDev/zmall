@@ -435,7 +435,7 @@ class BodyState extends State<Body> {
                                               .toUpperCase(),
                                           style: Theme.of(context)
                                               .textTheme
-                                              .caption
+                                              .bodySmall
                                               ?.copyWith(
                                                 fontWeight: (selectedTagFilters
                                                         .contains(

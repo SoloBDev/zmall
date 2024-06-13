@@ -30,7 +30,7 @@ class CustomButton extends StatelessWidget {
         ),
         child: Text(
           title.toUpperCase(),
-          style: Theme.of(context).textTheme.button?.copyWith(
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: kPrimaryColor,
                 fontWeight: FontWeight.bold,
               ),

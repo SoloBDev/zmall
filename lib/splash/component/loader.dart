@@ -42,7 +42,7 @@ class Loader extends StatelessWidget {
                 "Loading...",
                 style: Theme.of(context)
                     .textTheme
-                    .caption!
+                    .bodySmall!
                     .copyWith(color: kBlackColor),
               )
             ],
@@ -112,7 +112,7 @@ class Loader extends StatelessWidget {
     //             "Loading...",
     //             style: Theme.of(context)
     //                 .textTheme
-    //                 .caption!
+    //                 .bodySmall!
     //                 .copyWith(color: kBlackColor),
     //           )
     //         ],

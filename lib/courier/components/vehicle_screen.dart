@@ -215,7 +215,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             "All our vehicles are busy to complete this order.\nPlease try again later...",
                             textAlign: TextAlign.center,
                             style:
-                                Theme.of(context).textTheme.caption?.copyWith(),
+                                Theme.of(context).textTheme.bodySmall?.copyWith(),
                           ),
                         ),
               SectionTitle(
@@ -302,7 +302,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 "No",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(
                                       fontWeight: !isRoundTrip
                                           ? FontWeight.bold
@@ -371,7 +371,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 "Yes",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(
                                       fontWeight: isRoundTrip
                                           ? FontWeight.bold
@@ -540,7 +540,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 "Sender",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(
                                       fontWeight: paidBySender
                                           ? FontWeight.bold
@@ -609,7 +609,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 "Receiver",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle1
+                                    .titleMedium
                                     ?.copyWith(
                                       fontWeight: !paidBySender
                                           ? FontWeight.bold

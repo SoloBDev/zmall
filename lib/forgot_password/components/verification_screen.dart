@@ -57,7 +57,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               "An OTP (verification code) has been sent to your phone number. Please enter the code correctly and press 'verify'!",
               style: Theme.of(context)
                   .textTheme
-                  .subtitle1
+                  .titleMedium
                   ?.copyWith(color: kGreyColor),
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),

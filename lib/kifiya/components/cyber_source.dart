@@ -44,7 +44,7 @@ class _CyberSourceState extends State<CyberSource> {
         body: InAppWebView(
           initialOptions: options,
           initialUrlRequest: URLRequest(
-            url: Uri.parse(widget.url),
+            url: WebUri.uri(Uri.parse(widget.url)),
           ),
         )
 

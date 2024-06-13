@@ -103,7 +103,7 @@ class _AmoleScreenState extends State<AmoleScreen> {
                   children: [
                     Text(
                       "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Amole",
-                      style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),

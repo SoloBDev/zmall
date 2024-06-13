@@ -105,7 +105,7 @@ class _OrderRatingState extends State<OrderRating> {
                               kDefaultPadding / 2)),
                       Text(
                         widget.name!,
-                        style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: kBlackColor,
                               fontWeight: FontWeight.bold,
                             ),

@@ -47,7 +47,7 @@ class ReferralScreen extends StatelessWidget {
                     ),
                     Text(
                       "Refer now and earn up to ETB 50.",
-                      style: Theme.of(context).textTheme.headline6?.copyWith(
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                       textAlign: TextAlign.center,
@@ -57,13 +57,13 @@ class ReferralScreen extends StatelessWidget {
                     Text(
                       "Send a referral link to your friends and family via SMS / Email / Whatsapp",
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.caption,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     SizedBox(
                         height: getProportionateScreenHeight(kDefaultPadding)),
                     Text(
                       "REFERRAL CODE",
-                      style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                           ),
                     ),
@@ -87,7 +87,7 @@ class ReferralScreen extends StatelessWidget {
                         child: Text(
                           referralCode,
                           style:
-                              Theme.of(context).textTheme.headline6?.copyWith(
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontStyle: FontStyle.italic,
                                   ),

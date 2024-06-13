@@ -157,7 +157,7 @@ class SubscribeContainer extends StatelessWidget {
                     title!,
                     style: Theme.of(context)
                         .textTheme
-                        .subtitle1
+                        .titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   SizedBox(
@@ -165,7 +165,7 @@ class SubscribeContainer extends StatelessWidget {
                   ),
                   Text(
                     caption!,
-                    style: Theme.of(context).textTheme.caption!.copyWith(),
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(),
                     textAlign: TextAlign.justify,
                   ),
                   SizedBox(

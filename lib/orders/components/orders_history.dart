@@ -130,7 +130,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                       ['store_detail']['name'],
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyText1
+                                      .bodyLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: responseData['order_list'][index]
@@ -148,7 +148,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                   "Order No. #${responseData['order_list'][index]['unique_id']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -160,7 +160,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                   "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0]}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: kGreyColor,
                                       ),
@@ -176,7 +176,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                       : "${order_status['${responseData['order_list'][index]['order_status']}']}",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .caption
+                                      .bodySmall
                                       ?.copyWith(
                                         color: responseData['order_list'][index]
                                                     ['order_status'] ==
@@ -195,7 +195,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                                 "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list'][index]['total'].toStringAsFixed(2)}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .subtitle2
+                                    .titleSmall
                                     ?.copyWith(
                                       color: responseData['order_list'][index]
                                                   ['total'] ==
@@ -234,7 +234,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                               kDefaultPadding / 3)),
                       Text(
                         "Orders not found",
-                        style: Theme.of(context).textTheme.headline6?.copyWith(
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                       )

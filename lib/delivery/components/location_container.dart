@@ -57,7 +57,7 @@ class LocationContainer extends StatelessWidget {
                   children: [
                     Text(
                       note!,
-                      style: Theme.of(context).textTheme.subtitle1?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: isSelected ? kBlackColor : kGreyColor,
                             fontWeight:
                                 isSelected ? FontWeight.w500 : FontWeight.w200,
@@ -65,7 +65,7 @@ class LocationContainer extends StatelessWidget {
                     ),
                     Text(
                       title ?? "Location",
-                      style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight:
                                 isSelected ? FontWeight.w700 : FontWeight.w500,
                           ),

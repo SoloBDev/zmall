@@ -457,7 +457,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                           : "ብር ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headline5
+                                          .headlineSmall
                                           ?.copyWith(
                                               fontWeight: FontWeight.bold),
                                     ),
@@ -498,7 +498,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                       "Apply Promo Code",
                                                       style: Theme.of(context)
                                                           .textTheme
-                                                          .headline5
+                                                          .headlineSmall
                                                           ?.copyWith(
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -617,7 +617,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
 //                                                     "Apply Promo Code",
 //                                                     style: Theme.of(context)
 //                                                         .textTheme
-//                                                         .headline5
+//                                                         .headlineSmall
 //                                                         .copyWith(
 //                                                           fontWeight:
 //                                                               FontWeight.bold,
@@ -722,7 +722,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                       "Apply Promo Code",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .subtitle1
+                                          .titleMedium
                                           ?.copyWith(
                                             color: kSecondaryColor,
                                             decoration: TextDecoration.underline,
@@ -988,7 +988,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                               .addTip,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .subtitle1
+                                              .titleMedium
                                               ?.copyWith(
                                             color: kSecondaryColor,
                                             decoration:

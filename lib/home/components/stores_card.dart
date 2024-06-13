@@ -100,7 +100,7 @@ class StoresCard extends StatelessWidget {
                                 kDefaultPadding / 5)),
                         child: Text(
                           storeName,
-                          style: Theme.of(context).textTheme.button?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w900,
                             color: kBlackColor,
                           ),
@@ -110,7 +110,7 @@ class StoresCard extends StatelessWidget {
 
                       Text(
                         deliveryType,
-                        style: Theme.of(context).textTheme.caption?.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: kBlackColor,
                         ),
@@ -121,7 +121,7 @@ class StoresCard extends StatelessWidget {
                           Icon(Icons.star_rounded, color: Colors.amber, size: getProportionateScreenWidth(kDefaultPadding),),
                           SizedBox(width: 5,),
                           Text("$rating ($ratingCount)", style:
-                          Theme.of(context).textTheme.caption?.copyWith(
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
 
                             fontWeight: FontWeight.w500,
                             color: kGreyColor,
@@ -133,7 +133,7 @@ class StoresCard extends StatelessWidget {
                           Text(
                             "$distance KM",
                             style:
-                            Theme.of(context).textTheme.caption?.copyWith(
+                            Theme.of(context).textTheme.bodySmall?.copyWith(
 
                               fontWeight: FontWeight.w500,
                               color: kGreyColor,

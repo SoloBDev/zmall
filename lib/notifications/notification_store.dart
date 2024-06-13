@@ -297,7 +297,7 @@ class _NotificationStoreState extends State<NotificationStore> {
                           title: Text(
                             "${products[index]["_id"]["name"]}",
                             style:
-                                Theme.of(context).textTheme.headline6?.copyWith(
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
                           ),
@@ -390,7 +390,7 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color:
                                                                         kGreyColor,
@@ -401,7 +401,7 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                     "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                     style: Theme.of(context)
                                                         .textTheme
-                                                        .button
+                                                        .labelLarge
                                                         ?.copyWith(
                                                           color: kBlackColor,
                                                         ),
@@ -632,7 +632,7 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
-                                                                  .caption
+                                                                  .bodySmall
                                                                   ?.copyWith(
                                                                     color:
                                                                         kPrimaryColor,
