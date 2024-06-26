@@ -292,9 +292,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        storeName ?? "",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          storeName ?? "",
+                          softWrap: true,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -781,183 +784,195 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   Widget showExtraItems() {
     bool isNull = extraItems.every((extraItem) => cart!.items!
         .any((cartItem) => cartItem.toJson()['_id'] == extraItem['_id']));
-    return 
-     isNull ? SizedBox.shrink():
-    Column(
-      children: [
-        Text(
-          'Perfect Paring for Your Order!',
-        ),
-        const SizedBox(height: kDefaultPadding),
-        Container(
-          height: getProportionateScreenHeight(kDefaultPadding * 8),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(kDefaultPadding)),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: extraItems.length,
-            itemBuilder: (context, index) {
-              bool isAppear = cart!.items!.any((element) =>
-                  element.toJson()['_id'] == extraItems[index]['_id']);
+    return isNull
+        ? SizedBox.shrink()
+        : Column(
+            children: [
+              Text(
+                'Perfect Paring for Your Order!',
+              ),
+              const SizedBox(height: kDefaultPadding),
+              Container(
+                height: getProportionateScreenHeight(kDefaultPadding * 8),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(kDefaultPadding)),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: extraItems.length,
+                  itemBuilder: (context, index) {
+                    bool isAppear = cart!.items!.any((element) =>
+                        element.toJson()['_id'] == extraItems[index]['_id']);
 
-              return isAppear
-                  ? SizedBox.shrink()
-                  : Column(
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl:
-                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
-                          imageBuilder: (context, imageProvider) => Container(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 3),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
-                            decoration: BoxDecoration(
-                              color: kWhiteColor,
-                              borderRadius: BorderRadius.circular(
-                                  getProportionateScreenHeight(
-                                      kDefaultPadding)),
-                              image: DecorationImage(
-                                fit: BoxFit.contain,
-                                image: imageProvider,
+                    return isAppear
+                        ? SizedBox.shrink()
+                        : Column(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl:
+                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
+                                imageBuilder: (context, imageProvider) =>
+                                    Container(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding * 3),
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding * 3),
+                                  decoration: BoxDecoration(
+                                    color: kWhiteColor,
+                                    borderRadius: BorderRadius.circular(
+                                        getProportionateScreenHeight(
+                                            kDefaultPadding)),
+                                    image: DecorationImage(
+                                      fit: BoxFit.contain,
+                                      image: imageProvider,
+                                    ),
+                                  ),
+                                ),
+                                placeholder: (context, url) => Center(
+                                  child: Container(
+                                    width: getProportionateScreenWidth(
+                                        kDefaultPadding * 3),
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding * 3),
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          kWhiteColor),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding * 3),
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding * 3),
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      fit: BoxFit.contain,
+                                      image: AssetImage(zmallLogo),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          placeholder: (context, url) => Center(
-                            child: Container(
-                              width: getProportionateScreenWidth(
-                                  kDefaultPadding * 3),
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding * 3),
-                              child: CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(kWhiteColor),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 3),
                               ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 3),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                fit: BoxFit.contain,
-                                image: AssetImage(zmallLogo),
+                              Text(
+                                extraItems[index]['name'],
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(
+                                      kDefaultPadding * 0.9),
+                                  color: kBlackColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                softWrap: true,
                               ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding / 3),
-                        ),
-                        Text(
-                          extraItems[index]['name'],
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.9),
-                            color: kBlackColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          softWrap: true,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 5)),
-                        Text(
-                          "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: kBlackColor,
-                              ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            // Add to cart.....
-
-                            print('id... ${extraItems[index]['_id']}');
-                            Item item = Item(
-                              id: extraItems[index]['_id'],
-                              quantity: 1,
-                              specification: [],
-                              noteForItem: "",
-                              price: _getPrice(extraItems[index]) != null
-                                  ? double.parse(
-                                      _getPrice(extraItems[index]),
-                                    )
-                                  : 0,
-                              itemName: extraItems[index]['name'],
-                              imageURL: extraItems[index]['image_url'].length >
-                                      0
-                                  ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
-                                  : "https://ibb.co/vkhzjd6",
-                            );
-                            print('item... $item');
-                            StoreLocation storeLocation = StoreLocation(
-                                long: storeLocations[1],
-                                lat: storeLocations[0]);
-                            print('sLocation... $storeLocation');
-                            DestinationAddress destination = DestinationAddress(
-                              long:
-                                  Provider.of<ZMetaData>(context, listen: false)
-                                      .longitude,
-                              lat:
-                                  Provider.of<ZMetaData>(context, listen: false)
-                                      .latitude,
-                              name: "Current Location",
-                              note: "User current location",
-                            );
-                            print('DestinationAddress... $destination');
-                            if (cart != null && userData != null) {
-                              if (cart!.storeId! ==
-                                  extraItems[index]['store_id']) {
-                                setState(() {
-                                  cart!.items!.add(item);
-                                  Service.save('cart', cart)
-                                      .then((value) => calculatePrice())
-                                      .then((value) =>
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(Service.showMessage(
-                                                  "Item added to cart", false)))
-                                      .then((value) => setState(() {}));
-                                });
-                              } else {
-                                _showDialog(item, destination, storeLocation,
-                                    extraItems[index]['store_id']);
-                              }
-                            }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: kBlackColor,
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 4),
-                              ),
-                              child: Text(
-                                "${Provider.of<ZLanguage>(context).addToCart}",
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding / 5)),
+                              Text(
+                                "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodySmall
+                                    .labelLarge
                                     ?.copyWith(
-                                      color: kPrimaryColor,
+                                      color: kBlackColor,
                                     ),
                               ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-            },
-            separatorBuilder: (BuildContext context, int index) => SizedBox(
-              width: getProportionateScreenWidth(kDefaultPadding / 2),
-            ),
-          ),
-        ),
-      ],
-    );
+                              GestureDetector(
+                                onTap: () async {
+                                  // Add to cart.....
+
+                                  print('id... ${extraItems[index]['_id']}');
+                                  Item item = Item(
+                                    id: extraItems[index]['_id'],
+                                    quantity: 1,
+                                    specification: [],
+                                    noteForItem: "",
+                                    price: _getPrice(extraItems[index]) != null
+                                        ? double.parse(
+                                            _getPrice(extraItems[index]),
+                                          )
+                                        : 0,
+                                    itemName: extraItems[index]['name'],
+                                    imageURL: extraItems[index]['image_url']
+                                                .length >
+                                            0
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
+                                        : "https://ibb.co/vkhzjd6",
+                                  );
+                                  print('item... $item');
+                                  StoreLocation storeLocation = StoreLocation(
+                                      long: storeLocations[1],
+                                      lat: storeLocations[0]);
+                                  print('sLocation... $storeLocation');
+                                  DestinationAddress destination =
+                                      DestinationAddress(
+                                    long: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .longitude,
+                                    lat: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .latitude,
+                                    name: "Current Location",
+                                    note: "User current location",
+                                  );
+                                  print('DestinationAddress... $destination');
+                                  if (cart != null && userData != null) {
+                                    if (cart!.storeId! ==
+                                        extraItems[index]['store_id']) {
+                                      setState(() {
+                                        cart!.items!.add(item);
+                                        Service.save('cart', cart)
+                                            .then((value) => calculatePrice())
+                                            .then((value) => ScaffoldMessenger
+                                                    .of(context)
+                                                .showSnackBar(
+                                                    Service.showMessage(
+                                                        "Item added to cart",
+                                                        false)))
+                                            .then((value) => setState(() {}));
+                                      });
+                                    } else {
+                                      _showDialog(
+                                          item,
+                                          destination,
+                                          storeLocation,
+                                          extraItems[index]['store_id']);
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: kBlackColor,
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(
+                                      getProportionateScreenWidth(
+                                          kDefaultPadding / 4),
+                                    ),
+                                    child: Text(
+                                      "${Provider.of<ZLanguage>(context).addToCart}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: kPrimaryColor,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      SizedBox(
+                    width: getProportionateScreenWidth(kDefaultPadding / 2),
+                  ),
+                ),
+              ),
+            ],
+          );
   }
 }
 

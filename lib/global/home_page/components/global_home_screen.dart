@@ -120,7 +120,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     checkAbroad();
   }
 
-
   Future<dynamic> getCategoryList(double longitude, double latitude,
       String countryCode, String countryName) async {
     var url =
@@ -227,7 +226,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
 
   void getUser() async {
     var data = await Service.read('abroad_user');
-
 
     getAbroadUser();
   }
@@ -337,7 +335,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       );
     }
   }
-
 
   void _getAppKeys() async {
     var data = await CoreServices.appKeys(context);
@@ -452,10 +449,12 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                             abroadData != null
                                 ? "Welcome, ${abroadData!.abroadName}"
                                 : "Welcome to ZMall Global",
-                            style:
-                                Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                         ),
                       ),
@@ -528,7 +527,10 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                             storeName: promotionalItems[
                                                     'promotional_items'][index]
                                                 ['store_name'],
-                                            storePress: (){},
+                                            specialOffer: promotionalItems[
+                                                    'promotional_items'][index]
+                                                ['special_offer'],
+                                            storePress: () {},
                                             press: () async {
                                               // bool isOp = await storeOpen(
                                               //     promotionalItems[
@@ -597,7 +599,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                           ],
                         ),
                       ),
-
                       SizedBox(
                         height:
                             getProportionateScreenHeight(kDefaultPadding / 2),

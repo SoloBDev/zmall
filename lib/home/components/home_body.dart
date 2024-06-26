@@ -19,6 +19,7 @@ import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/core_services.dart';
 import 'package:zmall/courier/courier_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
+import 'package:zmall/kifiya/components/event_santim.dart';
 import 'package:zmall/events/events_screen.dart';
 import 'package:zmall/home/components/custom_banner.dart';
 import 'package:zmall/home/components/offer_card.dart';
@@ -80,7 +81,7 @@ class _HomeBodyState extends State<HomeBody> {
   DateTime predictStart = DateTime(2023, 08, 6);
   DateTime predictEnd = DateTime(2025, 06, 30);
   DateTime euroPredictStart = DateTime(2024, 06, 10);
-  DateTime euroPredictEnd = DateTime(2024, 07, 15);
+  DateTime euroPredictEnd = DateTime(2024, 07, 20);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   LocationPermission _permissionStatus = LocationPermission.denied;
@@ -169,8 +170,7 @@ class _HomeBodyState extends State<HomeBody> {
                     TextButton(
                       onPressed: () {
                         _startTimer();
-                        print(
-                            '*** User order status  ${userLastOrder['order_status']}*** Order from  ***${orderFrom}*** to ***${orderTo}***');
+                        //print('*** User order status  ${userLastOrder['order_status']}*** Order from  ***${orderFrom}*** to ***${orderTo}***');
 
                         Navigator.of(context).pop();
                       },
@@ -206,7 +206,6 @@ class _HomeBodyState extends State<HomeBody> {
             userLastOrder['destination_addresses'][0]['user_details']['name'];
         _startTimer();
       });
-      print('data $data');
     } else {
       setState(() {
         _loading = false;
@@ -303,7 +302,6 @@ class _HomeBodyState extends State<HomeBody> {
       if (value != null && userData != null) {
         setState(() {
           deviceToken = value;
-          // print("Device Token : $deviceToken");
           userData['user']['device_token'] = deviceToken;
           Service.save('user', userData);
         });
@@ -336,6 +334,7 @@ class _HomeBodyState extends State<HomeBody> {
       _loading = false;
     });
     var data = await CoreServices.getUserDetail(userId, serverToken, context);
+
     if (data != null && data['success']) {
       setState(() {
         _loading = false;
@@ -976,7 +975,7 @@ class _HomeBodyState extends State<HomeBody> {
             ),
             Text(
               "D E L I V E R Y",
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.caption,
             ),
           ],
         ),
@@ -1161,7 +1160,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                 .nextOrderCashback,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .titleSmall
+                                        .subtitle2
                                         ?.copyWith(color: kBlackColor),
                                   )
                                 : Container(),
@@ -1188,7 +1187,7 @@ class _HomeBodyState extends State<HomeBody> {
                                       "$orderCount/${quotient + 1}0",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodySmall
+                                          .caption
                                           ?.copyWith(
                                             fontWeight: FontWeight.w600,
                                             color: kPrimaryColor,
@@ -1281,6 +1280,9 @@ class _HomeBodyState extends State<HomeBody> {
                                                 storeName: promotionalItems[
                                                         'promotional_items']
                                                     [index]['store_name'],
+                                                specialOffer: promotionalItems[
+                                                        'promotional_items']
+                                                    [index]['special_offer'],
                                                 storePress: () async {
                                                   bool isOp = await storeOpen(
                                                       promotionalItems[
@@ -1770,7 +1772,7 @@ class _HomeBodyState extends State<HomeBody> {
                                           maxLines: 1,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .bodySmall
+                                              .caption
                                               ?.copyWith(
                                                 color: kBlackColor,
                                                 fontWeight: FontWeight.w600,
@@ -2041,7 +2043,7 @@ class _HomeBodyState extends State<HomeBody> {
                                       DateTime.now().isBefore(euroPredictEnd) &&
                                               DateTime.now()
                                                   .isAfter(euroPredictStart)
-                                          ? 'images/pl_logos/banner.png'
+                                          ? 'images/flags/game_banner.png'
                                           : 'images/predict_pl.png',
                                   title: "Predict & Win",
                                   subtitle: "",

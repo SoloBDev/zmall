@@ -11,6 +11,7 @@ class SpecialOfferCard extends StatelessWidget {
     Key? key,
     required this.imageUrl,
     required this.itemName,
+    required this.specialOffer,
     required this.isDiscounted,
     required this.newPrice,
     required this.originalPrice,
@@ -21,6 +22,7 @@ class SpecialOfferCard extends StatelessWidget {
 
   final String imageUrl;
   final String itemName;
+  final String specialOffer;
   final bool isDiscounted;
   final String newPrice;
   final String originalPrice;
@@ -97,7 +99,7 @@ class SpecialOfferCard extends StatelessWidget {
                                 kDefaultPadding / 5)),
                         child: Text(
                           itemName,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          style: Theme.of(context).textTheme.button?.copyWith(
                                 fontWeight: FontWeight.w900,
                                 color: kBlackColor,
                               ),
@@ -110,7 +112,7 @@ class SpecialOfferCard extends StatelessWidget {
                             Text(
                               "$originalPrice",
                               style:
-                                  Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  Theme.of(context).textTheme.caption?.copyWith(
                                         decoration: TextDecoration.lineThrough,
                                         fontWeight: FontWeight.w500,
                                         color: kGreyColor,
@@ -123,7 +125,7 @@ class SpecialOfferCard extends StatelessWidget {
                           Text(
                             newPrice,
                             style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                Theme.of(context).textTheme.caption?.copyWith(
                                       color: kBlackColor,
                                       fontWeight: FontWeight.w900,
                                     ),
@@ -131,7 +133,7 @@ class SpecialOfferCard extends StatelessWidget {
                           Text(
                             "${Provider.of<ZMetaData>(context, listen: false).currency}",
                             style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                Theme.of(context).textTheme.caption?.copyWith(
                                       color: kBlackColor,
                                     ),
                           ),
@@ -141,7 +143,7 @@ class SpecialOfferCard extends StatelessWidget {
                         onTap: storePress,
                         child: Text(
                           storeName,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.caption?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: kSecondaryColor.withOpacity(0.7),
                                 // decoration: TextDecoration.underline,
@@ -154,7 +156,7 @@ class SpecialOfferCard extends StatelessWidget {
                 )
               ],
             ),
-            isDiscounted
+            isDiscounted || specialOffer.isNotEmpty
                 ? Align(
                     alignment: Alignment.topRight,
                     child: Container(
@@ -163,29 +165,18 @@ class SpecialOfferCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: kDefaultPadding / 2),
                         child: Text(
-                          "${(100.00 - (double.parse(newPrice) / double.parse(originalPrice) * 100)).toStringAsFixed(0)}% ${Provider.of<ZLanguage>(context, listen: true).discount}",
+                          specialOffer.isNotEmpty
+                              ? specialOffer
+                              : "${(100.00 - (double.parse(newPrice) / double.parse(originalPrice) * 100)).toStringAsFixed(0)}% ${Provider.of<ZLanguage>(context, listen: true).discount}",
                           style: Theme.of(context)
                               .textTheme
-                              .bodySmall
+                              .caption
                               ?.copyWith(color: kPrimaryColor),
                         ),
                       ),
                     ),
                   )
                 : Container(),
-            // isDiscounted
-            //     ? Positioned(
-            //         right: 0,
-            //         child: Container(
-            //           height: getProportionateScreenWidth(kDefaultPadding * 3),
-            //           width: getProportionateScreenWidth(kDefaultPadding * 3),
-            //           //
-            //           child: Center(
-            //               child:
-            //                   Image.asset("images/store_tags/$featuredTag.png")),
-            //         ),
-            //       )
-            //     : Container(),
           ],
         ),
       ),

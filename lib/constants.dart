@@ -7,12 +7,12 @@ import 'package:encrypt/encrypt.dart' as Encrypt;
 
 //
 //const BASE_URL = "https://tele.zmallapp.com";
-//const BASE_URL = "https://app.zmallapp.com";
-//const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
+const BASE_URL = "https://app.zmallapp.com";
+const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 //const BASE_URL_JUBA = "http://196.189.124.241:8000"; //Juba Production
 
-const BASE_URL = "https://test.zmallapp.com"; //test
-const BASE_URL_JUBA = "http://167.172.180.220:7000"; //test
+//const BASE_URL = "https://test.zmallapp.com"; //test
+//const BASE_URL_JUBA = "http://167.172.180.220:7000"; //test
 
 const kPrimaryColor = Colors.white;
 const kWhiteColor = Color(0xFFF3F4F8);

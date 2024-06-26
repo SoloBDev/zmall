@@ -376,9 +376,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       ),
                                     ),
                                     style: ButtonStyle(
-                                      elevation: WidgetStateProperty.all(1.0),
+                                      elevation: MaterialStateProperty.all(1.0),
                                       backgroundColor:
-                                          WidgetStateProperty.all(
+                                          MaterialStateProperty.all(
                                               kPrimaryColor),
                                     ),
                                     onPressed: () async {

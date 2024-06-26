@@ -68,50 +68,47 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
   Widget build(BuildContext context) {
     return _loading
         ? Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
-        leading: TextButton(
-          child: Text("Done"),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Center(
-        child: SpinKitWave(
-          color: kSecondaryColor,
-          size: getProportionateScreenWidth(kDefaultPadding),
-        ),
-      ),
-    )
+            appBar: AppBar(
+              title: Text(
+                widget.title,
+                style: TextStyle(color: kBlackColor),
+              ),
+              leading: TextButton(
+                child: Text("Done"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: Center(
+              child: SpinKitWave(
+                color: kSecondaryColor,
+                size: getProportionateScreenWidth(kDefaultPadding),
+              ),
+            ),
+          )
         : Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
-        leading: TextButton(
-          child: Text("Done"),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: InAppWebView(
-        initialOptions: options,
-        initialUrlRequest: URLRequest(
-          url: WebUri.uri(Uri.parse(initUrl)
-          ),
-        ),
-      ),
-      // withZoom: true,
-      // displayZoomControls: true,
-      // initialChild: Container(
-      //   color: kPrimaryColor,
-      //   child: const Center(
-      //     child: Text('Waiting.....'),
-      //   ),
-      // ),
-    );
+            appBar: AppBar(
+              title: Text(
+                widget.title,
+                style: TextStyle(color: kBlackColor),
+              ),
+              leading: TextButton(
+                child: Text("Done"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: InAppWebView(
+              initialOptions: options,
+              initialUrlRequest: URLRequest(url: Uri.parse(initUrl)),
+            ),
+            // withZoom: true,
+            // displayZoomControls: true,
+            // initialChild: Container(
+            //   color: kPrimaryColor,
+            //   child: const Center(
+            //     child: Text('Waiting.....'),
+            //   ),
+            // ),
+          );
   }
 
   Future<dynamic> initiateUrl() async {
@@ -121,7 +118,7 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
     var url = widget.url;
 
     Map data = {
-      "trace_no":  widget.traceNo,
+      "trace_no": widget.traceNo,
       "amount": widget.hisab * 100,
       "description": "ZMall Delivery Order Payment",
       "issued_to": "0${widget.phone}",

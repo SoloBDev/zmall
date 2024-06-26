@@ -12,6 +12,7 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/events/components/description_row.dart';
 import 'package:zmall/events/components/ticket_order_payment.dart';
+import 'package:zmall/kifiya/components/event_santim.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
@@ -258,7 +259,7 @@ class _EventsScreenState extends State<EventsScreen> {
                             ),
                           ),
                           Container(
-                            height: size.height * 0.50,
+                            height: size.height * 0.45,
                             padding: EdgeInsets.symmetric(
                               vertical: getProportionateScreenHeight(
                                   kDefaultPadding / 2),
@@ -285,420 +286,475 @@ class _EventsScreenState extends State<EventsScreen> {
                                 ),
                               ),
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                ),
-                                Row(
-                                  children: [
-                                    if (events[index]['is_featured'] != null &&
-                                        events[index]['is_featured'])
-                                      Icon(
-                                        Icons.verified,
-                                        color: kSecondaryColor,
-                                        size: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                    if (events[index]['is_featured'] != null &&
-                                        events[index]['is_featured'])
-                                      SizedBox(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
-                                      ),
-                                    Expanded(
-                                      child: Text(
-                                        events[index]['name']
-                                            .toString()
-                                            .toUpperCase(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall
-                                            ?.copyWith(
-                                              color: kSecondaryColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 4),
-                                ),
-                                Text(
-                                  events[index]['description'].toString(),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color: kBlackColor,
-                                      ),
-                                  textAlign: TextAlign.left,
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                ),
-                                DescriptionRow(
-                                    title: events[index]['organization_detail']
-                                        ['name'],
-                                    iconData: Icons.perm_identity),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                ),
-                                DescriptionRow(
-                                    title: events[index]['address'],
-                                    iconData: FontAwesomeIcons.mapPin),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                ),
-                                DescriptionRow(
-                                  title: events[index]['start_date']
-                                      .toString()
-                                      .split("T")[0],
-                                  iconData: FontAwesomeIcons.calendar,
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                ),
-                                DescriptionRow(
-                                  title: events[index]['event_tags'],
-                                  iconData: FontAwesomeIcons.tag,
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                ),
-                                Container(
-                                  width: kDefaultPadding * 10,
-                                  child: CustomButton(
-                                    title: ticketPrices[index] > 0
-                                        ? "From ETB ${ticketPrices[index].toStringAsFixed(2)}"
-                                        : "Free",
-                                    press: () {
-                                      // setState(() {
-                                      //   isSelected = -1;
-                                      //   selectedPrice = 0.0;
-                                      //   quantity = 1;
-                                      //   selectedTicketId = "";
-                                      //   updatePrice();
-                                      // });
-                                      // showModalBottomSheet<void>(
-                                      //   isScrollControlled: true,
-                                      //   context: context,
-                                      //   shape: RoundedRectangleBorder(
-                                      //     borderRadius: BorderRadius.only(
-                                      //       topLeft: Radius.circular(30.0),
-                                      //       topRight: Radius.circular(30.0),
-                                      //     ),
-                                      //   ),
-                                      //   builder: (BuildContext context) {
-                                      //     return StatefulBuilder(builder:
-                                      //         (BuildContext context,
-                                      //             StateSetter setState) {
-                                      //       return DraggableScrollableSheet(
-                                      //           expand: false,
-                                      //           builder: (BuildContext context,
-                                      //               ScrollController
-                                      //                   scrollController) {
-                                      //             return Padding(
-                                      //               padding: EdgeInsets.all(
-                                      //                   getProportionateScreenHeight(
-                                      //                       kDefaultPadding)),
-                                      //               child: Column(
-                                      //                   crossAxisAlignment:
-                                      //                       CrossAxisAlignment
-                                      //                           .start,
-                                      //                   children: <Widget>[
-                                      //                     Text(
-                                      //                       "Buy Ticket",
-                                      //                       style: Theme.of(
-                                      //                               context)
-                                      //                           .textTheme
-                                      //                           .headline5!
-                                      //                           .copyWith(
-                                      //                             fontWeight:
-                                      //                                 FontWeight
-                                      //                                     .bold,
-                                      //                           ),
-                                      //                     ),
-                                      //                     Container(
-                                      //                       height: getProportionateScreenHeight(
-                                      //                           kDefaultPadding),
-                                      //                     ),
-                                      //                     Expanded(
-                                      //                       child: ListView
-                                      //                           .builder(
-                                      //                               controller:
-                                      //                                   scrollController,
-                                      //                               itemCount: events[index]
-                                      //                                       [
-                                      //                                       'ticket_types']
-                                      //                                   .length,
-                                      //                               itemBuilder:
-                                      //                                   (context,
-                                      //                                       idx) {
-                                      //                                 return GestureDetector(
-                                      //                                   onTap:
-                                      //                                       () {
-                                      //                                     setState(
-                                      //                                         () {
-                                      //                                       isSelected =
-                                      //                                           idx;
-                                      //                                       selectedPrice =
-                                      //                                           int.parse(events[index]['ticket_types'][idx]['ticket_price'].toString()).toDouble();
-                                      //                                       selectedTicketId =
-                                      //                                           events[index]['ticket_types'][idx]['_id'];
-                                      //                                       updatePrice();
-                                      //                                     });
-                                      //                                   },
-                                      //                                   child:
-                                      //                                       Container(
-                                      //                                     margin:
-                                      //                                         EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
-                                      //                                     padding:
-                                      //                                         EdgeInsets.all(kDefaultPadding / 2),
-                                      //                                     decoration:
-                                      //                                         BoxDecoration(
-                                      //                                       color: isSelected == idx
-                                      //                                           ? kSecondaryColor.withOpacity(0.8)
-                                      //                                           : kPrimaryColor,
-                                      //                                       borderRadius:
-                                      //                                           BorderRadius.circular(kDefaultPadding / 2),
-                                      //                                       border:
-                                      //                                           Border.all(),
-                                      //                                     ),
-                                      //                                     child:
-                                      //                                         Row(
-                                      //                                       mainAxisAlignment:
-                                      //                                           MainAxisAlignment.spaceBetween,
-                                      //                                       children: [
-                                      //                                         Column(
-                                      //                                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      //                                           crossAxisAlignment: CrossAxisAlignment.start,
-                                      //                                           children: [
-                                      //                                             Text("ETB ${events[index]['ticket_types'][idx]['ticket_price']}",
-                                      //                                                 style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                      //                                                       color: kBlackColor,
-                                      //                                                       fontWeight: FontWeight.bold,
-                                      //                                                     ),
-                                      //                                                 textAlign: TextAlign.center),
-                                      //                                             Text(
-                                      //                                               events[index]['ticket_types'][idx]['ticket_name'],
-                                      //                                               style: TextStyle(
-                                      //                                                 color: kBlackColor,
-                                      //                                                 fontWeight: FontWeight.w500,
-                                      //                                               ),
-                                      //                                               textAlign: TextAlign.center,
-                                      //                                             ),
-                                      //                                             Text(
-                                      //                                               events[index]['ticket_types'][idx]['description'],
-                                      //                                               style: Theme.of(context).textTheme.caption,
-                                      //                                               textAlign: TextAlign.center,
-                                      //                                             ),
-                                      //                                           ],
-                                      //                                         ),
-                                      //                                         Container(
-                                      //                                           height: kDefaultPadding,
-                                      //                                           width: getProportionateScreenWidth(kDefaultPadding / 2),
-                                      //                                           decoration: BoxDecoration(
-                                      //                                             color: isSelected == idx ? kSecondaryColor : kPrimaryColor,
-                                      //                                             shape: BoxShape.circle,
-                                      //                                             border: Border.all(width: 1, color: isSelected == idx ? kGreyColor : kBlackColor),
-                                      //                                           ),
-                                      //                                         ),
-                                      //                                       ],
-                                      //                                     ),
-                                      //                                   ),
-                                      //                                 );
-                                      //                               }),
-                                      //                     ),
-                                      //                     Container(
-                                      //                       height: getProportionateScreenHeight(
-                                      //                           kDefaultPadding),
-                                      //                     ),
-                                      //                     Row(
-                                      //                       children: [
-                                      //                         Expanded(
-                                      //                             child:
-                                      //                                 CustomButton(
-                                      //                           title:
-                                      //                               "Purchase for $purchasePrice",
-                                      //                           color: purchasePrice >
-                                      //                                   0
-                                      //                               ? kSecondaryColor
-                                      //                               : kGreyColor,
-                                      //                           press: () {
-                                      //                             if (userData !=
-                                      //                                 null) {
-                                      //                               if (selectedTicketId
-                                      //                                   .isNotEmpty) {
-                                      //                                 print(userData[
-                                      //                                         'user']
-                                      //                                     [
-                                      //                                     '_id']);
-                                      //                                 print(userData[
-                                      //                                         'user']
-                                      //                                     [
-                                      //                                     'server_token']);
-                                      //                                 print(
-                                      //                                     quantity);
-                                      //                                 print(
-                                      //                                     selectedTicketId);
-                                      //                                 Navigator.of(
-                                      //                                         context)
-                                      //                                     .push(
-                                      //                                   MaterialPageRoute(
-                                      //                                     builder:
-                                      //                                         (context) {
-                                      //                                       return TicketOrderPayment(
-                                      //                                           quantity: quantity,
-                                      //                                           userId: userData['user']['_id'],
-                                      //                                           serverToken: userData['user']['server_token'],
-                                      //                                           ticketId: selectedTicketId);
-                                      //                                     },
-                                      //                                   ),
-                                      //                                 );
-                                      //                               }
-                                      //                             } else {
-                                      //                               Service.showMessage(
-                                      //                                   "You are not logged in! Please login to continue with this purchase",
-                                      //                                   true);
-                                      //                             }
-                                      //                           },
-                                      //                         )),
-                                      //                         SizedBox(
-                                      //                           width: getProportionateScreenWidth(
-                                      //                               kDefaultPadding /
-                                      //                                   2),
-                                      //                         ),
-                                      //                         Row(
-                                      //                           children: [
-                                      //                             InkWell(
-                                      //                               child:
-                                      //                                   Container(
-                                      //                                 child:
-                                      //                                     Padding(
-                                      //                                   padding:
-                                      //                                       EdgeInsets.all(
-                                      //                                     getProportionateScreenWidth(kDefaultPadding /
-                                      //                                         3),
-                                      //                                   ),
-                                      //                                   child:
-                                      //                                       Icon(
-                                      //                                     Icons
-                                      //                                         .remove,
-                                      //                                     color:
-                                      //                                         kPrimaryColor,
-                                      //                                   ),
-                                      //                                 ),
-                                      //                                 decoration:
-                                      //                                     BoxDecoration(
-                                      //                                   color: quantity !=
-                                      //                                           1
-                                      //                                       ? kSecondaryColor
-                                      //                                       : kGreyColor,
-                                      //                                   borderRadius:
-                                      //                                       BorderRadius.only(
-                                      //                                     topLeft:
-                                      //                                         Radius.circular(kDefaultPadding),
-                                      //                                     bottomLeft:
-                                      //                                         Radius.circular(kDefaultPadding),
-                                      //                                   ),
-                                      //                                 ),
-                                      //                               ),
-                                      //                               onTap: quantity !=
-                                      //                                       1
-                                      //                                   ? () {
-                                      //                                       setState(() {
-                                      //                                         quantity -= 1;
-                                      //                                         updatePrice();
-                                      //                                       });
-                                      //                                     }
-                                      //                                   : () {
-                                      //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage("Minimum order quantity is 1",
-                                      //                                           true));
-                                      //                                     },
-                                      //                             ),
-                                      //                             Container(
-                                      //                               padding: EdgeInsets.symmetric(
-                                      //                                   horizontal:
-                                      //                                       getProportionateScreenWidth(kDefaultPadding /
-                                      //                                           3)),
-                                      //                               child: Text(
-                                      //                                 this
-                                      //                                     .quantity
-                                      //                                     .toString(),
-                                      //                                 style: Theme.of(
-                                      //                                         context)
-                                      //                                     .textTheme
-                                      //                                     .headline6,
-                                      //                               ),
-                                      //                             ),
-                                      //                             InkWell(
-                                      //                               child:
-                                      //                                   Container(
-                                      //                                 decoration:
-                                      //                                     BoxDecoration(
-                                      //                                   color:
-                                      //                                       kSecondaryColor,
-                                      //                                   borderRadius:
-                                      //                                       BorderRadius.only(
-                                      //                                     topRight:
-                                      //                                         Radius.circular(kDefaultPadding),
-                                      //                                     bottomRight:
-                                      //                                         Radius.circular(kDefaultPadding),
-                                      //                                   ),
-                                      //                                 ),
-                                      //                                 child:
-                                      //                                     Padding(
-                                      //                                   padding:
-                                      //                                       EdgeInsets.all(
-                                      //                                     getProportionateScreenWidth(kDefaultPadding /
-                                      //                                         3),
-                                      //                                   ),
-                                      //                                   child:
-                                      //                                       Icon(
-                                      //                                     Icons
-                                      //                                         .add,
-                                      //                                     color:
-                                      //                                         kPrimaryColor,
-                                      //                                   ),
-                                      //                                 ),
-                                      //                               ),
-                                      //                               onTap: () {
-                                      //                                 setState(
-                                      //                                     () {
-                                      //                                   quantity +=
-                                      //                                       1;
-                                      //                                   updatePrice();
-                                      //                                 });
-                                      //                               },
-                                      //                             ),
-                                      //                           ],
-                                      //                         ),
-                                      //                       ],
-                                      //                     )
-                                      //                   ]),
-                                      //             );
-                                      //           });
-                                      //     });
-                                      //   },
-                                      // ).whenComplete(() {
-                                      //   setState(() {});
-                                      // });
-                                    },
-                                    color: kBlackColor,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                //  Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
                                   ),
-                                )
-                              ],
+                                  Row(
+                                    children: [
+                                      if (events[index]['is_featured'] !=
+                                              null &&
+                                          events[index]['is_featured'])
+                                        Icon(
+                                          Icons.verified,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                      if (events[index]['is_featured'] !=
+                                              null &&
+                                          events[index]['is_featured'])
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 2),
+                                        ),
+                                      Expanded(
+                                        child: Text(
+                                          events[index]['name']
+                                              .toString()
+                                              .toUpperCase(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline5
+                                              ?.copyWith(
+                                                color: kSecondaryColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 4),
+                                  ),
+                                  Text(
+                                    events[index]['description'].toString(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2
+                                        ?.copyWith(
+                                          color: kBlackColor,
+                                        ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  DescriptionRow(
+                                      title: events[index]
+                                          ['organization_detail']['name'],
+                                      iconData: Icons.perm_identity),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  DescriptionRow(
+                                      title: events[index]['address'],
+                                      iconData: FontAwesomeIcons.mapPin),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  DescriptionRow(
+                                    title: events[index]['start_date']
+                                        .toString()
+                                        .split("T")[0],
+                                    iconData: FontAwesomeIcons.calendar,
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  DescriptionRow(
+                                    title: events[index]['event_tags'],
+                                    iconData: FontAwesomeIcons.tag,
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding),
+                                  ),
+// Container(
+//                               margin: EdgeInsets.only(
+//                                 left: kDefaultPadding,
+//                                 top: kDefaultPadding / 2,
+//                               ),
+//                               width: kDefaultPadding * 10,
+//                               height: getProportionateScreenHeight(
+//                                   kDefaultPadding * 3),
+//                               child: CustomButton(
+//                                 title:
+                                  // ticketPrices[index] > 0
+                                  //     ? "From ETB ${ticketPrices[index].toStringAsFixed(2)}"
+                                  //     : "Free",
+//                                 press: () {
+//                                   Navigator.push(
+//                                       context,
+//                                       MaterialPageRoute(
+//                                           builder: (context) =>
+//                                               EventSantimPayScreen(
+//                                                 url: events[index]
+//                                                     ['ticket_url'],
+//                                                 title: events[index]['name'],
+//                                               )));
+//                                 },
+//
+                                  // setState(() {
+                                  //   isSelected = -1;
+                                  //   selectedPrice = 0.0;
+                                  //   quantity = 1;
+                                  //   selectedTicketId = "";
+                                  //   updatePrice();
+                                  // });
+                                  // showModalBottomSheet<void>(
+                                  //   isScrollControlled: true,
+                                  //   context: context,
+                                  //   shape: RoundedRectangleBorder(
+                                  //     borderRadius: BorderRadius.only(
+                                  //       topLeft: Radius.circular(30.0),
+                                  //       topRight: Radius.circular(30.0),
+                                  //     ),
+                                  //   ),
+                                  //   builder: (BuildContext context) {
+                                  //     return StatefulBuilder(builder:
+                                  //         (BuildContext context,
+                                  //             StateSetter setState) {
+                                  //       return DraggableScrollableSheet(
+                                  //           expand: false,
+                                  //           builder: (BuildContext context,
+                                  //               ScrollController
+                                  //                   scrollController) {
+                                  //             return Padding(
+                                  //               padding: EdgeInsets.all(
+                                  //                   getProportionateScreenHeight(
+                                  //                       kDefaultPadding)),
+                                  //               child: Column(
+                                  //                   crossAxisAlignment:
+                                  //                       CrossAxisAlignment
+                                  //                           .start,
+                                  //                   children: <Widget>[
+                                  //                     Text(
+                                  //                       "Buy Ticket",
+                                  //                       style: Theme.of(
+                                  //                               context)
+                                  //                           .textTheme
+                                  //                           .headline5!
+                                  //                           .copyWith(
+                                  //                             fontWeight:
+                                  //                                 FontWeight
+                                  //                                     .bold,
+                                  //                           ),
+                                  //                     ),
+                                  //                     Container(
+                                  //                       height: getProportionateScreenHeight(
+                                  //                           kDefaultPadding),
+                                  //                     ),
+                                  //                     Expanded(
+                                  //                       child: ListView
+                                  //                           .builder(
+                                  //                               controller:
+                                  //                                   scrollController,
+                                  //                               itemCount: events[index]
+                                  //                                       [
+                                  //                                       'ticket_types']
+                                  //                                   .length,
+                                  //                               itemBuilder:
+                                  //                                   (context,
+                                  //                                       idx) {
+                                  //                                 return GestureDetector(
+                                  //                                   onTap:
+                                  //                                       () {
+                                  //                                     setState(
+                                  //                                         () {
+                                  //                                       isSelected =
+                                  //                                           idx;
+                                  //                                       selectedPrice =
+                                  //                                           int.parse(events[index]['ticket_types'][idx]['ticket_price'].toString()).toDouble();
+                                  //                                       selectedTicketId =
+                                  //                                           events[index]['ticket_types'][idx]['_id'];
+                                  //                                       updatePrice();
+                                  //                                     });
+                                  //                                   },
+                                  //                                   child:
+                                  //                                       Container(
+                                  //                                     margin:
+                                  //                                         EdgeInsets.symmetric(vertical: kDefaultPadding / 4),
+                                  //                                     padding:
+                                  //                                         EdgeInsets.all(kDefaultPadding / 2),
+                                  //                                     decoration:
+                                  //                                         BoxDecoration(
+                                  //                                       color: isSelected == idx
+                                  //                                           ? kSecondaryColor.withOpacity(0.8)
+                                  //                                           : kPrimaryColor,
+                                  //                                       borderRadius:
+                                  //                                           BorderRadius.circular(kDefaultPadding / 2),
+                                  //                                       border:
+                                  //                                           Border.all(),
+                                  //                                     ),
+                                  //                                     child:
+                                  //                                         Row(
+                                  //                                       mainAxisAlignment:
+                                  //                                           MainAxisAlignment.spaceBetween,
+                                  //                                       children: [
+                                  //                                         Column(
+                                  //                                           mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  //                                           crossAxisAlignment: CrossAxisAlignment.start,
+                                  //                                           children: [
+                                  //                                             Text("ETB ${events[index]['ticket_types'][idx]['ticket_price']}",
+                                  //                                                 style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                                  //                                                       color: kBlackColor,
+                                  //                                                       fontWeight: FontWeight.bold,
+                                  //                                                     ),
+                                  //                                                 textAlign: TextAlign.center),
+                                  //                                             Text(
+                                  //                                               events[index]['ticket_types'][idx]['ticket_name'],
+                                  //                                               style: TextStyle(
+                                  //                                                 color: kBlackColor,
+                                  //                                                 fontWeight: FontWeight.w500,
+                                  //                                               ),
+                                  //                                               textAlign: TextAlign.center,
+                                  //                                             ),
+                                  //                                             Text(
+                                  //                                               events[index]['ticket_types'][idx]['description'],
+                                  //                                               style: Theme.of(context).textTheme.caption,
+                                  //                                               textAlign: TextAlign.center,
+                                  //                                             ),
+                                  //                                           ],
+                                  //                                         ),
+                                  //                                         Container(
+                                  //                                           height: kDefaultPadding,
+                                  //                                           width: getProportionateScreenWidth(kDefaultPadding / 2),
+                                  //                                           decoration: BoxDecoration(
+                                  //                                             color: isSelected == idx ? kSecondaryColor : kPrimaryColor,
+                                  //                                             shape: BoxShape.circle,
+                                  //                                             border: Border.all(width: 1, color: isSelected == idx ? kGreyColor : kBlackColor),
+                                  //                                           ),
+                                  //                                         ),
+                                  //                                       ],
+                                  //                                     ),
+                                  //                                   ),
+                                  //                                 );
+                                  //                               }),
+                                  //                     ),
+                                  //                     Container(
+                                  //                       height: getProportionateScreenHeight(
+                                  //                           kDefaultPadding),
+                                  //                     ),
+                                  //                     Row(
+                                  //                       children: [
+                                  //                         Expanded(
+                                  //                             child:
+                                  //                                 CustomButton(
+                                  //                           title:
+                                  //                               "Purchase for $purchasePrice",
+                                  //                           color: purchasePrice >
+                                  //                                   0
+                                  //                               ? kSecondaryColor
+                                  //                               : kGreyColor,
+                                  //                           press: () {
+                                  //                             if (userData !=
+                                  //                                 null) {
+                                  //                               if (selectedTicketId
+                                  //                                   .isNotEmpty) {
+                                  //                                 print(userData[
+                                  //                                         'user']
+                                  //                                     [
+                                  //                                     '_id']);
+                                  //                                 print(userData[
+                                  //                                         'user']
+                                  //                                     [
+                                  //                                     'server_token']);
+                                  //                                 print(
+                                  //                                     quantity);
+                                  //                                 print(
+                                  //                                     selectedTicketId);
+                                  //                                 Navigator.of(
+                                  //                                         context)
+                                  //                                     .push(
+                                  //                                   MaterialPageRoute(
+                                  //                                     builder:
+                                  //                                         (context) {
+                                  //                                       return TicketOrderPayment(
+                                  //                                           quantity: quantity,
+                                  //                                           userId: userData['user']['_id'],
+                                  //                                           serverToken: userData['user']['server_token'],
+                                  //                                           ticketId: selectedTicketId);
+                                  //                                     },
+                                  //                                   ),
+                                  //                                 );
+                                  //                               }
+                                  //                             } else {
+                                  //                               Service.showMessage(
+                                  //                                   "You are not logged in! Please login to continue with this purchase",
+                                  //                                   true);
+                                  //                             }
+                                  //                           },
+                                  //                         )),
+                                  //                         SizedBox(
+                                  //                           width: getProportionateScreenWidth(
+                                  //                               kDefaultPadding /
+                                  //                                   2),
+                                  //                         ),
+                                  //                         Row(
+                                  //                           children: [
+                                  //                             InkWell(
+                                  //                               child:
+                                  //                                   Container(
+                                  //                                 child:
+                                  //                                     Padding(
+                                  //                                   padding:
+                                  //                                       EdgeInsets.all(
+                                  //                                     getProportionateScreenWidth(kDefaultPadding /
+                                  //                                         3),
+                                  //                                   ),
+                                  //                                   child:
+                                  //                                       Icon(
+                                  //                                     Icons
+                                  //                                         .remove,
+                                  //                                     color:
+                                  //                                         kPrimaryColor,
+                                  //                                   ),
+                                  //                                 ),
+                                  //                                 decoration:
+                                  //                                     BoxDecoration(
+                                  //                                   color: quantity !=
+                                  //                                           1
+                                  //                                       ? kSecondaryColor
+                                  //                                       : kGreyColor,
+                                  //                                   borderRadius:
+                                  //                                       BorderRadius.only(
+                                  //                                     topLeft:
+                                  //                                         Radius.circular(kDefaultPadding),
+                                  //                                     bottomLeft:
+                                  //                                         Radius.circular(kDefaultPadding),
+                                  //                                   ),
+                                  //                                 ),
+                                  //                               ),
+                                  //                               onTap: quantity !=
+                                  //                                       1
+                                  //                                   ? () {
+                                  //                                       setState(() {
+                                  //                                         quantity -= 1;
+                                  //                                         updatePrice();
+                                  //                                       });
+                                  //                                     }
+                                  //                                   : () {
+                                  //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage("Minimum order quantity is 1",
+                                  //                                           true));
+                                  //                                     },
+                                  //                             ),
+                                  //                             Container(
+                                  //                               padding: EdgeInsets.symmetric(
+                                  //                                   horizontal:
+                                  //                                       getProportionateScreenWidth(kDefaultPadding /
+                                  //                                           3)),
+                                  //                               child: Text(
+                                  //                                 this
+                                  //                                     .quantity
+                                  //                                     .toString(),
+                                  //                                 style: Theme.of(
+                                  //                                         context)
+                                  //                                     .textTheme
+                                  //                                     .headline6,
+                                  //                               ),
+                                  //                             ),
+                                  //                             InkWell(
+                                  //                               child:
+                                  //                                   Container(
+                                  //                                 decoration:
+                                  //                                     BoxDecoration(
+                                  //                                   color:
+                                  //                                       kSecondaryColor,
+                                  //                                   borderRadius:
+                                  //                                       BorderRadius.only(
+                                  //                                     topRight:
+                                  //                                         Radius.circular(kDefaultPadding),
+                                  //                                     bottomRight:
+                                  //                                         Radius.circular(kDefaultPadding),
+                                  //                                   ),
+                                  //                                 ),
+                                  //                                 child:
+                                  //                                     Padding(
+                                  //                                   padding:
+                                  //                                       EdgeInsets.all(
+                                  //                                     getProportionateScreenWidth(kDefaultPadding /
+                                  //                                         3),
+                                  //                                   ),
+                                  //                                   child:
+                                  //                                       Icon(
+                                  //                                     Icons
+                                  //                                         .add,
+                                  //                                     color:
+                                  //                                         kPrimaryColor,
+                                  //                                   ),
+                                  //                                 ),
+                                  //                               ),
+                                  //                               onTap: () {
+                                  //                                 setState(
+                                  //                                     () {
+                                  //                                   quantity +=
+                                  //                                       1;
+                                  //                                   updatePrice();
+                                  //                                 });
+                                  //                               },
+                                  //                             ),
+                                  //                           ],
+                                  //                         ),
+                                  //                       ],
+                                  //                     )
+                                  //                   ]),
+                                  //             );
+                                  //           });
+                                  //     });
+                                  //   },
+                                  // ).whenComplete(() {
+                                  //   setState(() {});
+                                  // });
+                                  //color: kBlackColor,
+                                  //),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              margin: EdgeInsets.only(
+                                left: kDefaultPadding,
+                                top: kDefaultPadding / 2,
+                              ),
+                              width: kDefaultPadding * 10,
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 3),
+                              child: CustomButton(
+                                title: 'Get ticket',
+                                // ticketPrices[index] > 0
+                                //     ? "From ETB ${ticketPrices[index].toStringAsFixed(2)}"
+                                //     : "Free",
+                                press: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              EventSantimPayScreen(
+                                                url: events[index]
+                                                    ['ticket_url'],
+                                                title: events[index]['name'],
+                                              )));
+                                },
+                                color: kBlackColor,
+                              ),
                             ),
                           ),
                           if (events.length - index != 1)
@@ -718,7 +774,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                       "SWIPE UP",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyLarge
+                                          .bodyText1
                                           ?.copyWith(
                                             color: kSecondaryColor,
                                           ),

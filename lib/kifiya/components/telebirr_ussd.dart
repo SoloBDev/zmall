@@ -63,7 +63,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     var data = await initTelebirr();
     if (data != null && data['result']['success']) {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['message']}. Waiting for payment to be completed", false,
+          "${data['result']['message']}. Waiting for payment to be completed", false,
           duration: 6));
       _verifyPayment();
     }
@@ -134,7 +134,6 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
   }
 
   Future<dynamic> initTelebirr() async {
-    print("price ${widget.hisab}");
     setState(() {
       _loading = true;
     });
@@ -183,7 +182,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
       setState(() {
         this._loading = false;
       });
-
+      print(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
       print(e);

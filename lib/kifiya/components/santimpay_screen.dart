@@ -61,7 +61,7 @@ class _SantimPayState extends State<SantimPay> {
       setState(() {
         initUrl = data['url'];
       });
-    } else{
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "Error while initiating payment. Please try again.", true,
           duration: 4));
@@ -72,50 +72,49 @@ class _SantimPayState extends State<SantimPay> {
   Widget build(BuildContext context) {
     return _loading
         ? Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
-        leading: TextButton(
-          child: Text("Done"),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Center(
-        child: SpinKitWave(
-          color: kSecondaryColor,
-          size: getProportionateScreenWidth(kDefaultPadding),
-        ),
-      ),
-    )
+            appBar: AppBar(
+              title: Text(
+                widget.title,
+                style: TextStyle(color: kBlackColor),
+              ),
+              leading: TextButton(
+                child: Text("Done"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: Center(
+              child: SpinKitWave(
+                color: kSecondaryColor,
+                size: getProportionateScreenWidth(kDefaultPadding),
+              ),
+            ),
+          )
         : Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
-        leading: TextButton(
-          child: Text("Done"),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: InAppWebView(
-        initialOptions: options,
-        initialUrlRequest: URLRequest(
-          url: WebUri.uri(Uri.parse(initUrl)
-          ),
-        ),
-      ),
-      // withZoom: true,
-      // displayZoomControls: true,
-      // initialChild: Container(
-      //   color: kPrimaryColor,
-      //   child: const Center(
-      //     child: Text('Waiting.....'),
-      //   ),
-      // ),
-    );
+            appBar: AppBar(
+              title: Text(
+                widget.title,
+                style: TextStyle(color: kBlackColor),
+              ),
+              leading: TextButton(
+                child: Text("Done"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: InAppWebView(
+              initialOptions: options,
+              initialUrlRequest: URLRequest(
+                url: Uri.parse(initUrl),
+              ),
+            ),
+            // withZoom: true,
+            // displayZoomControls: true,
+            // initialChild: Container(
+            //   color: kPrimaryColor,
+            //   child: const Center(
+            //     child: Text('Waiting.....'),
+            //   ),
+            // ),
+          );
   }
 
   Future<dynamic> initiateUrl() async {
@@ -125,11 +124,10 @@ class _SantimPayState extends State<SantimPay> {
     var url = widget.url;
 
     Map data = {
-
       "id": widget.traceNo,
       "amount": widget.hisab,
-      "reason" : "ZMall Delivery Order Payment",
-      "phone_number" : "+251${widget.phone}"
+      "reason": "ZMall Delivery Order Payment",
+      "phone_number": "+251${widget.phone}"
     };
 
     var body = json.encode(data);

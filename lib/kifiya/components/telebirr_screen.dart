@@ -102,9 +102,7 @@ class _TelebirrState extends State<Telebirr> {
             ),
             body: InAppWebView(
               initialOptions: options,
-              initialUrlRequest: URLRequest(
-                url: WebUri.uri(Uri.parse(telebirrUrl)),
-              ),
+              initialUrlRequest: URLRequest(url: Uri.parse(telebirrUrl)),
             ),
             // withZoom: true,
             // displayZoomControls: true,
