@@ -227,7 +227,6 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       height: getProportionateScreenHeight(
                                           kDefaultPadding / 2),
                                     ),
-                                    /*         
                                     TextField(
                                       style: TextStyle(color: kBlackColor),
                                       keyboardType:
@@ -240,7 +239,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                           textFieldInputDecorator.copyWith(
                                         labelText: "Amount",
                                       ),
-                                    ), */
+                                    ),
                                     Container(
                                         height: getProportionateScreenHeight(
                                             kDefaultPadding / 2)),
