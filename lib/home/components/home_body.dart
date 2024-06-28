@@ -2043,7 +2043,7 @@ class _HomeBodyState extends State<HomeBody> {
                                       DateTime.now().isBefore(euroPredictEnd) &&
                                               DateTime.now()
                                                   .isAfter(euroPredictStart)
-                                          ? 'images/flags/game_banner.png'
+                                          ? 'images/pl_logos/game_banner.png'
                                           : 'images/predict_pl.png',
                                   title: "Predict & Win",
                                   subtitle: "",

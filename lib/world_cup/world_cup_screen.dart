@@ -228,15 +228,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                                 3),
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: AssetImage(DateTime
-                                                                        .now()
-                                                                    .isBefore(
-                                                                        euroPredictEnd) &&
-                                                                DateTime.now()
-                                                                    .isAfter(
-                                                                        euroPredictStart)
-                                                            ? "images/flags/${games[index]['home_team'].toString()}.png"
-                                                            : "images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
+                                                        image: AssetImage("images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
                                                         fit: BoxFit.fill,
                                                       ),
                                                       shape: BoxShape.rectangle,
@@ -323,14 +315,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                                 3),
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: AssetImage(
-                                                          DateTime.now().isBefore(
-                                                                      euroPredictEnd) &&
-                                                                  DateTime.now()
-                                                                      .isAfter(
-                                                                          euroPredictStart)
-                                                              ? "images/flags/${games[index]['away_team'].toString()}.png"
-                                                              : "images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
+                                                        image: AssetImage("images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
                                                         ),
                                                         fit: BoxFit.fill,
                                                       ),
@@ -548,13 +533,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 kDefaultPadding * 2.5),
                                             decoration: BoxDecoration(
                                               image: DecorationImage(
-                                                image: AssetImage(DateTime.now()
-                                                            .isBefore(
-                                                                euroPredictEnd) &&
-                                                        DateTime.now().isAfter(
-                                                            euroPredictStart)
-                                                    ? "images/flags/${userPredictions['scores'][index]['game_detail']['home_team'].toString()}.png"
-                                                    : "images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
+                                                image: AssetImage("images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
                                                 fit: BoxFit.fill,
                                               ),
                                               shape: BoxShape.rectangle,
@@ -604,13 +583,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 kDefaultPadding * 2.5),
                                             decoration: BoxDecoration(
                                               image: DecorationImage(
-                                                image: AssetImage(DateTime.now()
-                                                            .isBefore(
-                                                                euroPredictEnd) &&
-                                                        DateTime.now().isAfter(
-                                                            euroPredictStart)
-                                                    ? "images/flags/${userPredictions['scores'][index]['game_detail']['away_team'].toString()}.png"
-                                                    : "images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
+                                                image: AssetImage("images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
                                                 fit: BoxFit.fill,
                                               ),
                                               shape: BoxShape.rectangle,

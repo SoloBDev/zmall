@@ -227,20 +227,20 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       height: getProportionateScreenHeight(
                                           kDefaultPadding / 2),
                                     ),
-                                    // /*         
-                                    // TextField(
-                                    //   style: TextStyle(color: kBlackColor),
-                                    //   keyboardType:
-                                    //       TextInputType.numberWithOptions(
-                                    //           decimal: true),
-                                    //   onChanged: (val) {
-                                    //     amount = val;
-                                    //   },
-                                    //   decoration:
-                                    //       textFieldInputDecorator.copyWith(
-                                    //     labelText: "Amount",
-                                    //   ),
-                                    // ), */
+                                    /*         
+                                    TextField(
+                                      style: TextStyle(color: kBlackColor),
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      onChanged: (val) {
+                                        amount = val;
+                                      },
+                                      decoration:
+                                          textFieldInputDecorator.copyWith(
+                                        labelText: "Amount",
+                                      ),
+                                    ), */
                                     Container(
                                         height: getProportionateScreenHeight(
                                             kDefaultPadding / 2)),

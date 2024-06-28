@@ -14,16 +14,16 @@ import 'package:zmall/splash/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: "AIzaSyDFfRtPeakrhsHOxOaZOYpPQM8klHC6Y80",
-      appId: "1:362956281866:android:732f5c7b2987fa35",
-      messagingSenderId: "362956281866",
-      projectId: "zmall-184809",
-      iosClientId:
-          "362956281866-7eotv0dma4074a29aov6qluqiuvrvo8p.apps.googleusercontent.com",
-      androidClientId:
-          "362956281866-34miif7nvrmtgvrn7o8lsb5ul3nlvq5r.apps.googleusercontent.com",
-    ),
+    // options: FirebaseOptions(
+    //   apiKey: "AIzaSyDFfRtPeakrhsHOxOaZOYpPQM8klHC6Y80",
+    //   appId: "1:362956281866:android:732f5c7b2987fa35",
+    //   messagingSenderId: "362956281866",
+    //   projectId: "zmall-184809",
+    //   iosClientId:
+    //       "362956281866-7eotv0dma4074a29aov6qluqiuvrvo8p.apps.googleusercontent.com",
+    //   androidClientId:
+    //       "362956281866-34miif7nvrmtgvrn7o8lsb5ul3nlvq5r.apps.googleusercontent.com",
+    // ),
   );
   runApp(MyApp());
 }
