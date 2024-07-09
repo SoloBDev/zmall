@@ -321,7 +321,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                               .toUpperCase(),
                                           style: Theme.of(context)
                                               .textTheme
-                                              .headline5
+                                              .headlineSmall
                                               ?.copyWith(
                                                 color: kSecondaryColor,
                                                 fontWeight: FontWeight.bold,
@@ -338,7 +338,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                     events[index]['description'].toString(),
                                     style: Theme.of(context)
                                         .textTheme
-                                        .subtitle2
+                                        .titleSmall
                                         ?.copyWith(
                                           color: kBlackColor,
                                         ),
@@ -774,7 +774,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                       "SWIPE UP",
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyText1
+                                          .bodyLarge
                                           ?.copyWith(
                                             color: kSecondaryColor,
                                           ),
