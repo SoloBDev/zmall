@@ -8,6 +8,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:362956281866:android:5eac48615066f0b8ee27f3",
+        "android_client_info": {
+          "package_name": "com.zmall.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "362956281866-9b2p0leoplidi1r3s8m94ud38jlu6pla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFfRtPeakrhsHOxOaZOYpPQM8klHC6Y80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "362956281866-9b2p0leoplidi1r3s8m94ud38jlu6pla.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "362956281866-3net3glnndga6a0dr21njfcebdl5c2b6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.zmall.provider"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:362956281866:android:c7465abbf5e14e7e",
         "android_client_info": {
           "package_name": "com.zmall.provider"
@@ -180,6 +216,14 @@
           "android_info": {
             "package_name": "com.zmall.user",
             "certificate_hash": "998f23fb0bac460b78e9a7980506a8cc26a0f3e1"
+          }
+        },
+        {
+          "client_id": "362956281866-qjqdk352puf9fvod1lkj59obfqstdpgo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zmall.user",
+            "certificate_hash": "6650ad697fda0dbba62adbb7b2d0a82d1a7ef2b2"
           }
         },
         {
