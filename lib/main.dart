@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -14,6 +15,7 @@ import 'package:zmall/splash/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
     // options: FirebaseOptions(
     //   apiKey: "AIzaSyDFfRtPeakrhsHOxOaZOYpPQM8klHC6Y80",
     //   appId: "1:362956281866:android:732f5c7b2987fa35",

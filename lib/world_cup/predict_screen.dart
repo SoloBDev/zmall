@@ -190,12 +190,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                       kDefaultPadding * 3),
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage(DateTime.now()
-                                                  .isBefore(euroPredictEnd) &&
-                                              DateTime.now()
-                                                  .isAfter(euroPredictStart)
-                                          ? "images/flags/${widget.game['home_team'].toString()}.png"
-                                          : "images/pl_logos/${widget.game['home_team'].toString().toLowerCase()}.png"),
+                                      image: AssetImage("images/pl_logos/${widget.game['home_team'].toString().toLowerCase()}.png"),
                                       fit: BoxFit.fill,
                                     ),
                                     shape: BoxShape.circle,
@@ -253,13 +248,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                       kDefaultPadding * 3),
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage(
-                                        DateTime.now()
-                                                    .isBefore(euroPredictEnd) &&
-                                                DateTime.now()
-                                                    .isAfter(euroPredictStart)
-                                            ? "images/flags/${widget.game['away_team'].toString()}.png"
-                                            : "images/pl_logos/${widget.game['away_team'].toString().toLowerCase()}.png",
+                                      image: AssetImage("images/pl_logos/${widget.game['away_team'].toString().toLowerCase()}.png",
                                       ),
                                       fit: BoxFit.fill,
                                     ),
@@ -1111,10 +1100,7 @@ class TeamContainer extends StatelessWidget {
             width: getProportionateScreenWidth(kDefaultPadding * 2),
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(DateTime.now().isBefore(euroPredictEnd) &&
-                        DateTime.now().isAfter(euroPredictStart)
-                    ? "images/flags/${teamName.toString()}.png"
-                    : "images/pl_logos/${teamName.toString().toLowerCase()}.png"),
+                image: AssetImage("images/pl_logos/${teamName.toString().toLowerCase()}.png"),
                 fit: BoxFit.fill,
               ),
               shape: BoxShape.rectangle,
