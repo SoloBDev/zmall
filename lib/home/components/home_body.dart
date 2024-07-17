@@ -19,7 +19,6 @@ import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/core_services.dart';
 import 'package:zmall/courier/courier_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
-import 'package:zmall/kifiya/components/event_santim.dart';
 import 'package:zmall/events/events_screen.dart';
 import 'package:zmall/home/components/custom_banner.dart';
 import 'package:zmall/home/components/offer_card.dart';
@@ -210,8 +209,8 @@ class _HomeBodyState extends State<HomeBody> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
     }
   }
 

@@ -54,7 +54,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              "An OTP (verification code) has been sent to your phone number. Please enter the code correctly and press 'verify'!",
+              "An OTP (verification code) has been sent to your phone number or email address. Please enter the code correctly and press 'verify'!",
               style: Theme.of(context)
                   .textTheme
                   .titleMedium

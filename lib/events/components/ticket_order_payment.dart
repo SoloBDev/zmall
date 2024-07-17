@@ -159,7 +159,7 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
                         'Ticket Type',
                         orderPayment['ticket_order_payment']['ticket_name'],
                         'Unit Price',
-                        'ETB ${orderPayment['ticket_order_payment']['total'] / orderPayment['ticket_order_payment']['quantity']}'),
+                        '${Provider.of<ZMetaData>(context, listen: false).currency} ${orderPayment['ticket_order_payment']['total'] / orderPayment['ticket_order_payment']['quantity']}'),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(
@@ -171,7 +171,7 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
                         orderPayment['ticket_order_payment']['quantity']
                             .toString(),
                         'Total Price',
-                        'ETB ${orderPayment['ticket_order_payment']['total']}'),
+                        '${Provider.of<ZMetaData>(context, listen: false).currency} ${orderPayment['ticket_order_payment']['total']}'),
                   ),
                 ],
               ),

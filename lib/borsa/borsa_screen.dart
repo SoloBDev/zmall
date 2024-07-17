@@ -136,12 +136,15 @@ class _BorsaScreenState extends State<BorsaScreen> {
                         ),
                         RichText(
                           text: TextSpan(
-                            text: "ETB",
-                            style:
-                                Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                            text:
+                                "${Provider.of<ZMetaData>(context, listen: false).currency}",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.italic,
+                                ),
                             children: <TextSpan>[
                               TextSpan(
                                 text: " ${currentBalance.toStringAsFixed(2)}",
@@ -227,7 +230,6 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       height: getProportionateScreenHeight(
                                           kDefaultPadding / 2),
                                     ),
-                                    /*         
                                     TextField(
                                       style: TextStyle(color: kBlackColor),
                                       keyboardType:
@@ -240,7 +242,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                           textFieldInputDecorator.copyWith(
                                         labelText: "Amount",
                                       ),
-                                    ), */
+                                    ),
                                     Container(
                                         height: getProportionateScreenHeight(
                                             kDefaultPadding / 2)),
@@ -425,7 +427,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                                 fontWeight: FontWeight.bold),
                                         children: <TextSpan>[
                                           TextSpan(
-                                            text: " ETB ",
+                                            text:
+                                                " ${Provider.of<ZMetaData>(context, listen: false).currency} ",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .titleSmall,

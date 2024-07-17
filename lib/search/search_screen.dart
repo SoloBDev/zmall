@@ -664,7 +664,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             .spaceBetween,
                                                     children: [
                                                       Text(
-                                                        "${filteredResult['items']![index]['price'].toString()} ብር",
+                                                        "${filteredResult['items']![index]['price'].toString()} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                         style: TextStyle(
                                                           fontSize:
                                                               getProportionateScreenWidth(
@@ -894,7 +894,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                     .spaceBetween,
                                                             children: [
                                                               Text(
-                                                                "${responseData['items'][index]['price'].toString()} ብር",
+                                                                "${responseData['items'][index]['price'].toString()} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                                 style:
                                                                     TextStyle(
                                                                   fontSize: getProportionateScreenWidth(

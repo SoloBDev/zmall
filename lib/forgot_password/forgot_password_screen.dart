@@ -33,6 +33,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   String country = "Ethiopia";
   var countries = ['Ethiopia', 'South Sudan'];
 
+  ///new
+  String email = '';
+
   // Future<void> loginUser(String phone, BuildContext context) async {
   //   print(phone);
   //   setState(() {
@@ -172,9 +175,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   //       });
   // }
 
-  Future<bool> sendOTP(phone, otp) async {
-    ScaffoldMessenger.of(context).showSnackBar(Service.showMessage("OTP code sent to your phone...", false));
-    var response = await verificationSms(phone, otp);
+  Future<bool> sendOTP(phone, email, otp) async {
+    ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+        "OTP code sent to your phone or email...", false,
+        duration: 6));
+    var response = await verificationSms(phone, email, otp);
     if (response != null && response.statusCode == 200) {
       setState(() {
         success = true;
@@ -228,7 +233,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     areaCode = "+211";
                   }
                 });
-
               },
               value: Provider.of<ZMetaData>(context, listen: false).country,
               decoration: textFieldInputDecorator.copyWith(
@@ -248,6 +252,28 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 prefixText:
                     Provider.of<ZMetaData>(context, listen: false).areaCode,
                 hintText: 'Phone number',
+                hintStyle: TextStyle(
+                  color: kGreyColor,
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: kSecondaryColor),
+                ),
+              ),
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
+            TextField(
+              keyboardType: TextInputType.emailAddress,
+              cursorColor: kSecondaryColor,
+              style: TextStyle(color: kBlackColor),
+              onChanged: (value) {
+                setState(
+                  () {
+                    email = value;
+                  },
+                );
+              },
+              decoration: InputDecoration(
+                hintText: '     Email',
                 hintStyle: TextStyle(
                   color: kGreyColor,
                 ),
@@ -287,6 +313,16 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               _loading = !_loading;
                             },
                           );
+                        } else if (email == null ||
+                            !emailValidatorRegExp.hasMatch(email)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              Service.showMessage(
+                                  "Please enter a valid email address", false));
+                          setState(
+                            () {
+                              _loading = !_loading;
+                            },
+                          );
                         } else {
                           // loginUser(
                           //     "${Provider.of<ZMetaData>(context, listen: false).areaCode}$phone",
@@ -294,8 +330,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           setState(() {
                             smsCode = RandomDigits.getString(4);
                           });
-
-                          sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phone", smsCode).then(
+                          sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phone",
+                                  email, smsCode)
+                              .then(
                             (success) {
                               if (success) {
                                 _loading = !_loading;
@@ -311,7 +348,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     Service.showMessage(
-                                        "ስልክ ቁጥር ተሳስተዋል", true));
+                                        "Incorrect phone number",
+                                        true)); // "ስልክ ቁጥር ተሳስተዋል"
                                 setState(
                                   () {
                                     _loading = !_loading;
@@ -329,13 +367,15 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     );
   }
 
-  Future<http.Response?> verificationSms(String phone, String otp) async {
+  Future<http.Response?> verificationSms(
+      String phone, String email, String otp) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/send_sms_with_message";
     String token = Uuid().v4();
     Map data = {
       "code": "${token}_zmall",
       "phone": phone,
+      "email": email,
       "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp"
     };
     var body = json.encode(data);

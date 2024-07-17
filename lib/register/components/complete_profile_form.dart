@@ -69,8 +69,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       });
   }
 
-  Future<bool> sendOTP(phone, otp) async {
-    var response = await verificationSms(phone, otp);
+  Future<bool> sendOTP(phone, email, otp) async {
+    var response = await verificationSms(phone, email, otp);
     if (response != null && response['success']) {
       setState(() {
         success = true;
@@ -240,7 +240,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                         smsCode = RandomDigits.getString(4);
                       });
                       sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
-                              smsCode)
+                              widget.email, smsCode)
                           .then(
                         (success) {
                           if (success) {
@@ -264,7 +264,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                                     content: Wrap(
                                       children: [
                                         Text(
-                                            "Please enter the one time pin(OTP) sent to your phone.\n"),
+                                            "Please enter the one time password(OTP) sent to your phone or email.\n"),
                                         SizedBox(
                                           height: getProportionateScreenHeight(
                                               kDefaultPadding),
@@ -532,7 +532,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     }
   }
 
-  Future<dynamic> verificationSms(String phone, String otp) async {
+  Future<dynamic> verificationSms(
+      String phone, String email, String otp) async {
     /*  var message =
         Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
             ? "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP"
@@ -543,6 +544,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     Map data = {
       "code": "${token}_zmall",
       "phone": phone,
+      "email": email,
       "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ  : $otp"
     };
     var body = json.encode(data);

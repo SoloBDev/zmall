@@ -4,6 +4,8 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:provider/provider.dart';
+import 'package:zmall/models/metadata.dart';
 
 class ReferralScreen extends StatelessWidget {
   const ReferralScreen({
@@ -46,7 +48,7 @@ class ReferralScreen extends StatelessWidget {
                       size: getProportionateScreenWidth(kDefaultPadding * 3),
                     ),
                     Text(
-                      "Refer now and earn up to ETB 50.",
+                      "Refer now and earn up to 50 ${Provider.of<ZMetaData>(context, listen: false).currency}.",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
