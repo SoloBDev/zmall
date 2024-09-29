@@ -14,6 +14,7 @@ import 'package:zmall/kifiya/components/amole_screen.dart';
 import 'package:zmall/kifiya/components/cbe_ussd.dart';
 import 'package:zmall/kifiya/components/chapa_screen.dart';
 import 'package:zmall/kifiya/components/cyber_source.dart';
+import 'package:zmall/kifiya/components/dashen_master_card.dart';
 import 'package:zmall/kifiya/components/ethswitch_screen.dart';
 import 'package:zmall/kifiya/components/etta_card_screen.dart';
 import 'package:zmall/kifiya/components/santimpay_screen.dart';
@@ -494,14 +495,25 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             "cash"
                                         ? 'images/cod.png'
 
-                                        ///******************MOMO***********************
-                                        // /* : paymentResponse['payment_gateway']
-                                        //                 [index]['name']
-                                        //             .toString()
-                                        //             .toLowerCase() ==
-                                        //         "momo"
-                                        //     ? 'images/momo.png'
-                                        ///******************MOMO***********************
+                                        ///******************"dashen mastercard"***********************
+                                        : paymentResponse['payment_gateway']
+                                                        [index]['name']
+                                                    .toString()
+                                                    .toLowerCase() ==
+                                                "dashen mastercard"
+                                            ? 'images/dashen.png'
+
+                                            ///******************"dashen mastercard"***********************
+                                            ///
+                                            ///
+                                            ///******************MOMO***********************
+                                            // /* : paymentResponse['payment_gateway']
+                                            //                 [index]['name']
+                                            //             .toString()
+                                            //             .toLowerCase() ==
+                                            //         "momo"
+                                            //     ? 'images/momo.png'
+                                            ///******************MOMO***********************
                                             : paymentResponse['payment_gateway']
                                                             [index]['name']
                                                         .toString()
@@ -864,7 +876,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                             phone:
                                                                 userData['user']
                                                                     ['phone'],
-                                                                                   orderPaymentId: widget
+                                                            orderPaymentId: widget
                                                                 .orderPaymentId!,
                                                           );
                                                         },
@@ -1204,88 +1216,173 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     }
                                   }
 
+                                  ///**************************Dashen mastercard***************************************
+                                  else if (paymentResponse['payment_gateway']
+                                              [index]['name']
+                                          .toString()
+                                          .toLowerCase() ==
+                                      "dashen mastercard") {
+                                    var data = await useBorsa();
+                                    if (data != null && data['success']) {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title:
+                                                  Text("Pay Using Mastercard"),
+                                              content: Text(
+                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Dashen Mastercard?"),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cancel,
+                                                    style: TextStyle(
+                                                        color: kSecondaryColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cont,
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) {
+                                                          return DashenMasterCard(
+                                                              url:
+                                                                  "https://pgw.shekla.app/dashenMpgs/mastercard/api/checkout",
+                                                              amount:
+                                                                  widget.price!,
+                                                              phone: userData[
+                                                                      'user']
+                                                                  ['phone'],
+                                                              traceNo: widget
+                                                                  .orderPaymentUniqueId!,
+                                                              orderPaymentId: widget
+                                                                  .orderPaymentId!,
+                                                              currency: Provider.of<
+                                                                          ZMetaData>(
+                                                                      context,
+                                                                      listen:
+                                                                          false)
+                                                                  .currency);
+                                                        },
+                                                      ),
+                                                    ).then((value) {
+                                                      _boaVerify();
+                                                    });
+                                                  },
+                                                )
+                                              ],
+                                            );
+                                          });
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "Something went wrong! Please try again!",
+                                              true));
+                                      setState(() {
+                                        kifiyaMethod = -1;
+                                      });
+                                    }
+                                  }
+
+                                  ///*******************************Dashen mastercard*******************************
+                                  ///
+                                  ///
                                   ///**************************MoMo***************************************
-                                 
-                                //    else if (paymentResponse['payment_gateway']
-                                //               [index]['name']
-                                //           .toString()
-                                //           .toLowerCase() ==
-                                //       "momo") {
-                                //     var data = await useBorsa();
-                                //     if (data != null && data['success']) {
-                                //       showDialog(
-                                //           context: context,
-                                //           builder: (context) {
-                                //             return AlertDialog(
-                                //               title: Text("Pay Using MoMo"),
-                                //               content: Text(
-                                //                   "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using MoMo?"),
-                                //               actions: [
-                                //                 TextButton(
-                                //                   child: Text(
-                                //                     Provider.of<ZLanguage>(
-                                //                             context)
-                                //                         .cancel,
-                                //                     style: TextStyle(
-                                //                         color: kSecondaryColor),
-                                //                   ),
-                                //                   onPressed: () {
-                                //                     Navigator.of(context).pop();
-                                //                   },
-                                //                 ),
-                                //                 TextButton(
-                                //                   child: Text(
-                                //                     Provider.of<ZLanguage>(
-                                //                             context)
-                                //                         .cont,
-                                //                     style: TextStyle(
-                                //                         color: kBlackColor),
-                                //                   ),
-                                //                   onPressed: () {
-                                //                     Navigator.of(context).pop();
-                                //                     Navigator.push(
-                                //                       context,
-                                //                       MaterialPageRoute(
-                                //                         builder: (context) {
-                                //                           return MoMoUssd(
-                                //                             userId:
-                                //                                 userData['user']
-                                //                                     ['_id'],
-                                //                             serverToken: userData[
-                                //                                     'user'][
-                                //                                 'server_token'],
-                                //                             url:
-                                //                                 'https://pgw.shekla.app/momo/makepayment',
-                                //                             hisab:
-                                //                                 widget.price!,
-                                //                             traceNo: widget
-                                //                                 .orderPaymentUniqueId!,
-                                //                             phone:
-                                //                                 userData['user']
-                                //                                     ['phone'],
-                                //                             orderPaymentId: widget
-                                //                                 .orderPaymentId!,
-                                //                           );
-                                //                         },
-                                //                       ),
-                                //                     ).then((value) {
-                                //                       _boaVerify();
-                                //                     });
-                                //                   },
-                                //                 )
-                                //               ],
-                                //             );
-                                //           });
-                                //     } else {
-                                //       ScaffoldMessenger.of(context)
-                                //           .showSnackBar(Service.showMessage(
-                                //               "Something went wrong! Please try again!",
-                                //               true));
-                                //       setState(() {
-                                //         kifiyaMethod = -1;
-                                //       });
-                                //     }
-                                //   } 
+
+                                  //    else if (paymentResponse['payment_gateway']
+                                  //               [index]['name']
+                                  //           .toString()
+                                  //           .toLowerCase() ==
+                                  //       "momo") {
+                                  //     var data = await useBorsa();
+                                  //     if (data != null && data['success']) {
+                                  //       showDialog(
+                                  //           context: context,
+                                  //           builder: (context) {
+                                  //             return AlertDialog(
+                                  //               title: Text("Pay Using MoMo"),
+                                  //               content: Text(
+                                  //                   "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using MoMo?"),
+                                  //               actions: [
+                                  //                 TextButton(
+                                  //                   child: Text(
+                                  //                     Provider.of<ZLanguage>(
+                                  //                             context)
+                                  //                         .cancel,
+                                  //                     style: TextStyle(
+                                  //                         color: kSecondaryColor),
+                                  //                   ),
+                                  //                   onPressed: () {
+                                  //                     Navigator.of(context).pop();
+                                  //                   },
+                                  //                 ),
+                                  //                 TextButton(
+                                  //                   child: Text(
+                                  //                     Provider.of<ZLanguage>(
+                                  //                             context)
+                                  //                         .cont,
+                                  //                     style: TextStyle(
+                                  //                         color: kBlackColor),
+                                  //                   ),
+                                  //                   onPressed: () {
+                                  //                     Navigator.of(context).pop();
+                                  //                     Navigator.push(
+                                  //                       context,
+                                  //                       MaterialPageRoute(
+                                  //                         builder: (context) {
+                                  //                           return MoMoUssd(
+                                  //                             userId:
+                                  //                                 userData['user']
+                                  //                                     ['_id'],
+                                  //                             serverToken: userData[
+                                  //                                     'user'][
+                                  //                                 'server_token'],
+                                  //                             url:
+                                  //                                 'https://pgw.shekla.app/momo/makepayment',
+                                  //                             hisab:
+                                  //                                 widget.price!,
+                                  //                             traceNo: widget
+                                  //                                 .orderPaymentUniqueId!,
+                                  //                             phone:
+                                  //                                 userData['user']
+                                  //                                     ['phone'],
+                                  //                             orderPaymentId: widget
+                                  //                                 .orderPaymentId!,
+                                  //                           );
+                                  //                         },
+                                  //                       ),
+                                  //                     ).then((value) {
+                                  //                       _boaVerify();
+                                  //                     });
+                                  //                   },
+                                  //                 )
+                                  //               ],
+                                  //             );
+                                  //           });
+                                  //     } else {
+                                  //       ScaffoldMessenger.of(context)
+                                  //           .showSnackBar(Service.showMessage(
+                                  //               "Something went wrong! Please try again!",
+                                  //               true));
+                                  //       setState(() {
+                                  //         kifiyaMethod = -1;
+                                  //       });
+                                  //     }
+                                  //   }
 
                                   ///*******************************MoMo*******************************
 

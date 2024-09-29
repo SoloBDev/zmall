@@ -659,9 +659,10 @@ class _BodyState extends State<Body> {
                         },
                         child: Text(
                           "Delete Account?",
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: kGreyColor,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: kGreyColor,
+                                  ),
                         )),
                     isLoading
                         ? SpinKitWave(

@@ -261,24 +261,31 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               ),
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
-            TextField(
-              keyboardType: TextInputType.emailAddress,
-              cursorColor: kSecondaryColor,
-              style: TextStyle(color: kBlackColor),
-              onChanged: (value) {
-                setState(
-                  () {
-                    email = value;
-                  },
-                );
-              },
-              decoration: InputDecoration(
-                hintText: '     Email',
-                hintStyle: TextStyle(
-                  color: kGreyColor,
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: kSecondaryColor),
+            Offstage(
+              offstage:
+                  Provider.of<ZMetaData>(context, listen: false).areaCode ==
+                          "+251"
+                      ? true
+                      : false,
+              child: TextField(
+                keyboardType: TextInputType.emailAddress,
+                cursorColor: kSecondaryColor,
+                style: TextStyle(color: kBlackColor),
+                onChanged: (value) {
+                  setState(
+                    () {
+                      email = value;
+                    },
+                  );
+                },
+                decoration: InputDecoration(
+                  hintText: '     Email',
+                  hintStyle: TextStyle(
+                    color: kGreyColor,
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: kSecondaryColor),
+                  ),
                 ),
               ),
             ),
@@ -313,16 +320,22 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               _loading = !_loading;
                             },
                           );
-                        } else if (email == null ||
-                            !emailValidatorRegExp.hasMatch(email)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter a valid email address", false));
-                          setState(
-                            () {
-                              _loading = !_loading;
-                            },
-                          );
+                        } else if (Provider.of<ZMetaData>(context,
+                                    listen: false)
+                                .areaCode !=
+                            "+251") {
+                          if (email == null ||
+                              !emailValidatorRegExp.hasMatch(email)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter a valid email address",
+                                    true));
+                            setState(
+                              () {
+                                _loading = !_loading;
+                              },
+                            );
+                          }
                         } else {
                           // loginUser(
                           //     "${Provider.of<ZMetaData>(context, listen: false).areaCode}$phone",
@@ -372,12 +385,18 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/send_sms_with_message";
     String token = Uuid().v4();
-    Map data = {
-      "code": "${token}_zmall",
-      "phone": phone,
-      "email": email,
-      "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp"
-    };
+    Map data = Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
+        ? {
+            "code": "${token}_zmall",
+            "phone": phone,
+            "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp"
+          }
+        : {
+            "code": "${token}_zmall",
+            "phone": phone,
+            "email": email,
+            "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp"
+          };
     var body = json.encode(data);
     try {
       http.Response response = await http

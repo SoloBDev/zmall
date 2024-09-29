@@ -803,7 +803,6 @@ class BodyState extends State<Body> {
   }
 
   void storeClicked(dynamic store) async {
-
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/add_user_and_store";
     Map data = {
@@ -825,7 +824,6 @@ class BodyState extends State<Body> {
         body: body,
       );
       print("Store clicked");
-
     } catch (e) {
       print(e);
     }
