@@ -190,7 +190,8 @@ class _PredictScreenState extends State<PredictScreen> {
                                       kDefaultPadding * 3),
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage("images/pl_logos/${widget.game['home_team'].toString().toLowerCase()}.png"),
+                                      image: AssetImage(
+                                          "images/pl_logos/${widget.game['home_team'].toString().toLowerCase()}.png"),
                                       fit: BoxFit.fill,
                                     ),
                                     shape: BoxShape.circle,
@@ -214,29 +215,35 @@ class _PredictScreenState extends State<PredictScreen> {
                             widget.game['is_finished']
                                 ? widget.game['home_score'].toString()
                                 : "-",
-                            style:
-                                Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  color: kPrimaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           Text(
                             "\t:\t",
-                            style:
-                                Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  color: kPrimaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           Text(
                             widget.game['is_finished']
                                 ? widget.game['away_score'].toString()
                                 : "-",
-                            style:
-                                Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  color: kPrimaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           Expanded(
                             child: Column(
@@ -248,7 +255,8 @@ class _PredictScreenState extends State<PredictScreen> {
                                       kDefaultPadding * 3),
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: AssetImage("images/pl_logos/${widget.game['away_team'].toString().toLowerCase()}.png",
+                                      image: AssetImage(
+                                        "images/pl_logos/${widget.game['away_team'].toString().toLowerCase()}.png",
                                       ),
                                       fit: BoxFit.fill,
                                     ),
@@ -1015,7 +1023,7 @@ class _PredictScreenState extends State<PredictScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;
@@ -1068,7 +1076,7 @@ class _PredictScreenState extends State<PredictScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;
@@ -1100,7 +1108,8 @@ class TeamContainer extends StatelessWidget {
             width: getProportionateScreenWidth(kDefaultPadding * 2),
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("images/pl_logos/${teamName.toString().toLowerCase()}.png"),
+                image: AssetImage(
+                    "images/pl_logos/${teamName.toString().toLowerCase()}.png"),
                 fit: BoxFit.fill,
               ),
               shape: BoxShape.rectangle,

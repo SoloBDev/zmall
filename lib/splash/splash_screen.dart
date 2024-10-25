@@ -64,6 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void fetchAd() async {
     await getAd();
   }
+
   void _requestLocationPermission() async {
     _permissionStatus = await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.always ||
@@ -81,19 +82,20 @@ class _SplashScreenState extends State<SplashScreen> {
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
     print("Checking location.....");
-    Provider.of<ZMetaData>(context, listen: false).setLocation(currentLocation.latitude, currentLocation.longitude);
+    Provider.of<ZMetaData>(context, listen: false)
+        .setLocation(currentLocation.latitude, currentLocation.longitude);
   }
 
   void _doLocationTask() async {
     LocationPermission _permissionStatus =
-    await FlLocation.checkLocationPermission();
+        await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
         _permissionStatus == LocationPermission.always) {
       if (await FlLocation.isLocationServicesEnabled) {
         getLocation();
       } else {
         LocationPermission serviceStatus =
-        await FlLocation.requestLocationPermission();
+            await FlLocation.requestLocationPermission();
         if (serviceStatus == LocationPermission.always ||
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
@@ -177,10 +179,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ? Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) =>
-                  abroadData != null
-                          ? GlobalHome(
-                            )
-                          : GlobalScreen(),
+                      abroadData != null ? GlobalHome() : GlobalScreen(),
                 ),
               )
             : Navigator.of(context).pushReplacement(
@@ -242,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen> {
       });
       return "success";
     } catch (e) {
-      print(e);
+      // print(e);
       loader(5);
       return "failed";
     }
@@ -280,7 +279,7 @@ class _SplashScreenState extends State<SplashScreen> {
         return data;
       }
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

@@ -799,7 +799,7 @@ class _BodyState extends State<Body> {
       responseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -835,7 +835,7 @@ class _BodyState extends State<Body> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -880,7 +880,7 @@ class _BodyState extends State<Body> {
       });
       return response;
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -917,7 +917,7 @@ class _BodyState extends State<Body> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

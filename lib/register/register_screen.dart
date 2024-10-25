@@ -752,7 +752,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //     print(json.decode(response.body));
   //     return response;
   //   } catch (e) {
-  //     print(e);
+  //     // print(e);
   //     return null;
   //   }
   // }
@@ -794,7 +794,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -828,7 +828,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // print(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

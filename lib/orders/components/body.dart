@@ -85,7 +85,6 @@ class _BodyState extends State<Body> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-
                       if (responseData['order_list'][index]['delivery_type'] ==
                           2) {
                         Navigator.push(
@@ -313,8 +312,8 @@ class _BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
-      if(mounted)
+      // print(e);
+      if (mounted)
         setState(() {
           this._loading = false;
         });

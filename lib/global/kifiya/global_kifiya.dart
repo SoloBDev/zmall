@@ -10,6 +10,7 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/report/global_report.dart';
 import 'package:zmall/kifiya/components/cyber_source.dart';
+import 'package:zmall/kifiya/components/dashen_master_card.dart';
 import 'package:zmall/kifiya/components/kifiya_method_container.dart';
 import 'package:zmall/kifiya/components/telebirr_screen.dart';
 import 'package:zmall/models/cart.dart';
@@ -56,8 +57,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   int kifiyaMethod = 1;
   double topUpAmount = 0.0;
   double currentBalance = 0.0;
-   String? otp;
-   String? paymentGatewayId;
+  String? otp;
+  String? paymentGatewayId;
   String firstName = "";
   String lastName = "";
   late String uuid;
@@ -459,8 +460,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                             //   crossAxisSpacing:
                             //       getProportionateScreenWidth(kDefaultPadding),
                             // ),
-                            separatorBuilder: (context, index){
-                              return Container(height: 4,);
+                            separatorBuilder: (context, index) {
+                              return Container(
+                                height: 4,
+                              );
                             },
                             itemCount:
                                 paymentResponse['payment_gateway'].length,
@@ -525,12 +528,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                       onChanged: (val) {
                                                         firstName = val;
                                                       },
-                                                      decoration: textFieldInputDecorator.copyWith(
-                                                          labelText:
-                                                                  firstName
+                                                      decoration: textFieldInputDecorator
+                                                          .copyWith(
+                                                              labelText: firstName
                                                                       .isNotEmpty
-                                                              ? firstName
-                                                              : "First Name"),
+                                                                  ? firstName
+                                                                  : "First Name"),
                                                     ),
                                                     Container(
                                                       height:
@@ -546,12 +549,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                       onChanged: (val) {
                                                         lastName = val;
                                                       },
-                                                      decoration: textFieldInputDecorator.copyWith(
-                                                          labelText:
-                                                                  lastName
+                                                      decoration: textFieldInputDecorator
+                                                          .copyWith(
+                                                              labelText: lastName
                                                                       .isNotEmpty
-                                                              ? lastName
-                                                              : "Last Name"),
+                                                                  ? lastName
+                                                                  : "Last Name"),
                                                     ),
                                                     Container(
                                                       height:
@@ -566,14 +569,13 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                       keyboardType:
                                                           TextInputType.text,
                                                       onChanged: (val) {},
-                                                      decoration: textFieldInputDecorator
-                                                          .copyWith(
-                                                              labelText: abroadData!
-                                                                      .abroadEmail!
-                                                                      .isNotEmpty
-                                                                  ? abroadData!
-                                                                      .abroadEmail
-                                                                  : "Email"),
+                                                      decoration: textFieldInputDecorator.copyWith(
+                                                          labelText: abroadData!
+                                                                  .abroadEmail!
+                                                                  .isNotEmpty
+                                                              ? abroadData!
+                                                                  .abroadEmail
+                                                              : "Email"),
                                                     ),
                                                   ],
                                                 ),
@@ -608,7 +610,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                           abroadData!
                                                               .abroadEmail!
                                                               .isNotEmpty &&
-                                                          abroadData!.abroadName!
+                                                          abroadData!
+                                                              .abroadName!
                                                               .isNotEmpty &&
                                                           abroadData!
                                                               .abroadPhone!
@@ -750,7 +753,120 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                 true));
                                       }
                                     });
-                              } else {
+                              }
+
+                              ///**************************Dashen mastercard***************************************
+                              else if (paymentResponse['payment_gateway'][index]
+                                          ['name']
+                                      .toString()
+                                      .toLowerCase() ==
+                                  "dashen mastercard") {
+                                return KifiyaMethodContainer(
+                                    selected: kifiyaMethod == index + 4,
+                                    title: paymentResponse['payment_gateway']
+                                            [index]['description']
+                                        .toString()
+                                        .toUpperCase(),
+                                    kifiyaMethod: kifiyaMethod,
+                                    imagePath: "images/dashenmpgs.png",
+                                    press: () async {
+                                      setState(() {
+                                        kifiyaMethod = index + 4;
+                                        paymentGatewayId =
+                                            paymentResponse['payment_gateway']
+                                                [index]['_id'];
+                                      });
+                                      var cartId =
+                                          await Service.read("cart_id");
+                                      print(
+                                          "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                      print(
+                                          "Order payment ID : ${widget.orderPaymentId}");
+                                      print(
+                                          "Payment Gateway ID : $paymentGatewayId");
+                                      print("User ID : ${cart!.userId}");
+                                      print(
+                                          "Server Token : ${cart!.serverToken}");
+                                      print("Cart ID : $cartId");
+
+                                      var data = await useBorsa();
+                                      if (data['success']) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                title: Text(
+                                                    "Pay Using Mastercard"),
+                                                content: Text(
+                                                    "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Dashen Mastercard?"),
+                                                actions: [
+                                                  TextButton(
+                                                    child: Text(
+                                                      "Cancel",
+                                                      style: TextStyle(
+                                                          color:
+                                                              kSecondaryColor),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: Text(
+                                                      "Continue",
+                                                      style: TextStyle(
+                                                          color: kBlackColor),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return DashenMasterCard(
+                                                                url:
+                                                                    "https://pgw.shekla.app/dashenMpgs/mastercard/api/checkout",
+                                                                amount: widget
+                                                                    .price,
+                                                                phone: abroadData!
+                                                                    .abroadPhone!,
+                                                                traceNo: widget
+                                                                    .orderPaymentUniqueId,
+                                                                orderPaymentId:
+                                                                    widget
+                                                                        .orderPaymentId,
+                                                                currency: Provider.of<
+                                                                            ZMetaData>(
+                                                                        context,
+                                                                        listen:
+                                                                            false)
+                                                                    .currency);
+                                                          },
+                                                        ),
+                                                      ).then((value) {
+                                                        _boaVerify();
+                                                      });
+                                                    },
+                                                  )
+                                                ],
+                                              );
+                                            });
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(Service.showMessage(
+                                                "Something went wrong! Please try again!",
+                                                true));
+                                      }
+                                    });
+                              }
+
+                              ///*******************************Dashen mastercard*******************************
+                              ///
+                              ///
+                              else {
                                 return SizedBox.shrink();
                               }
                             },
@@ -968,7 +1084,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       Map data = {
         "user_id": cart!.userId,
         "cart_id": cart_id,
-        "is_schedule_order": cart!.isSchedule != null ? cart!.isSchedule : false,
+        "is_schedule_order":
+            cart!.isSchedule != null ? cart!.isSchedule : false,
         "schedule_order_start_at": cart!.scheduleStart != null &&
                 cart!.isSchedule != null &&
                 cart!.isSchedule

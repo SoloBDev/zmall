@@ -105,10 +105,11 @@ class _OrderRatingState extends State<OrderRating> {
                               kDefaultPadding / 2)),
                       Text(
                         widget.name!,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: kBlackColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: kBlackColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       SizedBox(
                           height: getProportionateScreenHeight(
@@ -228,7 +229,7 @@ class _OrderRatingState extends State<OrderRating> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

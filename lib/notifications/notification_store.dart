@@ -296,10 +296,12 @@ class _NotificationStoreState extends State<NotificationStore> {
                           ),
                           title: Text(
                             "${products[index]["_id"]["name"]}",
-                            style:
-                                Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           children: [
                             ListView.separated(
@@ -773,7 +775,7 @@ class _NotificationStoreState extends State<NotificationStore> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;

@@ -67,7 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
     if (mounted) {
@@ -82,14 +81,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _doLocationTask() async {
     LocationPermission _permissionStatus =
-    await FlLocation.checkLocationPermission();
+        await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
         _permissionStatus == LocationPermission.always) {
       if (await FlLocation.isLocationServicesEnabled) {
         getLocation();
       } else {
         LocationPermission serviceStatus =
-        await FlLocation.requestLocationPermission();
+            await FlLocation.requestLocationPermission();
         if (serviceStatus == LocationPermission.always ||
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
@@ -170,8 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
-
   void addError({required String error}) {
     if (!errors.contains(error))
       setState(() {
@@ -187,51 +184,50 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void getNearByMerchants() async {
+    // _doLocationTask();
+    categoriesResponse = await CoreServices.getCategoryList(
+        Provider.of<ZMetaData>(context, listen: false).longitude,
+        Provider.of<ZMetaData>(context, listen: false).latitude,
+        "5b3f76f2022985030cd3a437",
+        "Ethiopia",
+        context);
+    if (categoriesResponse != null && categoriesResponse['success']) {
+      categories = categoriesResponse['deliveries'];
+      Service.saveBool('is_global', false);
+    } else {
+      if (categoriesResponse['error_code'] == 999) {
+        await CoreServices.clearCache();
+        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+            "${errorCodes['${categoriesResponse['error_code']}']}", true));
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      } else if (categoriesResponse['error_code'] == 813) {
+        print("Not in Addis Ababa");
+        Provider.of<ZMetaData>(context, listen: false)
+            .changeCountrySettings('South Sudan');
 
-      // _doLocationTask();
-      categoriesResponse = await CoreServices.getCategoryList(
-          Provider.of<ZMetaData>(context, listen: false).longitude,
-          Provider.of<ZMetaData>(context, listen: false).latitude,
-          "5b3f76f2022985030cd3a437",
-          "Ethiopia",
-          context);
-      if (categoriesResponse != null && categoriesResponse['success']) {
-        categories = categoriesResponse['deliveries'];
-        Service.saveBool('is_global', false);
+        // showCupertinoDialog(
+        //     context: context,
+        //     builder: (_) => CupertinoAlertDialog(
+        //           title: Text("ZMall Global!"),
+        //           content: Text(
+        //               "We have detected that your location is not in Addis Ababa. Please proceed to ZMall Global!"),
+        //           actions: [
+        //             CupertinoButton(
+        //               child: Text('Continue'),
+        //               onPressed: () {
+        //                 Service.saveBool('is_global', true);
+        //                 Navigator.pushNamedAndRemoveUntil(context, "/global",
+        //                     (Route<dynamic> route) => false);
+        //               },
+        //             )
+        //           ],
+        //         ));
       } else {
-        if (categoriesResponse['error_code'] == 999) {
-         await CoreServices.clearCache();
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "${errorCodes['${categoriesResponse['error_code']}']}", true));
-          Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-        } else if (categoriesResponse['error_code'] == 813) {
-          print("Not in Addis Ababa");
-          Provider.of<ZMetaData>(context, listen: false)
-              .changeCountrySettings('South Sudan');
-
-          // showCupertinoDialog(
-          //     context: context,
-          //     builder: (_) => CupertinoAlertDialog(
-          //           title: Text("ZMall Global!"),
-          //           content: Text(
-          //               "We have detected that your location is not in Addis Ababa. Please proceed to ZMall Global!"),
-          //           actions: [
-          //             CupertinoButton(
-          //               child: Text('Continue'),
-          //               onPressed: () {
-          //                 Service.saveBool('is_global', true);
-          //                 Navigator.pushNamedAndRemoveUntil(context, "/global",
-          //                     (Route<dynamic> route) => false);
-          //               },
-          //             )
-          //           ],
-          //         ));
-        } else {
-          print("${errorCodes['${categoriesResponse['error_code']}']}");
-          // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          //     "${errorCodes['${categoriesResponse['error_code']}']}", true));
-        }
+        print("${errorCodes['${categoriesResponse['error_code']}']}");
+        // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+        //     "${errorCodes['${categoriesResponse['error_code']}']}", true));
       }
+    }
   }
 
   @override
@@ -420,7 +416,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   Provider.of<ZMetaData>(
                                                           context,
                                                           listen: false)
-                                                      .country.replaceAll(' ', ''));
+                                                      .country
+                                                      .replaceAll(' ', ''));
                                               widget.firstRoute
                                                   ? Navigator
                                                       .pushReplacementNamed(
@@ -564,7 +561,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

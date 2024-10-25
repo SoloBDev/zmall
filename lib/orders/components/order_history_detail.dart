@@ -194,7 +194,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                       ? SingleChildScrollView(
                           child: Column(
                             children: [
-                              CategoryContainer(title: Provider.of<ZLanguage>(context, listen: false).orderDetails),
+                              CategoryContainer(
+                                  title: Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .orderDetails),
                               SizedBox(
                                 height: getProportionateScreenHeight(
                                     kDefaultPadding / 2),
@@ -244,7 +247,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                   ),
                                               softWrap: true,
                                             ),
-                                            Text(Provider.of<ZLanguage>(context, listen: false).receivedBy),
+                                            Text(Provider.of<ZLanguage>(context,
+                                                    listen: false)
+                                                .receivedBy),
                                             Text(
                                               responseData['order_list']
                                                           ['cart_detail']
@@ -271,7 +276,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                     ),
                                                     onPressed: () {}),
                                                 Text(
-                                                  Provider.of<ZLanguage>(context, listen: false).thankYou,
+                                                  Provider.of<ZLanguage>(
+                                                          context,
+                                                          listen: false)
+                                                      .thankYou,
                                                   textAlign: TextAlign.center,
                                                 )
                                               ],
@@ -312,7 +320,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                           ).then((value) =>
                                                               getUser());
                                                         }),
-                                                    Text(Provider.of<ZLanguage>(context, listen: false).rateUs),
+                                                    Text(Provider.of<ZLanguage>(
+                                                            context,
+                                                            listen: false)
+                                                        .rateUs),
                                                   ],
                                                 )
                                               : Container()
@@ -323,7 +334,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                               SizedBox(
                                   height: getProportionateScreenHeight(
                                       kDefaultPadding / 2)),
-                              CategoryContainer(title: Provider.of<ZLanguage>(context, listen: false).deliveryDetails),
+                              CategoryContainer(
+                                  title: Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .deliveryDetails),
                               SizedBox(
                                 height: getProportionateScreenHeight(
                                     kDefaultPadding / 2),
@@ -363,7 +377,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(Provider.of<ZLanguage>(context, listen: false).deliveredBy),
+                                                Text(Provider.of<ZLanguage>(
+                                                        context,
+                                                        listen: false)
+                                                    .deliveredBy),
                                                 Text(
                                                   "${responseData['provider_detail']['first_name']}",
                                                   style: Theme.of(context)
@@ -390,7 +407,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                           ),
                                                           onPressed: () {}),
                                                       Text(
-                                                        Provider.of<ZLanguage>(context, listen: false).thankYou,
+                                                        Provider.of<ZLanguage>(
+                                                                context,
+                                                                listen: false)
+                                                            .thankYou,
                                                         textAlign:
                                                             TextAlign.center,
                                                       )
@@ -427,7 +447,11 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                             ).then((value) =>
                                                                 getUser());
                                                           }),
-                                                      Text(Provider.of<ZLanguage>(context, listen: false).rateUs),
+                                                      Text(Provider.of<
+                                                                  ZLanguage>(
+                                                              context,
+                                                              listen: false)
+                                                          .rateUs),
                                                     ],
                                                   )
                                           ],
@@ -581,7 +605,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        Provider.of<ZLanguage>(context, listen: false).enjoyingZmall,
+                                        Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .enjoyingZmall,
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleLarge
@@ -593,7 +619,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             kDefaultPadding / 2),
                                       ),
                                       Text(
-                                        Provider.of<ZLanguage>(context, listen: false).rateReviewBlock,
+                                        Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .rateReviewBlock,
                                         style: Theme.of(context)
                                             .textTheme
                                             .labelLarge,
@@ -604,7 +632,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             kDefaultPadding / 2),
                                       ),
                                       CustomButton(
-                                        title: Provider.of<ZLanguage>(context, listen: false).rateUs,
+                                        title: Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .rateUs,
                                         press: () {
                                           _rateMyApp.showStarRateDialog(
                                             context,
@@ -671,7 +701,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                           kDefaultPadding),
                                     ),
                                     SizedBox(width: kDefaultPadding / 4),
-                                    Text(Provider.of<ZLanguage>(context, listen: false).cash)
+                                    Text(Provider.of<ZLanguage>(context,
+                                            listen: false)
+                                        .cash)
                                   ],
                                 ),
                               ],
@@ -707,7 +739,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(Provider.of<ZLanguage>(context, listen: false).servicePrice),
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .servicePrice),
                                         Text(
                                             "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}"),
                                       ],
@@ -720,7 +754,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          Provider.of<ZLanguage>(context, listen: false).totalServicePrive,
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .totalServicePrive,
                                           style:
                                               TextStyle(color: kSecondaryColor),
                                         ),
@@ -742,7 +778,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(Provider.of<ZLanguage>(context, listen: false).promo),
+                                              Text(Provider.of<ZLanguage>(
+                                                      context,
+                                                      listen: false)
+                                                  .promo),
                                               Text(
                                                   "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
                                             ],
@@ -766,7 +805,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
-                                                Provider.of<ZLanguage>(context, listen: false).totalPromo,
+                                                Provider.of<ZLanguage>(context,
+                                                        listen: false)
+                                                    .totalPromo,
                                                 style: TextStyle(
                                                     color: kSecondaryColor),
                                               ),
@@ -791,7 +832,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(Provider.of<ZLanguage>(context, listen: false).cartPrice),
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .cartPrice),
                                         Text(
                                             "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}"),
                                       ],
@@ -804,7 +847,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          Provider.of<ZLanguage>(context, listen: false).totalCartPrice,
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .totalCartPrice,
                                           style:
                                               TextStyle(color: kSecondaryColor),
                                         ),
@@ -862,8 +907,14 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                         responseData['order_list']
                                                     ['order_payment_detail']
                                                 ['is_paid_from_wallet']
-                                            ? Text(Provider.of<ZLanguage>(context, listen: false).wallet)
-                                            : Text(Provider.of<ZLanguage>(context, listen: false).online),
+                                            ? Text(Provider.of<ZLanguage>(
+                                                    context,
+                                                    listen: false)
+                                                .wallet)
+                                            : Text(Provider.of<ZLanguage>(
+                                                    context,
+                                                    listen: false)
+                                                .online),
                                         responseData['order_list']
                                                     ['order_payment_detail']
                                                 ['is_paid_from_wallet']
@@ -894,7 +945,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(Provider.of<ZLanguage>(context, listen: false).promo),
+                                              Text(Provider.of<ZLanguage>(
+                                                      context,
+                                                      listen: false)
+                                                  .promo),
                                               Text(
                                                   "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
                                             ],
@@ -916,7 +970,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(Provider.of<ZLanguage>(context, listen: false).cash),
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .cash),
                                         Text(
                                             "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['cash_payment'].toStringAsFixed(2)}"),
                                       ],
@@ -930,7 +986,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                     kDefaultPadding / 2)),
                             Column(
                               children: [
-                                Text(Provider.of<ZLanguage>(context, listen: false).total),
+                                Text(Provider.of<ZLanguage>(context,
+                                        listen: false)
+                                    .total),
                                 Text(
                                   "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total'].toStringAsFixed(2)}",
                                   style: Theme.of(context)
@@ -953,7 +1011,9 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                         25
                                 ? Container()
                                 : CustomButton(
-                                    title: Provider.of<ZLanguage>(context, listen: false).submit,
+                                    title: Provider.of<ZLanguage>(context,
+                                            listen: false)
+                                        .submit,
                                     press: () {},
                                     color: kBlackColor,
                                   ),
@@ -1151,7 +1211,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

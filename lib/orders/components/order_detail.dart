@@ -1031,7 +1031,7 @@ class _OrderDetailState extends State<OrderDetail> {
       responseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -1082,7 +1082,7 @@ class _OrderDetailState extends State<OrderDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1141,7 +1141,7 @@ class _OrderDetailState extends State<OrderDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

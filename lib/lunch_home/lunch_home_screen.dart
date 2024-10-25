@@ -549,9 +549,11 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                         ),
                         if (senderUser.isNotEmpty && senderPhone.isNotEmpty ||
                             (_homeContact != null &&
-
-              _homeContact!.list!
-                  .where((element) => element.phone == senderPhone).length > 0))
+                                _homeContact!.list!
+                                        .where((element) =>
+                                            element.phone == senderPhone)
+                                        .length >
+                                    0))
                           TextButton(
                             onPressed: () {
                               _contact =
@@ -559,7 +561,10 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
 
                               if (_homeContact != null) {
                                 if (_homeContact!.list!
-                                    .where((element) => element.phone == senderPhone).length > 0) {
+                                        .where((element) =>
+                                            element.phone == senderPhone)
+                                        .length >
+                                    0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     Service.showMessage(
                                         ("Contact already exists"), true),
@@ -587,10 +592,12 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                             },
                             child: Text(
                               "Save Contact",
-                              style:
-                                  Theme.of(context).textTheme.bodySmall!.copyWith(
-                                        color: kSecondaryColor,
-                                      ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                    color: kSecondaryColor,
+                                  ),
                             ),
                           )
                       ],
@@ -787,15 +794,21 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                 onPressed: () async {
                                   DateTime _now = DateTime.now();
                                   DateTime? pickedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: _now,
+                                    lastDate: _now.add(
+                                      Duration(days: 7),
+                                    ),
+                                  );
+                                  TimeOfDay? time = await showTimePicker(
                                       context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: _now,
-                                      lastDate: _now.add(
-                                        Duration(days: 7),
-                                      ),);
-                                  TimeOfDay? time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(DateTime.now()));
+                                      initialTime: TimeOfDay.fromDateTime(
+                                          DateTime.now()));
                                   setState(() {
-                                    _scheduledDate = pickedDate!.add(Duration(hours: time!.hour, minutes: time!.minute));
+                                    _scheduledDate = pickedDate!.add(Duration(
+                                        hours: time!.hour,
+                                        minutes: time!.minute));
                                   });
                                 },
                               ),
@@ -975,7 +988,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._isLoading = false;
       });
@@ -1031,7 +1044,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         _isLoading = false;
       });
@@ -1062,7 +1075,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         _isLoading = false;
       });
@@ -1120,7 +1133,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         _isLoading = false;
       });

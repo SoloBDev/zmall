@@ -1061,7 +1061,7 @@ class _SearchScreenState extends State<SearchScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1252,7 +1252,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ],
                     ),
                   ),
-                      Text(
+                  Text(
                     "${(_searchResult[index]['similarity']).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: (_searchResult[index]['similarity']).toInt() >
@@ -1267,7 +1267,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       ? kSecondaryColor
                                       : kGreyColor,
                         ),
-                  ), 
+                  ),
                 ],
               ),
             ),

@@ -527,7 +527,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -563,7 +563,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

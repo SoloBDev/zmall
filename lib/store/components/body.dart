@@ -737,7 +737,7 @@ class BodyState extends State<Body> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -793,7 +793,7 @@ class BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -825,7 +825,7 @@ class BodyState extends State<Body> {
       );
       print("Store clicked");
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 }

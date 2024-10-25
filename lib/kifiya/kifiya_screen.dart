@@ -501,7 +501,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                     .toString()
                                                     .toLowerCase() ==
                                                 "dashen mastercard"
-                                            ? 'images/dashen.png'
+                                            ? 'images/dashenmpgs.png'
 
                                             ///******************"dashen mastercard"***********************
                                             ///
@@ -2110,7 +2110,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -2167,7 +2167,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -2231,7 +2231,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

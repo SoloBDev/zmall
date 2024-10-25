@@ -331,7 +331,7 @@ class _SplashContainerState extends State<SplashContainer> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;

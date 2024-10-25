@@ -44,7 +44,6 @@ class _CourierDetailState extends State<CourierDetail> {
         orderStatus = data;
         providerId = orderStatus['provider_id'];
       });
-
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
@@ -582,7 +581,7 @@ class _CourierDetailState extends State<CourierDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -723,7 +722,7 @@ class _CourierDetailState extends State<CourierDetail> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -771,7 +770,7 @@ class _CourierDetailState extends State<CourierDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

@@ -225,7 +225,7 @@ class _ProductScreenState extends State<ProductScreen> {
         await Service.save("user_favorite_stores", val);
       }
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -1475,7 +1475,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 backgroundColor: kSecondaryColor,
                               ),
                             );
-                            print(e);
+                            // print(e);
                             print(st);
                           }
                         } else {
@@ -1662,7 +1662,7 @@ class _ProductScreenState extends State<ProductScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -1695,7 +1695,7 @@ class _ProductScreenState extends State<ProductScreen> {
         body: body,
       );
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 
@@ -1730,7 +1730,7 @@ class _ProductScreenState extends State<ProductScreen> {
       favoriteResponseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -1766,7 +1766,7 @@ class _ProductScreenState extends State<ProductScreen> {
       favoriteResponseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

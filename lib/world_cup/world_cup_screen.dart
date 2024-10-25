@@ -228,7 +228,8 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                                 3),
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: AssetImage("images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
+                                                        image: AssetImage(
+                                                            "images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
                                                         fit: BoxFit.fill,
                                                       ),
                                                       shape: BoxShape.rectangle,
@@ -315,7 +316,8 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                                 3),
                                                     decoration: BoxDecoration(
                                                       image: DecorationImage(
-                                                        image: AssetImage("images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
+                                                        image: AssetImage(
+                                                          "images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
                                                         ),
                                                         fit: BoxFit.fill,
                                                       ),
@@ -492,12 +494,14 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                             },
                             child: Text(
                               "Rules & Winnings",
-                              style:
-                                  Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: kGreyColor,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: kPrimaryColor,
-                                      ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: kGreyColor,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: kPrimaryColor,
+                                  ),
                             ),
                           ),
                           Expanded(
@@ -533,7 +537,8 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 kDefaultPadding * 2.5),
                                             decoration: BoxDecoration(
                                               image: DecorationImage(
-                                                image: AssetImage("images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
+                                                image: AssetImage(
+                                                    "images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
                                                 fit: BoxFit.fill,
                                               ),
                                               shape: BoxShape.rectangle,
@@ -583,7 +588,8 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                 kDefaultPadding * 2.5),
                                             decoration: BoxDecoration(
                                               image: DecorationImage(
-                                                image: AssetImage("images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
+                                                image: AssetImage(
+                                                    "images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
                                                 fit: BoxFit.fill,
                                               ),
                                               shape: BoxShape.rectangle,
@@ -823,7 +829,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;
@@ -872,7 +878,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;
