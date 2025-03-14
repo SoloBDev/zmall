@@ -22,8 +22,9 @@ class LocationContainer extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-              color:
-                  isSelected ? kSecondaryColor : kGreyColor.withOpacity(0.4)),
+              color: isSelected
+                  ? kSecondaryColor
+                  : kGreyColor.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(
             getProportionateScreenWidth(kDefaultPadding / 2),
           ),

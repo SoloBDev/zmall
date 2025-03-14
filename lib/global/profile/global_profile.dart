@@ -171,7 +171,9 @@ class _GlobalProfileState extends State<GlobalProfile> {
                     ],
                   ),
                   Text(
-                    abroadData != null ? abroadData!.abroadPhone.toString() : "",
+                    abroadData != null
+                        ? abroadData!.abroadPhone.toString()
+                        : "",
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Text(

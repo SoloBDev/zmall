@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/size_config.dart';
@@ -9,16 +10,18 @@ class CustomBanner extends StatelessWidget {
     required this.press,
     required this.subtitle,
     required this.title,
+    this.isNetworkImage = false,
   }) : super(key: key);
 
   final String imageUrl;
   final String title;
   final String subtitle;
+  final bool isNetworkImage;
   final GestureTapCallback press;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: press,
       child: Container(
         width: double.infinity,
@@ -26,19 +29,63 @@ class CustomBanner extends StatelessWidget {
         margin: EdgeInsets.symmetric(
           horizontal: getProportionateScreenWidth(kDefaultPadding),
         ),
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+        // padding:EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
         decoration: BoxDecoration(
           color: kPrimaryColor,
-          border: Border.all(color: kGreyColor.withOpacity(0.1)),
+          border: Border.all(color: kGreyColor.withValues(alpha: 0.1)),
           borderRadius: BorderRadius.circular(
             getProportionateScreenWidth(kDefaultPadding / 2),
           ),
           boxShadow: [boxShadow],
-          image: DecorationImage(
-            image: AssetImage(imageUrl),
-            fit: BoxFit.cover,
-          ),
+          // image: DecorationImage(
+          //   image: isNetworkImage
+          //       ? NetworkImage(imageUrl) as ImageProvider<Object>
+          //       : AssetImage(imageUrl),
+          //   fit: BoxFit.fill,
+          // ),
         ),
+        child: !isNetworkImage
+            ? Container(
+                width: double.infinity,
+                height: getProportionateScreenHeight(kDefaultPadding * 8),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: AssetImage(imageUrl),
+                  ),
+                ),
+              )
+            : CachedNetworkImage(
+                imageUrl: imageUrl,
+                imageBuilder: (context, imageProvider) => Container(
+                  width: double.infinity,
+                  height: getProportionateScreenHeight(kDefaultPadding * 8),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(
+                        getProportionateScreenHeight(kDefaultPadding / 2)),
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: imageProvider,
+                    ),
+                  ),
+                ),
+                placeholder: (context, url) => Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(kSecondaryColor),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  width: double.infinity,
+                  height: getProportionateScreenHeight(kDefaultPadding * 8),
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: AssetImage(imageUrl),
+                    ),
+                  ),
+                ),
+              ),
         // child: Column(
         //   mainAxisAlignment: MainAxisAlignment.end,
         //   crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,7 +93,7 @@ class CustomBanner extends StatelessWidget {
         //     Container(
         //       padding: EdgeInsets.all(kDefaultPadding / 2),
         //       decoration: BoxDecoration(
-        //         color: kPrimaryColor.withOpacity(0.7),
+        //         color: kPrimaryColor.withValues(alpha: 0.7),
         //         borderRadius: BorderRadius.circular(kDefaultPadding),
         //       ),
         //       child: Text.rich(

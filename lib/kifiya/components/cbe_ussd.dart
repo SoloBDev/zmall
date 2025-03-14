@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -40,21 +39,9 @@ class _CbeUssdState extends State<CbeUssd> {
   bool _loading = false;
   String initUrl = "";
   String uuid = "";
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initPayment();
   }
@@ -70,17 +57,18 @@ class _CbeUssdState extends State<CbeUssd> {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "${data['message']}. Please try other payment methods", true,
           duration: 4));
-      await Future.delayed(Duration(seconds: 3)).then((value) => Navigator.pop(context));
+      await Future.delayed(Duration(seconds: 3))
+          .then((value) => Navigator.pop(context));
     }
   }
 
-  void _verifyPayment()async {
-
+  void _verifyPayment() async {
     var data = await verifyPayment();
-    if(data != null && data['success']){
+    if (data != null && data['success']) {
       Navigator.pop(context);
     } else {
-      await Future.delayed(Duration(seconds: 2)).then((value) => _verifyPayment());
+      await Future.delayed(Duration(seconds: 2))
+          .then((value) => _verifyPayment());
     }
   }
 
@@ -93,13 +81,9 @@ class _CbeUssdState extends State<CbeUssd> {
             style: TextStyle(color: kBlackColor),
           ),
           elevation: 1.0,
-          // leading: TextButton(
-          //   child: Text("Done"),
-          //   onPressed: () => Navigator.of(context).pop(),
-          // ),
         ),
         body: Padding(
-          padding:  EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -109,8 +93,7 @@ class _CbeUssdState extends State<CbeUssd> {
                 children: [
                   Text(
                     'Pay Using CBE Birr',
-                    style: TextStyle(
-                        fontSize: 30, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     'Powered by CBE',
@@ -123,14 +106,20 @@ class _CbeUssdState extends State<CbeUssd> {
                 height: getProportionateScreenHeight(kDefaultPadding * 10),
                 width: getProportionateScreenWidth(kDefaultPadding * 10),
               ),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding/2),),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
               SpinKitPouringHourGlassRefined(color: kBlackColor),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding/2),),
-              Text("Please complete payment through the USSD prompt. \nWaiting for payment to be completed....", textAlign: TextAlign.center,),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              Text(
+                "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
-        )
-    );
+        ));
   }
 
   Future<dynamic> initPayment() async {
@@ -190,7 +179,9 @@ class _CbeUssdState extends State<CbeUssd> {
     setState(() {
       _loading = true;
     });
-    var url = "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/check_paid_order";;
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/check_paid_order";
+    ;
 
     Map data = {
       "user_id": widget.userId,

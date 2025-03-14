@@ -1,0 +1,2 @@
+/Users/apple/Documents/ZMall-Projects/zmall/android/app/.cxx/RelWithDebInfo/6860203w/x86_64/CMakeFiles/edit_cache.dir
+/Users/apple/Documents/ZMall-Projects/zmall/android/app/.cxx/RelWithDebInfo/6860203w/x86_64/CMakeFiles/rebuild_cache.dir

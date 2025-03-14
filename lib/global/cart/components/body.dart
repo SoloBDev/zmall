@@ -15,6 +15,7 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   AbroadCart? cart;
+  AbroadAliExpressCart? aliexpressCart;
   bool _loading = true;
   double price = 0;
 
@@ -38,6 +39,7 @@ class _BodyState extends State<Body> {
   void getCart() async {
     try {
       var data = await Service.read('abroad_cart');
+      var aliCart = await Service.read('abroad_aliexpressCart');
       print(data);
       if (data != null) {
         setState(() {
@@ -46,6 +48,21 @@ class _BodyState extends State<Body> {
         print(cart);
         calculatePrice();
       }
+      // print("ALI CART>>> ${aliCart != null}");
+      if (aliCart != null) {
+        setState(() {
+          aliexpressCart = AbroadAliExpressCart.fromJson(aliCart);
+          Service.save('abroad_aliexpressCart', aliexpressCart);
+        });
+        // print("ALI CART>>> ${aliexpressCart!.toJson()}");
+        // print(
+        //     "ALI CART ITEM>>> ${aliexpressCart!.toJson()['cart']['items']}");
+        // print("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
+        // print("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
+      }
+      // else {
+      //   print("ALI CART NOT FOUND>>>");
+      // }
     } catch (e) {
       print(e);
     }
@@ -120,6 +137,11 @@ class _BodyState extends State<Body> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
+                                    SizedBox(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding / 5),
+                                    ),
+                                    Text(cart!.items![index].noteForItem),
                                   ],
                                 ),
                               ),
@@ -131,7 +153,8 @@ class _BodyState extends State<Body> {
                                           icon: Icon(
                                             Icons.remove_circle_outline,
                                             color:
-                                                cart!.items![index].quantity != 1
+                                                cart!.items![index].quantity !=
+                                                        1
                                                     ? kSecondaryColor
                                                     : kGreyColor,
                                           ),
@@ -160,7 +183,33 @@ class _BodyState extends State<Body> {
                                                             (currQty - 1);
                                                     Service.save(
                                                         'abroad_cart', cart);
+                                                    // Update aliexpressCart if applicable
+                                                    if (aliexpressCart !=
+                                                            null &&
+                                                        aliexpressCart!
+                                                                .cart.storeId ==
+                                                            cart!.storeId) {
+                                                      // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .quantity =
+                                                          currQty - 1;
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .price =
+                                                          unitPrice *
+                                                              (currQty - 1);
+                                                      Service.save(
+                                                          'abroad_aliexpressCart',
+                                                          aliexpressCart); // Save updated aliexpressCart
+                                                    }
                                                   });
+                                                  print(
+                                                      "cart ${cart!.toJson()}");
+                                                  print(
+                                                      "Alicart ${aliexpressCart!.toJson()}");
                                                   calculatePrice();
                                                 }),
                                       Text(
@@ -190,7 +239,27 @@ class _BodyState extends State<Body> {
                                               cart!.items![index].price =
                                                   unitPrice * (currQty + 1);
                                               Service.save('abroad_cart', cart);
+                                              // Update aliexpressCart if applicable
+                                              if (aliexpressCart != null &&
+                                                  aliexpressCart!
+                                                          .cart.storeId ==
+                                                      cart!.storeId) {
+                                                // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
+                                                aliexpressCart!
+                                                    .cart
+                                                    .items![index]
+                                                    .quantity = currQty + 1;
+                                                aliexpressCart!.cart
+                                                        .items![index].price =
+                                                    unitPrice * (currQty + 1);
+                                                Service.save(
+                                                    'abroad_aliexpressCart',
+                                                    aliexpressCart); // Save updated aliexpressCart
+                                              }
                                             });
+                                            print("cart ${cart!.toJson()}");
+                                            print(
+                                                "Alicart ${aliexpressCart!.toJson()}");
                                             calculatePrice();
                                           }),
                                     ],
@@ -200,7 +269,22 @@ class _BodyState extends State<Body> {
                                       setState(() {
                                         cart!.items!.removeAt(index);
                                         Service.save('abroad_cart', cart);
+                                        if (aliexpressCart != null &&
+                                            aliexpressCart!.cart.storeId ==
+                                                cart!.storeId) {
+                                          aliexpressCart!.cart.items!
+                                              .removeAt(index);
+                                          aliexpressCart!.itemIds!
+                                              .removeAt(index);
+                                          aliexpressCart!.productIds!
+                                              .removeAt(index);
+                                          Service.save('abroad_aliexpressCart',
+                                              aliexpressCart); //NEW
+                                        }
                                       });
+                                      print("cart ${cart!.toJson()}");
+                                      print(
+                                          "Alicart ${aliexpressCart!.toJson()}");
                                       calculatePrice();
                                     },
                                     child: Text(
@@ -254,7 +338,6 @@ class _BodyState extends State<Body> {
                     ),
                   ),
                 ),
-
                 SizedBox(
                   height: getProportionateScreenHeight(kDefaultPadding / 4),
                 ),

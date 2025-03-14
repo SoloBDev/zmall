@@ -29,6 +29,9 @@ class Body extends StatefulWidget {
     @required this.companyId,
     this.controller,
     @required this.filterOpenedStore,
+    // New callback parameter
+    this.onAllClosedChanged,
+    this.onSearching,
   });
 
   final String? cityId, storeDeliveryId;
@@ -37,6 +40,9 @@ class Body extends StatefulWidget {
   final category;
   final int? companyId;
   final Controller? controller;
+  // Callback to notify parent
+  final Function(bool)? onAllClosedChanged;
+  final Function(bool)? onSearching;
   @override
   BodyState createState() => BodyState(this.controller!);
 }
@@ -63,6 +69,12 @@ class BodyState extends State<Body> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getAppKeys();
+    widget.isStore! ? _getStoreListByCompany() : _getCompanyList();
+    isLogged();
+  }
+
+  Future<void> _onRefresh() async {
     getAppKeys();
     widget.isStore! ? _getStoreListByCompany() : _getCompanyList();
     isLogged();
@@ -120,6 +132,7 @@ class BodyState extends State<Body> {
       getTags(stores);
       setState(() {
         this._loading = false;
+        _notifyAllClosed(); // Notify parent after updating isOpen
       });
     } else {
       if (mounted) {
@@ -151,6 +164,7 @@ class BodyState extends State<Body> {
   }
 
   void getTags(List stores) {
+    tagFilters.clear();
     var storeTags = {};
     stores.forEach((store) {
       var tags = store['famous_products_tags'];
@@ -336,265 +350,303 @@ class BodyState extends State<Body> {
     });
   }
 
+//////////// Notify parent ////////////////
+  void _notifyAllClosed() {
+    final allClosed = isOpen.isNotEmpty && !isOpen.any((open) => open);
+    widget.onAllClosedChanged?.call(allClosed);
+  }
+
+  void _notifyOnSearch() {
+    final isSearching = _searchResult.isNotEmpty || controller.text.isNotEmpty;
+    widget.onSearching?.call(isSearching);
+  }
+
+//////////// Notify parent ////////////////
+
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      inAsyncCall: _loading,
-      color: kPrimaryColor,
-      progressIndicator: CustomLinearProgressIndicator(
-        message: "Gathering Stores...",
-      ),
-      child: stores != null
-          ? Column(
-              children: [
-                !widget.isStore!
-                    ? Container(
-                        color: kPrimaryColor,
-                        child: Card(
-                          elevation: 0.3,
-                          child: TextField(
-                            controller: controller,
-                            decoration: InputDecoration(
-                              hintText: Provider.of<ZLanguage>(context).search,
-                              border: InputBorder.none,
-                              prefixIcon: Icon(Icons.search),
-                              suffixIcon: controller.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: Icon(Icons.cancel),
-                                      onPressed: () {
-                                        controller.clear();
-                                        onSearchTextChanged('');
-                                        setState(
-                                          () {
-                                            storeOpen(stores);
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: RefreshIndicator(
+        color: kPrimaryColor,
+        backgroundColor: kSecondaryColor,
+        onRefresh: _onRefresh,
+        child: ModalProgressHUD(
+          inAsyncCall: _loading,
+          color: kPrimaryColor,
+          progressIndicator: CustomLinearProgressIndicator(
+            message: "Gathering Stores...",
+          ),
+          child: stores != null
+              ? Column(
+                  children: [
+                    !widget.isStore!
+                        ? Container(
+                            color: kPrimaryColor,
+                            child: Card(
+                              elevation: 0.3,
+                              child: TextField(
+                                controller: controller,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      Provider.of<ZLanguage>(context).search,
+                                  border: InputBorder.none,
+                                  prefixIcon: Icon(Icons.search),
+                                  suffixIcon: controller.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: Icon(Icons.cancel),
+                                          onPressed: () {
+                                            controller.clear();
+                                            onSearchTextChanged('');
+                                            setState(
+                                              () {
+                                                storeOpen(stores);
+                                              },
+                                            );
                                           },
-                                        );
-                                      },
-                                    )
-                                  : null,
-                            ),
-                            onChanged: onSearchTextChanged,
-                          ),
-                        ),
-                      )
-                    : Container(),
-                tagFilters.length != 0
-                    ? Container(
-                        color: kPrimaryColor,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: kDefaultPadding * 0.4,
-                            right: kDefaultPadding * 0.4,
-                            bottom: kDefaultPadding * 0.4,
-                          ),
-                          child: Container(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 1.5),
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: tagFilters.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    if (selectedTagFilters
-                                        .contains(tagFilters[index])) {
-                                      selectedTagFilters
-                                          .remove(tagFilters[index]);
-                                    } else {
-                                      selectedTagFilters.add(tagFilters[index]);
-                                    }
-                                    filterUsingTag();
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: selectedTagFilters
-                                              .contains(tagFilters[index])
-                                          ? kSecondaryColor
-                                          : kPrimaryColor,
-                                      borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 8),
-                                      ),
-                                      border: Border.all(
-                                        width: 1.0,
-                                        color: selectedTagFilters
-                                                .contains(tagFilters[index])
-                                            ? kSecondaryColor.withOpacity(0.6)
-                                            : kBlackColor.withOpacity(0.4),
-                                      ),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: getProportionateScreenWidth(
-                                            kDefaultPadding / 2)),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          tagFilters[index]
-                                              .toString()
-                                              .toUpperCase(),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                fontWeight: (selectedTagFilters
-                                                        .contains(
-                                                            tagFilters[index]))
-                                                    ? FontWeight.bold
-                                                    : FontWeight.normal,
-                                                color: (selectedTagFilters
-                                                        .contains(
-                                                            tagFilters[index]))
-                                                    ? kPrimaryColor
-                                                    : kBlackColor,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                              separatorBuilder:
-                                  (BuildContext context, int index) => SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 5),
+                                        )
+                                      : null,
+                                ),
+                                onChanged: onSearchTextChanged,
                               ),
                             ),
-                          ),
-                        ),
-                      )
-                    : Container(),
-                Expanded(
-                  child: _searchResult.length != 0 || controller.text.isNotEmpty
-                      ? ListView.separated(
-                          itemCount: _searchResult.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            //////new change to filter searched open stores
-                            return widget.filterOpenedStore == true
-                                ? isOpen[index]
-                                    ? SearchLists(index: index)
-                                    : SizedBox
-                                        .shrink() ////which doesnot change the space or gap between lists
-                                : SearchLists(index: index);
-                            /////////////////
-                          },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              SizedBox(
-                            height: widget.filterOpenedStore == true ? 0 : 2,
-                          ),
-                        )
-                      : ListView.separated(
-                          itemCount: stores.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            //////new change to filter open stores
-                            return widget.filterOpenedStore == true
-                                ? isOpen[index]
-                                    ? StoreLists(index: index)
-                                    : SizedBox
-                                        .shrink() ////which doesnot change the space or gap between lists
-                                : StoreLists(index: index);
-                            //////////////////
-                          },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              SizedBox(
-                            height: widget.filterOpenedStore == true ? 0 : 2,
-                          ),
-                        ),
-                ),
-              ],
-            )
-          : !_loading
-              ? Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        getProportionateScreenWidth(kDefaultPadding * 4),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomButton(
-                        title: "Retry",
-                        press: () {
-                          widget.isStore!
-                              ? _getStoreListByCompany()
-                              : _getCompanyList();
-                        },
-                        color: kSecondaryColor,
-                      ),
-                    ],
-                  ),
+                          )
+                        : Container(),
+                    tagFilters.length != 0
+                        ? Container(
+                            color: kPrimaryColor,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: kDefaultPadding * 0.4,
+                                vertical: kDefaultPadding * 0.4,
+                              ),
+                              // padding: EdgeInsets.only(
+                              //   left: kDefaultPadding * 0.4,
+                              //   right: kDefaultPadding * 0.4,
+                              //   bottom: kDefaultPadding * 0.4,
+
+                              // ),
+                              child: Container(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding * 1.5),
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: tagFilters.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        if (selectedTagFilters
+                                            .contains(tagFilters[index])) {
+                                          selectedTagFilters
+                                              .remove(tagFilters[index]);
+                                        } else {
+                                          selectedTagFilters
+                                              .add(tagFilters[index]);
+                                        }
+                                        filterUsingTag();
+                                      },
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: selectedTagFilters
+                                                  .contains(tagFilters[index])
+                                              ? kSecondaryColor
+                                              : kPrimaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            getProportionateScreenWidth(
+                                                kDefaultPadding / 8),
+                                          ),
+                                          border: Border.all(
+                                            width: 1.0,
+                                            color: selectedTagFilters
+                                                    .contains(tagFilters[index])
+                                                ? kSecondaryColor.withValues(
+                                                    alpha: 0.6)
+                                                : kBlackColor.withValues(
+                                                    alpha: 0.4),
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal:
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding / 2)),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              tagFilters[index]
+                                                  .toString()
+                                                  .toUpperCase(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    fontWeight:
+                                                        (selectedTagFilters
+                                                                .contains(
+                                                                    tagFilters[
+                                                                        index]))
+                                                            ? FontWeight.bold
+                                                            : FontWeight.normal,
+                                                    color: (selectedTagFilters
+                                                            .contains(
+                                                                tagFilters[
+                                                                    index]))
+                                                        ? kPrimaryColor
+                                                        : kBlackColor,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder:
+                                      (BuildContext context, int index) =>
+                                          SizedBox(
+                                    width: getProportionateScreenWidth(
+                                        kDefaultPadding / 5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(),
+                    Expanded(
+                      child:
+                          _searchResult.isNotEmpty || controller.text.isNotEmpty
+                              ? _buildSearchList()
+                              : _buildStoreList(),
+                    ),
+                  ],
                 )
-              : Container(),
+              : !_loading
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding * 4),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomButton(
+                            title: "Retry",
+                            press: () {
+                              widget.isStore!
+                                  ? _getStoreListByCompany()
+                                  : _getCompanyList();
+                            },
+                            color: kSecondaryColor,
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(),
+        ),
+      ),
     );
   }
 
 //////////////////////////newly added
+  Widget _buildStoreList() {
+    final allClosed = isOpen.isNotEmpty && !isOpen.any((open) => open);
+    return ListView.builder(
+      padding: const EdgeInsets.all(kDefaultPadding / 2),
+      itemCount: stores.length,
+      itemBuilder: (context, index) {
+        if (widget.filterOpenedStore == true && !allClosed) {
+          return isOpen[index]
+              ? Column(
+                  children: [
+                    StoreLists(index: index),
+                    SizedBox(height: kDefaultPadding / 4),
+                  ],
+                )
+              : const SizedBox();
+        } else {
+          return Column(
+            children: [
+              StoreLists(index: index),
+              SizedBox(height: kDefaultPadding / 4),
+            ],
+          );
+        }
+      },
+    );
+  }
 
-  Widget SearchLists({required int index}) {
-    return Container(
-      child: CustomListTile(
-        press: () {
-          try {
-            if (_searchResult[index]['store_count'] > 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return StoreScreen(
-                      cityId: widget.cityId,
-                      storeDeliveryId: widget.storeDeliveryId,
-                      category: widget.category,
-                      latitude: widget.latitude,
-                      longitude: widget.longitude,
-                      isStore: true,
-                      companyId: _searchResult[index]['company_id'],
-                    );
-                  },
-                ),
-              );
-            } else {
-              if (isLoggedIn) {
-                storeClicked(_searchResult[index]);
-              }
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return ProductScreen(
-                      latitude: widget.latitude!,
-                      longitude: widget.longitude!,
-                      store: _searchResult[index],
-                      location: _searchResult[index]["location"],
-                      isOpen: isOpen[index],
-                    );
-                  },
-                ),
-              );
-            }
-          } catch (e) {
-            if (isLoggedIn) {
-              storeClicked(_searchResult[index]);
-            }
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return ProductScreen(
-                    latitude: widget.latitude!,
-                    longitude: widget.longitude!,
-                    store: _searchResult[index],
-                    location: _searchResult[index]["location"],
-                    isOpen: true,
+  Widget _buildSearchList() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(kDefaultPadding / 2),
+      itemCount: _searchResult.length,
+      itemBuilder: (context, index) {
+        return Container(
+          child: CustomListTile(
+            press: () {
+              try {
+                if (_searchResult[index]['store_count'] > 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return StoreScreen(
+                          cityId: widget.cityId,
+                          storeDeliveryId: widget.storeDeliveryId,
+                          category: widget.category,
+                          latitude: widget.latitude,
+                          longitude: widget.longitude,
+                          isStore: true,
+                          companyId: _searchResult[index]['company_id'],
+                        );
+                      },
+                    ),
                   );
-                },
-              ),
-            );
-          }
-        },
-        store: _searchResult[index],
-        isOpen: isOpen[index],
-      ),
+                } else {
+                  if (isLoggedIn) {
+                    storeClicked(_searchResult[index]);
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return ProductScreen(
+                          latitude: widget.latitude!,
+                          longitude: widget.longitude!,
+                          store: _searchResult[index],
+                          location: _searchResult[index]["location"],
+                          isOpen: isOpen[index],
+                        );
+                      },
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (isLoggedIn) {
+                  storeClicked(_searchResult[index]);
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return ProductScreen(
+                        latitude: widget.latitude!,
+                        longitude: widget.longitude!,
+                        store: _searchResult[index],
+                        location: _searchResult[index]["location"],
+                        isOpen: true,
+                      );
+                    },
+                  ),
+                );
+              }
+            },
+            store: _searchResult[index],
+            isOpen: isOpen[index],
+          ),
+        );
+      },
+      separatorBuilder: (context, index) =>
+          SizedBox(height: kDefaultPadding / 4),
     );
   }
 
@@ -675,6 +727,7 @@ class BodyState extends State<Body> {
       selectedTagFilters.clear();
       setState(() {
         storeOpen(stores);
+        _notifyOnSearch();
       });
       return;
     }
@@ -687,6 +740,7 @@ class BodyState extends State<Body> {
 
     setState(() {
       storeOpen(_searchResult);
+      _notifyOnSearch();
     });
   }
 

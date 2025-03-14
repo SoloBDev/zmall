@@ -118,6 +118,9 @@ class _BodyState extends State<Body> {
       await Service.saveBool('logged', false);
       await Service.remove('user');
       await Service.remove('cart');
+      await Service.remove('aliexpressCart');
+
+      ///newly added for aliexpress
       await Service.remove('images');
       await Service.remove('p_items');
       await Service.remove('s_items');
@@ -130,7 +133,8 @@ class _BodyState extends State<Body> {
       ));
       Navigator.pushReplacementNamed(context, LoginScreen.routeName);
     } else {
-      if (responseData['error_code'] == 999) {
+      if (responseData['error_code'] != null &&
+          responseData['error_code'] == 999) {
         await CoreServices.clearCache();
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }
@@ -159,6 +163,7 @@ class _BodyState extends State<Body> {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         await Service.remove('cart');
+        await Service.remove('aliexpressCart'); //NEW
         await Service.remove('images');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }

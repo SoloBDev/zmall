@@ -22,8 +22,13 @@ class CustomListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
-        overlayColor: MaterialStateProperty.all(kWhiteColor),
+        backgroundColor: WidgetStateProperty.all<Color>(Colors.white),
+        overlayColor: WidgetStateProperty.all(kWhiteColor),
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kDefaultPadding),
+          ),
+        ),
       ),
       onPressed: press,
       child: Row(
@@ -33,6 +38,7 @@ class CustomListTile extends StatelessWidget {
             child: Row(
               children: [
                 ImageContainer(
+                  // url: "https://app.zmallapp.com/${store['image_url']}",
                   url: "http://159.65.147.111:8000/${store['image_url']}",
                 ),
                 SizedBox(width: kDefaultPadding / 2),
@@ -76,6 +82,7 @@ class FavoriteCustomListTile extends StatelessWidget {
             child: Column(
               children: [
                 FavoriteImageContainer(
+                  // url: "https://app.zmallapp.com/${store['image_url']}",
                   url: "http://159.65.147.111:8000/${store['image_url']}",
                 ),
                 SizedBox(height: kDefaultPadding / 4),

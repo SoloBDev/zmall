@@ -61,7 +61,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
   }
 
   Future<bool?> loginUser(String phone, BuildContext context) async {
-    print(phone);
+    // print(phone);
     FirebaseAuth _auth = FirebaseAuth.instance;
 
     _auth.verifyPhoneNumber(
@@ -76,23 +76,21 @@ class _GlobalScreenState extends State<GlobalScreen> {
             _loading = false;
           });
           if (user != null) {
-            print(user);
+            // print(user);
             Service.saveBool('is_global', true);
             Service.save('global_user_id', user.uid);
             Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => GlobalHome()));
+                context, MaterialPageRoute(builder: (context) => GlobalHome()));
           } else {
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => LoginScreen()));
-            print("Error");
+            // print("Error");
           }
 
           //This callback would gets called when verification is done automatically
         },
         verificationFailed: (FirebaseAuthException exception) {
-          print(exception.message);
+          // print(exception.message);
           ScaffoldMessenger.of(context)
               .showSnackBar(Service.showMessage(exception.message, true));
           setState(() {
@@ -157,8 +155,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      GlobalHome()));
+                                  builder: (context) => GlobalHome()));
                         } else {
                           print("Error while signing user");
                         }
@@ -178,10 +175,10 @@ class _GlobalScreenState extends State<GlobalScreen> {
     }
   }
 
-  Future<bool> verifyAndLoginUser(phone,email,firstName,lastName) async {
+  Future<bool> verifyAndLoginUser(phone, email, firstName, lastName) async {
     var response = await verificationEmail(email);
     if (response != null && response['success']) {
-      print(response);
+      // print("<<<<OTP>>>> $response");
       setState(() {
         success = true;
         smsCode = response['otp'];
@@ -206,8 +203,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
             text: "Z",
             style: TextStyle(
               color: kSecondaryColor,
-              fontSize:
-              getProportionateScreenWidth(kDefaultPadding * 1.8),
+              fontSize: getProportionateScreenWidth(kDefaultPadding * 1.8),
               fontWeight: FontWeight.bold,
             ),
             children: [
@@ -215,8 +211,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
                 text: "Mall Global",
                 style: TextStyle(
                   color: kBlackColor,
-                  fontSize: getProportionateScreenWidth(
-                      kDefaultPadding * 1.8),
+                  fontSize: getProportionateScreenWidth(kDefaultPadding * 1.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -233,7 +228,6 @@ class _GlobalScreenState extends State<GlobalScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-
                   Text(
                     "LOGIN",
                     style: TextStyle(
@@ -243,7 +237,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                         fontWeight: FontWeight.w700),
                   ),
                   SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 0.75),
+                    height:
+                        getProportionateScreenHeight(kDefaultPadding * 0.75),
                   ),
                   Container(
                     child: Row(
@@ -265,7 +260,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 0.75),
+                    height:
+                        getProportionateScreenHeight(kDefaultPadding * 0.75),
                   ),
                   TextFormField(
                     decoration: textFieldInputDecorator.copyWith(
@@ -279,49 +275,48 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
                         ),
-                        borderSide:
-                            BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding / 2),
                         ),
-                        borderSide:
-                            BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.3)),
                       ),
                     ),
                     keyboardType: TextInputType.phone,
                     controller: _phoneController,
                   ),
                   SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 0.75),
+                    height:
+                        getProportionateScreenHeight(kDefaultPadding * 0.75),
                   ),
                   TextFormField(
                     decoration: textFieldInputDecorator.copyWith(
                       labelText: "Email",
                       filled: true,
                       fillColor: Colors.grey[100],
-
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(
                           Radius.circular(
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding / 2),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.3)),
                       ),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     controller: _emailController,
-
                     onChanged: (value) {
                       if (value.isNotEmpty) {
                         removeError(error: kEmailNullError);
@@ -342,7 +337,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                     },
                   ),
                   SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 0.75),
+                    height:
+                        getProportionateScreenHeight(kDefaultPadding * 0.75),
                   ),
                   TextFormField(
                     decoration: textFieldInputDecorator.copyWith(
@@ -355,22 +351,23 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding / 2),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.3)),
                       ),
                     ),
                     controller: _firstName,
                     keyboardType: TextInputType.name,
                   ),
                   SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 0.75),
+                    height:
+                        getProportionateScreenHeight(kDefaultPadding * 0.75),
                   ),
                   TextFormField(
                     decoration: textFieldInputDecorator.copyWith(
@@ -383,15 +380,15 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding / 2),
                         ),
-                        borderSide:
-                        BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.3)),
                       ),
                     ),
                     controller: _lastName,
@@ -416,12 +413,17 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             setState(() {
                               _loading = true;
                             });
-                            if (phone.isNotEmpty && email.isNotEmpty && firstName.isNotEmpty && lastName.isNotEmpty) {
+                            if (phone.isNotEmpty &&
+                                email.isNotEmpty &&
+                                firstName.isNotEmpty &&
+                                lastName.isNotEmpty) {
                               phoneWithCountryCode = "$countryCode$phone";
-                              print(phoneWithCountryCode);
-                              print("$email $firstName $lastName");
-                              verifyAndLoginUser(phoneWithCountryCode, email, firstName, lastName).then(
-                                    (success) {
+                              // print(phoneWithCountryCode);
+                              // print("$email $firstName $lastName");
+                              verifyAndLoginUser(phoneWithCountryCode, email,
+                                      firstName, lastName)
+                                  .then(
+                                (success) {
                                   if (success) {
                                     _loading = !_loading;
                                     showDialog(
@@ -436,7 +438,9 @@ class _GlobalScreenState extends State<GlobalScreen> {
                                                 Text(
                                                     "Please enter the one time pin(OTP) sent to your email.\n"),
                                                 SizedBox(
-                                                  height: getProportionateScreenHeight(kDefaultPadding),
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding),
                                                 ),
                                                 TextField(
                                                   controller: _codeController,
@@ -448,36 +452,51 @@ class _GlobalScreenState extends State<GlobalScreen> {
                                                 title: "Confirm",
                                                 color: kSecondaryColor,
                                                 press: () async {
-                                                  final code = _codeController.text.trim();
-
+                                                  final code = _codeController
+                                                      .text
+                                                      .trim();
 
                                                   if (code == smsCode) {
-                                                    await Service.saveBool('is_global', true);
-                                                    await Service.save('global_user_id',phoneWithCountryCode);
-                                                    AbroadData abroadData = AbroadData(abroadEmail: email, abroadPhone: phoneWithCountryCode, abroadName: "$firstName $lastName");
-                                                    await Service.save("abroad_user", abroadData);
+                                                    await Service.saveBool(
+                                                        'is_global', true);
+                                                    await Service.save(
+                                                        'global_user_id',
+                                                        phoneWithCountryCode);
+                                                    AbroadData abroadData = AbroadData(
+                                                        abroadEmail: email,
+                                                        abroadPhone:
+                                                            phoneWithCountryCode,
+                                                        abroadName:
+                                                            "$firstName $lastName");
+                                                    await Service.save(
+                                                        "abroad_user",
+                                                        abroadData);
                                                     Navigator.of(context).pop();
                                                     setState(() {
                                                       _loading = true;
                                                     });
 
-                                                      Navigator.pushReplacement(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) => GlobalHome()));
-
-
+                                                    Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                GlobalHome()));
                                                   } else {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                        Service.showMessage(
-                                                            ("Error while verifying phone number. Please try again"),
-                                                            true));
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                            Service.showMessage(
+                                                                ("Error while verifying phone number. Please try again"),
+                                                                true));
                                                     setState(() {
                                                       _loading = false;
                                                     });
                                                     Navigator.of(context).pop();
-                                                    Navigator.pushReplacement(context,
-                                                        MaterialPageRoute(builder: (context) => LoginScreen()));
+                                                    Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                LoginScreen()));
                                                   }
                                                 },
                                               )
@@ -546,7 +565,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

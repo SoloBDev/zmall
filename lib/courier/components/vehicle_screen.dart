@@ -214,8 +214,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
                           child: Text(
                             "All our vehicles are busy to complete this order.\nPlease try again later...",
                             textAlign: TextAlign.center,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(),
                           ),
                         ),
               SectionTitle(
@@ -445,7 +447,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             getProportionateScreenHeight(kDefaultPadding * 9),
                         width: getProportionateScreenWidth(kDefaultPadding * 7),
                         decoration: BoxDecoration(
-                          color: kGreyColor.withOpacity(.3),
+                          color: kGreyColor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
@@ -570,7 +572,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                           color: kPrimaryColor,
                           border: Border.all(
                               color: paidBySender
-                                  ? kGreyColor.withOpacity(0.4)
+                                  ? kGreyColor.withValues(alpha: 0.4)
                                   : kSecondaryColor),
                           borderRadius: BorderRadius.circular(
                               getProportionateScreenWidth(kDefaultPadding / 2)),

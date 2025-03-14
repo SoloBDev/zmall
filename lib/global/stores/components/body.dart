@@ -440,6 +440,7 @@ class _BodyState extends State<Body> {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_store_list_by_company";
     Map data = {
+      "isGlobal": true,
       "city_id": cityId,
       "store_delivery_id": storeDeliveryId,
       "latitude": latitude,
@@ -480,7 +481,7 @@ class _BodyState extends State<Body> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -499,6 +500,7 @@ class _BodyState extends State<Body> {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_company_list";
     Map data = {
+      "isGlobal": true,
       "city_id": cityId,
       "store_delivery_id": storeDeliveryId,
       "latitude": latitude,
@@ -538,7 +540,7 @@ class _BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -575,7 +577,7 @@ class _BodyState extends State<Body> {
       );
       print("Store clicked");
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 }

@@ -11,12 +11,9 @@ import 'package:zmall/checkout/checkout_screen.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/kifiya/global_kifiya.dart';
-import 'package:zmall/kifiya/kifiya_screen.dart';
-import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
@@ -299,10 +296,9 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                       ),
                                     ),
                                     style: ButtonStyle(
-                                      elevation: MaterialStateProperty.all(1.0),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              kPrimaryColor),
+                                      elevation: WidgetStateProperty.all(1.0),
+                                      backgroundColor: WidgetStateProperty.all(
+                                          kPrimaryColor),
                                     ),
                                     onPressed: () async {
                                       if (!cart!.isOpen) {
@@ -319,25 +315,33 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                       }
 
                                       DateTime _now = DateTime.now();
-                                      DateTime? pickedDate = await showDatePicker(
+                                      DateTime? pickedDate =
+                                          await showDatePicker(
                                         context: context,
                                         initialDate: DateTime.now(),
-                                        firstDate: !cart!.isOpen ? _now.add(Duration(days: 1)) : _now,
+                                        firstDate: !cart!.isOpen
+                                            ? _now.add(Duration(days: 1))
+                                            : _now,
                                         lastDate: _now.add(
                                           Duration(days: 7),
-                                        ),);
-                                      TimeOfDay? time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(DateTime.now()));
+                                        ),
+                                      );
+                                      TimeOfDay? time = await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.fromDateTime(
+                                              DateTime.now()));
 
                                       setState(() {
-
-                                        _scheduledDate = pickedDate!.add(Duration(hours: time!.hour, minutes: time!.minute));
+                                        _scheduledDate = pickedDate!.add(
+                                            Duration(
+                                                hours: time!.hour,
+                                                minutes: time!.minute));
                                         cart!.scheduleStart = _scheduledDate;
                                         cart!.isSchedule = true;
                                       });
                                       await Service.save(
                                           'abroad_cart', cart!.toJson());
                                       getCart();
-
                                     },
                                   ),
                                 ],
@@ -433,7 +437,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                               DetailsRow(
                                 title: Provider.of<ZLanguage>(context).tip,
                                 subtitle:
-                                "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
+                                    "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
                               ),
                               SizedBox(
                                   height: getProportionateScreenHeight(
@@ -465,14 +469,17 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 ),
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   TextButton(
                                     onPressed: () {
                                       if (promoCodeApplied) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           Service.showMessage(
-                                              "Promo Code already applied!", true),
+                                              "Promo Code already applied!",
+                                              true),
                                         );
                                         setState(() {});
                                       } else {
@@ -482,12 +489,13 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.only(
                                                 topLeft: Radius.circular(30.0),
-                                                topRight: Radius.circular(30.0)),
+                                                topRight:
+                                                    Radius.circular(30.0)),
                                           ),
                                           builder: (BuildContext context) {
                                             return Padding(
-                                              padding:
-                                                  MediaQuery.of(context).viewInsets,
+                                              padding: MediaQuery.of(context)
+                                                  .viewInsets,
                                               child: Container(
                                                 padding: EdgeInsets.all(
                                                     getProportionateScreenHeight(
@@ -528,7 +536,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                     Container(
                                                       height:
                                                           getProportionateScreenHeight(
-                                                              kDefaultPadding / 2),
+                                                              kDefaultPadding /
+                                                                  2),
                                                     ),
 //                                          transferError
 //                                              ? Text(
@@ -549,19 +558,21 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
 //                                              :
                                                     _loading
                                                         ? SpinKitWave(
-                                                            color: kSecondaryColor,
-                                                            size:
-                                                                getProportionateScreenWidth(
-                                                                    kDefaultPadding),
+                                                            color:
+                                                                kSecondaryColor,
+                                                            size: getProportionateScreenWidth(
+                                                                kDefaultPadding),
                                                           )
                                                         : CustomButton(
                                                             title: "Apply",
-                                                            color: kSecondaryColor,
+                                                            color:
+                                                                kSecondaryColor,
                                                             press: () async {
                                                               if (promoCode
                                                                   .isNotEmpty) {
                                                                 setState(() {
-                                                                  _loading = true;
+                                                                  _loading =
+                                                                      true;
                                                                 });
                                                                 _applyPromoCode();
                                                                 Navigator.of(
@@ -571,12 +582,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                                 Navigator.of(
                                                                         context)
                                                                     .pop();
-                                                                ScaffoldMessenger
-                                                                        .of(context)
-                                                                    .showSnackBar(Service
-                                                                        .showMessage(
-                                                                            "Promo Code cannot be empty!",
-                                                                            false));
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(Service.showMessage(
+                                                                        "Promo Code cannot be empty!",
+                                                                        false));
                                                               }
                                                             },
                                                           ),
@@ -725,7 +735,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                           .titleMedium
                                           ?.copyWith(
                                             color: kSecondaryColor,
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
@@ -743,7 +754,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                         builder: (BuildContext context) {
                                           return StatefulBuilder(builder:
                                               (BuildContext context,
-                                              StateSetter setState) {
+                                                  StateSetter setState) {
                                             return Padding(
                                               padding: MediaQuery.of(context)
                                                   .viewInsets,
@@ -753,60 +764,60 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                         kDefaultPadding)),
                                                 child: Column(
                                                   mainAxisAlignment:
-                                                  MainAxisAlignment.start,
+                                                      MainAxisAlignment.start,
                                                   crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                      CrossAxisAlignment.start,
                                                   mainAxisSize:
-                                                  MainAxisSize.min,
+                                                      MainAxisSize.min,
                                                   children: <Widget>[
                                                     SizedBox(
                                                       height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
+                                                          getProportionateScreenHeight(
+                                                              kDefaultPadding),
                                                     ),
                                                     Text(
                                                       Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
+                                                              context,
+                                                              listen: false)
                                                           .addTip,
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .titleLarge
                                                           ?.copyWith(
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                      ),
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                     ),
                                                     SizedBox(
                                                       height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
+                                                          getProportionateScreenHeight(
+                                                              kDefaultPadding),
                                                     ),
                                                     TextField(
                                                       style: TextStyle(
                                                           color: kBlackColor),
                                                       keyboardType:
-                                                      TextInputType.number,
+                                                          TextInputType.number,
                                                       onChanged: (val) {
                                                         tipTemp =
                                                             double.parse(val);
                                                       },
                                                       decoration: textFieldInputDecorator
                                                           .copyWith(
-                                                          labelText: Provider
-                                                              .of<ZLanguage>(
-                                                              context)
-                                                              .tip),
+                                                              labelText: Provider
+                                                                      .of<ZLanguage>(
+                                                                          context)
+                                                                  .tip),
                                                     ),
                                                     SizedBox(
                                                       height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
+                                                          getProportionateScreenHeight(
+                                                              kDefaultPadding),
                                                     ),
                                                     Row(
                                                       mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
+                                                          MainAxisAlignment
+                                                              .spaceAround,
                                                       children: [
                                                         GestureDetector(
                                                           onTap: () {
@@ -817,7 +828,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                           },
                                                           child: CustomTag(
                                                             text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                           ),
                                                         ),
                                                         GestureDetector(
@@ -829,7 +840,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                           },
                                                           child: CustomTag(
                                                             text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                           ),
                                                         ),
                                                         GestureDetector(
@@ -841,21 +852,21 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                           },
                                                           child: CustomTag(
                                                             text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                     SizedBox(
                                                       height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
+                                                          getProportionateScreenHeight(
+                                                              kDefaultPadding),
                                                     ),
                                                     CustomButton(
                                                       title: Provider.of<
-                                                          ZLanguage>(
-                                                          context,
-                                                          listen: false)
+                                                                  ZLanguage>(
+                                                              context,
+                                                              listen: false)
                                                           .submit,
                                                       color: kSecondaryColor,
                                                       press: () async {
@@ -990,11 +1001,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                               .textTheme
                                               .titleMedium
                                               ?.copyWith(
-                                            color: kSecondaryColor,
-                                            decoration:
-                                            TextDecoration.underline,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                                color: kSecondaryColor,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                         Icon(
                                           Icons.monetization_on_outlined,
@@ -1116,7 +1127,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1144,7 +1155,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       "is_user_drop_order": true,
       "express_option": "normal",
       "server_token": cart!.serverToken,
-      "tip" : tip
+      "tip": tip
     };
     var body = json.encode(data);
     try {
@@ -1180,7 +1191,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1236,7 +1247,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1288,7 +1299,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

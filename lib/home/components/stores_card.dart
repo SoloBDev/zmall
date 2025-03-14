@@ -29,7 +29,6 @@ class StoresCard extends StatelessWidget {
     return GestureDetector(
       onTap: press,
       child: ClipRRect(
-
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(
             getProportionateScreenWidth(kDefaultPadding / 2),
@@ -40,11 +39,17 @@ class StoresCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-
             Column(
               children: [
                 Container(
-                  margin: EdgeInsets.only(top: isFeatured ? getProportionateScreenWidth(kDefaultPadding) : 0, right: isFeatured ? getProportionateScreenWidth(kDefaultPadding) : 0, ),
+                  margin: EdgeInsets.only(
+                    top: isFeatured
+                        ? getProportionateScreenWidth(kDefaultPadding)
+                        : 0,
+                    right: isFeatured
+                        ? getProportionateScreenWidth(kDefaultPadding)
+                        : 0,
+                  ),
                   decoration: BoxDecoration(
                     color: kPrimaryColor,
                     boxShadow: [boxShadow],
@@ -52,7 +57,6 @@ class StoresCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding / 2),
                     ),
-
                   ),
                   height: getProportionateScreenHeight(kDefaultPadding * 6),
                   width: getProportionateScreenWidth(kDefaultPadding * 10),
@@ -68,13 +72,12 @@ class StoresCard extends StatelessWidget {
                     ),
                     placeholder: (context, url) => Center(
                       child: Container(
-                        width:
-                        getProportionateScreenWidth(kDefaultPadding * 5),
+                        width: getProportionateScreenWidth(kDefaultPadding * 5),
                         height:
-                        getProportionateScreenHeight(kDefaultPadding * 5),
+                            getProportionateScreenHeight(kDefaultPadding * 5),
                         child: CircularProgressIndicator(
                           valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.transparent),
+                              AlwaysStoppedAnimation<Color>(Colors.transparent),
                         ),
                       ),
                     ),
@@ -100,51 +103,59 @@ class StoresCard extends StatelessWidget {
                                 kDefaultPadding / 5)),
                         child: Text(
                           storeName,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: kBlackColor,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: kBlackColor,
+                                  ),
                           maxLines: 1,
                         ),
                       ),
-
                       Text(
                         deliveryType,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: kBlackColor,
-                        ),
+                              fontWeight: FontWeight.w500,
+                              color: kBlackColor,
+                            ),
                         maxLines: 1,
                       ),
                       Row(
                         children: [
-                          Icon(Icons.star_rounded, color: Colors.amber, size: getProportionateScreenWidth(kDefaultPadding),),
-                          SizedBox(width: 5,),
-                          Text("$rating ($ratingCount)", style:
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-
-                            fontWeight: FontWeight.w500,
+                          Icon(
+                            Icons.star_rounded,
+                            color: Colors.amber,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          SizedBox(width: 3),
+                          Text(
+                            "$rating ($ratingCount)",
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: kGreyColor,
+                                    ),
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Icon(
+                            Icons.social_distance_rounded,
                             color: kGreyColor,
-                          ),),
-                          SizedBox(width: 10,),
-                          Icon(Icons.social_distance_rounded
-                            , color: kGreyColor, size: getProportionateScreenWidth(kDefaultPadding),),
-                          SizedBox(width: 5,),
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          SizedBox(
+                            width: 3,
+                          ),
                           Text(
                             "$distance KM",
                             style:
-                            Theme.of(context).textTheme.bodySmall?.copyWith(
-
-                              fontWeight: FontWeight.w500,
-                              color: kGreyColor,
-                            ),
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: kGreyColor,
+                                    ),
                           ),
-
-
                         ],
                       ),
-
-
                     ],
                   ),
                 )
@@ -162,19 +173,19 @@ class StoresCard extends StatelessWidget {
             //     ),
             //   ),
             // ) : Container(),
-            isFeatured ? Positioned(
-              right: 0,
-              child: Container(
-                height: getProportionateScreenWidth(kDefaultPadding * 3),
-                width: getProportionateScreenWidth(kDefaultPadding * 3),
-                //
-                child: Center(
-                  child: Image
-                      .asset("images/store_tags/$featuredTag.png")
-                ),
-              ),
-            ) : Container()
-            
+            isFeatured
+                ? Positioned(
+                    right: 0,
+                    child: Container(
+                      height: getProportionateScreenWidth(kDefaultPadding * 3),
+                      width: getProportionateScreenWidth(kDefaultPadding * 3),
+                      //
+                      child: Center(
+                          child: Image.asset(
+                              "images/store_tags/$featuredTag.png")),
+                    ),
+                  )
+                : Container()
           ],
         ),
       ),

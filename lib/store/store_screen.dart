@@ -29,7 +29,8 @@ class StoreScreen extends StatefulWidget {
 class _StoreScreenState extends State<StoreScreen> {
   Controller controller = Controller();
   bool filterOpenedStore = true;
-
+  bool allClosed = false; // New state to track if all stores are closed
+  bool isSearching = false; // New state to track if user is searching or not
   mapViewSelected(BuildContext context) {
     var items = controller.getStores();
     if (items != null) {
@@ -44,6 +45,20 @@ class _StoreScreenState extends State<StoreScreen> {
     }
   }
 
+// Callback to receive allClosed status from Body
+  void _onAllClosedChanged(bool value) {
+    setState(() {
+      allClosed = value;
+    });
+  }
+
+  // Callback to receive allClosed status from Body
+  void _onSearching(bool value) {
+    setState(() {
+      isSearching = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,24 +67,28 @@ class _StoreScreenState extends State<StoreScreen> {
             style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
         actions: [
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                filterOpenedStore = !filterOpenedStore;
-              });
-            },
-            child: Container(
-                padding: const EdgeInsets.all(5.0),
-                decoration: BoxDecoration(
-                  color: filterOpenedStore ? Colors.green : kSecondaryColor,
-                  borderRadius: BorderRadius.circular(kDefaultPadding * 0.666),
-                ),
-                child: Text(
-                  filterOpenedStore ? 'Opened' : 'All stores',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: kPrimaryColor),
-                )),
-          ),
+          if (!isSearching)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  filterOpenedStore = !filterOpenedStore;
+                });
+              },
+              child: Container(
+                  padding: const EdgeInsets.all(5.0),
+                  decoration: BoxDecoration(
+                    color: !allClosed && filterOpenedStore
+                        ? Colors.green
+                        : kSecondaryColor,
+                    borderRadius:
+                        BorderRadius.circular(kDefaultPadding * 0.666),
+                  ),
+                  child: Text(
+                    !allClosed && filterOpenedStore ? 'Opened' : 'All stores',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: kPrimaryColor),
+                  )),
+            ),
           IconButton(
               onPressed: () {
                 mapViewSelected(context);
@@ -91,6 +110,9 @@ class _StoreScreenState extends State<StoreScreen> {
         category: widget.category,
         companyId: widget.companyId,
         filterOpenedStore: filterOpenedStore,
+        //  // Pass callback to Body
+        onAllClosedChanged: _onAllClosedChanged,
+        onSearching: _onSearching,
       ),
     );
   }

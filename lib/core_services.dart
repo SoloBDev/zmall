@@ -11,15 +11,21 @@ import 'package:zmall/service.dart';
 import 'constants.dart';
 
 class CoreServices {
-  static Future<dynamic> getCategoryList(double longitude, double latitude,
-      String countryCode, String countryName, BuildContext context) async {
+  static Future<dynamic> getCategoryList(
+      {required double longitude,
+      required double latitude,
+      required String countryCode,
+      required String countryName,
+      required BuildContext context,
+      bool? isGlobal}) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_delivery_list_for_nearest_city";
     Map data = {
       "latitude": latitude,
       "longitude": longitude,
       "country": countryName,
-      "country_code": countryCode
+      "country_code": countryCode,
+      if (isGlobal != null) "isGlobal": isGlobal
     };
     var body = json.encode(data);
     try {
@@ -155,10 +161,17 @@ class CoreServices {
   static Future<dynamic> getPromotionalItems(
       {required String userId,
       required String serverToken,
-      required BuildContext ctx}) async {
+      required BuildContext ctx,
+      required List<double> userLocation,
+      bool? isGlobal}) async {
     var url =
         "${Provider.of<ZMetaData>(ctx, listen: false).baseUrl}/api/user/get_promotion_item";
-    Map data = {"user_id": userId, "server_token": serverToken};
+    Map data = {
+      "user_id": userId,
+      "server_token": serverToken,
+      "userLocation": userLocation,
+      if (isGlobal != null) "isGlobal": isGlobal,
+    };
 
     var body = json.encode(data);
     try {
@@ -187,11 +200,18 @@ class CoreServices {
 
   static Future<dynamic> getPromotionalStores(
       {required String userId,
-        required String serverToken,
-        required BuildContext ctx, required double latitude, required double longitude}) async {
+      required String serverToken,
+      required BuildContext ctx,
+      required double latitude,
+      required double longitude}) async {
     var url =
         "${Provider.of<ZMetaData>(ctx, listen: false).baseUrl}/api/user/get_promotion_store";
-    Map data = {"user_id": userId, "server_token": serverToken, "latitude" : latitude, "longitude" : longitude};
+    Map data = {
+      "user_id": userId,
+      "server_token": serverToken,
+      "latitude": latitude,
+      "longitude": longitude
+    };
 
     var body = json.encode(data);
     try {
@@ -351,6 +371,7 @@ class CoreServices {
     await Service.saveBool('logged', false);
     await Service.remove('user');
     await Service.remove('cart');
+    await Service.remove('aliexpressCart'); //
     await Service.remove('images');
     await Service.remove('p_items');
     await Service.remove('s_items');

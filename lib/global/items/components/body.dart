@@ -509,7 +509,7 @@ class _BodyState extends State<Body> {
                                                         [idx]['unique_id'])
                                                 .length >
                                             0
-                                        ? kSecondaryColor.withOpacity(0.2)
+                                        ? kSecondaryColor.withValues(alpha: 0.2)
                                         : kWhiteColor,
                                     borderRadius: BorderRadius.circular(
                                       getProportionateScreenWidth(
@@ -836,6 +836,7 @@ class _BodyState extends State<Body> {
                   setState(() {
                     cart!.toJson();
                     Service.remove('abroad_cart');
+                    Service.remove('abroad_aliexpressCart');
                     cart = AbroadCart();
                     addToCart(item, destination, storeLocation);
                     // print(item.id);

@@ -18,17 +18,17 @@ class EventSantimPayScreen extends StatefulWidget {
 
 class _EventSantimState extends State<EventSantimPayScreen> {
   bool _loading = true;
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
+  InAppWebViewSettings settings = InAppWebViewSettings(
+    //both platforms
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    javaScriptEnabled: true, // Ensure payment JS works
+    clearCache: true, // Clear cache for security
+    //android
+    useHybridComposition: true,
+    //ios
+    allowsInlineMediaPlayback: true,
+  );
 
   @override
   void initState() {
@@ -47,18 +47,11 @@ class _EventSantimState extends State<EventSantimPayScreen> {
       ),
       body: Stack(children: [
         InAppWebView(
-          initialOptions: options,
-          initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
-          // onWebViewCreated: (InAppWebViewController controller) {
-          //   controller.addJavaScriptHandler(
-          //     handlerName: 'onLoad',
-          //     callback: (_) {
-          //       setState(() {
-          //         _loading = false;
-          //       });
-          //     },
-          //   );
-          // },
+          initialSettings: settings,
+          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+          shouldOverrideUrlLoading: (controller, navigationAction) async {
+            return NavigationActionPolicy.ALLOW; // Allow all navigations
+          },
           onLoadStart: (InAppWebViewController controller, Uri? url) {
             setState(() {
               _loading = true;

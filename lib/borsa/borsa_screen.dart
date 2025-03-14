@@ -71,7 +71,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
         isLoading = false;
       });
     } else {
-      if (responseData['error_code'] == 999) {
+      if (responseData['error_code'] != null &&
+          responseData['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -79,7 +80,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
       setState(() {
         isLoading = false;
       });
-      if (errorCodes['${responseData['error_code']}'] != null) {
+      if (responseData['error_code'] != null &&
+          errorCodes['${responseData['error_code']}'] != null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("${errorCodes['${responseData['error_code']}']}"),
           backgroundColor: kSecondaryColor,
@@ -171,7 +173,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                       iconData: Icons.send,
                       title: "Transfer",
                       subtitle: "Send funds",
-                      color: kSecondaryColor.withOpacity(.8),
+                      color: kSecondaryColor.withValues(alpha: 0.8),
                       textColor: kPrimaryColor,
                       press: () {
                         showModalBottomSheet<void>(

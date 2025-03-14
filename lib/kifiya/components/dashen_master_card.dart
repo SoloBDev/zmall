@@ -35,17 +35,17 @@ class DashenMasterCard extends StatefulWidget {
 class _DashenMasterCardState extends State<DashenMasterCard> {
   bool _loading = false;
   String masterCardUrl = "";
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
+  InAppWebViewSettings settings = InAppWebViewSettings(
+    //both platforms
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    javaScriptEnabled: true, // Ensure payment JS works
+    clearCache: true, // Clear cache for security
+    //android
+    useHybridComposition: true,
+    //ios
+    allowsInlineMediaPlayback: true,
+  );
 
   @override
   void initState() {
@@ -122,10 +122,16 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
               ),
             ),
             body: InAppWebView(
-              initialOptions: options,
+              initialSettings: settings,
               initialUrlRequest: URLRequest(
-                url: Uri.parse(masterCardUrl),
+                url: WebUri(masterCardUrl),
               ),
+              // onWebViewCreated: (controller) {
+              //   _webViewController = controller; // Store controller if needed
+              // },
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                return NavigationActionPolicy.ALLOW; // Allow all navigations
+              },
             ),
           );
   }

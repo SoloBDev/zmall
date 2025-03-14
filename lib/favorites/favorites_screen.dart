@@ -186,9 +186,9 @@ class FavoritesScreenState extends State<FavoritesScreen> {
                           // ),
                           // boxShadow: [boxShadow],
                           border: Border.all(
-                            color: kGreyColor.withOpacity(0.2),
+                            color: kGreyColor.withValues(alpha: 0.2),
                             // vertical:
-                            // BorderSide(color: kGreyColor.withOpacity(0.2)),
+                            // BorderSide(color: kGreyColor.withValues(alpha: 0.2)),
                           ),
                         ),
                         width:

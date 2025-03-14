@@ -345,10 +345,11 @@ class _SearchScreenState extends State<SearchScreen> {
                   decoration: BoxDecoration(
                     borderRadius:
                         BorderRadius.circular(kDefaultPadding * 0.666),
-                    border: Border.all(color: Colors.grey.withOpacity(0.4)),
+                    border:
+                        Border.all(color: Colors.grey.withValues(alpha: 0.4)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                         blurRadius: 1,
                         offset: Offset(0, 2),
                       ),
@@ -480,8 +481,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                     width: 1.0,
                                     color: isStoreSelected &&
                                             selectedCatagory == index
-                                        ? kSecondaryColor.withOpacity(0.6)
-                                        : kBlackColor.withOpacity(0.4),
+                                        ? kSecondaryColor.withValues(alpha: 0.6)
+                                        : kBlackColor.withValues(alpha: 0.4),
                                   ),
                                 ),
                                 padding: EdgeInsets.symmetric(
@@ -1296,7 +1297,7 @@ class SearchImageContainer extends StatelessWidget {
         height: getProportionateScreenHeight(kDefaultPadding * 5),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: kBlackColor.withOpacity(0.04),
+          color: kBlackColor.withValues(alpha: 0.04),
           // borderRadius: BorderRadius.all(
           //   Radius.circular(
           //     getProportionateScreenHeight(kDefaultPadding * .75),
@@ -1322,7 +1323,7 @@ class SearchImageContainer extends StatelessWidget {
         height: getProportionateScreenHeight(kDefaultPadding * 5),
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          color: kBlackColor.withOpacity(0.01),
+          color: kBlackColor.withValues(alpha: 0.01),
           // borderRadius: BorderRadius.all(
           //   Radius.circular(
           //     getProportionateScreenHeight(kDefaultPadding * .75),
@@ -1392,7 +1393,7 @@ class Skeleton extends StatelessWidget {
       padding:
           EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding / 2)),
       decoration: BoxDecoration(
-        color: kBlackColor.withOpacity(0.04),
+        color: kBlackColor.withValues(alpha: 0.04),
         // borderRadius: BorderRadius.all(
         //   Radius.circular(
         //     getProportionateScreenHeight(kDefaultPadding * .75),

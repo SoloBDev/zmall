@@ -186,11 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
   void getNearByMerchants() async {
     // _doLocationTask();
     categoriesResponse = await CoreServices.getCategoryList(
-        Provider.of<ZMetaData>(context, listen: false).longitude,
-        Provider.of<ZMetaData>(context, listen: false).latitude,
-        "5b3f76f2022985030cd3a437",
-        "Ethiopia",
-        context);
+        longitude: Provider.of<ZMetaData>(context, listen: false).longitude,
+        latitude: Provider.of<ZMetaData>(context, listen: false).latitude,
+        countryCode: "5b3f76f2022985030cd3a437",
+        countryName: "Ethiopia",
+        context: context);
     if (categoriesResponse != null && categoriesResponse['success']) {
       categories = categoriesResponse['deliveries'];
       Service.saveBool('is_global', false);
@@ -334,6 +334,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               Navigator.pushNamedAndRemoveUntil(context,
                                   "/global", (Route<dynamic> route) => false);
+                              //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
+                              Provider.of<ZMetaData>(context, listen: false)
+                                  .changeCountrySettings("Ethiopia");
                             },
                             child: Text(
                               Provider.of<ZLanguage>(context).zGlobal,
@@ -443,7 +446,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       ? "${errorCodes['${responseData['error_code']}']}"
                                                       : responseData[
                                                           'error_description'],
-                                                  false),
+                                                  true),
                                             );
                                           }
                                         }
@@ -468,7 +471,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           .showSnackBar(
                                         Service.showMessage(
                                             "Please check your internet connection",
-                                            false),
+                                            true),
                                       );
                                       setState(() {
                                         _isLoading = false;
@@ -537,6 +540,8 @@ class _LoginScreenState extends State<LoginScreen> {
       "app_version": "3.0.4",
       // TODO: Change the next line before pushing to the App Store
       "device_type": Platform.isIOS ? 'iOS' : "android",
+      // "device_type": "android",
+      // "device_type": 'iOS',
     };
     var body = json.encode(data);
     try {
@@ -653,9 +658,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  bool _showPassword = false;
   TextFormField buildPasswordFormField() {
     return TextFormField(
-      obscureText: true,
+      obscureText: !_showPassword,
       onSaved: (newValue) => password = newValue!,
       onChanged: (value) {
         if (value.isNotEmpty) {
@@ -681,8 +687,13 @@ class _LoginScreenState extends State<LoginScreen> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSuffixIcon(
-          iconData: Icons.lock,
+        suffixIcon: IconButton(
+          onPressed: () {
+            setState(() {
+              _showPassword = !_showPassword;
+            });
+          },
+          icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
         ),
       ),
     );

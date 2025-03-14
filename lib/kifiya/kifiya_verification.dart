@@ -135,9 +135,10 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                     children: [
                       Text(
                         "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Tele Birr",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       SizedBox(
                         height:
@@ -251,7 +252,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                       getProportionateScreenWidth(kDefaultPadding)),
                   width: double.infinity,
                   decoration: BoxDecoration(
-                      color: kPrimaryColor.withOpacity(0.5),
+                      color: kPrimaryColor.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding))),
                   child: Column(

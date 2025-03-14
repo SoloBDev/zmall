@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:zmall/aliexpress/ali_product_screen.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
@@ -29,6 +30,7 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> with TickerProviderStateMixin {
   Cart? cart;
+  AliExpressCart? aliexpressCart;
   bool _loading = true;
   double price = 0;
   var appClose;
@@ -76,6 +78,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     try {
       userData = await Service.read('user');
       var data = await Service.read('cart');
+      var aliCart = await Service.read('aliexpressCart');
+
       if (data != null) {
         setState(() {
           cart = Cart.fromJson(data);
@@ -84,10 +88,25 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           storeID = cart!.storeId!;
           Service.save('cart', cart);
         });
+        // print("ALI CART>>> ${aliCart != null}");
+        if (aliCart != null) {
+          setState(() {
+            aliexpressCart = AliExpressCart.fromJson(aliCart);
+            Service.save('aliexpressCart', aliexpressCart);
+          });
+          // print("ALI CART>>> ${aliexpressCart!.toJson()}");
+          // print(
+          //     "ALI CART ITEM>>> ${aliexpressCart!.toJson()['cart']['items']}");
+          // print("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
+          // print("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
+        }
+        // else {
+        //   print("ALI CART NOT FOUND>>>");
+        // }
         _getStoreExtraItemList();
 
         calculatePrice();
-        if (cart != null && cart!.items!.length > 0) {
+        if (cart!.items!.isNotEmpty) {
           _getStoreDetail();
         } else {
           setState(() {
@@ -95,11 +114,38 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           });
         }
       }
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
   }
+  // void getCart() async {
+  //   setState(() {
+  //     _loading = true;
+  //   });
+  //   try {
+  //     userData = await Service.read('user');
+  //     var data = await Service.read('cart');
+  //     if (data != null) {
+  //       setState(() {
+  //         cart = Cart.fromJson(data);
+  //         cart!.serverToken = userData['user']['server_token'];
+  //         //walletBalance = double.parse(userData['user']['wallet'].toString());
+  //         storeID = cart!.storeId!;
+  //         Service.save('cart', cart);
+  //       });
+  //       _getStoreExtraItemList();
 
+  //       calculatePrice();
+  //       if (cart != null && cart!.items!.length > 0) {
+  //         _getStoreDetail();
+  //       } else {
+  //         setState(() {
+  //           _loading = false;
+  //         });
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
   void _getStoreDetail() async {
     setState(() {
       _loading = true;
@@ -112,8 +158,14 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
             storeDetail['store']['is_provide_laundry_service'];
         storeLocations = storeDetail['store']['location'];
         storeName = storeDetail['store']['name'];
+        if (aliexpressCart?.cart != null &&
+            cart!.storeId == aliexpressCart!.cart.storeId) {
+          cart!.storeLocation = aliexpressCart!.cart.storeLocation =
+              StoreLocation(long: storeLocations[1], lat: storeLocations[0]);
+        }
       });
       Service.save('cart', cart!.toJson());
+      Service.save('aliexpressCart', aliexpressCart?.toJson());
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
@@ -122,6 +174,28 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       _loading = false;
     });
   }
+  // void _getStoreDetail() async {
+  //   setState(() {
+  //     _loading = true;
+  //   });
+  //   var data = await getStoreDetail();
+  //   if (data != null && data['success']) {
+  //     setState(() {
+  //       storeDetail = data;
+  //       cart!.isLaundryService =
+  //           storeDetail['store']['is_provide_laundry_service'];
+  //       storeLocations = storeDetail['store']['location'];
+  //       storeName = storeDetail['store']['name'];
+  //     });
+  //     Service.save('cart', cart!.toJson());
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //         Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+  //   }
+  //   setState(() {
+  //     _loading = false;
+  //   });
+  // }
 
   void _requestLocationPermission() async {
     _permissionStatus = await FlLocation.checkLocationPermission();
@@ -219,7 +293,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
 
     if (data != null && data['success']) {
       extraItems = data['items'];
-      print(storeID);
+      // print(storeID);
     } else {
       setState(() {
         _loading = false;
@@ -299,13 +373,25 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
+                      // storeName.toString().toLowerCase() == "aliexpress"
+                      //     ? SizedBox.shrink()
+                      //     :
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return NotificationStore(storeId: cart!.storeId!);
-                          }));
-                        },
+                        onPressed:
+                            storeName.toString().toLowerCase() == "aliexpress"
+                                ? () {
+                                    Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) {
+                                      return AliProductListScreen();
+                                    }));
+                                  }
+                                : () {
+                                    Navigator.push(context,
+                                        MaterialPageRoute(builder: (context) {
+                                      return NotificationStore(
+                                          storeId: cart!.storeId!);
+                                    }));
+                                  },
                         child: Text(
                           "Add more?",
                           style:
@@ -419,8 +505,33 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                           item.price =
                                                               unitPrice *
                                                                   (currQty - 1);
-                                                          Service.save(
-                                                              'cart', cart);
+                                                          Service.save('cart',
+                                                              cart); //old
+                                                          // Update aliexpressCart if applicable
+                                                          if (aliexpressCart !=
+                                                                  null &&
+                                                              aliexpressCart!
+                                                                      .cart
+                                                                      .storeId ==
+                                                                  cart!
+                                                                      .storeId) {
+                                                            // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
+                                                            aliexpressCart!
+                                                                    .cart
+                                                                    .items![index]
+                                                                    .quantity =
+                                                                currQty - 1;
+                                                            aliexpressCart!
+                                                                    .cart
+                                                                    .items![index]
+                                                                    .price =
+                                                                unitPrice *
+                                                                    (currQty -
+                                                                        1);
+                                                            Service.save(
+                                                                'aliexpressCart',
+                                                                aliexpressCart); // Save updated aliexpressCart
+                                                          }
                                                         });
                                                         calculatePrice();
                                                       }),
@@ -447,7 +558,30 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                     item.quantity = currQty + 1;
                                                     item.price = unitPrice *
                                                         (currQty + 1);
-                                                    Service.save('cart', cart);
+                                                    Service.save(
+                                                        'cart', cart); //old
+                                                    // Update aliexpressCart if applicable
+                                                    if (aliexpressCart !=
+                                                            null &&
+                                                        aliexpressCart!
+                                                                .cart.storeId ==
+                                                            cart!.storeId) {
+                                                      // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .quantity =
+                                                          currQty + 1;
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .price =
+                                                          unitPrice *
+                                                              (currQty + 1);
+                                                      Service.save(
+                                                          'aliexpressCart',
+                                                          aliexpressCart); // Save updated aliexpressCart
+                                                    }
                                                   });
                                                   calculatePrice();
                                                 }),
@@ -457,7 +591,22 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                           onTap: () {
                                             setState(() {
                                               cart?.items?.removeAt(index);
-                                              Service.save('cart', cart);
+                                              //Service.save('cart', cart);//old
+                                              //NEW
+                                              Service.save('cart', cart); //old
+                                              if (aliexpressCart != null &&
+                                                  aliexpressCart!
+                                                          .cart.storeId ==
+                                                      cart!.storeId) {
+                                                aliexpressCart!.cart.items!
+                                                    .removeAt(index);
+                                                aliexpressCart!.itemIds!
+                                                    .removeAt(index);
+                                                aliexpressCart!.productIds!
+                                                    .removeAt(index);
+                                                Service.save('aliexpressCart',
+                                                    aliexpressCart); //NEW
+                                              }
                                             });
                                             calculatePrice();
                                           },
@@ -498,7 +647,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                           topRight: Radius.circular(kDefaultPadding * 2)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.8),
+                          color: Colors.grey.withValues(alpha: 0.8),
                           spreadRadius: 8,
                           blurRadius: 3,
                           offset: Offset(0, 7),
@@ -671,7 +820,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -726,7 +875,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -769,6 +918,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                   setState(() {
                     cart!.toJson();
                     Service.remove('cart');
+                    Service.remove('aliexpressCart'); ////NEW
                     cart = Cart();
                     addToCart(item, destination, storeLocation, storeId);
                   });
@@ -1181,6 +1331,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                         setState(() {
                           transferLoading = false;
                           Service.remove('cart');
+                          Service.remove('aliexpressCart');//NEW
                           isCheckout = !isCheckout;
                           walletBalance = double.parse(
                               userData['user']['wallet'].toString());

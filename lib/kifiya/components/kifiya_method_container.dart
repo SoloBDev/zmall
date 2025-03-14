@@ -46,9 +46,11 @@ class KifiyaMethodContainer extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           border: Border.all(
-            color: selected ? kSecondaryColor : kBlackColor.withOpacity(0.2),
+            color:
+                selected ? kSecondaryColor : kBlackColor.withValues(alpha: 0.2),
           ),
-          color: selected ? kSecondaryColor.withOpacity(0.4) : kPrimaryColor,
+          color:
+              selected ? kSecondaryColor.withValues(alpha: 0.4) : kPrimaryColor,
           borderRadius: BorderRadius.circular(
             getProportionateScreenWidth(kDefaultPadding / 2),
           ),

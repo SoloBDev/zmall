@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
@@ -13,6 +14,7 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:zmall/aliexpress/ali_product_screen.dart';
 import 'package:zmall/cart/cart_screen.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
@@ -93,9 +95,9 @@ class _HomeBodyState extends State<HomeBody> {
   var orderFrom;
   Timer? timer;
 //////////////////////////////
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCart();
     isAbroad();
@@ -147,14 +149,12 @@ class _HomeBodyState extends State<HomeBody> {
 
       if (orderFrom == orderTo && userOrderStatus < 25 && distance > 0.1000) {
         Timer.periodic(const Duration(seconds: 30), (timer) {
-          print(timer.tick);
           if (timer.tick > 1) {
-            print('Cancel timer');
             timer.cancel();
           } else {
             showDialog(
               context: context,
-              barrierDismissible: false,
+              barrierDismissible: Platform.isIOS ? true : false,
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: const Text(
@@ -169,8 +169,6 @@ class _HomeBodyState extends State<HomeBody> {
                     TextButton(
                       onPressed: () {
                         _startTimer();
-                        //print('*** User order status  ${userLastOrder['order_status']}*** Order from  ***${orderFrom}*** to ***${orderTo}***');
-
                         Navigator.of(context).pop();
                       },
                       child: Text(
@@ -212,6 +210,51 @@ class _HomeBodyState extends State<HomeBody> {
       // ScaffoldMessenger.of(context).showSnackBar(
       //     Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
     }
+  }
+
+////////////////newly added
+  Future<void> _onRefresh() async {
+    getCart();
+    isAbroad();
+    CoreServices.registerNotification(context);
+    MyApp.messaging.triggerEvent("at_home");
+    _getToken();
+    getUser();
+    getLocalPromotionalItems();
+    getLocalPromotionalStores();
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("Opened by notification open by app");
+
+      MyApp.analytics.logEvent(name: "notification_opened");
+      if (message.data != null && !is_abroad) {
+        var notificationData = message.data;
+        if (notificationData['item_id'] != null) {
+          print("Navigate to item screen...");
+          _getItemInformation(notificationData['item_id']);
+        } else if (notificationData['store_id'] != null) {
+          print("Navigate to store...");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return NotificationStore(storeId: notificationData['store_id']);
+              },
+            ),
+          );
+        } else if (notificationData['redirect'] != null) {
+          launchRedirect(notificationData['redirect']);
+        }
+      }
+    });
+    if (widget.isLaunched) {
+      print("=> \tChecking for version update");
+      getAppKeys();
+    }
+
+    getCategories();
+    getServices();
+    getNearByServices();
+    getNearByMerchants();
   }
 
 //////////////////////////////////
@@ -474,6 +517,10 @@ class _HomeBodyState extends State<HomeBody> {
       userId: userData['user']['_id'],
       serverToken: userData['user']['server_token'],
       ctx: context,
+      userLocation: [
+        Provider.of<ZMetaData>(context, listen: false).latitude,
+        Provider.of<ZMetaData>(context, listen: false).longitude
+      ],
     );
 
     if (data != null && data['success']) {
@@ -802,11 +849,13 @@ class _HomeBodyState extends State<HomeBody> {
       });
       checkLaundryCategory(categories);
     } else {
-      if (responseData['error_code'] == 999) {
+      if (responseData['error_code'] != null &&
+          responseData['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-      } else if (responseData['error_code'] == 813) {
+      } else if (responseData['error_code'] != null &&
+          responseData['error_code'] == 813) {
         String country = Provider.of<ZMetaData>(context, listen: false).country;
         if (country == "Ethiopia") {
           showCupertinoDialog(
@@ -915,9 +964,29 @@ class _HomeBodyState extends State<HomeBody> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     timer?.cancel();
     super.dispose();
+  }
+
+  int getServiceIndex(String serviceName) {
+    if (services == null) {
+      return -1;
+    }
+    int index = services.indexWhere((service) =>
+        service['delivery_name']?.toString().toLowerCase() ==
+        serviceName.toLowerCase());
+    return index;
+  }
+
+  bool isNetworkImage(String serviceName) {
+    if (services == null) {
+      return false;
+    }
+    bool isNetwork = getServiceIndex(serviceName) != -1 &&
+        services[getServiceIndex(serviceName)]['image_url']
+            .toString()
+            .isNotEmpty;
+    return isNetwork;
   }
 
   @override
@@ -1004,1349 +1073,1535 @@ class _HomeBodyState extends State<HomeBody> {
           ),
         ),
         actions: [
-          InkWell(
-            onTap: () {
+          IconButton(
+            onPressed: () {
               Navigator.pushNamed(context, CartScreen.routeName)
                   .then((value) => getCart());
             },
-            borderRadius: BorderRadius.circular(
-              getProportionateScreenWidth(kDefaultPadding * 2.5),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: getProportionateScreenWidth(kDefaultPadding * .75),
-                    right: getProportionateScreenWidth(kDefaultPadding * .75),
-                    top: getProportionateScreenWidth(kDefaultPadding * .75),
-                    bottom: getProportionateScreenWidth(kDefaultPadding * .75),
-                  ),
-                  child: Icon(Icons.add_shopping_cart_rounded),
-                ),
-                Positioned(
-                  left: 0,
-                  top: 5,
-                  child: Container(
-                    height: getProportionateScreenWidth(kDefaultPadding * .9),
-                    width: getProportionateScreenWidth(kDefaultPadding * .9),
-                    decoration: BoxDecoration(
-                      color: kSecondaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(width: 1.5, color: kWhiteColor),
-                    ),
-                    child: Center(
-                      child: Text(
-                        cart != null ? "${cart!.items!.length}" : "0",
-                        style: TextStyle(
-                          fontSize:
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                          height: 1,
-                          color: kPrimaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              ],
+            icon: Badge.count(
+              offset: Offset(-12, -8),
+              alignment: Alignment.topLeft,
+              count: cart != null ? cart!.items!.length : 0,
+              backgroundColor: kSecondaryColor,
+              child: Icon(Icons.add_shopping_cart_rounded),
             ),
           ),
+          // InkWell(
+          //   onTap: () {
+          //     Navigator.pushNamed(context, CartScreen.routeName)
+          //         .then((value) => getCart());
+          //   },
+          //   borderRadius: BorderRadius.circular(
+          //     getProportionateScreenWidth(kDefaultPadding * 2.5),
+          //   ),
+          //   child: Stack(
+          //     children: [
+          //       Padding(
+          //         padding: EdgeInsets.only(
+          //           left: getProportionateScreenWidth(kDefaultPadding * .75),
+          //           right: getProportionateScreenWidth(kDefaultPadding * .75),
+          //           top: getProportionateScreenWidth(kDefaultPadding * .75),
+          //           bottom: getProportionateScreenWidth(kDefaultPadding * .75),
+          //         ),
+          //         child: Icon(Icons.add_shopping_cart_rounded),
+          //       ),
+          //       Positioned(
+          //         left: 0,
+          //         top: 5,
+          //         child: Container(
+          //           height: getProportionateScreenWidth(kDefaultPadding * .9),
+          //           width: getProportionateScreenWidth(kDefaultPadding * .9),
+          //           decoration: BoxDecoration(
+          //             color: kSecondaryColor,
+          //             shape: BoxShape.circle,
+          //             border: Border.all(width: 1.5, color: kWhiteColor),
+          //           ),
+          //           child: Center(
+          //             child: Text(
+          //               cart != null ? "${cart!.items!.length}" : "0",
+          //               style: TextStyle(
+          //                 fontSize:
+          //                     getProportionateScreenWidth(kDefaultPadding / 2),
+          //                 height: 1,
+          //                 color: kPrimaryColor,
+          //                 fontWeight: FontWeight.w600,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       )
+          //     ],
+          //   ),
+          // ),
         ],
       ),
-      body: ModalProgressHUD(
+      body: RefreshIndicator(
         color: kPrimaryColor,
-        progressIndicator: linearProgressIndicator,
-        inAsyncCall: _loading,
-        child: categories != null
-            ? SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
+        backgroundColor: kSecondaryColor,
+        onRefresh: _onRefresh,
+        child: ModalProgressHUD(
+          color: kPrimaryColor,
+          progressIndicator: linearProgressIndicator,
+          inAsyncCall: _loading,
+          child: categories != null
+              ? SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                getProportionateScreenWidth(kDefaultPadding),
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(
+                                        kDefaultPadding / 2)),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return SearchScreen(
+                                            cityId: responseData['city']
+                                                ['_id']!,
+                                            categories: categories!,
+                                            latitude: Provider.of<ZMetaData>(
+                                                    context,
+                                                    listen: false)
+                                                .latitude,
+                                            longitude: Provider.of<ZMetaData>(
+                                                    context,
+                                                    listen: false)
+                                                .longitude,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: kGreyColor.withValues(
+                                              alpha: 0.05)),
+                                      borderRadius: BorderRadius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding)),
+                                      color: kWhiteColor,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding * 2),
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          FontAwesomeIcons.search,
+                                          color: kGreyColor,
+                                          size: getProportionateScreenHeight(
+                                              kDefaultPadding),
+                                        ),
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        Text(Provider.of<ZLanguage>(context)
+                                            .search)
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                userData != null
+                                    ? "${Provider.of<ZLanguage>(context, listen: true).hello}, ${userData['user']['first_name']}"
+                                    : "Delivery Done Right",
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenHeight(
+                                    kDefaultPadding * 1.15,
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              userData != null
+                                  ? Text(
+                                      isRewarded
+                                          ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                          : (10 - remainder) != 1
+                                              ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                              : Provider.of<ZLanguage>(context,
+                                                      listen: true)
+                                                  .nextOrderCashback,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(color: kBlackColor),
+                                    )
+                                  : Container(),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                              ),
+                              userData != null
+                                  ? SizedBox(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding / 4))
+                                  : Container(),
+                              userData != null
+                                  ? LinearPercentIndicator(
+                                      animation: true,
+                                      lineHeight: getProportionateScreenHeight(
+                                          kDefaultPadding),
+                                      barRadius: Radius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding)),
+                                      backgroundColor: kBlackColor,
+                                      progressColor: kSecondaryColor,
+                                      center: Text(
+                                        "$orderCount/${quotient + 1}0",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: kPrimaryColor,
+                                            ),
+                                      ),
+                                      percent: (remainder / 10),
+                                    )
+                                  : Container(),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal:
-                              getProportionateScreenWidth(kDefaultPadding),
-                          vertical:
+                      SizedBox(
+                        height:
+                            getProportionateScreenWidth(kDefaultPadding / 4),
+                      ),
+                      promotionalItems != null && promotionalItems['success']
+                          ? Container(
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .specialForYou,
+                                      subTitle: " ",
+                                    ),
+                                  ),
+                                  promotionalItems != null
+                                      ? Container(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding * 12),
+                                          width: double.infinity,
+                                          padding: EdgeInsets.only(
+                                            right: getProportionateScreenWidth(
+                                                kDefaultPadding / 2),
+                                          ),
+                                          child: ListView.separated(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: promotionalItems != null &&
+                                                    promotionalItems
+                                                        .isNotEmpty &&
+                                                    promotionalItems[
+                                                                'promotional_items']
+                                                            .length >
+                                                        0
+                                                ? promotionalItems[
+                                                        'promotional_items']
+                                                    .length
+                                                : 0,
+                                            itemBuilder: (context, index) =>
+                                                Row(
+                                              children: [
+                                                index == 0
+                                                    ? SizedBox(
+                                                        width:
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding),
+                                                      )
+                                                    : Container(),
+                                                SpecialOfferCard(
+                                                  imageUrl: promotionalItems !=
+                                                              null &&
+                                                          promotionalItems['promotional_items']
+                                                                          [
+                                                                          index]
+                                                                      [
+                                                                      'image_url']
+                                                                  .length >
+                                                              0
+                                                      ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${promotionalItems['promotional_items'][index]['image_url'][0]}"
+                                                      : "www.google.com",
+                                                  itemName:
+                                                      "${promotionalItems['promotional_items'][index]['name']}\n",
+                                                  newPrice:
+                                                      "${promotionalItems['promotional_items'][index]['price'].toStringAsFixed(2)}\t",
+                                                  originalPrice:
+                                                      "${promotionalItems['promotional_items'][index]['new_price'].toStringAsFixed(2)}",
+                                                  isDiscounted: promotionalItems[
+                                                          'promotional_items']
+                                                      [index]['discount'],
+                                                  storeName: promotionalItems[
+                                                          'promotional_items']
+                                                      [index]['store_name'],
+                                                  specialOffer: promotionalItems[
+                                                          'promotional_items']
+                                                      [index]['special_offer'],
+                                                  storePress: () async {
+                                                    bool isOp = await storeOpen(
+                                                        promotionalItems[
+                                                                'promotional_items']
+                                                            [index]);
+
+                                                    if (isOp) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return NotificationStore(
+                                                                storeId: promotionalItems[
+                                                                            'promotional_items']
+                                                                        [index][
+                                                                    'store_id']);
+                                                          },
+                                                        ),
+                                                      ).then((value) {
+                                                        getCart();
+                                                        _doLocationTask();
+                                                        getNearByMerchants();
+                                                      });
+                                                    }
+                                                  },
+                                                  press: () async {
+                                                    print(
+                                                        "Promotional item pressed...");
+                                                    bool isOp = await storeOpen(
+                                                        promotionalItems[
+                                                                'promotional_items']
+                                                            [index]);
+
+                                                    if (isOp) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return ItemScreen(
+                                                                item: promotionalItems[
+                                                                        'promotional_items']
+                                                                    [index],
+                                                                location: promotionalItems[
+                                                                            'promotional_items']
+                                                                        [index][
+                                                                    'store_location']);
+                                                          },
+                                                        ),
+                                                      ).then((value) {
+                                                        getCart();
+                                                        _doLocationTask();
+                                                        getNearByMerchants();
+                                                      });
+                                                    } else {
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          Service.showMessage(
+                                                              "Store is currently closed. We highly recommend you to try other store. We've got them all...",
+                                                              false,
+                                                              duration: 3),
+                                                        );
+                                                      }
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                            separatorBuilder:
+                                                (BuildContext context,
+                                                        int index) =>
+                                                    SizedBox(
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding / 2),
+                                            ),
+                                          ),
+                                        )
+                                      : userData != null
+                                          ? _loading
+                                              ? SpinKitWave(
+                                                  color: kSecondaryColor,
+                                                  size:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding),
+                                                )
+                                              : Container(
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding * 6),
+                                                  child: Center(
+                                                    child: Text(
+                                                        "Nothing to show, please try again..."),
+                                                  ),
+                                                )
+                                          : Container(
+                                              height:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 6),
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        getProportionateScreenWidth(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  child: Text(
+                                                      "Nothing to show, please login..."),
+                                                ),
+                                              ),
+                                            ),
+                                ],
+                              ),
+                            )
+                          : Container(),
+                      promotionalItems != null && promotionalItems['success']
+                          ? SizedBox(
+                              height: getProportionateScreenWidth(
+                                  kDefaultPadding / 4),
+                            )
+                          : SizedBox.shrink(),
+                      promotionalStores != null && promotionalStores['success']
+                          ? Container(
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .featuredStores,
+                                      subTitle: " ",
+                                    ),
+                                  ),
+                                  promotionalStores != null
+                                      ? Container(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding * 12),
+                                          width: double.infinity,
+                                          padding: EdgeInsets.only(
+                                            right: getProportionateScreenWidth(
+                                                kDefaultPadding / 2),
+                                          ),
+                                          child: ListView.separated(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: promotionalStores[
+                                                        'success'] &&
+                                                    promotionalStores[
+                                                                'promotional_stores']
+                                                            .length >
+                                                        0
+                                                ? promotionalStores[
+                                                        'promotional_stores']
+                                                    .length
+                                                : 0,
+                                            itemBuilder: (context, index) =>
+                                                Row(
+                                              children: [
+                                                index == 0
+                                                    ? SizedBox(
+                                                        width:
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding),
+                                                      )
+                                                    : Container(),
+                                                StoresCard(
+                                                  imageUrl:
+                                                      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${promotionalStores['promotional_stores'][index]['image_url']}",
+                                                  storeName:
+                                                      "${promotionalStores['promotional_stores'][index]['name']}\n",
+                                                  distance: promotionalStores[
+                                                              'promotional_stores']
+                                                          [index]['distance']
+                                                      .toStringAsFixed(2),
+                                                  rating: promotionalStores[
+                                                              'promotional_stores']
+                                                          [index]['user_rate']
+                                                      .toStringAsFixed(2),
+                                                  ratingCount: promotionalStores[
+                                                              'promotional_stores']
+                                                          [
+                                                          index]['user_rate_count']
+                                                      .toString(),
+                                                  deliveryType: promotionalStores[
+                                                          'promotional_stores']
+                                                      [index]['delivery_type'],
+                                                  isFeatured: true,
+                                                  featuredTag: promotionalStores[
+                                                              'promotional_stores']
+                                                          [index]['promo_tags']
+                                                      .toString()
+                                                      .toLowerCase(),
+                                                  press: () async {
+                                                    print(
+                                                        "Promotional store pressed...");
+                                                    bool isOp = await storeOpen(
+                                                        promotionalStores[
+                                                                'promotional_stores']
+                                                            [index]);
+
+                                                    if (isOp) {
+                                                      print("Open");
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return ProductScreen(
+                                                              store: promotionalStores[
+                                                                      'promotional_stores']
+                                                                  [index],
+                                                              isOpen: isOp,
+                                                              location: promotionalStores[
+                                                                          'promotional_stores']
+                                                                      [index]
+                                                                  ['location'],
+                                                              longitude: Provider.of<
+                                                                          ZMetaData>(
+                                                                      context,
+                                                                      listen:
+                                                                          false)
+                                                                  .longitude,
+                                                              latitude: Provider.of<
+                                                                          ZMetaData>(
+                                                                      context,
+                                                                      listen:
+                                                                          false)
+                                                                  .latitude,
+                                                            );
+                                                          },
+                                                        ),
+                                                      ).then((value) {
+                                                        getCart();
+                                                        _doLocationTask();
+                                                        getNearByMerchants();
+                                                      });
+                                                    } else {
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          Service.showMessage(
+                                                              "Store is currently closed. We highly recommend you to try other store. We've got them all...",
+                                                              false,
+                                                              duration: 3),
+                                                        );
+                                                      }
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                            separatorBuilder:
+                                                (BuildContext context,
+                                                        int index) =>
+                                                    SizedBox(
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding / 2),
+                                            ),
+                                          ),
+                                        )
+                                      : userData != null
+                                          ? _loading
+                                              ? SpinKitWave(
+                                                  color: kSecondaryColor,
+                                                  size:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding),
+                                                )
+                                              : Container(
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding * 6),
+                                                  child: Center(
+                                                    child: Text(
+                                                        "Nothing to show, please try again..."),
+                                                  ),
+                                                )
+                                          : Container(
+                                              height:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 6),
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        getProportionateScreenWidth(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  child: Text(
+                                                      "Nothing to show, please login..."),
+                                                ),
+                                              ),
+                                            ),
+                                ],
+                              ),
+                            )
+                          : SizedBox.shrink(),
+                      promotionalStores != null && promotionalStores['success']
+                          ? SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
+                            )
+                          : SizedBox.shrink(),
+
+                      Container(
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                        ),
+                        padding: EdgeInsets.only(
+                          bottom:
                               getProportionateScreenHeight(kDefaultPadding / 2),
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
                               padding: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                              child: SectionTitle(
+                                sectionTitle: Provider.of<ZLanguage>(context)
+                                    .whatWould, //what would you like to order
+                                subTitle: " ",
+                              ),
+                            ),
+                            Container(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 8),
+                              margin: EdgeInsets.only(
+                                  right: getProportionateScreenWidth(
                                       kDefaultPadding / 2)),
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return SearchScreen(
-                                          cityId: responseData['city']['_id']!,
-                                          categories: categories!,
-                                          latitude: Provider.of<ZMetaData>(
-                                                  context,
-                                                  listen: false)
-                                              .latitude,
-                                          longitude: Provider.of<ZMetaData>(
-                                                  context,
-                                                  listen: false)
-                                              .longitude,
-                                        );
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount:
+                                    categories != null ? categories.length : 0,
+                                itemBuilder: (context, index) => Row(
+                                  children: [
+                                    index == 0
+                                        ? SizedBox(
+                                            width: getProportionateScreenWidth(
+                                                kDefaultPadding),
+                                          )
+                                        : Container(),
+                                    InkWell(
+                                      onTap: () async {
+                                        double lat = Provider.of<ZMetaData>(
+                                                context,
+                                                listen: false)
+                                            .latitude;
+                                        double long = Provider.of<ZMetaData>(
+                                                context,
+                                                listen: false)
+                                            .longitude;
+
+                                        if (responseData != null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) {
+                                                return StoreScreen(
+                                                  cityId: responseData['city']
+                                                      ['_id'],
+                                                  storeDeliveryId:
+                                                      categories[index]['_id'],
+                                                  category: categories[index],
+                                                  latitude: lat,
+                                                  longitude: long,
+                                                  isStore: false,
+                                                  companyId: -1,
+                                                );
+                                              },
+                                            ),
+                                          ).then((value) {
+                                            if (userData != null) {
+                                              _getPromotionalItems();
+                                              // controller?.getFavorites();
+                                              getUserOrderCount();
+                                              _doLocationTask();
+                                              getNearByMerchants();
+                                            }
+                                          });
+                                        } else {
+                                          getCategories();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) {
+                                                return StoreScreen(
+                                                  cityId: responseData['city']
+                                                      ['_id'],
+                                                  storeDeliveryId:
+                                                      categories[index]['_id'],
+                                                  category: categories[index],
+                                                  latitude: lat,
+                                                  longitude: long,
+                                                  isStore: false,
+                                                  companyId: -1,
+                                                );
+                                              },
+                                            ),
+                                          ).then((value) {
+                                            if (userData != null) {
+                                              _getPromotionalItems();
+                                              controller?.getFavorites();
+                                              getUserOrderCount();
+                                              _doLocationTask();
+                                              getNearByMerchants();
+                                            }
+                                          });
+                                        }
                                       },
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: kGreyColor.withOpacity(0.05)),
-                                    borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding)),
-                                    color: kWhiteColor,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding * 2),
-                                  alignment: Alignment.centerLeft,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        FontAwesomeIcons.search,
-                                        color: kGreyColor,
-                                        size: getProportionateScreenHeight(
-                                            kDefaultPadding),
-                                      ),
-                                      SizedBox(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                      Text(Provider.of<ZLanguage>(context)
-                                          .search)
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Text(
-                              userData != null
-                                  ? "${Provider.of<ZLanguage>(context, listen: true).hello}, ${userData['user']['first_name']}"
-                                  : "Delivery Done Right",
-                              style: TextStyle(
-                                fontSize: getProportionateScreenHeight(
-                                  kDefaultPadding * 1.15,
-                                ),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            userData != null
-                                ? Text(
-                                    isRewarded
-                                        ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                        : (10 - remainder) != 1
-                                            ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                            : Provider.of<ZLanguage>(context,
-                                                    listen: true)
-                                                .nextOrderCashback,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall
-                                        ?.copyWith(color: kBlackColor),
-                                  )
-                                : Container(),
-                            SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            userData != null
-                                ? SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 4))
-                                : Container(),
-                            userData != null
-                                ? LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: getProportionateScreenHeight(
-                                        kDefaultPadding),
-                                    barRadius: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding)),
-                                    backgroundColor: kBlackColor,
-                                    progressColor: kSecondaryColor,
-                                    center: Text(
-                                      "$orderCount/${quotient + 1}0",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: kPrimaryColor,
+                                      child: Column(
+                                        children: [
+                                          CachedNetworkImage(
+                                            imageUrl:
+                                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[index]['image_url']}",
+                                            imageBuilder:
+                                                (context, imageProvider) =>
+                                                    Container(
+                                              // margin: EdgeInsets.all(5),
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding * 5),
+                                              height:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 5),
+                                              decoration: BoxDecoration(
+                                                color: kWhiteColor,
+                                                borderRadius: BorderRadius.circular(
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding)),
+                                                image: DecorationImage(
+                                                  fit: BoxFit.contain,
+                                                  image: imageProvider,
+                                                ),
+                                              ),
+                                            ),
+                                            placeholder: (context, url) =>
+                                                Center(
+                                              child: Container(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding * 4),
+                                                height:
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding * 4),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(kWhiteColor),
+                                                ),
+                                              ),
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding * 5),
+                                              height:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 6),
+                                              decoration: BoxDecoration(
+                                                image: DecorationImage(
+                                                  fit: BoxFit.contain,
+                                                  image: AssetImage(zmallLogo),
+                                                ),
+                                              ),
+                                            ),
                                           ),
+                                          SizedBox(
+                                            height:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding / 3),
+                                          ),
+                                          Text(
+                                            categories[index]
+                                                        ['delivery_name'] ==
+                                                    "FOOD DELIVERY"
+                                                ? "FOOD"
+                                                : categories[index]
+                                                    ['delivery_name'],
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: kBlackColor,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    percent: (remainder / 10),
-                                  )
-                                : Container(),
-                            SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                  ],
+                                ),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenWidth(kDefaultPadding / 4),
-                    ),
-                    promotionalItems['success']
-                        ? Container(
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
+                      !isLaundryActive
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
                             ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .specialForYou,
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                promotionalItems != null
-                                    ? Container(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding * 12),
-                                        width: double.infinity,
-                                        padding: EdgeInsets.only(
-                                          right: getProportionateScreenWidth(
-                                              kDefaultPadding / 2),
-                                        ),
-                                        child: ListView.separated(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: promotionalItems != null &&
-                                                  promotionalItems[
-                                                              'promotional_items']
-                                                          .length >
-                                                      0
-                                              ? promotionalItems[
-                                                      'promotional_items']
-                                                  .length
-                                              : 0,
-                                          itemBuilder: (context, index) => Row(
-                                            children: [
-                                              index == 0
-                                                  ? SizedBox(
-                                                      width:
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding),
-                                                    )
-                                                  : Container(),
-                                              SpecialOfferCard(
-                                                imageUrl: promotionalItems !=
-                                                            null &&
-                                                        promotionalItems['promotional_items']
-                                                                        [index][
-                                                                    'image_url']
-                                                                .length >
-                                                            0
-                                                    ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${promotionalItems['promotional_items'][index]['image_url'][0]}"
-                                                    : "www.google.com",
-                                                itemName:
-                                                    "${promotionalItems['promotional_items'][index]['name']}\n",
-                                                newPrice:
-                                                    "${promotionalItems['promotional_items'][index]['price'].toStringAsFixed(2)}\t",
-                                                originalPrice:
-                                                    "${promotionalItems['promotional_items'][index]['new_price'].toStringAsFixed(2)}",
-                                                isDiscounted: promotionalItems[
-                                                        'promotional_items']
-                                                    [index]['discount'],
-                                                storeName: promotionalItems[
-                                                        'promotional_items']
-                                                    [index]['store_name'],
-                                                specialOffer: promotionalItems[
-                                                        'promotional_items']
-                                                    [index]['special_offer'],
-                                                storePress: () async {
-                                                  bool isOp = await storeOpen(
-                                                      promotionalItems[
-                                                              'promotional_items']
-                                                          [index]);
 
-                                                  if (isOp) {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) {
-                                                          return NotificationStore(
-                                                              storeId: promotionalItems[
-                                                                          'promotional_items']
-                                                                      [index]
-                                                                  ['store_id']);
-                                                        },
-                                                      ),
-                                                    ).then((value) {
-                                                      getCart();
-                                                      _doLocationTask();
-                                                      getNearByMerchants();
-                                                    });
-                                                  }
-                                                },
-                                                press: () async {
-                                                  print(
-                                                      "Promotional item pressed...");
-                                                  bool isOp = await storeOpen(
-                                                      promotionalItems[
-                                                              'promotional_items']
-                                                          [index]);
-
-                                                  if (isOp) {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) {
-                                                          return ItemScreen(
-                                                              item: promotionalItems[
-                                                                      'promotional_items']
-                                                                  [index],
-                                                              location: promotionalItems[
-                                                                          'promotional_items']
-                                                                      [index][
-                                                                  'store_location']);
-                                                        },
-                                                      ),
-                                                    ).then((value) {
-                                                      getCart();
-                                                      _doLocationTask();
-                                                      getNearByMerchants();
-                                                    });
-                                                  } else {
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        Service.showMessage(
-                                                            "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                            false,
-                                                            duration: 3),
-                                                      );
-                                                    }
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          separatorBuilder:
-                                              (BuildContext context,
-                                                      int index) =>
-                                                  SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding / 2),
-                                          ),
-                                        ),
-                                      )
-                                    : userData != null
-                                        ? _loading
-                                            ? SpinKitWave(
-                                                color: kSecondaryColor,
-                                                size:
-                                                    getProportionateScreenWidth(
-                                                        kDefaultPadding),
-                                              )
-                                            : Container(
-                                                height:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding * 6),
-                                                child: Center(
-                                                  child: Text(
-                                                      "Nothing to show, please try again..."),
-                                                ),
-                                              )
-                                        : Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding * 6),
-                                            child: Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding),
-                                                ),
-                                                child: Text(
-                                                    "Nothing to show, please login..."),
-                                              ),
-                                            ),
-                                          ),
-                              ],
-                            ),
-                          )
-                        : Container(),
-                    promotionalItems['success']
-                        ? SizedBox(
-                            height: getProportionateScreenWidth(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    promotionalStores['success']
-                        ? Container(
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .featuredStores,
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                promotionalStores != null
-                                    ? Container(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding * 12),
-                                        width: double.infinity,
-                                        padding: EdgeInsets.only(
-                                          right: getProportionateScreenWidth(
-                                              kDefaultPadding / 2),
-                                        ),
-                                        child: ListView.separated(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: promotionalStores[
-                                                      'success'] &&
-                                                  promotionalStores[
-                                                              'promotional_stores']
-                                                          .length >
-                                                      0
-                                              ? promotionalStores[
-                                                      'promotional_stores']
-                                                  .length
-                                              : 0,
-                                          itemBuilder: (context, index) => Row(
-                                            children: [
-                                              index == 0
-                                                  ? SizedBox(
-                                                      width:
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding),
-                                                    )
-                                                  : Container(),
-                                              StoresCard(
-                                                imageUrl:
-                                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${promotionalStores['promotional_stores'][index]['image_url']}",
-                                                storeName:
-                                                    "${promotionalStores['promotional_stores'][index]['name']}\n",
-                                                distance: promotionalStores[
-                                                            'promotional_stores']
-                                                        [index]['distance']
-                                                    .toStringAsFixed(2),
-                                                rating: promotionalStores[
-                                                            'promotional_stores']
-                                                        [index]['user_rate']
-                                                    .toStringAsFixed(2),
-                                                ratingCount: promotionalStores[
-                                                            'promotional_stores']
-                                                        [
-                                                        index]['user_rate_count']
-                                                    .toString(),
-                                                deliveryType: promotionalStores[
-                                                        'promotional_stores']
-                                                    [index]['delivery_type'],
-                                                isFeatured: true,
-                                                featuredTag: promotionalStores[
-                                                            'promotional_stores']
-                                                        [index]['promo_tags']
-                                                    .toString()
-                                                    .toLowerCase(),
-                                                press: () async {
-                                                  print(
-                                                      "Promotional store pressed...");
-                                                  bool isOp = await storeOpen(
-                                                      promotionalStores[
-                                                              'promotional_stores']
-                                                          [index]);
-
-                                                  if (isOp) {
-                                                    print("Open");
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) {
-                                                          return ProductScreen(
-                                                            store: promotionalStores[
-                                                                    'promotional_stores']
-                                                                [index],
-                                                            isOpen: isOp,
-                                                            location:
-                                                                promotionalStores[
-                                                                            'promotional_stores']
-                                                                        [index][
-                                                                    'location'],
-                                                            longitude: Provider
-                                                                    .of<ZMetaData>(
-                                                                        context,
-                                                                        listen:
-                                                                            false)
-                                                                .longitude,
-                                                            latitude: Provider.of<
-                                                                        ZMetaData>(
-                                                                    context,
-                                                                    listen:
-                                                                        false)
-                                                                .latitude,
-                                                          );
-                                                        },
-                                                      ),
-                                                    ).then((value) {
-                                                      getCart();
-                                                      _doLocationTask();
-                                                      getNearByMerchants();
-                                                    });
-                                                  } else {
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        Service.showMessage(
-                                                            "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                            false,
-                                                            duration: 3),
-                                                      );
-                                                    }
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          separatorBuilder:
-                                              (BuildContext context,
-                                                      int index) =>
-                                                  SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding / 2),
-                                          ),
-                                        ),
-                                      )
-                                    : userData != null
-                                        ? _loading
-                                            ? SpinKitWave(
-                                                color: kSecondaryColor,
-                                                size:
-                                                    getProportionateScreenWidth(
-                                                        kDefaultPadding),
-                                              )
-                                            : Container(
-                                                height:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding * 6),
-                                                child: Center(
-                                                  child: Text(
-                                                      "Nothing to show, please try again..."),
-                                                ),
-                                              )
-                                        : Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding * 6),
-                                            child: Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding),
-                                                ),
-                                                child: Text(
-                                                    "Nothing to show, please login..."),
-                                              ),
-                                            ),
-                                          ),
-                              ],
-                            ),
-                          )
-                        : Container(),
-                    promotionalStores['success']
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                      ),
-                      padding: EdgeInsets.only(
-                        bottom:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                            child: SectionTitle(
-                              sectionTitle: Provider.of<ZLanguage>(context)
-                                  .whatWould, //what would you like to order
-                              subTitle: " ",
-                            ),
-                          ),
-                          Container(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 8),
-                            margin: EdgeInsets.only(
-                                right: getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount:
-                                  categories != null ? categories.length : 0,
-                              itemBuilder: (context, index) => Row(
+                      !isLaundryActive
+                          ? SizedBox.shrink()
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              child: Column(
                                 children: [
-                                  index == 0
-                                      ? SizedBox(
-                                          width: getProportionateScreenWidth(
-                                              kDefaultPadding),
-                                        )
-                                      : Container(),
-                                  InkWell(
-                                    onTap: () async {
-                                      double lat = Provider.of<ZMetaData>(
-                                              context,
-                                              listen: false)
-                                          .latitude;
-                                      double long = Provider.of<ZMetaData>(
-                                              context,
-                                              listen: false)
-                                          .longitude;
-
-                                      if (responseData != null) {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) {
-                                              return StoreScreen(
-                                                cityId: responseData['city']
-                                                    ['_id'],
-                                                storeDeliveryId:
-                                                    categories[index]['_id'],
-                                                category: categories[index],
-                                                latitude: lat,
-                                                longitude: long,
-                                                isStore: false,
-                                                companyId: -1,
-                                              );
-                                            },
-                                          ),
-                                        ).then((value) {
-                                          if (userData != null) {
-                                            _getPromotionalItems();
-                                            // controller?.getFavorites();
-                                            getUserOrderCount();
-                                            _doLocationTask();
-                                            getNearByMerchants();
-                                          }
-                                        });
-                                      } else {
-                                        getCategories();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) {
-                                              return StoreScreen(
-                                                cityId: responseData['city']
-                                                    ['_id'],
-                                                storeDeliveryId:
-                                                    categories[index]['_id'],
-                                                category: categories[index],
-                                                latitude: lat,
-                                                longitude: long,
-                                                isStore: false,
-                                                companyId: -1,
-                                              );
-                                            },
-                                          ),
-                                        ).then((value) {
-                                          if (userData != null) {
-                                            _getPromotionalItems();
-                                            controller?.getFavorites();
-                                            getUserOrderCount();
-                                            _doLocationTask();
-                                            getNearByMerchants();
-                                          }
-                                        });
-                                      }
-                                    },
-                                    child: Column(
-                                      children: [
-                                        CachedNetworkImage(
-                                          imageUrl:
-                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[index]['image_url']}",
-                                          imageBuilder:
-                                              (context, imageProvider) =>
-                                                  Container(
-                                            // margin: EdgeInsets.all(5),
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding * 5),
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding * 5),
-                                            decoration: BoxDecoration(
-                                              color: kWhiteColor,
-                                              borderRadius: BorderRadius.circular(
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding)),
-                                              image: DecorationImage(
-                                                fit: BoxFit.contain,
-                                                image: imageProvider,
-                                              ),
-                                            ),
-                                          ),
-                                          placeholder: (context, url) => Center(
-                                            child: Container(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding * 4),
-                                              height:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding * 4),
-                                              child: CircularProgressIndicator(
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(kWhiteColor),
-                                              ),
-                                            ),
-                                          ),
-                                          errorWidget: (context, url, error) =>
-                                              Container(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding * 5),
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding * 6),
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                fit: BoxFit.contain,
-                                                image: AssetImage(zmallLogo),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 3),
-                                        ),
-                                        Text(
-                                          categories[index]['delivery_name'] ==
-                                                  "FOOD DELIVERY"
-                                              ? "FOOD"
-                                              : categories[index]
-                                                  ['delivery_name'],
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                color: kBlackColor,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                        ),
-                                      ],
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle: "Laundry Pick & Drop",
+                                      subTitle: " ",
                                     ),
                                   ),
-                                ],
-                              ),
-                              separatorBuilder:
-                                  (BuildContext context, int index) => SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    isLaundryActive
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    isLaundryActive
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  child: SectionTitle(
-                                    sectionTitle: "Laundry Pick & Drop",
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                CustomBanner(
-                                  imageUrl: 'images/laundry.png',
-                                  title: "Laundry Pick & Drop",
-                                  subtitle: "",
-                                  press: () async {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => StoreScreen(
-                                                cityId: responseData['city']
-                                                    ['_id'],
-                                                storeDeliveryId:
-                                                    categories[laundryIndex]
-                                                        ['_id'],
-                                                category:
-                                                    categories[laundryIndex],
-                                                latitude:
-                                                    Provider.of<ZMetaData>(
-                                                            context,
-                                                            listen: false)
-                                                        .latitude,
-                                                longitude:
-                                                    Provider.of<ZMetaData>(
-                                                            context,
-                                                            listen: false)
-                                                        .longitude,
-                                                isStore: false,
-                                                companyId: -1,
-                                              )),
-                                    ).then((value) {
-                                      if (userData != null) {
-                                        _getPromotionalItems();
-                                        getUserOrderCount();
-                                        _doLocationTask();
-                                        getNearByMerchants();
-                                      }
-                                    });
-                                  },
-                                )
-                              ],
-                            ),
-                          )
-                        : Container(),
-                    isLaundryActive
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    nearbyStores != null
-                        ? Container(
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .nearbyStores, //Nearby stores
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                Container(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding * 12),
-                                  width: double.infinity,
-                                  padding: EdgeInsets.only(
-                                    right: getProportionateScreenWidth(
-                                        kDefaultPadding / 2),
-                                  ),
-                                  child: ListView.separated(
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: nearbyStores != null &&
-                                            nearbyStores.length > 0
-                                        ? nearbyStores.length
-                                        : 0,
-                                    itemBuilder: (context, index) => Row(
-                                      children: [
-                                        index == 0
-                                            ? SizedBox(
-                                                width:
-                                                    getProportionateScreenWidth(
-                                                        kDefaultPadding),
-                                              )
-                                            : Container(),
-                                        StoresCard(
-                                          imageUrl:
-                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${nearbyStores[index]['image_url']}",
-                                          storeName:
-                                              "${nearbyStores[index]['name']}\n",
-                                          distance: nearbyStores[index]
-                                                  ['distance']
-                                              .toStringAsFixed(2),
-                                          rating: nearbyStores[index]
-                                                  ['user_rate']
-                                              .toStringAsFixed(2),
-                                          ratingCount: nearbyStores[index]
-                                                  ['user_rate_count']
-                                              .toString(),
-                                          deliveryType: nearbyStores[index]
-                                                  ['delivery_type_detail']
-                                              ['delivery_name'],
-                                          press: () async {
-                                            print(
-                                                "Promotional item pressed...");
-                                            bool isOp = await storeOpen(
-                                                nearbyStores[index]);
-
-                                            if (isOp) {
-                                              print("Open");
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) {
-                                                    return ProductScreen(
-                                                      store:
-                                                          nearbyStores[index],
-                                                      isOpen: isOp,
-                                                      location:
-                                                          nearbyStores[index]
-                                                              ['location'],
-                                                      longitude: Provider.of<
-                                                                  ZMetaData>(
-                                                              context,
-                                                              listen: false)
-                                                          .longitude,
-                                                      latitude: Provider.of<
-                                                                  ZMetaData>(
+                                  CustomBanner(
+                                    // imageUrl: 'images/laundry.png',
+                                    isNetworkImage:
+                                        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[laundryIndex]['image_url']}"
+                                                .isNotEmpty
+                                            ? true
+                                            : false,
+                                    imageUrl: isNetworkImage("laundry")
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[laundryIndex]['image_url']}"
+                                        : "images/laundry.png",
+                                    title: "Laundry Pick & Drop",
+                                    subtitle: "",
+                                    press: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => StoreScreen(
+                                                  cityId: responseData['city']
+                                                      ['_id'],
+                                                  storeDeliveryId:
+                                                      categories[laundryIndex]
+                                                          ['_id'],
+                                                  category:
+                                                      categories[laundryIndex],
+                                                  latitude:
+                                                      Provider.of<ZMetaData>(
                                                               context,
                                                               listen: false)
                                                           .latitude,
-                                                    );
-                                                  },
-                                                ),
-                                              ).then((value) {
-                                                getCart();
-                                                _doLocationTask();
-                                                getNearByMerchants();
-                                              });
-                                            } else {
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  Service.showMessage(
-                                                      "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                      false,
-                                                      duration: 3),
-                                                );
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ],
+                                                  longitude:
+                                                      Provider.of<ZMetaData>(
+                                                              context,
+                                                              listen: false)
+                                                          .longitude,
+                                                  isStore: false,
+                                                  companyId: -1,
+                                                )),
+                                      ).then((value) {
+                                        if (userData != null) {
+                                          _getPromotionalItems();
+                                          getUserOrderCount();
+                                          _doLocationTask();
+                                          getNearByMerchants();
+                                        }
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                      !isLaundryActive
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
+                            ),
+                      /////////////////////////////Aliexpress section////////////////
+                      services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'aliexpress'))
+                          ? SizedBox.shrink()
+                          : Container(
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
                                     ),
-                                    separatorBuilder:
-                                        (BuildContext context, int index) =>
-                                            SizedBox(
-                                      width: getProportionateScreenWidth(
+                                    child: SectionTitle(
+                                      sectionTitle: "AliExpress",
+                                      subTitle: " ",
+                                    ),
+                                  ),
+                                  CustomBanner(
+                                    isNetworkImage:
+                                        isNetworkImage("aliexpress"),
+                                    imageUrl: isNetworkImage("aliexpress")
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("aliexpress")]['image_url']}"
+                                        : "images/aliexpress-banner.png",
+                                    title: "AliExpress",
+                                    subtitle: "",
+                                    press: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AliProductListScreen(),
+                                        ),
+                                      ).then((value) {
+                                        if (userData != null) {
+                                          _getPromotionalItems();
+                                          getUserOrderCount();
+                                          _doLocationTask();
+                                          getNearByMerchants();
+                                        }
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                      services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'aliexpress'))
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
+                            ),
+                      //////////////finish aliexpress//////////////////
+                      nearbyStores != null && nearbyStores.length > 0
+                          ? Container(
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .nearbyStores, //Nearby stores
+                                      subTitle: " ",
+                                    ),
+                                  ),
+                                  Container(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding * 12),
+                                    width: double.infinity,
+                                    padding: EdgeInsets.only(
+                                      right: getProportionateScreenWidth(
                                           kDefaultPadding / 2),
                                     ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        : Container(),
+                                    child: ListView.separated(
+                                      shrinkWrap: true,
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: nearbyStores != null &&
+                                              nearbyStores.length > 0
+                                          ? nearbyStores.length
+                                          : 0,
+                                      itemBuilder: (context, index) => Row(
+                                        children: [
+                                          index == 0
+                                              ? SizedBox(
+                                                  width:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding),
+                                                )
+                                              : Container(),
+                                          StoresCard(
+                                            imageUrl:
+                                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${nearbyStores[index]['image_url']}",
+                                            storeName:
+                                                "${nearbyStores[index]['name']}\n",
+                                            distance: nearbyStores[index]
+                                                    ['distance']
+                                                .toStringAsFixed(2),
+                                            rating: nearbyStores[index]
+                                                    ['user_rate']
+                                                .toStringAsFixed(2),
+                                            ratingCount: nearbyStores[index]
+                                                    ['user_rate_count']
+                                                .toString(),
+                                            deliveryType: nearbyStores[index]
+                                                    ['delivery_type_detail']
+                                                ['delivery_name'],
+                                            press: () async {
+                                              print(
+                                                  "Promotional item pressed...");
+                                              bool isOp = await storeOpen(
+                                                  nearbyStores[index]);
 
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
-                    ),
-/////////Pridiction Started
-                    Provider.of<ZMetaData>(context, listen: false).country ==
-                                "Ethiopia" &&
-                            DateTime.now().isBefore(predictEnd) &&
-                            DateTime.now().isAfter(predictStart)
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    Provider.of<ZMetaData>(context, listen: false).country ==
-                                "Ethiopia" &&
-                            DateTime.now().isBefore(predictEnd) &&
-                            DateTime.now().isAfter(predictStart)
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
+                                              if (isOp) {
+                                                print("Open");
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) {
+                                                      return ProductScreen(
+                                                        store:
+                                                            nearbyStores[index],
+                                                        isOpen: isOp,
+                                                        location:
+                                                            nearbyStores[index]
+                                                                ['location'],
+                                                        longitude: Provider.of<
+                                                                    ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .longitude,
+                                                        latitude: Provider.of<
+                                                                    ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .latitude,
+                                                      );
+                                                    },
+                                                  ),
+                                                ).then((value) {
+                                                  getCart();
+                                                  _doLocationTask();
+                                                  getNearByMerchants();
+                                                });
+                                              } else {
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    Service.showMessage(
+                                                        "Store is currently closed. We highly recommend you to try other store. We've got them all...",
+                                                        false,
+                                                        duration: 3),
+                                                  );
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      separatorBuilder:
+                                          (BuildContext context, int index) =>
+                                              SizedBox(
+                                        width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          : SizedBox.shrink(),
+                      // SizedBox(
+                      //   height:
+                      //       getProportionateScreenHeight(kDefaultPadding / 4),
+                      // ),
+                      /////////Pridiction Started
+                      Provider.of<ZMetaData>(context, listen: false).country ==
+                                      "Ethiopia" &&
+                                  DateTime.now().isBefore(predictEnd) &&
+                                  DateTime.now().isAfter(predictStart) &&
+                                  services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'prediction'))
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
                             ),
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                  ),
-                                  child: SectionTitle(
-                                    sectionTitle: DateTime.now()
-                                                .isBefore(euroPredictEnd) &&
-                                            DateTime.now()
-                                                .isAfter(euroPredictStart)
-                                        ? "UEFA Euro 2024"
-                                        : "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                CustomBanner(
-                                  imageUrl:
-                                      DateTime.now().isBefore(euroPredictEnd) &&
+                      Provider.of<ZMetaData>(context, listen: false).country ==
+                                      "Ethiopia" &&
+                                  DateTime.now().isBefore(predictEnd) &&
+                                  DateTime.now().isAfter(predictStart) &&
+                                  services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'prediction'))
+                          ? SizedBox.shrink()
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle: DateTime.now()
+                                                  .isBefore(euroPredictEnd) &&
                                               DateTime.now()
                                                   .isAfter(euroPredictStart)
-                                          ? 'images/pl_logos/game_banner.png'
-                                          : 'images/predict_pl.png',
-                                  title: "Predict & Win",
-                                  subtitle: "",
-                                  press: () async {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => WorldCupScreen(),
-                                      ),
-                                    ).then((value) {
-                                      if (userData != null) {
-                                        _getPromotionalItems();
-                                        getUserOrderCount();
-                                        _doLocationTask();
-                                        getNearByMerchants();
-                                      }
-                                    });
-                                  },
-                                )
-                              ],
+                                          ? "UEFA Euro 2024"
+                                          : "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
+                                      subTitle: " ",
+                                    ),
+                                  ),
+                                  CustomBanner(
+                                    isNetworkImage:
+                                        isNetworkImage("prediction"),
+                                    imageUrl: isNetworkImage("prediction")
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("prediction")]['image_url']}"
+                                        : DateTime.now()
+                                                    .isBefore(euroPredictEnd) &&
+                                                DateTime.now()
+                                                    .isAfter(euroPredictStart)
+                                            ? 'images/pl_logos/game_banner.png'
+                                            : 'images/predict_pl.png',
+                                    title: "Predict & Win",
+                                    subtitle: "",
+                                    press: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              WorldCupScreen(),
+                                        ),
+                                      ).then((value) {
+                                        if (userData != null) {
+                                          _getPromotionalItems();
+                                          getUserOrderCount();
+                                          _doLocationTask();
+                                          getNearByMerchants();
+                                        }
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
                             ),
-                          )
-                        : Container(),
-                    // WORLD CUP
+                      /////////////// WORLD CUP/////////////////
 
-                    services != null && services.length > 1
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    services != null && services.length > 1
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
+                      services == null ||
+                              // services.length > 1 &&
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'lunch from home'))
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
                             ),
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
+                      services == null ||
+                              //  &&services.length > 1 &&
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'lunch from home'))
+                          ? SizedBox.shrink()
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .missingHome,
+                                      subTitle: " ",
+                                    ),
                                   ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .missingHome,
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                services != null && services.length > 1
-                                    ? CustomBanner(
-                                        imageUrl: 'images/deal-of-the-day.png',
-                                        title: "Let us get your lunch from\n",
-                                        subtitle: "HOME",
-                                        press: () async {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  LunchHomeScreen(
-                                                curLat: Provider.of<ZMetaData>(
-                                                        context,
-                                                        listen: false)
-                                                    .latitude,
-                                                curLon: Provider.of<ZMetaData>(
-                                                        context,
-                                                        listen: false)
-                                                    .longitude,
+                                  services != null && services.length > 1
+                                      ? CustomBanner(
+                                          isNetworkImage:
+                                              isNetworkImage("lunch from home"),
+                                          imageUrl: isNetworkImage(
+                                                  "lunch from home")
+                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("lunch from home")]['image_url']}"
+                                              : 'images/deal-of-the-day.png',
+                                          title: "Let us get your lunch from\n",
+                                          subtitle: "HOME",
+                                          press: () async {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LunchHomeScreen(
+                                                  curLat:
+                                                      Provider.of<ZMetaData>(
+                                                              context,
+                                                              listen: false)
+                                                          .latitude,
+                                                  curLon:
+                                                      Provider.of<ZMetaData>(
+                                                              context,
+                                                              listen: false)
+                                                          .longitude,
+                                                ),
                                               ),
-                                            ),
-                                          ).then((value) {
-                                            if (userData != null) {
-                                              _getPromotionalItems();
-                                              getUserOrderCount();
-                                              _doLocationTask();
-                                              getNearByMerchants();
-                                            }
-                                          });
-                                        },
-                                      )
-                                    : Container(),
-                              ],
+                                            ).then((value) {
+                                              if (userData != null) {
+                                                _getPromotionalItems();
+                                                getUserOrderCount();
+                                                _doLocationTask();
+                                                getNearByMerchants();
+                                              }
+                                            });
+                                          },
+                                        )
+                                      : SizedBox.shrink(),
+                                ],
+                              ),
                             ),
-                          )
-                        : Container(),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
-                    ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 4),
+                      ),
 
-                    services != null
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
+                      services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'courier'))
+                          ? SizedBox.shrink()
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .thinkingOf,
+                                      subTitle: " ",
+                                    ),
                                   ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .thinkingOf,
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                services != null
-                                    ? CustomBanner(
-                                        imageUrl: 'images/courier_delivery.png',
-                                        title: "Send and receive with\n",
-                                        subtitle: "COURIER",
-                                        press: () async {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  CourierScreen(
-                                                curLat: Provider.of<ZMetaData>(
-                                                        context,
-                                                        listen: false)
-                                                    .latitude,
-                                                curLon: Provider.of<ZMetaData>(
-                                                        context,
-                                                        listen: false)
-                                                    .longitude,
+                                  services != null
+                                      ? CustomBanner(
+                                          isNetworkImage:
+                                              isNetworkImage("courier"),
+                                          imageUrl: isNetworkImage("courier")
+                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("courier")]['image_url']}"
+                                              : 'images/courier_delivery.png',
+                                          title: "Send and receive with\n",
+                                          subtitle: "COURIER",
+                                          press: () async {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CourierScreen(
+                                                  curLat:
+                                                      Provider.of<ZMetaData>(
+                                                              context,
+                                                              listen: false)
+                                                          .latitude,
+                                                  curLon:
+                                                      Provider.of<ZMetaData>(
+                                                              context,
+                                                              listen: false)
+                                                          .longitude,
+                                                ),
                                               ),
-                                            ),
-                                          ).then((value) {
-                                            if (userData != null) {
-                                              _getPromotionalItems();
-                                              getUserOrderCount();
-                                              _doLocationTask();
-                                              getNearByMerchants();
-                                            }
-                                          });
-                                        },
-                                      )
-                                    : Container(),
-                              ],
+                                            ).then((value) {
+                                              if (userData != null) {
+                                                _getPromotionalItems();
+                                                getUserOrderCount();
+                                                _doLocationTask();
+                                                getNearByMerchants();
+                                              }
+                                            });
+                                          },
+                                        )
+                                      : SizedBox.shrink(),
+                                ],
+                              ),
                             ),
-                          )
-                        : Container(),
-                    // services != null
-                    //     ? SizedBox(
-                    //         height: getProportionateScreenHeight(
-                    //             kDefaultPadding / 4),
-                    //       )
-                    //     : Container(),
-                    // Container(
-                    //   padding: EdgeInsets.only(
-                    //     bottom: getProportionateScreenHeight(
-                    //         kDefaultPadding / 2),
-                    //   ),
-                    //   decoration: BoxDecoration(
-                    //     color: kPrimaryColor,
-                    //   ),
-                    //   child: Column(
-                    //     children: [
-                    //       Padding(
-                    //         padding: EdgeInsets.symmetric(
-                    //           horizontal: getProportionateScreenWidth(
-                    //               kDefaultPadding),
-                    //         ),
-                    //         child: SectionTitle(
-                    //           sectionTitle: Provider.of<ZLanguage>(context)
-                    //               .yourFavorites,
-                    //           subTitle: " ",
-                    //         ),
-                    //       ),
-                    //       // SizedBox(
-                    //       //   height:
-                    //       //       getProportionateScreenHeight(kDefaultPadding / 2),
-                    //       // ),
-                    //       userData != null
-                    //           ? Container(
-                    //               height: getProportionateScreenHeight(
-                    //                   kDefaultPadding * 10),
-                    //               width: double.infinity,
-                    //               padding: EdgeInsets.only(
-                    //                 right: getProportionateScreenWidth(
-                    //                     kDefaultPadding / 2),
-                    //               ),
-                    //               child: FavoritesScreen(
-                    //                 controller: controller,
-                    //                 latitude: Provider.of<ZMetaData>(context, listen: false).latitude,
-                    //                 longitude: Provider.of<ZMetaData>(context, listen: false).longitude,
-                    //               ),
-                    //             )
-                    //           : Container(
-                    //               height: getProportionateScreenHeight(
-                    //                   kDefaultPadding * 6),
-                    //               child: Center(
-                    //                 child: Padding(
-                    //                   padding: EdgeInsets.symmetric(
-                    //                     horizontal:
-                    //                         getProportionateScreenWidth(
-                    //                             kDefaultPadding),
-                    //                   ),
-                    //                   child: Text(
-                    //                     "Please login to add all of your favorites...",
-                    //                     textAlign: TextAlign.center,
-                    //                   ),
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //     ],
-                    //   ),
-                    // ),
-                    services != null
-                        ? SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          )
-                        : Container(),
-                    services != null
-                        ? Container(
-                            padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
+                      // services != null
+                      //     ? SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 4),
+                      //       )
+                      //     : Container(),
+                      // Container(
+                      //   padding: EdgeInsets.only(
+                      //     bottom: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2),
+                      //   ),
+                      //   decoration: BoxDecoration(
+                      //     color: kPrimaryColor,
+                      //   ),
+                      //   child: Column(
+                      //     children: [
+                      //       Padding(
+                      //         padding: EdgeInsets.symmetric(
+                      //           horizontal: getProportionateScreenWidth(
+                      //               kDefaultPadding),
+                      //         ),
+                      //         child: SectionTitle(
+                      //           sectionTitle: Provider.of<ZLanguage>(context)
+                      //               .yourFavorites,
+                      //           subTitle: " ",
+                      //         ),
+                      //       ),
+                      //       // SizedBox(
+                      //       //   height:
+                      //       //       getProportionateScreenHeight(kDefaultPadding / 2),
+                      //       // ),
+                      //       userData != null
+                      //           ? Container(
+                      //               height: getProportionateScreenHeight(
+                      //                   kDefaultPadding * 10),
+                      //               width: double.infinity,
+                      //               padding: EdgeInsets.only(
+                      //                 right: getProportionateScreenWidth(
+                      //                     kDefaultPadding / 2),
+                      //               ),
+                      //               child: FavoritesScreen(
+                      //                 controller: controller,
+                      //                 latitude: Provider.of<ZMetaData>(context, listen: false).latitude,
+                      //                 longitude: Provider.of<ZMetaData>(context, listen: false).longitude,
+                      //               ),
+                      //             )
+                      //           : Container(
+                      //               height: getProportionateScreenHeight(
+                      //                   kDefaultPadding * 6),
+                      //               child: Center(
+                      //                 child: Padding(
+                      //                   padding: EdgeInsets.symmetric(
+                      //                     horizontal:
+                      //                         getProportionateScreenWidth(
+                      //                             kDefaultPadding),
+                      //                   ),
+                      //                   child: Text(
+                      //                     "Please login to add all of your favorites...",
+                      //                     textAlign: TextAlign.center,
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //     ],
+                      //   ),
+                      // ),
+                      services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'courier'))
+                          ? SizedBox.shrink()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4),
                             ),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
+                      services == null ||
+                              (services.isEmpty ||
+                                  !services.any((delivery) =>
+                                      delivery['delivery_name']
+                                          ?.toString()
+                                          .toLowerCase() ==
+                                      'event'))
+                          ? SizedBox.shrink()
+                          : Container(
+                              padding: EdgeInsets.only(
+                                  bottom: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    child: SectionTitle(
+                                      sectionTitle:
+                                          Provider.of<ZLanguage>(context)
+                                              .discover,
+                                      subTitle: " ",
+                                    ),
                                   ),
-                                  child: SectionTitle(
-                                    sectionTitle:
-                                        Provider.of<ZLanguage>(context)
-                                            .discover,
-                                    subTitle: " ",
-                                  ),
-                                ),
-                                services != null
-                                    ? CustomBanner(
-                                        imageUrl: 'images/events.png',
-                                        title: "",
-                                        subtitle: "EVENTS",
-                                        press: () async {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EventsScreen(),
-                                            ),
-                                          ).then((value) {
-                                            if (userData != null) {
-                                              _getPromotionalItems();
-                                              getUserOrderCount();
-                                              _doLocationTask();
-                                              getNearByMerchants();
-                                            }
-                                          });
+                                  services != null
+                                      ? CustomBanner(
+                                          isNetworkImage:
+                                              isNetworkImage("event"),
+                                          imageUrl: isNetworkImage("event")
+                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("event")]['image_url']}"
+                                              : 'images/events.png',
+                                          title: "",
+                                          subtitle: "EVENTS",
+                                          press: () async {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EventsScreen(),
+                                              ),
+                                            ).then((value) {
+                                              if (userData != null) {
+                                                _getPromotionalItems();
+                                                getUserOrderCount();
+                                                _doLocationTask();
+                                                getNearByMerchants();
+                                              }
+                                            });
 
-                                          // ScaffoldMessenger.of(context)
-                                          //     .showSnackBar(Service.showMessage(
-                                          //         "COMING SOON", false,
-                                          //         duration: 5));
-                                        },
-                                      )
-                                    : Container(),
-                              ],
+                                            // ScaffoldMessenger.of(context)
+                                            //     .showSnackBar(Service.showMessage(
+                                            //         "COMING SOON", false,
+                                            //         duration: 5));
+                                          },
+                                        )
+                                      : SizedBox.shrink(),
+                                ],
+                              ),
                             ),
-                          )
-                        : Container(),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 2),
-                    ),
-                  ],
-                ),
-              )
-            : !_loading
-                ? Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal:
-                          getProportionateScreenWidth(kDefaultPadding * 4),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CustomButton(
-                          title: "Retry",
-                          press: () {
-                            print("Retry...");
-                            getNearByMerchants();
-                          },
-                          color: kSecondaryColor,
-                        ),
-                      ],
-                    ),
-                  )
-                : Container(),
+
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                    ],
+                  ),
+                )
+              : !_loading
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding * 4),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomButton(
+                            title: "Retry",
+                            press: () {
+                              print("Retry...");
+                              getNearByMerchants();
+                            },
+                            color: kSecondaryColor,
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox.shrink(),
+        ),
       ),
     );
   }
@@ -2389,7 +2644,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         _loading = false;
       });
@@ -2440,7 +2695,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         _loading = false;
       });
@@ -2495,7 +2750,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -2544,7 +2799,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -2602,7 +2857,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

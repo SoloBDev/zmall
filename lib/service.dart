@@ -18,7 +18,7 @@ class Service {
       await launch(
         url,
         forceSafariVC: true,
-//        forceWebView: true,
+        // forceWebView: true,
       );
     } else {
       throw 'Could not launch $url';

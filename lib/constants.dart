@@ -17,7 +17,14 @@ const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 const kPrimaryColor = Colors.white;
 const kWhiteColor = Color(0xFFF3F4F8);
 const kYellowColor = Color(0xFFF7EA00);
+const kGreenColor = Colors.green;
+const kGreyColor = Color(0xFF707070);
+const kBlackColor = Color(0xFF101010);
+const worldCupColor = Color(0xFF791435);
+const double kDefaultPadding = 15.0;
 
+final double zmall_latitude = 8.999578803663903;
+final double zmall_longitude = 38.769460522577134;
 final eKey = Encrypt.Key.fromUtf8("T-aie)c(ko,o=>ue1ir^UW&I90jm@@9!");
 final b64key = Encrypt.Key.fromBase64(base64Encode(eKey.bytes));
 final fernet = Encrypt.Fernet(b64key);
@@ -36,11 +43,6 @@ String zmallLogo = DateTime.now().isBefore(worldCupEnd) &&
     ? "images/zmall_worldcup.jpg"
     : "images/zmall.jpg";
 
-const kGreyColor = Color(0xFF707070);
-const kBlackColor = Color(0xFF101010);
-const worldCupColor = Color(0xFF791435);
-const double kDefaultPadding = 15.0;
-
 final String deviceKey = 'AIzaSyBzMHLnXLbtLMi9rVFOR0eo5pbouBtxyjg';
 final String iosKey = 'AIzaSyDAgZScAJfUHxahi_n4OpuI8HrTHVlirJk';
 final apiKey = Platform.isIOS ? iosKey : deviceKey;
@@ -54,7 +56,7 @@ final otpInputDecorator = InputDecoration(
 
 OutlineInputBorder outlineInputBorder() {
   return OutlineInputBorder(
-    borderSide: BorderSide(color: kGreyColor.withOpacity(0.2)),
+    borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.2)),
     borderRadius: BorderRadius.circular(5),
   );
 }
@@ -76,13 +78,15 @@ final textFieldInputDecorator = InputDecoration(
 );
 
 final boxShadow = BoxShadow(
-    blurRadius: 0, color: Colors.black.withOpacity(0.1), offset: Offset(1, 3));
+    blurRadius: 0,
+    color: Colors.black.withValues(alpha: 0.1),
+    offset: Offset(1, 3));
 
 final kDefaultShadow = BoxShadow(
   offset: Offset(3, 3),
   blurRadius: 5,
-  color: kBlackColor.withOpacity(0.1),
-//  color: Color(0xFFE9E9E9).withOpacity(0.56),
+  color: kBlackColor.withValues(alpha: 0.1),
+//  color: Color(0xFFE9E9E9).withValues(alpha: 0.56),
 );
 
 class VerticalSpacing extends StatelessWidget {

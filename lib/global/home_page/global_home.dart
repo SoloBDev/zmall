@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zmall/constants.dart';
@@ -48,7 +47,7 @@ class _GlobalHomeState extends State<GlobalHome> {
             ),
             Tab(
               icon: Icon(
-                FontAwesomeIcons.shoppingBasket,
+                FontAwesomeIcons.basketShopping,
                 size: getProportionateScreenHeight(kDefaultPadding * 1.5),
               ),
               text: "Basket",

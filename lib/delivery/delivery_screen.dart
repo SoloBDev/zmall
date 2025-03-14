@@ -40,6 +40,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   bool isForOthers = false;
 
   Cart? cart;
+  AliExpressCart? aliexpressCart;
   var userData;
   bool _loading = false;
   bool currSelected = false;
@@ -60,7 +61,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     getUser();
     // getLocation();
     getLocations();
-
   }
 
   void _requestLocationPermission() async {
@@ -77,7 +77,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         selected = -2;
       });
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable location service from your phone's settings and try again", true, duration: 6));
+          "Location permission denied. Please enable location service from your phone's settings and try again",
+          true,
+          duration: 6));
       FlLocation.requestLocationPermission();
     }
   }
@@ -118,7 +120,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       });
       Provider.of<ZMetaData>(context, listen: false)
           .setLocation(currentLocation.latitude, currentLocation.longitude);
-
     }
   }
 
@@ -136,7 +137,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-
           ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
               "Location service disabled. Please enable and try again", true));
         }
@@ -159,7 +159,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     await getCart();
     _doLocationTask();
     _getVehicleList();
-
   }
 
   void getLocations({bool returned = false}) async {
@@ -266,9 +265,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       _loading = true;
     });
     var data = await Service.read('cart');
+    var aliCart = await Service.read('aliexpressCart');
     if (data != null) {
       setState(() {
         cart = Cart.fromJson(data);
+      });
+    }
+    if (aliCart != null) {
+      setState(() {
+        aliexpressCart = AliExpressCart.fromJson(aliCart);
       });
     }
 
@@ -318,7 +323,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "${errorCodes['${responseData['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 2));
-      if (responseData['error_code'] == 999) {
+      if (responseData['error_code'] != null &&
+          responseData['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -352,7 +358,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                     children: [
                       SectionTitle(
                         sectionTitle:
-                            Provider.of<ZLanguage>(context, listen: false).deliveryDetails,
+                            Provider.of<ZLanguage>(context, listen: false)
+                                .deliveryDetails,
                         subTitle: " ",
                         press: () {},
                       ),
@@ -376,7 +383,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           child: Column(
                             children: [
                               DetailsRow(
-                                title: Provider.of<ZLanguage>(context, listen: false).name,
+                                title: Provider.of<ZLanguage>(context,
+                                        listen: false)
+                                    .name,
                                 subtitle: receiverName.isNotEmpty && isForOthers
                                     ? receiverName
                                     : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
@@ -384,13 +393,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                               Container(
                                 width: double.infinity,
                                 height: 0.5,
-                                color: kGreyColor.withOpacity(0.4),
+                                color: kGreyColor.withValues(alpha: 0.4),
                               ),
                               SizedBox(
                                   height: getProportionateScreenHeight(
                                       kDefaultPadding / 3)),
                               DetailsRow(
-                                title: Provider.of<ZLanguage>(context, listen: false).phone,
+                                title: Provider.of<ZLanguage>(context,
+                                        listen: false)
+                                    .phone,
                                 subtitle: receiverPhone.isNotEmpty &&
                                         isForOthers
                                     ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} $receiverPhone"
@@ -399,7 +410,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                               Container(
                                 width: double.infinity,
                                 height: 0.5,
-                                color: kGreyColor.withOpacity(0.4),
+                                color: kGreyColor.withValues(alpha: 0.4),
                               ),
                               SizedBox(
                                   height: getProportionateScreenHeight(
@@ -429,7 +440,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                           child: Wrap(
                                             children: <Widget>[
                                               Text(
-                                                Provider.of<ZLanguage>(context, listen: false)
+                                                Provider.of<ZLanguage>(context,
+                                                        listen: false)
                                                     .orderForOthers,
                                                 style: Theme.of(context)
                                                     .textTheme
@@ -478,11 +490,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                         .copyWith(
                                                   labelText:
                                                       Provider.of<ZLanguage>(
-                                                              context, listen: false)
+                                                              context,
+                                                              listen: false)
                                                           .receiverPhone,
                                                   helperText:
                                                       Provider.of<ZLanguage>(
-                                                              context, listen: false)
+                                                              context,
+                                                              listen: false)
                                                           .startPhone,
                                                   prefix: Text(
                                                       "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
@@ -495,7 +509,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                               ),
                                               CustomButton(
                                                 title: Provider.of<ZLanguage>(
-                                                        context, listen: false)
+                                                        context,
+                                                        listen: false)
                                                     .submit,
                                                 color: kSecondaryColor,
                                                 press: () async {
@@ -533,7 +548,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   });
                                 },
                                 child: Text(
-                                  Provider.of<ZLanguage>(context, listen: false).changeDetails,
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .changeDetails,
                                   style: TextStyle(
                                     color: kBlackColor,
                                     decoration: TextDecoration.underline,
@@ -549,57 +565,68 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                               getProportionateScreenHeight(kDefaultPadding)),
                       SectionTitle(
                         sectionTitle:
-                            Provider.of<ZLanguage>(context, listen: false).deliveryOptions,
+                            Provider.of<ZLanguage>(context, listen: false)
+                                .deliveryOptions,
                         subTitle: " ",
                         press: () {},
                       ),
                       Container(
                         height:
                             getProportionateScreenHeight(kDefaultPadding * 9),
-                        child: vehicleList != null ? ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) => VehicleContainer(
-                                  selected: selectedVehicle == index,
-                                  imageUrl:
-                                      selectedVehicle == index ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png": "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
-                                  category: vehicleList['vehicles'][index]
-                                      ['vehicle_name'],
-                                  press: () {
-
-                                    setState(() {
-                                      if (selectedVehicle != index) {
-                                        selectedVehicle = index;
-                                        vehicleId = vehicleList['vehicles']
-                                            [index]['_id'];
-                                      } else {
-                                        selectedVehicle = -1;
-                                      }
-                                    });
-                                  },
-                                ),
-                            separatorBuilder:
-                                (BuildContext context, int index) => SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
+                        child: vehicleList != null
+                            ? ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) =>
+                                    VehicleContainer(
+                                      selected: selectedVehicle == index,
+                                      imageUrl: selectedVehicle == index
+                                          ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
+                                          : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
+                                      category: vehicleList['vehicles'][index]
+                                          ['vehicle_name'],
+                                      press: () {
+                                        setState(() {
+                                          if (selectedVehicle != index) {
+                                            selectedVehicle = index;
+                                            vehicleId = vehicleList['vehicles']
+                                                [index]['_id'];
+                                          } else {
+                                            selectedVehicle = -1;
+                                          }
+                                        });
+                                      },
                                     ),
-                            itemCount: vehicleList['vehicles'] != null
-                                ? vehicleList['vehicles'].length
-                                : 0) : SpinKitPianoWave(color: kSecondaryColor,),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 2),
+                                        ),
+                                itemCount: vehicleList['vehicles'] != null
+                                    ? vehicleList['vehicles'].length
+                                    : 0)
+                            : SpinKitPianoWave(
+                                color: kSecondaryColor,
+                              ),
                       ),
                       SizedBox(
                           height:
                               getProportionateScreenHeight(kDefaultPadding)),
                       SectionTitle(
-                        sectionTitle: Provider.of<ZLanguage>(context, listen: false).locations,
-                        subTitle: Provider.of<ZLanguage>(context,listen: false).addLocation,
+                        sectionTitle:
+                            Provider.of<ZLanguage>(context, listen: false)
+                                .locations,
+                        subTitle: Provider.of<ZLanguage>(context, listen: false)
+                            .addLocation,
                         press: () {
                           addLocation();
                         },
                       ),
                       LocationContainer(
-                        title: Provider.of<ZLanguage>(context, listen: false).currentLocation,
-                        note:
-                            Provider.of<ZLanguage>(context, listen: false).useCurrentLocation,
+                        title: Provider.of<ZLanguage>(context, listen: false)
+                            .currentLocation,
+                        note: Provider.of<ZLanguage>(context, listen: false)
+                            .useCurrentLocation,
                         isSelected: currSelected,
                         press: () async {
                           setState(() {
@@ -612,35 +639,42 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           // getLocation();
                         },
                       ),
-                      cart!.isLaundryService ? Container():SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      cart!.isLaundryService ? Container() : LocationContainer(
-                        title: Provider.of<ZLanguage>(context, listen: false).selfPickup,
-                        note: Provider.of<ZLanguage>(context, listen: false).userPickup,
-                        isSelected: selfPickup,
-                        press: () async {
-                          setState(() {
-                            currSelected = false;
-                            selfPickup = true;
-                            selected = -1;
-                            selectedVehicle = 0;
-                            destinationAddress = DestinationAddress(
-                                name: Provider.of<ZLanguage>(context,
-                                        listen: false)
-                                    .userPickup,
-                                long: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .longitude,
-                                lat: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .latitude);
-                          });
+                      cart!.isLaundryService
+                          ? Container()
+                          : SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2)),
+                      cart!.isLaundryService
+                          ? Container()
+                          : LocationContainer(
+                              title:
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .selfPickup,
+                              note:
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .userPickup,
+                              isSelected: selfPickup,
+                              press: () async {
+                                setState(() {
+                                  currSelected = false;
+                                  selfPickup = true;
+                                  selected = -1;
+                                  selectedVehicle = 0;
+                                  destinationAddress = DestinationAddress(
+                                      name: Provider.of<ZLanguage>(context,
+                                              listen: false)
+                                          .userPickup,
+                                      long: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .longitude,
+                                      lat: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .latitude);
+                                });
 
-
-                          // getLocation();
-                        },
-                      ),
+                                // getLocation();
+                              },
+                            ),
                       SizedBox(
                           height: getProportionateScreenHeight(
                               kDefaultPadding / 2)),
@@ -710,14 +744,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         },
                       ),
                       CustomButton(
-                        title: Provider.of<ZLanguage>(context, listen: false).cont,
+                        title:
+                            Provider.of<ZLanguage>(context, listen: false).cont,
                         press: () async {
-
                           if (selected != -2 && selectedVehicle != -1
                               // deliveryLocation == null ||
                               // deliveryLocation.list.length > selected
                               ) {
-
                             if (currSelected) {
                               destinationAddress = DestinationAddress(
                                   name: "Current location",
@@ -738,10 +771,28 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       .latitude);
                             }
                             if (destinationAddress != null) {
-                              double storeToCustomerDistance = calculateDistance(cart!.storeLocation!.lat, cart!.storeLocation!.long, destinationAddress!.lat, destinationAddress!.long);
+                              double storeToCustomerDistance =
+                                  calculateDistance(
+                                      cart!.storeLocation!.lat,
+                                      cart!.storeLocation!.long,
+                                      destinationAddress!.lat,
+                                      destinationAddress!.long);
 
-                              if(selectedVehicle != -1 && vehicleList['vehicles'][selectedVehicle]['vehicle_name'].toString().toLowerCase() == "bicycle" && storeToCustomerDistance > 5 && !selfPickup){
-                                  ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(Provider.of<ZLanguage>(context, listen: false).farDeliveryLocation, true, duration: 5));
+                              if (selectedVehicle != -1 &&
+                                  vehicleList['vehicles'][selectedVehicle]
+                                              ['vehicle_name']
+                                          .toString()
+                                          .toLowerCase() ==
+                                      "bicycle" &&
+                                  storeToCustomerDistance > 5 &&
+                                  !selfPickup) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                        Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .farDeliveryLocation,
+                                        true,
+                                        duration: 5));
                               } else {
                                 setState(() {
                                   cart!.destinationAddress = destinationAddress;
@@ -749,16 +800,18 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   _loading = true;
                                 });
                                 var categoriesResponse =
-                                await CoreServices.getCategoryList(
-                                    destinationAddress!.long!,
-                                    destinationAddress!.lat!,
-                                    Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                        .countryId!,
-                                    Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                        .country,
-                                    context);
+                                    await CoreServices.getCategoryList(
+                                        longitude: destinationAddress!.long!,
+                                        latitude: destinationAddress!.lat!,
+                                        countryCode: Provider.of<ZMetaData>(
+                                                context,
+                                                listen: false)
+                                            .countryId!,
+                                        countryName: Provider.of<ZMetaData>(
+                                                context,
+                                                listen: false)
+                                            .country,
+                                        context: context);
 
                                 if (categoriesResponse != null &&
                                     categoriesResponse['success']) {
@@ -794,8 +847,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   });
                                 }
                               }
-
-
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   Service.showMessage(
@@ -851,12 +902,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  double calculateDistance(lat1, lon1, lat2, lon2){
+  double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
-    var a = 0.5 - c((lat2 - lat1) * p)/2 +
-        c(lat1 * p) * c(lat2 * p) *
-            (1 - c((lon2 - lon1) * p))/2;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
 
@@ -911,8 +962,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   }
 
   Future<dynamic> addToCart() async {
-    var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_item_in_cart_new";
+    var url;
+
+    ///if the order is from aliexpress
+    if (aliexpressCart != null &&
+        aliexpressCart!.cart.storeId == cart!.storeId) {
+      url =
+          "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_item_in_cart_new_for_aliexpress";
+
+      ///else, it is from local stores
+    } else {
+      url =
+          "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_item_in_cart_new";
+    }
+
     var body = json.encode(cart!.toJson());
     try {
       http.Response response = await http
@@ -969,12 +1032,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       "server_token": userData['user']['server_token'],
       "city_id": Provider.of<ZMetaData>(context, listen: false).cityId,
       "user_latitude": cart!.storeLocation!.lat,
-      "user_longitude" : cart!.storeLocation!.long,
-      "store_latitude" : cart!.destinationAddress!.lat,
-      "store_longitude" : cart!.destinationAddress!.long,
-      "use_calculation" : true,
-      "is_laundry" : cart!.isLaundryService,
-
+      "user_longitude": cart!.storeLocation!.long,
+      "store_latitude": cart!.destinationAddress!.lat,
+      "store_longitude": cart!.destinationAddress!.long,
+      "use_calculation": true,
+      "is_laundry": cart!.isLaundryService,
     };
 
     var body = json.encode(data);

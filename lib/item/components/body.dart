@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +11,6 @@ import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
-import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
@@ -198,12 +196,12 @@ class _BodyState extends State<Body> {
                     height: getProportionateScreenHeight(kDefaultPadding * 16),
                     decoration: BoxDecoration(
                       color: kPrimaryColor,
-                   boxShadow: [boxShadow],
+                      boxShadow: [boxShadow],
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding/2)),
+                            getProportionateScreenWidth(kDefaultPadding / 2)),
                         bottomRight: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding/2)),
+                            getProportionateScreenWidth(kDefaultPadding / 2)),
                       ),
                       image: DecorationImage(
                         fit: BoxFit.cover,
@@ -313,8 +311,8 @@ class _BodyState extends State<Body> {
                         child: GestureDetector(
                           onTap: () {
                             if (widget.isSplashRedirect) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                  context, "/start", (Route<dynamic> route) => false);
+                              Navigator.pushNamedAndRemoveUntil(context,
+                                  "/start", (Route<dynamic> route) => false);
                             } else {
                               Navigator.pop(context);
                             }
@@ -348,17 +346,20 @@ class _BodyState extends State<Body> {
                   textAlign: TextAlign.left,
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return NotificationStore(storeId: widget.item['store_id'], storeName : "Loading...");
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return NotificationStore(
+                          storeId: widget.item['store_id'],
+                          storeName: "Loading...");
                     }));
                   },
                   child: Text(
                     "See other items >>",
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: kSecondaryColor,
-                    ),
+                          fontWeight: FontWeight.w900,
+                          color: kSecondaryColor,
+                        ),
                     textAlign: TextAlign.left,
                   ),
                 ),
@@ -373,8 +374,6 @@ class _BodyState extends State<Body> {
                 SizedBox(
                   height: getProportionateScreenHeight(kDefaultPadding / 5),
                 ),
-
-
               ],
             ),
           ),
@@ -560,7 +559,7 @@ class _BodyState extends State<Body> {
                                                         [idx]['unique_id'])
                                                 .length >
                                             0
-                                        ? kSecondaryColor.withOpacity(0.2)
+                                        ? kSecondaryColor.withValues(alpha: 0.2)
                                         : kWhiteColor,
                                     // color: ((selected.firstWhere(
                                     //           (it) =>
@@ -571,7 +570,7 @@ class _BodyState extends State<Body> {
                                     //           orElse: () => null,
                                     //         )) !=
                                     //         null)
-                                    //     ? kSecondaryColor.withOpacity(0.2)
+                                    //     ? kSecondaryColor.withValues(alpha: 0.2)
                                     //     : kWhiteColor,
                                     borderRadius: BorderRadius.circular(
                                       getProportionateScreenWidth(
@@ -770,8 +769,12 @@ class _BodyState extends State<Body> {
                                   lat: widget.location[0]);
                               DestinationAddress destination =
                                   DestinationAddress(
-                                long: Provider.of<ZMetaData>(context,listen: false).longitude,
-                                lat: Provider.of<ZMetaData>(context, listen: false).latitude,
+                                long: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .longitude,
+                                lat: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .latitude,
                                 name: "Current Location",
                                 note: "User current location",
                               );
@@ -954,6 +957,7 @@ class _BodyState extends State<Body> {
                   setState(() {
                     cart!.toJson();
                     Service.remove('cart');
+                    Service.remove('aliexpressCart');
                     cart = Cart();
                     addToCart(item, destination, storeLocation);
                   });

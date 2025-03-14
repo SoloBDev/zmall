@@ -2,7 +2,7 @@ import 'dart:math';
 
 class RandomDigits {
   static const MaxNumericDigits = 17;
-  static final _random = Random();
+  static final _random = Random.secure();
 
   static int getInteger(int digitCount) {
     if (digitCount > MaxNumericDigits || digitCount < 1)

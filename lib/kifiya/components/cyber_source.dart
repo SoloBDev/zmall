@@ -10,48 +10,39 @@ class CyberSource extends StatefulWidget {
 }
 
 class _CyberSourceState extends State<CyberSource> {
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
+  InAppWebViewSettings settings = InAppWebViewSettings(
+    //both platforms
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    javaScriptEnabled: true, // Ensure payment JS works
+    clearCache: true, // Clear cache for security
+    //android
+    useHybridComposition: true,
+    //ios
+    allowsInlineMediaPlayback: true,
+  );
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "BoA Cybersource",
-            style: TextStyle(color: kBlackColor),
-          ),
-          leading: TextButton(
-            child: Text("Done"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+      appBar: AppBar(
+        title: Text(
+          "BoA Cybersource",
+          style: TextStyle(color: kBlackColor),
         ),
-        body: InAppWebView(
-          initialOptions: options,
-          initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
-        )
-
-        // initialChild: Container(
-        //   color: kPrimaryColor,
-        //   child: const Center(
-        //     child: Text('Waiting.....'),
-        //   ),
-        // ),
-        );
+      ),
+      body: InAppWebView(
+        initialSettings: settings,
+        initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+        shouldOverrideUrlLoading: (controller, navigationAction) async {
+          return NavigationActionPolicy.ALLOW; // Allow all navigations
+        },
+      ),
+    );
   }
 }

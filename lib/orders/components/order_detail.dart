@@ -807,15 +807,27 @@ class _OrderDetailState extends State<OrderDetail> {
                       shrinkWrap: true,
                       itemCount: widget.order['order_details'].length,
                       itemBuilder: (context, index) {
+                        String extractProductName(String? noteForItem) {
+                          if (noteForItem == null || noteForItem.isEmpty)
+                            return '';
+                          return noteForItem.split(': ').first;
+                        }
+
                         return Column(
                           children: [
                             CategoryContainer(
                                 title: widget.order['order_details'][index]
-                                            ['product_name'] !=
-                                        null
-                                    ? widget.order['order_details'][index]
-                                        ['product_name']
-                                    : "Item"),
+                                                ['product_name']
+                                            .toString()
+                                            .toLowerCase() ==
+                                        "aliexpress"
+                                    ? "${extractProductName(widget.order['order_details'][index]['items'][0]['note_for_item'])}"
+                                    : widget.order['order_details'][index]
+                                                ['product_name'] !=
+                                            null
+                                        ? widget.order['order_details'][index]
+                                            ['product_name']
+                                        : "Item"),
                             SizedBox(
                                 height: getProportionateScreenHeight(
                                     kDefaultPadding / 3)),
@@ -841,6 +853,18 @@ class _OrderDetailState extends State<OrderDetail> {
                                       .order['order_details'][index]['items']
                                       .length,
                                   itemBuilder: (context, idx) {
+                                    String extractItemName(
+                                        String? noteForItem) {
+                                      if (noteForItem == null ||
+                                          noteForItem.isEmpty) return '';
+                                      var parts = noteForItem.split(': ');
+                                      return parts.length >= 3
+                                          ? "${parts[2]}:\n${parts[1]}"
+                                          : parts.length >= 2
+                                              ? "${parts[1]}"
+                                              : '';
+                                    }
+
                                     return Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
@@ -851,7 +875,14 @@ class _OrderDetailState extends State<OrderDetail> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "${widget.order['order_details'][index]['items'][idx]['item_name']}",
+                                                widget.order['order_details']
+                                                                [index]
+                                                                ['product_name']
+                                                            .toString()
+                                                            .toLowerCase() ==
+                                                        "aliexpress"
+                                                    ? "${extractItemName(widget.order['order_details'][index]['items'][idx]['note_for_item'])}"
+                                                    : "${widget.order['order_details'][index]['items'][idx]['item_name']}",
                                                 softWrap: true,
                                                 style: Theme.of(context)
                                                     .textTheme

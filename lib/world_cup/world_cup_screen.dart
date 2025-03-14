@@ -156,7 +156,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
             // Available Games
             ModalProgressHUD(
               inAsyncCall: _isLoading,
-              color: kBlackColor.withOpacity(0.3),
+              color: kBlackColor.withValues(alpha: 0.3),
               progressIndicator: Container(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -461,7 +461,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
             // My Predictions
             ModalProgressHUD(
               inAsyncCall: _isLoading,
-              color: kBlackColor.withOpacity(0.3),
+              color: kBlackColor.withValues(alpha: 0.3),
               progressIndicator: Container(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -521,7 +521,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                       getProportionateScreenWidth(
                                           kDefaultPadding / 4),
                                     ),
-                                    color: kPrimaryColor.withOpacity(0.1),
+                                    color: kPrimaryColor.withValues(alpha: 0.1),
                                   ),
                                   child: Column(
                                     children: [

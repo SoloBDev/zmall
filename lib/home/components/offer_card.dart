@@ -99,10 +99,11 @@ class SpecialOfferCard extends StatelessWidget {
                                 kDefaultPadding / 5)),
                         child: Text(
                           itemName,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: kBlackColor,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: kBlackColor,
+                                  ),
                           maxLines: 1,
                         ),
                       ),
@@ -111,12 +112,14 @@ class SpecialOfferCard extends StatelessWidget {
                           if (isDiscounted)
                             Text(
                               "$originalPrice",
-                              style:
-                                  Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        decoration: TextDecoration.lineThrough,
-                                        fontWeight: FontWeight.w500,
-                                        color: kGreyColor,
-                                      ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    decoration: TextDecoration.lineThrough,
+                                    fontWeight: FontWeight.w500,
+                                    color: kGreyColor,
+                                  ),
                             ),
                           if (isDiscounted)
                             SizedBox(
@@ -143,9 +146,12 @@ class SpecialOfferCard extends StatelessWidget {
                         onTap: storePress,
                         child: Text(
                           storeName,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: kSecondaryColor.withOpacity(0.7),
+                                color: kSecondaryColor.withValues(alpha: 0.7),
                                 // decoration: TextDecoration.underline,
                               ),
                           maxLines: 1,

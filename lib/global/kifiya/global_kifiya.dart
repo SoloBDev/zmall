@@ -47,6 +47,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   bool _placeOrder = false;
   bool paidBySender = true;
   AbroadCart? cart;
+  AbroadAliExpressCart? aliexpressCart;
+  var aliExpressAccessToken;
+  List<String> itemIds = [];
+  List<int> productIds = [];
   AbroadData? abroadData;
   var paymentResponse;
   var orderResponse;
@@ -67,7 +71,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print(widget.price);
+    // print(widget.price);
     getUser();
     getCart();
     if (widget.onlyCashless) {
@@ -78,6 +82,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
   void getUser() async {
     var data = await Service.read('abroad_user');
+    var aliAcct = await Service.read('ali_access_token');
     if (data != null) {
       abroadData = AbroadData.fromJson(data);
       try {
@@ -86,10 +91,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           setState(() {
             firstName = fullName.first;
             lastName = fullName.last;
+            // Only assign aliExpressAccessToken if aliAcct is not null or empty
+            if (aliAcct != null && aliAcct.isNotEmpty) {
+              aliExpressAccessToken = aliAcct;
+            } else {
+              print("aliExpress Access Token not found>>>");
+            }
           });
         }
       } catch (e) {
-        print(e);
+        // print(e);
       }
     } else {
       //
@@ -99,9 +110,17 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   void getCart() async {
     print("Fetching cart");
     var data = await Service.read('abroad_cart');
+    var aliCart = await Service.read('abroad_aliexpressCart');
     if (data != null) {
       setState(() {
         cart = AbroadCart.fromJson(data);
+        // Only set values from aliCart if aliCart is not null
+        if (aliCart != null) {
+          aliexpressCart = AbroadAliExpressCart.fromJson(aliCart);
+          itemIds = aliexpressCart!.itemIds!;
+          productIds = aliexpressCart!.productIds!;
+        }
+        // print("ALI CART>>> ${aliexpressCart!.toJson()}");
         _getPaymentGateway();
       });
       await useBorsa();
@@ -137,17 +156,43 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     }
   }
 
-  void _createOrder() async {
+  void _createAliexpressOrder() async {
     setState(() {
       _loading = true;
       _placeOrder = true;
     });
-    var data = await createOrder();
+    var data = await createAliexpressOrder();
+    if (data != null &&
+        data['success'] &&
+        data['data']['error_response'] == null &&
+        data['data']['aliexpress_ds_order_create_response']['result']
+            ['is_success']) {
+      List<dynamic>? orderIds = data['data']
+              ['aliexpress_ds_order_create_response']['result']['order_list']
+          ['number'];
+      _createOrder(orderIds: orderIds);
+    } else {
+      setState(() {
+        _loading = false;
+        _placeOrder = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          "Faild to create the order! please try again.", true));
+    }
+  }
+
+  void _createOrder({List<dynamic>? orderIds}) async {
+    setState(() {
+      _loading = true;
+      _placeOrder = true;
+    });
+    var data = await createOrder(orderIds: orderIds);
     if (data != null && data['success']) {
       print("Order created successfully");
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage(("Order successfully created"), true));
       await Service.remove('abroad_cart');
+      await Service.remove('abroad_aliexpressCart');
       setState(() {
         _loading = false;
         _placeOrder = false;
@@ -160,7 +205,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       }));
     } else {
       print("\t\t- Create Order Response");
-      print(data);
+      // print(data);
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
       setState(() {
@@ -188,7 +233,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     if (data != null && data['success']) {
       print("Order payment successfull! Creating order");
       // widget.isCourier ? _createCourierOrder() : _createOrder();
-      _createOrder();
+      // _createOrder();//this was before aliexpress
+      aliexpressCart != null && aliexpressCart!.cart.storeId == cart!.storeId
+          ? _createAliexpressOrder()
+          : _createOrder();
     } else {
       setState(() {
         _loading = false;
@@ -221,7 +269,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           "Payment verification successful!", false,
           duration: 2));
       // _payOrderPayment();
-      _createOrder();
+      // _createOrder(); //this was before aliexpress
+      aliexpressCart != null && aliexpressCart!.cart.storeId == cart!.storeId
+          ? _createAliexpressOrder()
+          : _createOrder();
     } else {
       setState(() {
         _loading = false;
@@ -917,7 +968,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       "server_token": cart!.serverToken,
     };
     var body = json.encode(data);
-    print(body);
+    // print(body);
     print("Fetching payment gateway...");
     try {
       http.Response response = await http
@@ -943,10 +994,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         this.paymentResponse = json.decode(response.body);
         this._loading = false;
       });
-      print(paymentResponse);
+      // print(paymentResponse);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -962,8 +1013,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   Future<dynamic> payOrderPayment(otp, paymentId) async {
-    print(cart!.userId);
-    print(cart!.serverToken);
+    // print(cart!.userId);
+    // print(cart!.serverToken);
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/pay_order_payment";
     Map data = {
@@ -976,7 +1027,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     };
 
     var body = json.encode(data);
-    print(body);
+    // print(body);
     try {
       http.Response response = await http
           .post(
@@ -997,14 +1048,14 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         },
       );
       print("=========Pay Order Payment Done=========");
-      print(json.decode(response.body));
+      // print(json.decode(response.body));
       setState(() {
         this._loading = false;
       });
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1058,7 +1109,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -1073,7 +1124,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     }
   }
 
-  Future<dynamic> createOrder() async {
+  Future<dynamic> createOrder({List<dynamic>? orderIds}) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/create_order";
     print("Getting ready to create order");
@@ -1081,6 +1132,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     print("\t Cart Id : ");
     print("\t\t$cart_id");
     try {
+      List<dynamic>? filteredOrderIds;
+      if (aliexpressCart != null &&
+          aliexpressCart!.cart.storeId == cart!.storeId) {
+        filteredOrderIds = orderIds; // Pass the orderIds
+      }
       Map data = {
         "user_id": cart!.userId,
         "cart_id": cart_id,
@@ -1092,8 +1148,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
             ? cart!.scheduleStart!.toUtc().toString()
             : "",
         "server_token": cart!.serverToken,
+        if (filteredOrderIds != null) "aliexpress_order_ids": filteredOrderIds,
       };
-      print(data);
+      // print(data);
       var body = json.encode(data);
       http.Response response;
       response = await http
@@ -1115,7 +1172,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         },
       );
       print("==========Create Order Done==========");
-      print(json.decode(response.body));
+      // print(json.decode(response.body));
       setState(() {
         orderResponse = json.decode(response.body);
         this._loading = false;
@@ -1123,7 +1180,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
       return json.decode(response.body);
     } catch (e) {
-      print("\t- $e");
+      // print("\t- $e");
       setState(() {
         this._loading = false;
       });
@@ -1135,6 +1192,91 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         ),
       );
       return null;
+    }
+  }
+
+  Future<dynamic> createAliexpressOrder() async {
+    // print("in createAliexpressOrder>>>");
+    var aliOrderResponse;
+    var mobile_no =
+        cart!.phone.isNotEmpty ? cart!.phone : "${userData['user']['phone']}";
+    var full_name = cart!.userName.isNotEmpty
+        ? cart!.userName
+        : "${userData['user']['first_name']} ${userData['user']['last_name']}";
+    // Extract cart and product details from AliExpressCart
+    AbroadCart alicart = aliexpressCart!.cart;
+    List<String>? itemIds = aliexpressCart!.itemIds;
+    List<int>? productIds = aliexpressCart!.productIds;
+    // print("alicart.items: ${alicart.items!.map((item) => item.toJson()).toList()}");
+    // print("alicart.items length: ${alicart.items!.length}");
+    // print("productIds:${productIds!} length: ${productIds.length}");
+    // print("itemIds: ${itemIds} length: ${itemIds!.length}");
+
+    List<Map<String, dynamic>> productItems = [];
+    alicart.items!.asMap().forEach((index, item) {
+      if (index < productIds!.length && index < itemIds!.length) {
+        productItems.add({
+          "product_count": item.quantity,
+          "product_id": productIds[index],
+          "sku_attr": itemIds[index],
+          "product_price": {
+            // "currency_code": "ETB",
+            "price": item.price,
+          }
+        });
+      }
+      // else {print("Index $index out of range for productIds or itemIds");}
+    });
+    // print("productItems>>> $productItems");
+    // print('Cart items: ${aliexpressCart!.cart.items}');
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/aliexpress_creat_order";
+    if (productItems.isNotEmpty) {
+      try {
+        Map data = {
+          "access_token": aliExpressAccessToken,
+          "full_name": full_name,
+          "mobile_no": mobile_no,
+          "product_items": productItems,
+        };
+        var body = json.encode(data);
+        // print("body $body");
+        http.Response response = await http
+            .post(
+          Uri.parse(url),
+          headers: <String, String>{
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: body,
+        )
+            .timeout(
+          Duration(seconds: 50),
+          onTimeout: () {
+            setState(() {
+              this._loading = false;
+            });
+            throw TimeoutException("The connection has timed out!");
+          },
+        );
+        setState(() {
+          aliOrderResponse = json.decode(response.body);
+        });
+        // print("ALi orderResponse $aliOrderResponse");
+        return aliOrderResponse;
+      } catch (e) {
+        // print("ALi orderResponse error $e");
+        setState(() {
+          this._loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          Service.showMessage(
+            "Failed to create aliexpress order, please check your internet and try again",
+            true,
+          ),
+        );
+        return null;
+      }
     }
   }
 
@@ -1173,7 +1315,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

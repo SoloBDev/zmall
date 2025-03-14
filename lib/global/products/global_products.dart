@@ -146,7 +146,6 @@ class _GlobalProductState extends State<GlobalProduct> {
                     storeId: widget.store['_id'],
                     serverToken: "",
                     isLocal: false,
-
                   ),
                 ),
               );

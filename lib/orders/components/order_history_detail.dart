@@ -1040,22 +1040,46 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                         ['cart_detail']['order_details']
                                     .length,
                                 itemBuilder: (context, index) {
+                                  String extractProductName(
+                                      String? noteForItem) {
+                                    if (noteForItem == null ||
+                                        noteForItem.isEmpty) return '';
+                                    return noteForItem.split(': ').first;
+                                  }
+
                                   return Column(
                                     children: [
                                       CategoryContainer(
-                                          title: responseData['order_list']
-                                                              ['cart_detail']
-                                                          ['order_details']
-                                                      [index]['product_name'] !=
-                                                  null
-                                              ? responseData['order_list']
-                                                          ['cart_detail']
-                                                      ['order_details'][index]
-                                                  ['product_name']
-                                              : responseData['order_list']
-                                                          ['cart_detail']
-                                                      ['order_details'][index]
-                                                  ['product_detail']['name']),
+                                          title: responseData['order_list']['cart_detail']
+                                                              ['order_details'][index]
+                                                          ['product_name']
+                                                      .toString()
+                                                      .toLowerCase() ==
+                                                  "aliexpress"
+                                              ? "${extractProductName(responseData['order_list']['cart_detail']['order_details'][index]['items'][0]['note_for_item'])}"
+                                              : responseData['order_list']['cart_detail']
+                                                              ['order_details'][index]
+                                                          ['product_name'] !=
+                                                      null
+                                                  ? responseData['order_list']
+                                                          ['cart_detail']['order_details']
+                                                      [index]['product_name']
+                                                  : responseData['order_list']['cart_detail']
+                                                          ['order_details'][index]
+                                                      ['product_detail']['name']),
+                                      // title: responseData['order_list']
+                                      //                     ['cart_detail']
+                                      //                 ['order_details']
+                                      //             [index]['product_name'] !=
+                                      //         null
+                                      //     ? responseData['order_list']
+                                      //                 ['cart_detail']
+                                      //             ['order_details'][index]
+                                      //         ['product_name']
+                                      //     : responseData['order_list']
+                                      //                 ['cart_detail']
+                                      //             ['order_details'][index]
+                                      //         ['product_detail']['name']),
                                       SizedBox(
                                           height: getProportionateScreenHeight(
                                               kDefaultPadding / 3)),
@@ -1087,6 +1111,20 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                         [index]['items']
                                                     .length,
                                             itemBuilder: (context, idx) {
+                                              String extractItemName(
+                                                  String? noteForItem) {
+                                                if (noteForItem == null ||
+                                                    noteForItem.isEmpty)
+                                                  return '';
+                                                var parts =
+                                                    noteForItem.split(': ');
+                                                return parts.length >= 3
+                                                    ? "${parts[2]}:\n${parts[1]}"
+                                                    : parts.length >= 2
+                                                        ? "${parts[1]}"
+                                                        : '';
+                                              }
+
                                               return Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
@@ -1098,7 +1136,16 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          "${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['item_name']}",
+                                                          responseData['order_list']['cart_detail']['order_details']
+                                                                              [
+                                                                              index]
+                                                                          [
+                                                                          'product_name']
+                                                                      .toString()
+                                                                      .toLowerCase() ==
+                                                                  "aliexpress"
+                                                              ? "${extractItemName(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['note_for_item'])}"
+                                                              : "${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['item_name']}",
                                                           softWrap: true,
                                                           style:
                                                               Theme.of(context)

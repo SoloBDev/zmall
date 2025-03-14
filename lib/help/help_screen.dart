@@ -30,11 +30,11 @@ class HelpScreen extends StatelessWidget {
               ),
               title: "Call Now",
               press: () {
-                launch("tel:+251967575757");
+                // launch("tel:+251967575757");
+                launchUrl(Uri(scheme: 'tel', path: '+251967575757'));
               },
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-
             ProfileListTile(
               icon: Icon(
                 Icons.email,
@@ -42,7 +42,8 @@ class HelpScreen extends StatelessWidget {
               ),
               title: "Mail",
               press: () {
-                launch("mailto:info@zmallshop.com");
+                launchUrl(Uri(scheme: 'mailto', path: "info@zmallshop.com"));
+                // launch("mailto:info@zmallshop.com");
               },
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
@@ -77,7 +78,8 @@ class HelpScreen extends StatelessWidget {
               ),
               title: "Call HOTLINE",
               press: () {
-                launch("tel:+2518707");
+                // launch("tel:+2518707");
+                launchUrl(Uri(scheme: 'tel', path: '+2518707'));
               },
             ),
             SizedBox(
@@ -108,7 +110,6 @@ class HelpScreen extends StatelessWidget {
                     "https://www.facebook.com/Zmallshop/");
               },
             ),
-
           ],
         ),
       ),

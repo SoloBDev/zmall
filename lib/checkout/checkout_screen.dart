@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
-// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
@@ -41,6 +39,7 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   Cart? cart;
+  AliExpressCart? aliexpressCart;
   bool _loading = true;
   bool _placeOrder = false;
   bool orderAsap = true;
@@ -109,6 +108,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _loading = true;
     });
     var data = await Service.read('cart');
+    var aliCart = await Service.read('aliexpressCart');
     if (data != null) {
       setState(() {
         cart = Cart.fromJson(data);
@@ -118,6 +118,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           });
         }
       });
+      if (aliCart != null) {
+        setState(() {
+          aliexpressCart = AliExpressCart.fromJson(aliCart);
+        });
+      }
       _getStoreDetail();
       // _getTotalDistance(cart!);
       _getTotalDistanceGeoHash(cart!);
@@ -216,6 +221,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _etaHigh = DateTime.now()
             .add(Duration(minutes: etaResponse['high'].toInt() - diff));
       });
+    } else {
+      _etaLow = DateTime.now().add(Duration(minutes: 30));
+      _etaHigh = DateTime.now().add(Duration(minutes: 45));
     }
     setState(() {
       _loading = false;
@@ -230,7 +238,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (data != null && data['success']) {
       _getETA();
     } else {
-      if (responseData['error_code'] == 999) {
+      if (responseData['error_code'] != null &&
+          responseData['error_code'] == 999) {
         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
             "${errorCodes['${responseData['error_code']}']}!", true));
         await CoreServices.clearCache();
@@ -658,20 +667,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               SizedBox(
                                   height: getProportionateScreenHeight(
                                       kDefaultPadding / 2)),
-                              Text(
-                                Provider.of<ZLanguage>(context).orderTime,
-                                textAlign: TextAlign.center,
-                              ),
-                              _etaLow != null
-                                  ? Text(
+                              aliexpressCart != null &&
+                                      aliexpressCart!.cart.storeId ==
+                                          cart!.storeId
+                                  ? SizedBox.shrink()
+                                  : Text(
+                                      Provider.of<ZLanguage>(context).orderTime,
+                                      textAlign: TextAlign.center,
+                                    ),
+
+                              _etaLow == null ||
+                                      (aliexpressCart != null &&
+                                          aliexpressCart!.cart.storeId ==
+                                              cart!.storeId)
+                                  ? SizedBox.shrink()
+                                  : Text(
                                       "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
                                           ?.copyWith(
                                               fontWeight: FontWeight.w700),
-                                    )
-                                  : Container(),
+                                    ),
+                              // : Container(),
                               SizedBox(
                                   height: getProportionateScreenHeight(
                                       kDefaultPadding / 2)),
@@ -1175,22 +1193,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 MaterialPageRoute(
                                   builder: (context) {
                                     return KifiyaScreen(
-                                      price: promoCodeApplied
-                                          ? promoCodeData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble()
-                                          : responseData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble(),
-                                      orderPaymentId:
-                                          responseData['order_payment']['_id'],
-                                      orderPaymentUniqueId:
-                                          responseData['order_payment']
-                                                  ['unique_id']
-                                              .toString(),
-                                      onlyCashless: onlyCashless,
-                                      vehicleId: '',
-                                    );
+                                        price: promoCodeApplied
+                                            ? promoCodeData['order_payment']
+                                                    ['user_pay_payment']
+                                                .toDouble()
+                                            : responseData['order_payment']
+                                                    ['user_pay_payment']
+                                                .toDouble(),
+                                        orderPaymentId:
+                                            responseData['order_payment']
+                                                ['_id'],
+                                        orderPaymentUniqueId:
+                                            responseData['order_payment']
+                                                    ['unique_id']
+                                                .toString(),
+                                        onlyCashless: onlyCashless,
+                                        vehicleId: responseData['vehicles'][0]
+                                            ['_id']
+                                        // vehicleId: '',
+                                        );
                                   },
                                 ),
                               );
@@ -1209,26 +1230,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return KifiyaScreen(
-                                    price: promoCodeApplied
-                                        ? promoCodeData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble()
-                                        : responseData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble(),
-                                    orderPaymentId:
-                                        responseData['order_payment']['_id'],
-                                    orderPaymentUniqueId:
-                                        responseData['order_payment']
-                                                ['unique_id']
-                                            .toString(),
-                                    onlyCashless: onlyCashless!
-                                        ? onlyCashless
-                                        : selfPickup
-                                            ? true
-                                            : false,
-                                    vehicleId: '',
-                                  );
+                                      price: promoCodeApplied
+                                          ? promoCodeData['order_payment']
+                                                  ['user_pay_payment']
+                                              .toDouble()
+                                          : responseData['order_payment']
+                                                  ['user_pay_payment']
+                                              .toDouble(),
+                                      orderPaymentId:
+                                          responseData['order_payment']['_id'],
+                                      orderPaymentUniqueId:
+                                          responseData['order_payment']
+                                                  ['unique_id']
+                                              .toString(),
+                                      onlyCashless: onlyCashless != null
+                                          ? onlyCashless
+                                          : selfPickup
+                                              ? true
+                                              : false,
+                                      // onlyCashless!
+                                      //     ? onlyCashless
+                                      //     : selfPickup
+                                      //         ? true
+                                      //         : false,
+                                      vehicleId: responseData['vehicles'][0]
+                                          ['_id']
+                                      // vehicleId: '',
+
+                                      );
                                 },
                               ),
                             );
@@ -1428,7 +1457,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         this.responseData = json.decode(response.body);
         this._loading = false;
       });
-
+      // print("orderPaymentUniqueId:${responseData['order_payment']['unique_id']}");
+      // print("====================\n");
+      // print("vehicles>>>> ${responseData['vehicles'][0]['_id']}");
+      // print("====================\n");
+      // print("responseData>>> $responseData");
       return json.decode(response.body);
     } catch (e) {
       setState(() {

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -40,21 +39,9 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
   bool _loading = false;
   String telebirrUrl = "";
   String uuid = "";
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initTelebirr();
   }
@@ -63,7 +50,8 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     var data = await initTelebirr();
     if (data != null && data['result']['success']) {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['result']['message']}. Waiting for payment to be completed", false,
+          "${data['result']['message']}. Waiting for payment to be completed",
+          false,
           duration: 6));
       _verifyPayment();
     }
@@ -159,6 +147,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     }; */
 
     var body = json.encode(data);
+    // print("body $body");
     try {
       http.Response response = await http
           .post(
@@ -182,10 +171,10 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
       setState(() {
         this._loading = false;
       });
-      print(json.decode(response.body));
+      // print(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -238,7 +227,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
@@ -37,21 +36,20 @@ class _TelebirrState extends State<Telebirr> {
   bool _loading = false;
   String telebirrUrl = "";
   String uuid = "";
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
+  InAppWebViewSettings settings = InAppWebViewSettings(
+    //both platforms
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    javaScriptEnabled: true, // Ensure payment JS works
+    clearCache: true, // Clear cache for security
+    //android
+    useHybridComposition: true,
+    //ios
+    allowsInlineMediaPlayback: true,
+  );
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initTelebirr();
   }
@@ -77,10 +75,10 @@ class _TelebirrState extends State<Telebirr> {
                 widget.title,
                 style: TextStyle(color: kBlackColor),
               ),
-              leading: TextButton(
-                child: Text("Done"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+              // leading: TextButton(
+              //   child: Text("Done"),
+              //   onPressed: () => Navigator.of(context).pop(),
+              // ),
             ),
             body: Center(
               child: SpinKitWave(
@@ -95,14 +93,17 @@ class _TelebirrState extends State<Telebirr> {
                 widget.title,
                 style: TextStyle(color: kBlackColor),
               ),
-              leading: TextButton(
-                child: Text("Done"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+              // leading: TextButton(
+              //   child: Text("Done"),
+              //   onPressed: () => Navigator.of(context).pop(),
+              // ),
             ),
             body: InAppWebView(
-              initialOptions: options,
-              initialUrlRequest: URLRequest(url: Uri.parse(telebirrUrl)),
+              initialSettings: settings,
+              initialUrlRequest: URLRequest(url: WebUri(telebirrUrl)),
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                return NavigationActionPolicy.ALLOW; // Allow all navigations
+              },
             ),
             // withZoom: true,
             // displayZoomControls: true,

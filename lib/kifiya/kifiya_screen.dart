@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
@@ -18,6 +18,7 @@ import 'package:zmall/kifiya/components/dashen_master_card.dart';
 import 'package:zmall/kifiya/components/ethswitch_screen.dart';
 import 'package:zmall/kifiya/components/etta_card_screen.dart';
 import 'package:zmall/kifiya/components/santimpay_screen.dart';
+import 'package:zmall/kifiya/components/telebirr_inapp.dart';
 import 'package:zmall/kifiya/components/telebirr_ussd.dart';
 import 'package:zmall/kifiya/kifiya_verification.dart';
 import 'package:zmall/login/login_screen.dart';
@@ -58,12 +59,16 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   bool _placeOrder = false;
   bool paidBySender = true;
   late Cart cart;
+  AliExpressCart? aliexpressCart;
+  List<String> itemIds = [];
+  List<int> productIds = [];
   var paymentResponse;
   var orderResponse;
   var services;
   var courierCart;
   var imagePath;
   var userData;
+  var aliExpressAccessToken;
   int kifiyaMethod = -1;
   double topUpAmount = 0.0;
   double currentBalance = 0.0;
@@ -71,7 +76,6 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   late String uuid;
   bool isCourierSchedule = false;
   late String courierScheduleDate;
-  Logger logger = Logger();
   Widget linearProgressIndicator = Container(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +95,6 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
     if (widget.onlyCashless!) {
@@ -112,21 +115,63 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     }
   }
 
+  // void getUser() async {
+  //   var data = await Service.read('user');
+
+  //   if (data != null) {
+  //     setState(() {
+  //       userData = data;
+  //       currentBalance = double.parse(userData['user']['wallet'].toString());
+  //     });
+  //     getCart();
+  //   }
+  // }
   void getUser() async {
     var data = await Service.read('user');
-
+    var aliAcct = await Service.read('ali_access_token');
     if (data != null) {
       setState(() {
         userData = data;
         currentBalance = double.parse(userData['user']['wallet'].toString());
+        // Only assign aliExpressAccessToken if aliAcct is not null or empty
+        if (aliAcct != null && aliAcct.isNotEmpty) {
+          aliExpressAccessToken = aliAcct;
+        } else {
+          // print("aliExpress Access Token not found>>>");
+        }
       });
       getCart();
     }
   }
 
+  // void getCart() async {
+  //   if (widget.isCourier!) {
+  //     var data = await Service.read('courier');
+  //     if (data != null) {
+  //       setState(() {
+  //         courierCart = data;
+  //         _getPaymentGateway();
+  //         getServices();
+  //         getImages();
+  //         getCourierKefay();
+  //         getCourierSchedule();
+  //         getCourierScheduleDate();
+  //       });
+  //     }
+  //   } else {
+  //     var data = await Service.read('cart');
+  //     if (data != null) {
+  //       setState(() {
+  //         cart = Cart.fromJson(data);
+  //         _getPaymentGateway();
+  //       });
+  //     }
+  //   }
+  // }
   void getCart() async {
     if (widget.isCourier!) {
       var data = await Service.read('courier');
+
       if (data != null) {
         setState(() {
           courierCart = data;
@@ -140,11 +185,20 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       }
     } else {
       var data = await Service.read('cart');
+      var aliCart = await Service.read('aliexpressCart');
+
       if (data != null) {
         setState(() {
           cart = Cart.fromJson(data);
-          _getPaymentGateway();
+          // Only set values from aliCart if aliCart is not null
+          if (aliCart != null) {
+            aliexpressCart = AliExpressCart.fromJson(aliCart);
+            itemIds = aliexpressCart!.itemIds!;
+            productIds = aliexpressCart!.productIds!;
+          }
+          // print("ALI CART>>> ${aliexpressCart!.toJson()}");
         });
+        _getPaymentGateway();
       }
     }
   }
@@ -241,16 +295,42 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     });
   }
 
-  void _createOrder() async {
+  void _createAliexpressOrder() async {
     setState(() {
       _loading = true;
       _placeOrder = true;
     });
-    var data = await createOrder();
+    var data = await createAliexpressOrder();
+    if (data != null &&
+        data['success'] &&
+        data['data']['error_response'] == null &&
+        data['data']['aliexpress_ds_order_create_response']['result']
+            ['is_success']) {
+      List<dynamic>? orderIds = data['data']
+              ['aliexpress_ds_order_create_response']['result']['order_list']
+          ['number'];
+      _createOrder(orderIds: orderIds);
+    } else {
+      setState(() {
+        _loading = false;
+        _placeOrder = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          "Faild to create the order! please try again.", true));
+    }
+  }
+
+  void _createOrder({List<dynamic>? orderIds}) async {
+    setState(() {
+      _loading = true;
+      _placeOrder = true;
+    });
+    var data = await createOrder(orderIds: orderIds);
     if (data != null && data['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage(("Order successfully created"), true));
       await Service.remove('cart');
+      await Service.remove('aliexpressCart');
       setState(() {
         _loading = false;
         _placeOrder = false;
@@ -277,6 +357,44 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     }
   }
 
+  // void _payOrderPayment({otp, paymentId = ""}) async {
+  //   var pId = "";
+  //   if (otp.toString().isNotEmpty) {
+  //     pId = paymentId;
+  //   } else {
+  //     if (!widget.isCourier!) {
+  //       pId = "0";
+  //     }
+  //   }
+  //   if (kifiyaMethod != -1) {
+  //     setState(() {
+  //       _loading = true;
+  //       _placeOrder = true;
+  //     });
+  //     var data = await payOrderPayment(
+  //         otp, paymentResponse['payment_gateway'][kifiyaMethod]['_id']);
+  //     if (data != null && data['success']) {
+  //       widget.isCourier! ? _createCourierOrder() : _createOrder();
+  //     } else {
+  //       setState(() {
+  //         _loading = false;
+  //         _placeOrder = false;
+  //       });
+  //       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //           "${errorCodes['${data['error_code']}']}!", true));
+  //       await Future.delayed(Duration(seconds: 2));
+  //       if (data['error_code'] == 999) {
+  //         await Service.saveBool('logged', false);
+  //         await Service.remove('user');
+  //         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+  //       }
+  //     }
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //         "Please select a payment method for your order.", true,
+  //         duration: 4));
+  //   }
+  // }
   void _payOrderPayment({otp, paymentId = ""}) async {
     var pId = "";
     if (otp.toString().isNotEmpty) {
@@ -294,7 +412,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       var data = await payOrderPayment(
           otp, paymentResponse['payment_gateway'][kifiyaMethod]['_id']);
       if (data != null && data['success']) {
-        widget.isCourier! ? _createCourierOrder() : _createOrder();
+        widget.isCourier!
+            ? _createCourierOrder()
+            : (aliexpressCart != null &&
+                    aliexpressCart!.cart.storeId == cart.storeId)
+                ? _createAliexpressOrder()
+                : _createOrder();
       } else {
         setState(() {
           _loading = false;
@@ -330,11 +453,17 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "Payment verification Successfull!", false,
           duration: 2));
-      if (widget.isCourier!) {
-        _createCourierOrder();
-      } else {
-        _createOrder();
-      }
+      // if (widget.isCourier!) {
+      //   _createCourierOrder();
+      // } else {
+      //   _createOrder();
+      // }
+      widget.isCourier!
+          ? _createCourierOrder()
+          : (aliexpressCart != null &&
+                  aliexpressCart!.cart.storeId == cart.storeId)
+              ? _createAliexpressOrder()
+              : _createOrder();
     } else {
       setState(() {
         _loading = false;
@@ -423,8 +552,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: kPrimaryColor,
-                          border:
-                              Border.all(color: kBlackColor.withOpacity(0.2)),
+                          border: Border.all(
+                              color: kBlackColor.withValues(alpha: 0.2)),
                           borderRadius: BorderRadius.circular(
                             getProportionateScreenWidth(kDefaultPadding / 2),
                           ),
@@ -602,7 +731,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     if (data['success']) {
                                       showDialog(
                                           context: context,
-                                          builder: (context) {
+                                          builder: (dialogContext) {
                                             return AlertDialog(
                                               title: Text(
                                                   "Pay Using Telebirr App"),
@@ -618,7 +747,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         color: kSecondaryColor),
                                                   ),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop();
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
                                                   },
                                                 ),
                                                 TextButton(
@@ -630,7 +760,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         color: kBlackColor),
                                                   ),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop();
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
                                                     Navigator.push(
                                                       context,
                                                       MaterialPageRoute(
@@ -649,16 +780,32 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         },
                                                       ),
                                                     ).then((success) {
-                                                      if (!success) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(Service
-                                                                .showMessage(
-                                                                    "Payment not completed. Please choose your payment method.",
-                                                                    true));
+                                                      if (success != null ||
+                                                          !success) {
+                                                        if (mounted) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(Service
+                                                                  .showMessage(
+                                                                      "Payment not completed. Please choose your payment method.",
+                                                                      true));
+                                                        }
                                                       } else {
+                                                        /////////old/////
+                                                        // if (widget.isCourier!) {
+                                                        //   _createCourierOrder();
+                                                        // } else {
+                                                        //   _createOrder();
+                                                        // }
+                                                        /////////old/////
                                                         if (widget.isCourier!) {
                                                           _createCourierOrder();
+                                                        } else if ((aliexpressCart !=
+                                                                null &&
+                                                            aliexpressCart!.cart
+                                                                    .storeId ==
+                                                                cart.storeId)) {
+                                                          _createAliexpressOrder();
                                                         } else {
                                                           _createOrder();
                                                         }
@@ -1140,7 +1287,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     if (data != null && data['success']) {
                                       showDialog(
                                           context: context,
-                                          builder: (context) {
+                                          builder: (dialogContext) {
                                             return AlertDialog(
                                               title:
                                                   Text("Pay Using Tele Birr"),
@@ -1156,7 +1303,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         color: kSecondaryColor),
                                                   ),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop();
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
                                                   },
                                                 ),
                                                 TextButton(
@@ -1168,7 +1316,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         color: kBlackColor),
                                                   ),
                                                   onPressed: () {
-                                                    Navigator.of(context).pop();
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
 
                                                     Navigator.push(
                                                       context,
@@ -1299,6 +1448,111 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                   }
 
                                   ///*******************************Dashen mastercard*******************************
+                                  ///
+                                  ///
+                                  ///**************************Telebirr InApp***************************************
+
+                                  else if (paymentResponse['payment_gateway']
+                                              [index]['name']
+                                          .toString()
+                                          .toLowerCase() ==
+                                      "telebirr inapp") {
+                                    var data = await useBorsa();
+                                    if (data != null && data['success']) {
+                                      showDialog(
+                                          context: context,
+                                          builder: (dialogContext) {
+                                            return AlertDialog(
+                                              title: Text(
+                                                  "Pay Using Telebirr App"),
+                                              content: Text(
+                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Telebirr InApp?"),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cancel,
+                                                    style: TextStyle(
+                                                        color: kSecondaryColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cont,
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(dialogContext)
+                                                        .pop();
+                                                    Navigator.push(context,
+                                                        MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return TelebirrInApp(
+                                                          amount: widget.price!,
+                                                          context: context,
+                                                          traceNo: widget
+                                                              .orderPaymentUniqueId!,
+                                                          phone:
+                                                              userData['user']
+                                                                  ['phone'],
+                                                        );
+                                                      },
+                                                    )).then((value) {
+                                                      // print("Value: $value");
+                                                      if (value != null &&
+                                                          value == true) {
+                                                        // print( "Payment Successful>>>");
+                                                        widget.isCourier!
+                                                            ? _createCourierOrder()
+                                                            : (aliexpressCart !=
+                                                                        null &&
+                                                                    aliexpressCart!
+                                                                            .cart
+                                                                            .storeId ==
+                                                                        cart.storeId)
+                                                                ? _createAliexpressOrder()
+                                                                : _createOrder();
+                                                      } else {
+                                                        Future.delayed(
+                                                            Duration(
+                                                                milliseconds:
+                                                                    100), () {
+                                                          if (mounted) {
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(Service
+                                                                    .showMessage(
+                                                                        "Payment not completed. Please choose your payment method.",
+                                                                        true));
+                                                          }
+                                                        });
+                                                      }
+                                                    });
+                                                  },
+                                                )
+                                              ],
+                                            );
+                                          });
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "Something went wrong! Please try again!",
+                                              true));
+                                      setState(() {
+                                        kifiyaMethod = -1;
+                                      });
+                                    }
+                                  }
+
+                                  ///*******************************Telebirr InApp*******************************
                                   ///
                                   ///
                                   ///**************************MoMo***************************************
@@ -1583,6 +1837,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   }
 
   Future<dynamic> getPaymentGateway() async {
+    final deviceType = Platform.isIOS ? "iOS" : "android";
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_payment_gateway";
     Map data = {
@@ -1590,6 +1845,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       "city_id": Provider.of<ZMetaData>(context, listen: false).cityId,
       "server_token": userData['user']['server_token'],
       "store_delivery_id": widget.orderPaymentId,
+      "vehicleId": widget.vehicleId,
+      "device_type": deviceType
+      // "device_type": "android",
+      // "device_type": 'iOS',
     };
     var body = json.encode(data);
     try {
@@ -2006,7 +2265,111 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     }
   }
 
-  Future<dynamic> createOrder() async {
+  Future<dynamic> createAliexpressOrder() async {
+    // print("in createAliexpressOrder>>>");
+    var aliOrderResponse;
+    var mobile_no =
+        cart.phone.isNotEmpty ? cart.phone : "${userData['user']['phone']}";
+    var full_name = cart.userName.isNotEmpty
+        ? cart.userName
+        : "${userData['user']['first_name']} ${userData['user']['last_name']}";
+
+    // Extract cart and product details from AliExpressCart
+    Cart alicart = aliexpressCart!.cart;
+    List<String>? itemIds = aliexpressCart!.itemIds;
+    List<int>? productIds = aliexpressCart!.productIds;
+    // print("alicart.items: ${alicart.items!.map((item) => item.toJson()).toList()}");
+    // print("alicart.items length: ${alicart.items!.length}");
+    // print("productIds:${productIds!} length: ${productIds.length}");
+    // print("itemIds: ${itemIds} length: ${itemIds!.length}");
+
+    List<Map<String, dynamic>> productItems = [];
+    alicart.items!.asMap().forEach((index, item) {
+      if (index < productIds!.length && index < itemIds!.length) {
+        productItems.add({
+          "product_count": item.quantity,
+          "product_id": productIds[index],
+          "sku_attr": itemIds[index],
+          "product_price": {
+            // "currency_code": "ETB",
+            "price": item.price,
+          }
+        });
+      }
+      // else {print("Index $index out of range for productIds or itemIds");}
+    });
+    // print("productItems>>> $productItems");
+    setState(() {
+      linearProgressIndicator = Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SpinKitWave(
+              color: kSecondaryColor,
+              size: getProportionateScreenWidth(kDefaultPadding),
+            ),
+            SizedBox(height: kDefaultPadding * 0.5),
+            Text(
+              "Creating order...",
+              style: TextStyle(color: kBlackColor),
+            ),
+          ],
+        ),
+      );
+    });
+    // print('Cart items: ${aliexpressCart!.cart.items}');
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/aliexpress_creat_order";
+    if (productItems.isNotEmpty) {
+      try {
+        Map data = {
+          "access_token": aliExpressAccessToken,
+          "full_name": full_name,
+          "mobile_no": mobile_no,
+          "product_items": productItems,
+        };
+        var body = json.encode(data);
+        // print("body $body");
+        http.Response response = await http
+            .post(
+          Uri.parse(url),
+          headers: <String, String>{
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: body,
+        )
+            .timeout(
+          Duration(seconds: 50),
+          onTimeout: () {
+            setState(() {
+              this._loading = false;
+            });
+            throw TimeoutException("The connection has timed out!");
+          },
+        );
+        setState(() {
+          aliOrderResponse = json.decode(response.body);
+        });
+        // print("ALi orderResponse $aliOrderResponse");
+        return aliOrderResponse;
+      } catch (e) {
+        // print("ALi orderResponse error $e");
+        setState(() {
+          this._loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          Service.showMessage(
+            "Failed to create aliexpress order, please check your internet and try again",
+            true,
+          ),
+        );
+        return null;
+      }
+    }
+  }
+
+  Future<dynamic> createOrder({List<dynamic>? orderIds}) async {
     setState(() {
       linearProgressIndicator = Container(
         child: Column(
@@ -2028,6 +2391,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/create_order";
     try {
+      List<dynamic>? filteredOrderIds;
+      if (aliexpressCart != null &&
+          aliexpressCart!.cart.storeId == cart.storeId) {
+        filteredOrderIds = orderIds; // Pass the orderIds
+      }
       Map data = {
         "user_id": userData['user']['_id'],
         "cart_id": userData['user']['cart_id'],
@@ -2038,10 +2406,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
             ? cart.scheduleStart?.toUtc().toString()
             : "",
         "server_token": userData['user']['server_token'],
+        if (filteredOrderIds != null) "aliexpress_order_ids": filteredOrderIds,
       };
       var body = json.encode(data);
-      http.Response response;
-      response = await http
+      http.Response response = await http
           .post(
         Uri.parse(url),
         headers: <String, String>{
@@ -2062,9 +2430,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       setState(() {
         orderResponse = json.decode(response.body);
       });
-
+      // print("orderResponse>>> $orderResponse");
       return orderResponse;
     } catch (e) {
+      // print("orderResponse Error>>> $e");
       setState(() {
         this._loading = false;
         this._placeOrder = false;
@@ -2078,7 +2447,80 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       return null;
     }
   }
+  ////old createOrder(): which is before aliexpress integration
+  // Future<dynamic> createOrder() async {
+  //   setState(() {
+  //     linearProgressIndicator = Container(
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           SpinKitWave(
+  //             color: kSecondaryColor,
+  //             size: getProportionateScreenWidth(kDefaultPadding),
+  //           ),
+  //           SizedBox(height: kDefaultPadding * 0.5),
+  //           Text(
+  //             "Creating order...",
+  //             style: TextStyle(color: kBlackColor),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   });
+  //   var url =
+  //       "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/create_order";
+  //   try {
+  //     Map data = {
+  //       "user_id": userData['user']['_id'],
+  //       "cart_id": userData['user']['cart_id'],
+  //       "is_schedule_order": cart.isSchedule != null ? cart.isSchedule : false,
+  //       "schedule_order_start_at": cart.scheduleStart != null &&
+  //               cart.isSchedule != null &&
+  //               cart.isSchedule
+  //           ? cart.scheduleStart?.toUtc().toString()
+  //           : "",
+  //       "server_token": userData['user']['server_token'],
+  //     };
+  //     var body = json.encode(data);
+  //     http.Response response;
+  //     response = await http
+  //         .post(
+  //       Uri.parse(url),
+  //       headers: <String, String>{
+  //         "Content-Type": "application/json",
+  //         "Accept": "application/json"
+  //       },
+  //       body: body,
+  //     )
+  //         .timeout(
+  //       Duration(seconds: 50),
+  //       onTimeout: () {
+  //         setState(() {
+  //           this._loading = false;
+  //         });
+  //         throw TimeoutException("The connection has timed out!");
+  //       },
+  //     );
+  //     setState(() {
+  //       orderResponse = json.decode(response.body);
+  //     });
 
+  //     return orderResponse;
+  //   } catch (e) {
+  //     setState(() {
+  //       this._loading = false;
+  //       this._placeOrder = false;
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       Service.showMessage(
+  //         "Failed to create order, please check your internet and try again",
+  //         true,
+  //       ),
+  //     );
+  //     return null;
+  //   }
+  // }
+//////////////
   Future<dynamic> userDetails() async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_detail";

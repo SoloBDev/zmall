@@ -33,21 +33,20 @@ class ChapaScreen extends StatefulWidget {
 class _ChapaScreenState extends State<ChapaScreen> {
   bool _loading = false;
   String initUrl = "";
-  InAppWebViewGroupOptions options = InAppWebViewGroupOptions(
-      crossPlatform: InAppWebViewOptions(
-        useShouldOverrideUrlLoading: true,
-        mediaPlaybackRequiresUserGesture: false,
-      ),
-      android: AndroidInAppWebViewOptions(
-        useHybridComposition: true,
-      ),
-      ios: IOSInAppWebViewOptions(
-        allowsInlineMediaPlayback: true,
-      ));
+  InAppWebViewSettings settings = InAppWebViewSettings(
+    //both platforms
+    useShouldOverrideUrlLoading: true,
+    mediaPlaybackRequiresUserGesture: false,
+    javaScriptEnabled: true, // Ensure payment JS works
+    clearCache: true, // Clear cache for security
+    //android
+    useHybridComposition: true,
+    //ios
+    allowsInlineMediaPlayback: true,
+  );
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initiateUrl();
   }
@@ -73,10 +72,6 @@ class _ChapaScreenState extends State<ChapaScreen> {
                 widget.title,
                 style: TextStyle(color: kBlackColor),
               ),
-              leading: TextButton(
-                child: Text("Done"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
             ),
             body: Center(
               child: SpinKitWave(
@@ -91,23 +86,14 @@ class _ChapaScreenState extends State<ChapaScreen> {
                 widget.title,
                 style: TextStyle(color: kBlackColor),
               ),
-              leading: TextButton(
-                child: Text("Done"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
             ),
             body: InAppWebView(
-              initialOptions: options,
-              initialUrlRequest: URLRequest(url: Uri.parse(initUrl)),
+              initialSettings: settings,
+              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                return NavigationActionPolicy.ALLOW; // Allow all navigations
+              },
             ),
-            // withZoom: true,
-            // displayZoomControls: true,
-            // initialChild: Container(
-            //   color: kPrimaryColor,
-            //   child: const Center(
-            //     child: Text('Waiting.....'),
-            //   ),
-            // ),
           );
   }
 
@@ -151,7 +137,6 @@ class _ChapaScreenState extends State<ChapaScreen> {
       setState(() {
         this._loading = false;
       });
-
       return json.decode(response.body);
     } catch (e) {
       print(e);

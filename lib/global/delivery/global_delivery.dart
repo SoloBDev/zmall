@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_location/fl_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -45,6 +44,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
   String senderEmail = "";
 
   late AbroadCart cart;
+  AbroadAliExpressCart? aliexpressCart;
   late AbroadData abroadData;
   var userData;
   bool _loading = false;
@@ -73,7 +73,6 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     }
   }
 
-
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
     if (mounted) {
@@ -88,14 +87,14 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
 
   void _doLocationTask() async {
     LocationPermission _permissionStatus =
-    await FlLocation.checkLocationPermission();
+        await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
         _permissionStatus == LocationPermission.always) {
       if (await FlLocation.isLocationServicesEnabled) {
         getLocation();
       } else {
         LocationPermission serviceStatus =
-        await FlLocation.requestLocationPermission();
+            await FlLocation.requestLocationPermission();
         if (serviceStatus == LocationPermission.always ||
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
@@ -174,11 +173,18 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       _loading = true;
     });
     var data = await Service.read('abroad_cart');
+    var aliCart = await Service.read('abroad_aliexpressCart');
     if (data != null) {
       setState(() {
         cart = AbroadCart.fromJson(data);
       });
     }
+    if (aliCart != null) {
+      setState(() {
+        aliexpressCart = AbroadAliExpressCart.fromJson(aliCart);
+      });
+    }
+
     setState(() {
       _loading = false;
     });
@@ -210,18 +216,19 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     });
     print("Adding to cart....");
     var data = await addToCart();
-    print(data);
+    // print(data);
     print("++++++++++++++++++++++++++++++++++");
     if (responseData != null && responseData['success']) {
       setState(() {
         cart.userId = responseData['order_payment']['user_id'];
         cart.serverToken = responseData['server_token'];
       });
-      print("Cart ID : ${responseData['order_payment']['cart_id']}");
-      print("Server Token : ${responseData['server_token']}");
-      print("User ID : \t ${cart.userId}");
+      // print("Cart ID : ${responseData['order_payment']['cart_id']}");
+      // print("Server Token : ${responseData['server_token']}");
+      // print("User ID : \t ${cart.userId}");
       print("++++++++++++++++++++++++++++++++++");
       await Service.save('abroad_cart', cart);
+      await Service.save('abroad_aliexpressCart', aliexpressCart);
       await Service.save('cart_id', responseData['order_payment']['cart_id']);
       // await FirebaseCoreServices.addDataToUserProfileCollection(
       //     FirebaseAuth.instance.currentUser.uid, receiverInfo, "receiver");
@@ -290,19 +297,17 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                         children: [
                           DetailsRow(
                               title: "Name",
-                              subtitle:
-                                  senderName.isNotEmpty
-                                      ? senderName
-                                      : "Sender Name"),
+                              subtitle: senderName.isNotEmpty
+                                  ? senderName
+                                  : "Sender Name"),
                           SizedBox(
                               height: getProportionateScreenHeight(
                                   kDefaultPadding / 3)),
                           DetailsRow(
                               title: "Phone",
-                              subtitle:
-                                 senderPhone.isNotEmpty
-                                      ? senderPhone
-                                      : "Sender Phone"),
+                              subtitle: senderPhone.isNotEmpty
+                                  ? senderPhone
+                                  : "Sender Phone"),
                           SizedBox(
                               height: getProportionateScreenHeight(
                                   kDefaultPadding / 3)),
@@ -353,9 +358,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             decoration: textFieldInputDecorator
                                                 .copyWith(
                                                     labelText:
-
-                                                                senderName
-                                                                    .isNotEmpty
+                                                        senderName.isNotEmpty
                                                             ? senderName
                                                             : "Sender Name"),
                                           ),
@@ -368,9 +371,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             title: "Submit",
                                             color: kSecondaryColor,
                                             press: () async {
-                                              if (
-                                                  senderName.isNotEmpty &&
-
+                                              if (senderName.isNotEmpty &&
                                                   senderPhone.isNotEmpty) {
                                                 setState(() {
                                                   abroadData.abroadName =
@@ -506,7 +507,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             maxLength: 9,
                                             onChanged: (val) {
                                               tempPhone = val;
-                                              print(tempPhone.length);
+                                              // print(tempPhone.length);
                                             },
                                             decoration: textFieldInputDecorator
                                                 .copyWith(
@@ -683,14 +684,14 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                   selected = index;
                                   destinationAddress =
                                       deliveryLocation!.list![index];
-                                  destinationAddress!.name = destinationAddress!
-                                      .name!;
-                                      // .replaceAll(RegExp(r'[^\w\s]+'), '')
-                                      // .replaceAll(RegExp('\\s+'), ' ');
-                                  destinationAddress!.note = destinationAddress!
-                                      .note!;
-                                      // .replaceAll(RegExp(r'[^\w\s]+'), '')
-                                      // .replaceAll(RegExp('\\s+'), ' ');
+                                  destinationAddress!.name =
+                                      destinationAddress!.name!;
+                                  // .replaceAll(RegExp(r'[^\w\s]+'), '')
+                                  // .replaceAll(RegExp('\\s+'), ' ');
+                                  destinationAddress!.note =
+                                      destinationAddress!.note!;
+                                  // .replaceAll(RegExp(r'[^\w\s]+'), '')
+                                  // .replaceAll(RegExp('\\s+'), ' ');
                                 });
                               },
                               isSelected: index == selected,
@@ -715,16 +716,18 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                           cart.destinationAddress = destinationAddress;
                           cart.abroadData = abroadData;
                           Service.save('abroad_cart', cart);
+                          Service.save('abroad_aliexpressCart', aliexpressCart);
                         });
-                        print(cart.destinationAddress!.toJson());
+                        // print(cart.destinationAddress!.toJson());
                         print("Checking if location is in Addis");
                         var categoriesResponse =
-                            await CoreServices.getCategoryList(
-                                destinationAddress!.long!,
-                                destinationAddress!.lat!,
-                                "5b3f76f2022985030cd3a437",
-                                "Ethiopia",
-                                context);
+                            await await CoreServices.getCategoryList(
+                                longitude: destinationAddress!.long!,
+                                latitude: destinationAddress!.lat!,
+                                countryCode: "5b3f76f2022985030cd3a437",
+                                countryName: "Ethiopia",
+                                context: context,
+                                isGlobal: true);
 
                         if (categoriesResponse != null &&
                             categoriesResponse['success']) {
@@ -744,7 +747,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                     true,
                                     duration: 4));
                           } else {
-                            print(categoriesResponse['error_code']);
+                            // print(categoriesResponse['error_code']);
                             ScaffoldMessenger.of(context).showSnackBar(
                                 Service.showMessage(
                                     "${errorCodes['${categoriesResponse['error_code']}']}",
@@ -825,7 +828,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -841,11 +844,18 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
   }
 
   Future<dynamic> addToCart() async {
+    // Convert cart to a Map and add isAliexpress manually
+    Map<String, dynamic> jsonBody = {
+      ...cart.toJson(), // Spread operator to include all cart data
+      "isAliexpress": (aliexpressCart != null &&
+          aliexpressCart!.cart.storeId == cart.storeId),
+    };
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/create_cart_and_invoice_for_abroad";
     cart.userId = "";
-    var body = json.encode(cart.toJson());
-    print(body);
+    // var body = json.encode(cart.toJson());
+    var body = json.encode(jsonBody);
+    // print("body>===========>>\n $body");
     try {
       http.Response response = await http
           .post(
@@ -874,9 +884,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       setState(() {
         this.responseData = json.decode(response.body);
       });
+      // print("Respp>>>>. ${json.decode(response.body)}");
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print("Erorrr>>>>. $e");
       setState(() {
         this._loading = false;
       });

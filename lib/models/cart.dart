@@ -68,7 +68,7 @@ class Cart {
         "delivery_for_other": isForOthers,
         "username": userName,
         "phone": phone,
-        "is_laundry_service" : isLaundryService,
+        "is_laundry_service": isLaundryService,
       };
 }
 
@@ -184,7 +184,7 @@ class StoreLocation {
 class DestinationAddress {
   DestinationAddress({
     this.name,
-    this.long =38.761886,
+    this.long = 38.761886,
     this.lat = 9.010498,
     this.note,
   });
@@ -198,7 +198,7 @@ class DestinationAddress {
       DestinationAddress(
         name: json["name"],
         long: json["long"] != null ? json['long'].toDouble() : 38.761886,
-        lat: json['lat']!= null ? json["lat"].toDouble(): 9.010498,
+        lat: json['lat'] != null ? json["lat"].toDouble() : 9.010498,
         note: json["note"],
       );
 
@@ -331,5 +331,57 @@ class HomeContact {
       );
   Map<String, dynamic> toJson() => {
         "list": List<dynamic>.from(list!.map((e) => e.toJson())),
+      };
+}
+
+///////aliexpress cart model
+class AliExpressCart {
+  AliExpressCart({
+    required this.cart,
+    this.itemIds,
+    this.productIds,
+  });
+
+  Cart cart;
+  List<String>? itemIds;
+  List<int>? productIds;
+
+  factory AliExpressCart.fromJson(Map<String, dynamic> json) => AliExpressCart(
+        cart: Cart.fromJson(json["cart"]),
+        itemIds: List<String>.from(json["item_ids"] ?? []),
+        productIds: List<int>.from(json["product_ids"] ?? []),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "cart": cart.toJson(),
+        "item_ids": itemIds != null ? List<dynamic>.from(itemIds!) : [],
+        "product_ids":
+            productIds != null ? List<dynamic>.from(productIds!) : [],
+      };
+}
+
+class AbroadAliExpressCart {
+  AbroadAliExpressCart({
+    required this.cart,
+    this.itemIds,
+    this.productIds,
+  });
+
+  AbroadCart cart;
+  List<String>? itemIds;
+  List<int>? productIds;
+
+  factory AbroadAliExpressCart.fromJson(Map<String, dynamic> json) =>
+      AbroadAliExpressCart(
+        cart: AbroadCart.fromJson(json["cart"]),
+        itemIds: List<String>.from(json["item_ids"] ?? []),
+        productIds: List<int>.from(json["product_ids"] ?? []),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "cart": cart.toJson(),
+        "item_ids": itemIds != null ? List<dynamic>.from(itemIds!) : [],
+        "product_ids":
+            productIds != null ? List<dynamic>.from(productIds!) : [],
       };
 }

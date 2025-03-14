@@ -208,8 +208,8 @@ class _EventsScreenState extends State<EventsScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                kPrimaryColor.withOpacity(.9),
-                kPrimaryColor.withOpacity(.6),
+                kPrimaryColor.withValues(alpha: 0.9),
+                kPrimaryColor.withValues(alpha: 0.6),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -271,7 +271,7 @@ class _EventsScreenState extends State<EventsScreen> {
                               gradient: LinearGradient(
                                 colors: [
                                   kPrimaryColor,
-                                  kPrimaryColor.withOpacity(.6),
+                                  kPrimaryColor.withValues(alpha: 0.6),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -491,7 +491,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                   //                                     decoration:
                                   //                                         BoxDecoration(
                                   //                                       color: isSelected == idx
-                                  //                                           ? kSecondaryColor.withOpacity(0.8)
+                                  //                                           ? kSecondaryColor.withValues(alpha: 0.8)
                                   //                                           : kPrimaryColor,
                                   //                                       borderRadius:
                                   //                                           BorderRadius.circular(kDefaultPadding / 2),

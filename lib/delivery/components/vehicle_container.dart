@@ -37,7 +37,7 @@ class VehicleContainer extends StatelessWidget {
                         width: selected ? 4 : 1,
                         color: selected
                             ? kSecondaryColor
-                            : kGreyColor.withOpacity(0.4))),
+                            : kGreyColor.withValues(alpha: 0.4))),
                 child: Image.asset(
                   imageUrl,
                   width: getProportionateScreenWidth(kDefaultPadding * 5),

@@ -207,7 +207,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
         backgroundColor: kSecondaryColor,
       ),
       body: ModalProgressHUD(
-        color: kPrimaryColor.withOpacity(0.1),
+        color: kPrimaryColor.withValues(alpha: 0.1),
         inAsyncCall: _isLoading,
         progressIndicator: CustomLinearProgressIndicator(
           message: loadingMessage,
@@ -615,7 +615,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                             width: double.infinity,
                             // decoration: BoxDecoration(
                             //   border:
-                            //       Border.all(color: kBlackColor.withOpacity(0.2)),
+                            //       Border.all(color: kBlackColor.withValues(alpha: 0.2)),
                             // ),
                             padding: EdgeInsets.only(
                               right: getProportionateScreenWidth(
@@ -667,8 +667,8 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                             getProportionateScreenWidth(
                                                 kDefaultPadding / 2)),
                                         border: Border.all(
-                                            color:
-                                                kBlackColor.withOpacity(0.2)),
+                                            color: kBlackColor.withValues(
+                                                alpha: 0.2)),
                                       ),
                                       child: Column(
                                         mainAxisAlignment:

@@ -132,7 +132,7 @@ class _PredictScreenState extends State<PredictScreen> {
       ),
       body: ModalProgressHUD(
         inAsyncCall: _isLoading,
-        color: kBlackColor.withOpacity(0.3),
+        color: kBlackColor.withValues(alpha: 0.3),
         progressIndicator: Container(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -283,7 +283,7 @@ class _PredictScreenState extends State<PredictScreen> {
                       height: getProportionateScreenHeight(kDefaultPadding / 4),
                     ),
                     Container(
-                      color: kBlackColor.withOpacity(0.3),
+                      color: kBlackColor.withValues(alpha: 0.3),
                       child: Text(
                         "${widget.game['game_time'].split('T')[0]} ${widget.game['game_time'].split('T')[1].split(".")[0]}",
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -296,7 +296,7 @@ class _PredictScreenState extends State<PredictScreen> {
                       height: getProportionateScreenHeight(kDefaultPadding / 4),
                     ),
                     Container(
-                      color: kBlackColor.withOpacity(0.2),
+                      color: kBlackColor.withValues(alpha: 0.2),
                       child: Text(
                         widget.game['stadium'].toString().toUpperCase(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -585,7 +585,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               height: 1,
                             ),
                             Container(
-                              color: kSecondaryColor.withOpacity(0.8),
+                              color: kSecondaryColor.withValues(alpha: 0.8),
                               width: getProportionateScreenWidth(
                                   kDefaultPadding * 2.5),
                               child: Padding(
@@ -700,7 +700,7 @@ class _PredictScreenState extends State<PredictScreen> {
                               height: 1,
                             ),
                             Container(
-                              color: kSecondaryColor.withOpacity(0.8),
+                              color: kSecondaryColor.withValues(alpha: 0.8),
                               width: getProportionateScreenWidth(
                                   kDefaultPadding * 2.5),
                               child: Padding(
