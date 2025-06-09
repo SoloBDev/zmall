@@ -26,15 +26,15 @@ class CustomBanner extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: getProportionateScreenHeight(kDefaultPadding * 7.5),
-        margin: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-        ),
+        // margin: EdgeInsets.symmetric(
+        //   horizontal: getProportionateScreenWidth(kDefaultPadding),
+        // ),
         // padding:EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
         decoration: BoxDecoration(
           color: kPrimaryColor,
           border: Border.all(color: kGreyColor.withValues(alpha: 0.1)),
           borderRadius: BorderRadius.circular(
-            getProportionateScreenWidth(kDefaultPadding / 2),
+            getProportionateScreenWidth(kDefaultPadding),
           ),
           boxShadow: [boxShadow],
           // image: DecorationImage(
@@ -53,6 +53,9 @@ class CustomBanner extends StatelessWidget {
                     fit: BoxFit.fill,
                     image: AssetImage(imageUrl),
                   ),
+                  borderRadius: BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                 ),
               )
             : CachedNetworkImage(
@@ -63,7 +66,7 @@ class CustomBanner extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: kPrimaryColor,
                     borderRadius: BorderRadius.circular(
-                        getProportionateScreenHeight(kDefaultPadding / 2)),
+                        getProportionateScreenHeight(kDefaultPadding)),
                     image: DecorationImage(
                       fit: BoxFit.fill,
                       image: imageProvider,

@@ -92,7 +92,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                       itemCount: reviews['store_review_list'].length,
                       itemBuilder: (context, index) {
                         return CommentContainer(
-                          press:(){
+                          press: () {
                             // print(reviews['store_review_list'][index]);
                           },
                           comment: reviews['store_review_list'][index]
@@ -181,7 +181,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

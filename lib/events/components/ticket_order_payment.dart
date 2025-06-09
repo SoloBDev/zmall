@@ -33,7 +33,6 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getTicketInvoice();
   }
@@ -227,7 +226,7 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

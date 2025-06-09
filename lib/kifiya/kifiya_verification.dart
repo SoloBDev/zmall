@@ -423,7 +423,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -473,7 +473,7 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

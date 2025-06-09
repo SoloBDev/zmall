@@ -368,9 +368,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                     children: [
                       Expanded(
                         child: Text(
-                          storeName ?? "",
+                          storeName != null
+                              ? Service.capitalizeFirstLetters(storeName)
+                              : "",
                           softWrap: true,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ),
                       // storeName.toString().toLowerCase() == "aliexpress"
@@ -838,7 +841,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   ///////////////////////////////////////////////////////////newly added
 
   Future<dynamic> getStoreExtraItemList() async {
-    print('Store ID ***${storeID}***');
+    // print('Store ID ***${storeID}***');
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_available";
 
@@ -1032,7 +1035,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                 onTap: () async {
                                   // Add to cart.....
 
-                                  print('id... ${extraItems[index]['_id']}');
+                                  // print('id... ${extraItems[index]['_id']}');
                                   Item item = Item(
                                     id: extraItems[index]['_id'],
                                     quantity: 1,
@@ -1050,11 +1053,11 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                         ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
                                         : "https://ibb.co/vkhzjd6",
                                   );
-                                  print('item... $item');
+                                  // print('item... $item');
                                   StoreLocation storeLocation = StoreLocation(
                                       long: storeLocations[1],
                                       lat: storeLocations[0]);
-                                  print('sLocation... $storeLocation');
+                                  // print('sLocation... $storeLocation');
                                   DestinationAddress destination =
                                       DestinationAddress(
                                     long: Provider.of<ZMetaData>(context,
@@ -1066,7 +1069,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                     name: "Current Location",
                                     note: "User current location",
                                   );
-                                  print('DestinationAddress... $destination');
+                                  // print('DestinationAddress... $destination');
                                   if (cart != null && userData != null) {
                                     if (cart!.storeId! ==
                                         extraItems[index]['store_id']) {

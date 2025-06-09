@@ -296,11 +296,9 @@ class _ProductScreenState extends State<ProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.store['name'],
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(color: kBlackColor),
+          Service.capitalizeFirstLetters(widget.store['name']),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: kBlackColor, fontWeight: FontWeight.bold, fontSize: 20),
         ),
         elevation: 0.0,
         backgroundColor: kPrimaryColor,
@@ -536,28 +534,87 @@ class _ProductScreenState extends State<ProductScreen> {
             children: [
               Container(
                 color: kPrimaryColor,
-                child: Card(
-                  elevation: 0.1,
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: Provider.of<ZLanguage>(context).search,
-                      border: InputBorder.none,
-                      prefixIcon: Icon(Icons.search),
-                      suffixIcon: controller.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.cancel),
-                              onPressed: () {
-                                controller.clear();
-                                onSearchTextChanged('');
-                              },
-                            )
-                          : null,
-                    ),
-                    onChanged: onSearchTextChanged,
+                child: Container(
+                  margin: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding / 2),
                   ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  ),
+
+                  decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      border: Border.all(color: kWhiteColor, width: 2),
+                      borderRadius: BorderRadius.circular(kDefaultPadding * 2)),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Icon(Icons.search),
+                      SizedBox(
+                          width: getProportionateScreenWidth(kDefaultPadding)),
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          decoration: InputDecoration(
+                            hintText: Provider.of<ZLanguage>(context).search,
+                            border: InputBorder.none,
+                            // prefixIcon: Icon(Icons.search),
+                            // suffixIcon: controller.text.isNotEmpty
+                            //     ? IconButton(
+                            //         icon: Icon(Icons.cancel),
+                            //         onPressed: () {
+                            //           controller.clear();
+                            //           onSearchTextChanged('');
+                            //           setState(
+                            //             () {
+                            //               storeOpen(stores);
+                            //             },
+                            //           );
+                            //         },
+                            //       )
+                            //     : null,
+                          ),
+                          onChanged: onSearchTextChanged,
+                        ),
+                      ),
+                      if (controller.text.isNotEmpty)
+                        IconButton(
+                          icon: Icon(Icons.cancel),
+                          onPressed: () {
+                            controller.clear();
+                            onSearchTextChanged('');
+                          },
+                        ),
+                    ],
+                  ),
+                  // ),
                 ),
               ),
+              // Container(
+              //   color: kPrimaryColor,
+              //   child: Card(
+              //     elevation: 0.1,
+              //     child: TextField(
+              //       controller: controller,
+              //       decoration: InputDecoration(
+              //         hintText: Provider.of<ZLanguage>(context).search,
+              //         border: InputBorder.none,
+              //         prefixIcon: Icon(Icons.search),
+              //         suffixIcon: controller.text.isNotEmpty
+              //             ? IconButton(
+              //                 icon: Icon(Icons.cancel),
+              //                 onPressed: () {
+              //                   controller.clear();
+              //                   onSearchTextChanged('');
+              //                 },
+              //               )
+              //             : null,
+              //       ),
+              //       onChanged: onSearchTextChanged,
+              //     ),
+              //   ),
+              // ),
               StoreHeader(
                 storeName: widget.store['name'],
                 distance: widget.store['distance'] != null
@@ -568,9 +625,9 @@ class _ProductScreenState extends State<ProductScreen> {
                 rating: widget.store['user_rate'].toString(),
                 ratingCount: widget.store['user_rate_count'].toString(),
               ),
-              // SizedBox(
-              //   height: getProportionateScreenHeight(kDefaultPadding / 5),
-              // ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 4),
+              ),
               _searchResult.length != 0 || controller.text.isNotEmpty
                   ? Expanded(
                       child: ListView.separated(
@@ -635,7 +692,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _searchResult[index]['name'],
+                                            Service.capitalizeFirstLetters(
+                                                _searchResult[index]['name']),
                                             style: TextStyle(
                                               fontSize:
                                                   getProportionateScreenWidth(
@@ -676,8 +734,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                                 .textTheme
                                                 .titleSmall
                                                 ?.copyWith(
-                                                  color: kSecondaryColor,
-                                                  fontWeight: FontWeight.w500,
+                                                  color: kBlackColor,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                           ),
                                         ],
@@ -719,7 +777,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                       kDefaultPadding / 2),
                                 ),
                                 title: Text(
-                                  "${products[index]["_id"]["name"]}",
+                                  "${Service.capitalizeFirstLetters(products[index]["_id"]["name"])}",
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge
@@ -787,9 +845,10 @@ class _ProductScreenState extends State<ProductScreen> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          products[index]
-                                                                  ['items'][idx]
-                                                              ['name'],
+                                                          Service.capitalizeFirstLetters(
+                                                              products[index]
+                                                                      ['items'][
+                                                                  idx]['name']),
                                                           style: TextStyle(
                                                             fontSize:
                                                                 getProportionateScreenWidth(
@@ -834,14 +893,16 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                 height: 0.5),
                                                         Text(
                                                           "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .labelLarge
-                                                                  ?.copyWith(
-                                                                    color:
-                                                                        kBlackColor,
-                                                                  ),
+                                                          style: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .labelLarge
+                                                              ?.copyWith(
+                                                                  color:
+                                                                      kBlackColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
                                                         ),
                                                         SizedBox(
                                                             height: getProportionateScreenHeight(
@@ -1067,13 +1128,13 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                 BoxDecoration(
                                                               color:
                                                                   kBlackColor,
-                                                              // borderRadius:
-                                                              //     BorderRadius
-                                                              //         .circular(
-                                                              //   getProportionateScreenWidth(
-                                                              //       kDefaultPadding /
-                                                              //           10),
-                                                              // ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                getProportionateScreenWidth(
+                                                                    kDefaultPadding /
+                                                                        3),
+                                                              ),
                                                             ),
                                                             child: Padding(
                                                               padding:
@@ -1215,7 +1276,7 @@ class _ProductScreenState extends State<ProductScreen> {
                               //                           0
                               //                       ? ImageContainer(
                               //                           url:
-                              //                               "http://159.65.147.111:8000/${products[index]['items'][idx]['image_url'][0]}",
+                              //                               "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
                               //                         )
                               //                       : ImageContainer(
                               //                           url:
@@ -1482,7 +1543,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 double.parse(customPriceController.text);
                             customFilter(list, price);
                             Navigator.of(context).pop();
-                          } catch (e, st) {
+                          } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text("Invalid price value"),
@@ -1490,7 +1551,7 @@ class _ProductScreenState extends State<ProductScreen> {
                               ),
                             );
                             // print(e);
-                            print(st);
+                            // print(st);
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1636,7 +1697,7 @@ class _ProductScreenState extends State<ProductScreen> {
     for (int i = 0; i < list.length; i++) {
       p.add({"name": list[i]["name"], "price": list[i]['price']});
     }
-    print(p);
+    // print(p);
   }
 
   Future<dynamic> getStoreProductList() async {

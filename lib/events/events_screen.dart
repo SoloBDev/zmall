@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/events/components/description_row.dart';
-import 'package:zmall/events/components/ticket_order_payment.dart';
 import 'package:zmall/kifiya/components/event_santim.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
@@ -199,7 +197,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   ),
                   GestureDetector(
                     onTap: () {},
-                    child: Icon(FontAwesomeIcons.ticketAlt),
+                    child: Icon(FontAwesomeIcons.ticketSimple),
                   )
                 ],
               ),
@@ -767,7 +765,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Icon(
-                                      FontAwesomeIcons.arrowAltCircleUp,
+                                      FontAwesomeIcons.circleUp,
                                       color: kSecondaryColor,
                                     ),
                                     Text(
@@ -850,7 +848,7 @@ class _EventsScreenState extends State<EventsScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

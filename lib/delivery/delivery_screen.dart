@@ -5,7 +5,6 @@ import 'package:fl_location/fl_location.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/checkout/checkout_screen.dart';
@@ -20,6 +19,7 @@ import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/section_title.dart';
 
 import 'components/location_container.dart';
@@ -434,10 +434,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                         padding:
                                             MediaQuery.of(context).viewInsets,
                                         child: Container(
-                                          padding: EdgeInsets.all(
-                                              getProportionateScreenHeight(
-                                                  kDefaultPadding)),
-                                          child: Wrap(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding),
+                                              vertical:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 2)),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            spacing:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding * 1.5),
                                             children: <Widget>[
                                               Text(
                                                 Provider.of<ZLanguage>(context,
@@ -451,32 +461,30 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                           FontWeight.bold,
                                                     ),
                                               ),
-                                              SizedBox(
-                                                height:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding),
-                                              ),
-                                              TextField(
-                                                style: TextStyle(
-                                                    color: kBlackColor),
-                                                keyboardType:
-                                                    TextInputType.text,
-                                                onChanged: (val) {
-                                                  receiverName = val;
-                                                },
-                                                decoration: textFieldInputDecorator
-                                                    .copyWith(
-                                                        labelText: Provider.of<
-                                                                    ZLanguage>(
-                                                                context)
-                                                            .name),
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding / 2),
-                                              ),
-                                              TextField(
+                                              CustomTextField(
+                                                  style: TextStyle(
+                                                      color: kBlackColor),
+                                                  keyboardType:
+                                                      TextInputType.text,
+                                                  onChanged: (val) {
+                                                    receiverName = val;
+                                                  },
+                                                  labelText:
+                                                      Provider.of<ZLanguage>(
+                                                              context)
+                                                          .name,
+                                                  hintText:
+                                                      Provider.of<ZLanguage>(
+                                                              context)
+                                                          .name
+                                                  // decoration: textFieldInputDecorator
+                                                  //     .copyWith(
+                                                  //         labelText: Provider.of<
+                                                  //                     ZLanguage>(
+                                                  //                 context)
+                                                  //             .name),
+                                                  ),
+                                              CustomTextField(
                                                 style: TextStyle(
                                                     color: kBlackColor),
                                                 keyboardType:
@@ -485,28 +493,36 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                 onChanged: (val) {
                                                   receiverPhone = val;
                                                 },
-                                                decoration:
-                                                    textFieldInputDecorator
-                                                        .copyWith(
-                                                  labelText:
-                                                      Provider.of<ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .receiverPhone,
-                                                  helperText:
-                                                      Provider.of<ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .startPhone,
-                                                  prefix: Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
-                                                ),
+                                                // decoration:
+                                                //     textFieldInputDecorator
+                                                //         .copyWith(
+                                                //   labelText:
+                                                //       Provider.of<ZLanguage>(
+                                                //               context,
+                                                //               listen: false)
+                                                //           .receiverPhone,
+                                                //   helperText:
+                                                //       Provider.of<ZLanguage>(
+                                                //               context,
+                                                //               listen: false)
+                                                //           .startPhone,)
+                                                labelText:
+                                                    Provider.of<ZLanguage>(
+                                                            context,
+                                                            listen: false)
+                                                        .receiverPhone,
+                                                hintText:
+                                                    Provider.of<ZLanguage>(
+                                                            context,
+                                                            listen: false)
+                                                        .startPhone,
+                                                prefix: Text(
+                                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
                                               ),
                                               SizedBox(
-                                                height:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding / 2),
-                                              ),
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding)),
                                               CustomButton(
                                                 title: Provider.of<ZLanguage>(
                                                         context,

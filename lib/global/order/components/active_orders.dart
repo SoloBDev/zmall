@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
-import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/orders/components/courier_detail.dart';
-import 'package:zmall/orders/components/order_detail.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
@@ -22,7 +18,6 @@ class GlobalActiveOrders extends StatefulWidget {
 
 class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
   AbroadData? userData;
-
 
   bool _loading = false;
   var responseData;
@@ -42,14 +37,13 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
         responseData = data;
       });
     } else {
-      if(mounted){
+      if (mounted) {
         setState(() {
           _loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+            "${errorCodes['${data['error_code']}']}!", true));
       }
-
     }
     await Future.delayed(Duration(seconds: 7));
     _getOrders(phone: phone, loading: false);
@@ -67,16 +61,12 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
       });
 
       _getOrders(phone: userData!.abroadPhone);
-    }
-    else {
+    } else {
       setState(() {
         _loading = false;
       });
     }
-
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +86,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                      print(responseData['order_list'][index]);
+                      // print(responseData['order_list'][index]);
 //                       if (responseData['order_list'][index]['delivery_type'] ==
 //                           2) {
 //                         Navigator.push(
@@ -317,7 +307,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Your internet connection is bad!"),

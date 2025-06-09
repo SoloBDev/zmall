@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -26,6 +27,75 @@ class TelebirrInApp extends StatefulWidget {
 class _TelebirrInAppState extends State<TelebirrInApp> {
   static const MethodChannel _channel =
       MethodChannel('telebirrInAppSdkChannel');
+
+  Future<dynamic> placeOrderIOS({
+    required String receiveCode,
+    required String appId,
+    required String shortCode,
+  }) async {
+    try {
+      final Map<String, dynamic> arguments = {
+        'receiveCode': receiveCode,
+        'appId': appId,
+        'shortCode': shortCode,
+        // 'returnUrl': returnUrl
+      };
+      // print('Invoking native placeOrder method with arguments:>>>> $arguments\n');
+
+      final response = await _channel.invokeMethod('placeOrder', arguments);
+      // print("Native iOS Response:>>>> ${response.toString()}\n");
+
+      // Check if the response is a map and contains status and code
+      if (response.isNotEmpty) {
+        final int code = int.parse(response['code'].toString());
+
+        ///Confirm payment verification
+        if (code == 0) {
+          var confirmPaymentResponce = await confirmPayment(
+              code: code,
+              status: response['status'].toString(),
+              traceNo: widget.traceNo,
+              message: response['errMsg'].toString());
+          if (confirmPaymentResponce != null &&
+              confirmPaymentResponce["success"]) {
+            _handlePaymentResponse(code: code);
+            Future.delayed(
+                Duration(seconds: 2), () => Navigator.pop(context, true));
+          } else {
+            _handlePaymentResponse(code: -99);
+            Future.delayed(
+                Duration(seconds: 2), () => Navigator.pop(context, false));
+          }
+        } else {
+          _handlePaymentResponse(code: code);
+          Future.delayed(
+              Duration(seconds: 2), () => Navigator.pop(context, false));
+        }
+      } else {
+        // Unexpected response format
+        _handlePaymentResponse(code: -1);
+        Future.delayed(
+            Duration(seconds: 2), () => Navigator.pop(context, false));
+      }
+    } on PlatformException catch (e) {
+      // print('PlatformException caught:');
+      // print('Error details: ${e.details}');
+      // print('Error message: ${e.message}');
+      // print('Error code: ${e.details["code"]}');
+      _handlePaymentResponse(code: e.details["code"]);
+      if (mounted) {
+        // Check if the widget is still mounted
+        Future.delayed(Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.pop(context, false);
+          }
+        });
+      }
+    } catch (e) {
+      // print('Unexpected error in placeOrderIOS: $e');
+      Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
+    }
+  }
 
   Future<dynamic> placeOrder({
     required String receiveCode,
@@ -244,10 +314,11 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       required String traceNo,
       required String phone,
       required String description}) async {
-    var responseData;
+    final deviceType = Platform.isIOS ? "iOS" : "android";
     var url = "https://pgw.shekla.app/telebirrInapp/create_order";
+    var responseData;
     Map data = {
-      "traceNo": traceNo, // "traceNo": "1234567890",
+      "traceNo": traceNo,
       "phone": phone,
       "amount": amount,
       "description": description,
@@ -279,13 +350,20 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
                   .toString()
                   .toLowerCase() ==
               'success') {
-        //////TODO: check platform and call function based on the device placeOrderAndroid or placeOrderIos
-        placeOrder(
-          receiveCode: responseData['createOrderResult']['biz_content']
-              ['receiveCode'],
-          appId: responseData["appId"],
-          shortCode: responseData["shortCode"],
-        );
+        //////check platform and call function based on the device placeOrderAndroid or placeOrderIos
+        deviceType == "android"
+            ? placeOrder(
+                appId: responseData["appId"],
+                shortCode: responseData["shortCode"],
+                receiveCode: responseData['createOrderResult']['biz_content']
+                    ['receiveCode'],
+              )
+            : placeOrderIOS(
+                appId: responseData["appId"],
+                shortCode: responseData["shortCode"],
+                receiveCode: responseData['createOrderResult']['biz_content']
+                    ['receiveCode'],
+              );
       }
       return json.decode(response.body);
     } catch (e) {

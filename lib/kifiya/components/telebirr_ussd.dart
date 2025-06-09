@@ -147,7 +147,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     }; */
 
     var body = json.encode(data);
-    // print("body $body");
+    print("body $body");
     try {
       http.Response response = await http
           .post(
@@ -161,29 +161,23 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
           throw TimeoutException("The connection has timed out!");
         },
       );
-
-      setState(() {
-        this._loading = false;
-      });
       // print(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
       // print(e);
-      setState(() {
-        this._loading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         Service.showMessage(
             "Something went wrong. Please check your internet connection!",
             true),
       );
       return null;
+    } finally {
+      setState(() {
+        this._loading = false;
+      });
     }
   }
 
@@ -214,16 +208,9 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
           throw TimeoutException("The connection has timed out!");
         },
       );
-
-      setState(() {
-        this._loading = false;
-      });
 
       return json.decode(response.body);
     } catch (e) {
@@ -236,6 +223,10 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
             "Checking if payment is made. Please wait a moment...", true),
       );
       return null;
+    } finally {
+      setState(() {
+        this._loading = false;
+      });
     }
   }
 }

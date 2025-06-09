@@ -24,18 +24,27 @@ class KifiyaMethodContainer extends StatelessWidget {
       onTap: press,
       child: Container(
         alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(
+            horizontal: getProportionateScreenWidth(kDefaultPadding / 4)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: getProportionateScreenWidth(kDefaultPadding * 4),
-              height: getProportionateScreenHeight(kDefaultPadding * 3),
-              child: Image.asset(
-                imagePath,
-              ),
-            ),
+            imagePath.isEmpty
+                ? Icon(
+                    Icons.wallet_outlined,
+                    size: 30,
+                  )
+                : Container(
+                    width: getProportionateScreenWidth(kDefaultPadding * 4),
+                    height: getProportionateScreenHeight(kDefaultPadding * 3),
+                    child: Image.asset(
+                      imagePath,
+                    ),
+                  ),
             Text(
-              title,
+              title.toLowerCase().contains("tele birr")
+                  ? "Telebirr USSD"
+                  : title,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,

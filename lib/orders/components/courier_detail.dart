@@ -11,6 +11,7 @@ import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/custom_tag.dart';
 
 import 'order_history_detail.dart';
 
@@ -132,406 +133,724 @@ class _CourierDetailState extends State<CourierDetail> {
         ),
         elevation: 1.0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kSecondaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "ORDER ID: #${widget.courierData['unique_id']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(
+                vertical: getProportionateScreenHeight(kDefaultPadding)),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: kSecondaryColor,
             ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kPrimaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "PICKUP ADDRESS",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kGreyColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "${widget.courierData['pickup_addresses'][0]['address']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kSecondaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "DELIVERY ADDRESS",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "${widget.courierData['destination_addresses'][0]['address']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kPrimaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "RECEIVER",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kGreyColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "${widget.courierData['destination_addresses'][0]['user_details']['name']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kSecondaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "RECEIVER PHONE",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "+251 ${widget.courierData['destination_addresses'][0]['user_details']['phone']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kPrimaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "CONFIRMATION CODE",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kGreyColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "${widget.courierData['confirmation_code_for_complete_delivery']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kSecondaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "ITEM DESCRIPTION",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: Text(
-                      "${widget.courierData['destination_addresses'][0]['note']}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: kPrimaryColor,
-              ),
-              child: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      "STATUS",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: kGreyColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Center(
-                    child: widget.courierData['delivery_status'] != null &&
-                            widget.courierData['order_status'] == 7
-                        ? Text(
-                            "${order_status['${widget.courierData['delivery_status']}']}",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: kBlackColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : Text(
-                            "Pending...",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: kBlackColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    "Total",
-                    style: TextStyle(
-                      fontSize:
-                          getProportionateScreenWidth(kDefaultPadding * .7),
-                    ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Text(
+            child: Column(
+              children: [
+                Text(
                     "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.courierData['total_order_price'].toStringAsFixed(2)}",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryColor,
+                        )),
+                Text(
+                  "Total Price",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: kPrimaryColor),
+                ),
+                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                Center(
+                  child: Text(
+                    "ORDER ID: #${widget.courierData['unique_id']}",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: kPrimaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          ///user detail
+          Container(
+            padding: EdgeInsets.symmetric(
+              vertical: getProportionateScreenHeight(kDefaultPadding),
+            ),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: kPrimaryColor,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getProportionateScreenHeight(kDefaultPadding),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: getProportionateScreenHeight(kDefaultPadding),
+                children: [
+                  CustomTag(color: kSecondaryColor, text: "Reciver"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${widget.courierData['destination_addresses'][0]['user_details']['name']}",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Reciver",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding / 2)),
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "+251 ${widget.courierData['destination_addresses'][0]['user_details']['phone']}",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Reciver Phone",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-//            Text("
-//            ${widget.courierData
-//            ['order_status'] ==
-//                7
-//                ? "${order_status['${widget.courierData['delivery_status']}']}"
-//                : "${order_status['${widget.courierData['order_status']}']},"}),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            orderStatus != null &&
-                    orderStatus['provider_id'] != null &&
-                    widget.courierData['order_status'] != 25 &&
-                    widget.courierData['delivery_status'] != null &&
-                    widget.courierData['delivery_status'] >= 9 &&
-                    widget.courierData['delivery_status'] < 25
-                ? Padding(
-                    padding: EdgeInsets.only(
-                      bottom: getProportionateScreenHeight(kDefaultPadding),
-                      left: getProportionateScreenWidth(kDefaultPadding),
-                      right: getProportionateScreenWidth(kDefaultPadding),
-                    ),
-                    child: CustomButton(
-                      title: "Track My Order",
-                      press: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return ProviderLocation(
-                                providerId: orderStatus['provider_id'],
-                                providerImage: orderStatus['provider_image'],
-                                providerName:
-                                    orderStatus['provider_first_name'],
-                                providerPhone: orderStatus['provider_phone'],
-                                destLat: orderStatus['destination_addresses'][0]
-                                    ['location'][0],
-                                destLong: orderStatus['destination_addresses']
-                                    [0]['location'][1],
-                                userId: widget.userId!,
-                                serverToken: widget.serverToken!,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      color: kSecondaryColor,
-                    ),
-                  )
-                : Container(),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                widget.courierData['order_status'] == 25
-                    ? Padding(
-                        padding: EdgeInsets.only(
-                          bottom: getProportionateScreenHeight(kDefaultPadding),
-                          left: getProportionateScreenWidth(kDefaultPadding),
-                          right: getProportionateScreenWidth(kDefaultPadding),
-                        ),
-                        child: _loading
-                            ? SpinKitWave(
-                                size: getProportionateScreenWidth(
-                                    kDefaultPadding),
+          ),
+          SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 4)),
+
+          /////confirmation/ item detail
+
+          Container(
+            padding: EdgeInsets.symmetric(
+              vertical: getProportionateScreenHeight(kDefaultPadding),
+            ),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: kPrimaryColor,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getProportionateScreenHeight(kDefaultPadding),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: getProportionateScreenHeight(kDefaultPadding),
+                children: [
+                  CustomTag(color: kSecondaryColor, text: "Item Detail"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${widget.courierData['confirmation_code_for_complete_delivery']}",
+                              style: TextStyle(
                                 color: kBlackColor,
-                              )
-                            : CustomButton(
-                                title: "SUBMIT",
-                                press: () {
-                                  _showInvoice();
-                                },
-                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
                               ),
-                      )
-                    : Container(),
-              ],
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Confirmation Code",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding / 2)),
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${widget.courierData['destination_addresses'][0]['note']}",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Item Description",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                widget.courierData['delivery_status'] != null &&
-                        widget.courierData['delivery_status'] >= 109
-                    ? Center(
-                        child: TextButton(
-                          onPressed: () {
-                            _showDialog();
-                          },
-                          child: Text(
-                            "Cancel",
-                            style: TextStyle(color: kBlackColor),
+          ),
+          SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 4)),
+          //////location
+          Container(
+            padding: EdgeInsets.symmetric(
+              vertical: getProportionateScreenHeight(kDefaultPadding),
+            ),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: kPrimaryColor,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getProportionateScreenHeight(kDefaultPadding),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: getProportionateScreenHeight(kDefaultPadding),
+                children: [
+                  CustomTag(color: kSecondaryColor, text: "Delivery Location"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${Service.capitalizeFirstLetters(widget.courierData['store_name'])}",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Pickup Address",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding / 2)),
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${widget.courierData['destination_addresses'][0]['address']}",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              softWrap: true,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.right,
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4)),
+                            Text(
+                              "Delivery Address",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.right,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  ////status
+                  widget.courierData['delivery_status'] != null &&
+                          widget.courierData['order_status'] == 7
+                      ? Text(
+                          "Status: ${order_status['${widget.courierData['delivery_status']}']}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: kBlackColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : Text(
+                          "Status: Pending...",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: kBlackColor,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      )
-                    : Container(),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 4)),
+
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kPrimaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "PICKUP ADDRESS",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kGreyColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "${widget.courierData['pickup_addresses'][0]['address']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kSecondaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "DELIVERY ADDRESS",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "${widget.courierData['destination_addresses'][0]['address']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kPrimaryColor,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kPrimaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "RECEIVER",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kGreyColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "${widget.courierData['destination_addresses'][0]['user_details']['name']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kSecondaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "RECEIVER PHONE",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "+251 ${widget.courierData['destination_addresses'][0]['user_details']['phone']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kPrimaryColor,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kPrimaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "CONFIRMATION CODE",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kGreyColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "${widget.courierData['confirmation_code_for_complete_delivery']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kSecondaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "ITEM DESCRIPTION",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kBlackColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: Text(
+          //           "${widget.courierData['destination_addresses'][0]['note']}",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kPrimaryColor,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(
+          //       vertical: getProportionateScreenHeight(kDefaultPadding)),
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: kPrimaryColor,
+          //   ),
+          //   child: Column(
+          //     children: [
+          //       Center(
+          //         child: Text(
+          //           "STATUS",
+          //           textAlign: TextAlign.center,
+          //           style: TextStyle(
+          //             color: kGreyColor,
+          //             fontWeight: FontWeight.w500,
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(
+          //           height:
+          //               getProportionateScreenHeight(kDefaultPadding / 3)),
+          //       Center(
+          //         child: widget.courierData['delivery_status'] != null &&
+          //                 widget.courierData['order_status'] == 7
+          //             ? Text(
+          //                 "${order_status['${widget.courierData['delivery_status']}']}",
+          //                 textAlign: TextAlign.center,
+          //                 style: TextStyle(
+          //                   color: kBlackColor,
+          //                   fontWeight: FontWeight.bold,
+          //                 ),
+          //               )
+          //             : Text(
+          //                 "Pending...",
+          //                 textAlign: TextAlign.center,
+          //                 style: TextStyle(
+          //                   color: kBlackColor,
+          //                   fontWeight: FontWeight.bold,
+          //                 ),
+          //               ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          //             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
+          //             Center(
+          //               child: Column(
+          //                 children: [
+          //                   Text(
+          //                     "Total",
+          //                     style: TextStyle(
+          //                       fontSize:
+          //                           getProportionateScreenWidth(kDefaultPadding * .7),
+          //                     ),
+          //                   ),
+          //                   SizedBox(
+          //                       height:
+          //                           getProportionateScreenHeight(kDefaultPadding / 3)),
+          //                   Text(
+          //                     "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.courierData['total_order_price'].toStringAsFixed(2)}",
+          //                     style: Theme.of(context)
+          //                         .textTheme
+          //                         .headlineSmall
+          //                         ?.copyWith(fontWeight: FontWeight.bold),
+          //                   ),
+          //                 ],
+          //               ),
+          //             ),
+          // //            Text("
+          // //            ${widget.courierData
+          // //            ['order_status'] ==
+          // //                7
+          // //                ? "${order_status['${widget.courierData['delivery_status']}']}"
+          // //                : "${order_status['${widget.courierData['order_status']}']},"}),
+          // SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
+          Spacer(),
+          orderStatus != null &&
+                  orderStatus['provider_id'] != null &&
+                  widget.courierData['order_status'] != 25 &&
+                  widget.courierData['delivery_status'] != null &&
+                  widget.courierData['delivery_status'] >= 9 &&
+                  widget.courierData['delivery_status'] < 25
+              ? Padding(
+                  padding: EdgeInsets.only(
+                    bottom: getProportionateScreenHeight(kDefaultPadding),
+                    left: getProportionateScreenWidth(kDefaultPadding),
+                    right: getProportionateScreenWidth(kDefaultPadding),
+                  ),
+                  child: CustomButton(
+                    title: "Track My Order",
+                    press: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return ProviderLocation(
+                              providerId: orderStatus['provider_id'],
+                              providerImage: orderStatus['provider_image'],
+                              providerName: orderStatus['provider_first_name'],
+                              providerPhone: orderStatus['provider_phone'],
+                              destLat: orderStatus['destination_addresses'][0]
+                                  ['location'][0],
+                              destLong: orderStatus['destination_addresses'][0]
+                                  ['location'][1],
+                              userId: widget.userId!,
+                              serverToken: widget.serverToken!,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    color: kSecondaryColor,
+                  ),
+                )
+              : Container(),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              widget.courierData['order_status'] == 25
+                  ? Padding(
+                      padding: EdgeInsets.only(
+                        bottom: getProportionateScreenHeight(kDefaultPadding),
+                        left: getProportionateScreenWidth(kDefaultPadding),
+                        right: getProportionateScreenWidth(kDefaultPadding),
+                      ),
+                      child: _loading
+                          ? SpinKitWave(
+                              size:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              color: kBlackColor,
+                            )
+                          : CustomButton(
+                              title: "SUBMIT",
+                              press: () {
+                                _showInvoice();
+                              },
+                              color: kBlackColor,
+                            ),
+                    )
+                  : Container(),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              widget.courierData['delivery_status'] != null &&
+                      widget.courierData['delivery_status'] >= 109
+                  ? Center(
+                      child: TextButton(
+                        onPressed: () {
+                          _showDialog();
+                        },
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(color: kBlackColor),
+                        ),
+                      ),
+                    )
+                  : Container(),
+            ],
+          ),
+        ],
       ),
     );
   }

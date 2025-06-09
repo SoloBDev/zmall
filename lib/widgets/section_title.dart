@@ -28,7 +28,7 @@ class SectionTitle extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall!.copyWith(
                     color: kBlackColor,
                     fontSize:
-                        getProportionateScreenHeight(kDefaultPadding * 1.3),
+                        getProportionateScreenHeight(kDefaultPadding * 1.15),
                     fontWeight:
                         Platform.isIOS ? FontWeight.bold : FontWeight.w800,
                   ),

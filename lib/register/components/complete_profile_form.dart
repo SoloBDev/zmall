@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -13,6 +14,7 @@ import 'package:zmall/random_digits.dart';
 import 'package:zmall/register/components/custom_suffix_icon.dart';
 import 'package:zmall/service.dart';
 import 'package:http/http.dart' as http;
+import 'package:zmall/widgets/custom_text_field.dart';
 import '../../../constants.dart';
 import '../../../size_config.dart';
 import 'form_error.dart';
@@ -221,8 +223,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           SizedBox(height: getProportionateScreenHeight(30)),
           buildLastNameFormField(),
           SizedBox(height: getProportionateScreenHeight(30)),
-          buildCountryDropDown(),
-          SizedBox(height: getProportionateScreenHeight(30)),
+          // buildCountryDropDown(),
+          // SizedBox(height: getProportionateScreenHeight(30)),
           buildPhoneNumberFormField(),
           FormError(errors: errors),
           SizedBox(height: getProportionateScreenHeight(40)),
@@ -237,7 +239,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                   press: () {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
-                        smsCode = RandomDigits.getString(4);
+                        smsCode = RandomDigits.getString(6);
                       });
                       sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
                               widget.email, smsCode)
@@ -402,65 +404,144 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     );
   }
 
-  TextFormField buildPhoneNumberFormField() {
-    return TextFormField(
+  // Widget buildPhoneNumberFormField() {
+  //   return CustomTextField(
+  //     keyboardType: TextInputType.number,
+  //     maxLength: 9,
+  //     onSaved: (newValue) => phoneNumber = newValue!,
+  //     onChanged: (value) {
+  //       phoneNumber = value;
+  //       if (value.isNotEmpty) {
+  //         removeError(error: kPhoneInvalidError);
+  //       }
+  //       return null;
+  //     },
+  //     validator: (value) {
+  //       if (value!.isEmpty || value.length < 9) {
+  //         addError(error: kPhoneInvalidError);
+  //         return "";
+  //       }
+  //       // else if (value.length != 9 ||
+  //       //     value.substring(0, 1) != 9.toString() &&
+  //       //         value.substring(0, 1) != 7.toString()) {
+  //       //   addError(error: kPhoneInvalidError);
+  //       //   return "";
+  //       // }
+
+  //       return null;
+  //     },
+  //     // decoration: InputDecoration(
+  //     labelText: "Phone Number",
+  //     prefix: Text(Provider.of<ZMetaData>(context, listen: false).areaCode),
+  //     hintText: "Enter your phone number",
+  //     // If  you are using latest version of flutter then lable text and hint text shown like this
+  //     // if you r using flutter less then 1.20.* then maybe this is not working properly
+  //     floatingLabelBehavior: FloatingLabelBehavior.always,
+  //     suffixIcon: CustomSuffixIcon(
+  //       iconData: Icons.phone,
+  //     ),
+  //     // ),
+  //   );
+  // }
+  Widget buildPhoneNumberFormField() {
+    return CustomTextField(
       keyboardType: TextInputType.number,
       maxLength: 9,
       onSaved: (newValue) => phoneNumber = newValue!,
       onChanged: (value) {
-        phoneNumber = value;
         if (value.isNotEmpty) {
-          removeError(error: kPhoneInvalidError);
+          // removeError(error: kPhoneInvalidError);
+          setState(() {
+            phoneNumber = value;
+          });
         }
         return null;
       },
-      validator: (value) {
-        if (value!.isEmpty || value.length < 9) {
-          addError(error: kPhoneInvalidError);
-          return "";
-        }
-        // else if (value.length != 9 ||
-        //     value.substring(0, 1) != 9.toString() &&
-        //         value.substring(0, 1) != 7.toString()) {
-        //   addError(error: kPhoneInvalidError);
-        //   return "";
-        // }
+      // validator: (value) {
+      // if (value!.isEmpty || value.length < 9) {
+      //   addError(error: kPhoneInvalidError);
+      //   return "";
+      // }
+      // // else if (value.length != 9 ||
+      // //     value.substring(0, 1) != 9.toString() &&
+      // //         value.substring(0, 1) != 7.toString()) {
+      // //   addError(error: kPhoneInvalidError);
+      // //   return "";
+      // // }
 
-        return null;
+      // return null;
+      // },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a phone number';
+        }
+        if (!RegExp(r'^[97][0-9]{8}$').hasMatch(value)) {
+          return 'Phone number must be 9 digits and start with 9 or 7';
+        }
+        return null; // Return null if validation passes
       },
-      decoration: InputDecoration(
-        labelText: "Phone Number",
-        prefix: Text(Provider.of<ZMetaData>(context, listen: false).areaCode),
-        hintText: "Enter your phone number",
-        // If  you are using latest version of flutter then lable text and hint text shown like this
-        // if you r using flutter less then 1.20.* then maybe this is not working properly
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSuffixIcon(
-          iconData: Icons.phone,
-        ),
-      ),
+      // decoration: InputDecoration(
+      // labelText: Provider.of<ZLanguage>(context).phone,
+      // prefix: Text(Provider.of<ZMetaData>(context, listen: false).areaCode),
+      hintText: "$areaCode...",
+      // "Enter your phone number",
+      // If  you are using latest version of flutter then lable text and hint text shown like this
+      // if you r using flutter less then 1.20.* then maybe this is not working properly
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      // suffixIcon: CustomSuffixIcon(iconData: Icons.phone),
+      isPhoneWithFlag: true,
+      initialSelection:
+          Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
+              ? 'ET'
+              : 'SS',
+      countryFilter: ['ET', 'SS'],
+      onFlagChanged: (CountryCode code) {
+        setState(() {
+          print("code $code");
+          if (code.toString() == "+251") {
+            setUrl = BASE_URL;
+            country = "Ethiopia";
+            areaCode = "+251";
+            city = "Addis Ababa";
+            phoneMessage = "Start phone number with 9 or 7...";
+          } else {
+            setUrl = BASE_URL_JUBA;
+            country = "South Sudan";
+            areaCode = "+211";
+            city = "Juba";
+            phoneMessage = "Start phone number with 9...";
+          }
+          print("country $country");
+          // print("after _country $_country");
+          Provider.of<ZMetaData>(
+            context,
+            listen: false,
+          ).changeCountrySettings(country);
+        });
+      },
+      // ),
     );
   }
 
-  TextFormField buildLastNameFormField() {
-    return TextFormField(
+  Widget buildLastNameFormField() {
+    return CustomTextField(
       onSaved: (newValue) => lastName = newValue!,
       onChanged: (value) => lastName = value,
-      decoration: InputDecoration(
-        labelText: "Last Name",
-        hintText: "Enter your last name",
-        // If  you are using latest version of flutter then lable text and hint text shown like this
-        // if you r using flutter less then 1.20.* then maybe this is not working properly
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSuffixIcon(
-          iconData: Icons.account_circle_rounded,
-        ),
+      // decoration: InputDecoration(
+      labelText: "Last Name",
+      hintText: "Enter your last name",
+      // If  you are using latest version of flutter then lable text and hint text shown like this
+      // if you r using flutter less then 1.20.* then maybe this is not working properly
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      suffixIcon: CustomSuffixIcon(
+        iconData: Icons.account_circle_rounded,
       ),
+      // ),
     );
   }
 
-  TextFormField buildFirstNameFormField() {
-    return TextFormField(
+  Widget buildFirstNameFormField() {
+    return CustomTextField(
       onSaved: (newValue) => firstName = newValue!,
       onChanged: (value) {
         firstName = value;
@@ -476,16 +557,16 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         }
         return null;
       },
-      decoration: InputDecoration(
-        labelText: "First Name",
-        hintText: "Enter your first name",
-        // If  you are using latest version of flutter then lable text and hint text shown like this
-        // if you r using flutter less then 1.20.* then maybe this is not working properly
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSuffixIcon(
-          iconData: Icons.account_circle_rounded,
-        ),
+      // decoration: InputDecoration(
+      labelText: "First Name",
+      hintText: "Enter your first name",
+      // If  you are using latest version of flutter then lable text and hint text shown like this
+      // if you r using flutter less then 1.20.* then maybe this is not working properly
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      suffixIcon: CustomSuffixIcon(
+        iconData: Icons.account_circle_rounded,
       ),
+      // ),
     );
   }
 

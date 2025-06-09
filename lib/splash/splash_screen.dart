@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-// import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/global/global.dart';
@@ -39,7 +37,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getLang();
     getMetaData();
@@ -265,8 +262,8 @@ class _SplashScreenState extends State<SplashScreen> {
           "ios_user_app_version_code": json.decode(response.body)['app_keys']
               ['ios_user_app_version_code'],
           "message": json.decode(response.body)['app_keys']['message'],
-          "ios_user_app_version_code": json.decode(response.body)['app_keys']
-              ['ios_user_app_version_code'],
+          // "ios_user_app_version_code": json.decode(response.body)['app_keys']
+          // ['ios_user_app_version_code'],
           "is_ios_user_app_open_update_dialog":
               json.decode(response.body)['app_keys']
                   ['is_ios_user_app_open_update_dialog'],

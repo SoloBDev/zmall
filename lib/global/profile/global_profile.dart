@@ -92,7 +92,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                     setState(() {
                       abroadData = abroadUser;
                     });
-                    print(abroadData!.toJson());
+                    // print(abroadData!.toJson());
                     await Service.save('abroad_user', abroadData!.toJson());
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(

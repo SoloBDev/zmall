@@ -51,7 +51,6 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
     getHomeContact();
@@ -199,13 +198,14 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Home Lunch",
-          style: TextStyle(color: kPrimaryColor),
-        ),
-        elevation: 0.0,
-        backgroundColor: kSecondaryColor,
-      ),
+          title: Text(
+            "Home Lunch",
+            style: TextStyle(color: kPrimaryColor),
+          ),
+          elevation: 0.0,
+          foregroundColor: kPrimaryColor,
+          backgroundColor: kSecondaryColor,
+          iconTheme: IconThemeData(color: kPrimaryColor)),
       body: ModalProgressHUD(
         color: kPrimaryColor.withValues(alpha: 0.1),
         inAsyncCall: _isLoading,
@@ -787,9 +787,9 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
                                   ),
                                 ),
                                 style: ButtonStyle(
-                                  elevation: MaterialStateProperty.all(1.0),
+                                  elevation: WidgetStateProperty.all(1.0),
                                   backgroundColor:
-                                      MaterialStateProperty.all(kPrimaryColor),
+                                      WidgetStateProperty.all(kPrimaryColor),
                                 ),
                                 onPressed: () async {
                                   DateTime _now = DateTime.now();

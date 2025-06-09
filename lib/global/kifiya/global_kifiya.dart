@@ -524,8 +524,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       .toString()
                                       .toLowerCase() ==
                                   'boa') {
-                                print(paymentResponse['payment_gateway'][index]
-                                    ['name']);
+                                // print(paymentResponse['payment_gateway'][index]['name']);
                                 return KifiyaMethodContainer(
                                     selected: kifiyaMethod == index + 4,
                                     title: paymentResponse['payment_gateway']
@@ -543,16 +542,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      print(
-                                          "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      print(
-                                          "Order payment ID : ${widget.orderPaymentId}");
-                                      print(
-                                          "Payment Gateway ID : $paymentGatewayId");
-                                      print("User ID : ${cart!.userId}");
-                                      print(
-                                          "Server Token : ${cart!.serverToken}");
-                                      print("Cart ID : $cartId");
+                                      // print(
+                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                      // print(
+                                      //     "Order payment ID : ${widget.orderPaymentId}");
+                                      // print(
+                                      //     "Payment Gateway ID : $paymentGatewayId");
+                                      // print("User ID : ${cart!.userId}");
+                                      // print(
+                                      //     "Server Token : ${cart!.serverToken}");
+                                      // print("Cart ID : $cartId");
                                       var data = await useBorsa();
                                       if (data['success']) {
                                         showDialog(
@@ -717,16 +716,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      print(
-                                          "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      print(
-                                          "Order payment ID : ${widget.orderPaymentId}");
-                                      print(
-                                          "Payment Gateway ID : $paymentGatewayId");
-                                      print("User ID : ${cart!.userId}");
-                                      print(
-                                          "Server Token : ${cart!.serverToken}");
-                                      print("Cart ID : $cartId");
+                                      // print(
+                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                      // print(
+                                      //     "Order payment ID : ${widget.orderPaymentId}");
+                                      // print(
+                                      //     "Payment Gateway ID : $paymentGatewayId");
+                                      // print("User ID : ${cart!.userId}");
+                                      // print(
+                                      //     "Server Token : ${cart!.serverToken}");
+                                      // print("Cart ID : $cartId");
                                       var data = await useBorsa();
                                       if (data['success']) {
                                         showDialog(
@@ -829,16 +828,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      print(
-                                          "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      print(
-                                          "Order payment ID : ${widget.orderPaymentId}");
-                                      print(
-                                          "Payment Gateway ID : $paymentGatewayId");
-                                      print("User ID : ${cart!.userId}");
-                                      print(
-                                          "Server Token : ${cart!.serverToken}");
-                                      print("Cart ID : $cartId");
+                                      // print(
+                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                      // print(
+                                      //     "Order payment ID : ${widget.orderPaymentId}");
+                                      // print(
+                                      //     "Payment Gateway ID : $paymentGatewayId");
+                                      // print("User ID : ${cart!.userId}");
+                                      // print(
+                                      //     "Server Token : ${cart!.serverToken}");
+                                      // print("Cart ID : $cartId");
 
                                       var data = await useBorsa();
                                       if (data['success']) {
@@ -959,7 +958,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
   Future<dynamic> getPaymentGateway() async {
     print("- Fetching payment gatway");
-    print("\t-> server_token ${cart!.serverToken}");
+    // print("\t-> server_token ${cart!.serverToken}");
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_payment_gateway";
     Map data = {
@@ -1130,7 +1129,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     print("Getting ready to create order");
     var cart_id = await Service.read('cart_id');
     print("\t Cart Id : ");
-    print("\t\t$cart_id");
+    // print("\t\t$cart_id");
     try {
       List<dynamic>? filteredOrderIds;
       if (aliexpressCart != null &&

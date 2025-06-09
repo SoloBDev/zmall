@@ -105,382 +105,371 @@ class _BorsaScreenState extends State<BorsaScreen> {
         ),
         elevation: 1.0,
       ),
-      body: SingleChildScrollView(
-        physics: ScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: getProportionateScreenHeight(kDefaultPadding / 2),
-            horizontal: getProportionateScreenWidth(kDefaultPadding),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  // borderRadius: BorderRadius.circular(
-                  //   getProportionateScreenWidth(kDefaultPadding),
-                  // ),
-                  // boxShadow: [kDefaultShadow],
+      body: Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: kPrimaryColor,
+                borderRadius: BorderRadius.circular(
+                  getProportionateScreenWidth(kDefaultPadding),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          "Current Balance",
+                // boxShadow: [kDefaultShadow],
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                child: Center(
+                  child: Column(
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          text:
+                              "${Provider.of<ZMetaData>(context, listen: false).currency}",
                           style:
                               Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    color: kGreyColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.italic,
                                   ),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: " ${currentBalance.toStringAsFixed(2)}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ],
                         ),
-                        RichText(
-                          text: TextSpan(
-                            text:
-                                "${Provider.of<ZMetaData>(context, listen: false).currency}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                            children: <TextSpan>[
-                              TextSpan(
-                                text: " ${currentBalance.toStringAsFixed(2)}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        "Current Balance",
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: kGreyColor,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 1.5)),
-              Row(
-                children: [
-                  CustomCard(
-                      iconData: Icons.send,
-                      title: "Transfer",
-                      subtitle: "Send funds",
-                      color: kSecondaryColor.withValues(alpha: 0.8),
-                      textColor: kPrimaryColor,
-                      press: () {
-                        showModalBottomSheet<void>(
-                          isScrollControlled: true,
-                          context: context,
-                          shape: RoundedRectangleBorder(
-                              // borderRadius: BorderRadius.only(
-                              //   topLeft: Radius.circular(30.0),
-                              //   topRight: Radius.circular(30.0),
-                              // ),
-                              ),
-                          builder: (BuildContext context) {
-                            return Padding(
-                              padding: MediaQuery.of(context).viewInsets,
-                              child: Container(
-                                padding: EdgeInsets.all(
-                                    getProportionateScreenHeight(
-                                        kDefaultPadding)),
-                                child: Wrap(
-                                  children: <Widget>[
-                                    Text(
-                                      "Transfer",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    Container(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding),
-                                    ),
-                                    TextField(
-                                      style: TextStyle(color: kBlackColor),
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                        FilteringTextInputFormatter
-                                            .singleLineFormatter,
-                                      ],
-                                      maxLength: 9,
-                                      onChanged: (val) {
-                                        payeePhone = val;
-                                      },
-                                      decoration:
-                                          textFieldInputDecorator.copyWith(
-                                        labelText: "Receiver phone number",
-                                        helperText:
-                                            "Start phone number with 9..",
-                                        prefix: Text(
-                                            "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 2),
-                                    ),
-                                    TextField(
-                                      style: TextStyle(color: kBlackColor),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              decimal: true),
-                                      onChanged: (val) {
-                                        amount = val;
-                                      },
-                                      decoration:
-                                          textFieldInputDecorator.copyWith(
-                                        labelText: "Amount",
-                                      ),
-                                    ),
-                                    Container(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 2)),
-                                    TextField(
-                                      style: TextStyle(color: kBlackColor),
-                                      keyboardType: TextInputType.text,
-                                      obscureText: true,
-                                      onChanged: (val) {
-                                        payerPassword = val;
-                                      },
-                                      decoration: textFieldInputDecorator
-                                          .copyWith(labelText: "Password"),
-                                    ),
-                                    transferError
-                                        ? Text(
-                                            "Invalid! Please make sure all fields are filled.",
-                                            style: TextStyle(
-                                                color: kSecondaryColor),
-                                          )
-                                        : Container(),
-                                    Container(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 2)),
-                                    transferLoading
-                                        ? SpinKitWave(
-                                            color: kSecondaryColor,
-                                            size: getProportionateScreenWidth(
-                                                kDefaultPadding),
-                                          )
-                                        : CustomButton(
-                                            title: "Send",
-                                            color: kSecondaryColor,
-                                            press: () async {
-                                              if (payeePhone.isNotEmpty &&
-                                                  amount.isNotEmpty &&
-                                                  payerPassword.isNotEmpty) {
-                                                setState(() {
-                                                  transferLoading = true;
-                                                });
-                                                var data = await genzebLak();
-                                                if (data != null &&
-                                                    data['success']) {
-                                                  setState(() {
-                                                    transferLoading = false;
-                                                    widget.userData['user']
-                                                            ['wallet'] -=
-                                                        double.parse(amount);
-                                                  });
-
-                                                  _userDetails();
-                                                  _getTransactions();
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                          Service.showMessage(
-                                                              "Transfer successfull",
-                                                              false,
-                                                              duration: 5));
-                                                  setState(() {
-                                                    transferLoading = false;
-                                                  });
-                                                  Navigator.of(context).pop();
-                                                } else {
-                                                  if (data['error_code'] ==
-                                                      999) {
-                                                    await Service.saveBool(
-                                                        'logged', false);
-                                                    await Service.remove(
-                                                        'user');
-                                                    Navigator
-                                                        .pushReplacementNamed(
-                                                            context,
-                                                            LoginScreen
-                                                                .routeName);
-                                                  }
-                                                  setState(() {
-                                                    transferLoading = false;
-                                                  });
-                                                  Navigator.of(context).pop();
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(SnackBar(
-                                                    content: Text(
-                                                        "${errorCodes['${data['error_code']}']}"),
-                                                    backgroundColor:
-                                                        kSecondaryColor,
-                                                  ));
-                                                }
-                                              } else {
-                                                setState(() {
-                                                  transferError = true;
-                                                });
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  Service.showMessage(
-                                                    "Invalid! Please make sure all fields are filled.",
-                                                    true,
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                          ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ).whenComplete(() {
-                          setState(() {
-                            payeePhone = '';
-                            amount = '0.00';
-                            payerPassword = '';
-                            transferError = false;
-                          });
-                        });
-                      }),
-                  SizedBox(
-                      width: getProportionateScreenWidth(kDefaultPadding / 2)),
-                  CustomCard(
-                    title: "Top-up",
-                    subtitle: "Add funds",
-                    color: kYellowColor,
-                    textColor: kBlackColor,
-                    iconData: Icons.add_box,
+            ),
+            SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 1.5)),
+            Row(
+              children: [
+                CustomCard(
+                    iconData: Icons.send,
+                    title: "Transfer",
+                    subtitle: "Send funds",
+                    color: kSecondaryColor.withValues(alpha: 0.8),
+                    textColor: kPrimaryColor,
                     press: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return TopUpScreen(userData: userData);
-                      })).then((value) {
-                        _userDetails();
-                        _getTransactions();
-                      });
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              SectionTitle(
-                sectionTitle: "Transactions",
-                subTitle: " ",
-              ),
-              responseData != null && responseData['success']
-                  ? responseData['wallet_history'].length > 0
-                      ? ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: responseData['wallet_history'].length,
-                          itemBuilder: (context, index) {
-                            return Column(
-                              children: [
-                                ClipRRect(
-                                  child: ListTile(
-                                    tileColor: kPrimaryColor,
-                                    title: responseData['wallet_history'][index]
-                                                ['wallet_description'] !=
-                                            "Card : undefined"
-                                        ? Text(
-                                            "${responseData['wallet_history'][index]['wallet_description']}",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w500),
-                                          )
-                                        : Text(
-                                            "Online Top-up",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                    subtitle: Text(
-                                        "${responseData['wallet_history'][index]['updated_at'].split("T")[0]} ${responseData['wallet_history'][index]['updated_at'].split("T")[1].split('.')[0]}"),
-                                    trailing: RichText(
-                                      text: TextSpan(
-                                        text: responseData['wallet_history']
-                                                    [index]['wallet_amount'] <
-                                                responseData['wallet_history']
-                                                        [index]
-                                                    ['total_wallet_amount']
-                                            ? "+ "
-                                            : "- ",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.bold),
-                                        children: <TextSpan>[
-                                          TextSpan(
-                                            text:
-                                                " ${Provider.of<ZMetaData>(context, listen: false).currency} ",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall,
-                                          ),
-                                          TextSpan(
-                                            text: responseData['wallet_history']
-                                                    [index]['from_amount']
-                                                .toStringAsFixed(2),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(
-                                                    color: responseData['wallet_history']
-                                                                    [index][
-                                                                'wallet_amount'] <
-                                                            responseData[
-                                                                        'wallet_history']
-                                                                    [index][
-                                                                'total_wallet_amount']
-                                                        ? Colors.green
-                                                        : kSecondaryColor,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                          )
-                                        ],
-                                      ),
+                      showModalBottomSheet<void>(
+                        isScrollControlled: true,
+                        context: context,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30.0),
+                            topRight: Radius.circular(30.0),
+                          ),
+                        ),
+                        builder: (BuildContext context) {
+                          return Padding(
+                            padding: MediaQuery.of(context).viewInsets,
+                            child: Container(
+                              padding: EdgeInsets.all(
+                                  getProportionateScreenHeight(
+                                      kDefaultPadding)),
+                              child: Wrap(
+                                children: <Widget>[
+                                  Text(
+                                    "Transfer",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  Container(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding),
+                                  ),
+                                  TextField(
+                                    style: TextStyle(color: kBlackColor),
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      FilteringTextInputFormatter
+                                          .singleLineFormatter,
+                                    ],
+                                    maxLength: 9,
+                                    onChanged: (val) {
+                                      payeePhone = val;
+                                    },
+                                    decoration:
+                                        textFieldInputDecorator.copyWith(
+                                      labelText: "Receiver phone number",
+                                      helperText: "Start phone number with 9..",
+                                      prefix: Text(
+                                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
                                     ),
                                   ),
-                                  // borderRadius: BorderRadius.circular(
-                                  //   getProportionateScreenWidth(
-                                  //       kDefaultPadding),
-                                  // ),
+                                  Container(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  TextField(
+                                    style: TextStyle(color: kBlackColor),
+                                    keyboardType:
+                                        TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    onChanged: (val) {
+                                      amount = val;
+                                    },
+                                    decoration:
+                                        textFieldInputDecorator.copyWith(
+                                      labelText: "Amount",
+                                    ),
+                                  ),
+                                  Container(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding / 2)),
+                                  TextField(
+                                    style: TextStyle(color: kBlackColor),
+                                    keyboardType: TextInputType.text,
+                                    obscureText: true,
+                                    onChanged: (val) {
+                                      payerPassword = val;
+                                    },
+                                    decoration: textFieldInputDecorator
+                                        .copyWith(labelText: "Password"),
+                                  ),
+                                  transferError
+                                      ? Text(
+                                          "Invalid! Please make sure all fields are filled.",
+                                          style:
+                                              TextStyle(color: kSecondaryColor),
+                                        )
+                                      : Container(),
+                                  Container(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding / 2)),
+                                  transferLoading
+                                      ? SpinKitWave(
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        )
+                                      : CustomButton(
+                                          title: "Send",
+                                          color: kSecondaryColor,
+                                          press: () async {
+                                            if (payeePhone.isNotEmpty &&
+                                                amount.isNotEmpty &&
+                                                payerPassword.isNotEmpty) {
+                                              setState(() {
+                                                transferLoading = true;
+                                              });
+                                              var data = await genzebLak();
+                                              if (data != null &&
+                                                  data['success']) {
+                                                setState(() {
+                                                  transferLoading = false;
+                                                  widget.userData['user']
+                                                          ['wallet'] -=
+                                                      double.parse(amount);
+                                                });
+
+                                                _userDetails();
+                                                _getTransactions();
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                        Service.showMessage(
+                                                            "Transfer successfull",
+                                                            false,
+                                                            duration: 5));
+                                                setState(() {
+                                                  transferLoading = false;
+                                                });
+                                                Navigator.of(context).pop();
+                                              } else {
+                                                if (data['error_code'] == 999) {
+                                                  await Service.saveBool(
+                                                      'logged', false);
+                                                  await Service.remove('user');
+                                                  Navigator
+                                                      .pushReplacementNamed(
+                                                          context,
+                                                          LoginScreen
+                                                              .routeName);
+                                                }
+                                                setState(() {
+                                                  transferLoading = false;
+                                                });
+                                                Navigator.of(context).pop();
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      "${errorCodes['${data['error_code']}']}"),
+                                                  backgroundColor:
+                                                      kSecondaryColor,
+                                                ));
+                                              }
+                                            } else {
+                                              setState(() {
+                                                transferError = true;
+                                              });
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                Service.showMessage(
+                                                  "Invalid! Please make sure all fields are filled.",
+                                                  true,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ).whenComplete(() {
+                        setState(() {
+                          payeePhone = '';
+                          amount = '0.00';
+                          payerPassword = '';
+                          transferError = false;
+                        });
+                      });
+                    }),
+                SizedBox(
+                    width: getProportionateScreenWidth(kDefaultPadding / 2)),
+                CustomCard(
+                  title: "Top-up",
+                  subtitle: "Add funds",
+                  color: kYellowColor,
+                  textColor: kBlackColor,
+                  iconData: Icons.add_box,
+                  press: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return TopUpScreen(userData: userData);
+                    })).then((value) {
+                      _userDetails();
+                      _getTransactions();
+                    });
+                  },
+                ),
+              ],
+            ),
+            SizedBox(
+              height: getProportionateScreenHeight(kDefaultPadding / 2),
+            ),
+            SectionTitle(
+              sectionTitle: "Transactions",
+              subTitle: " ",
+            ),
+            responseData != null && responseData['success']
+                ? responseData['wallet_history'].length > 0
+                    ? Expanded(
+                        child: ListView.separated(
+                          // physics: ScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: responseData['wallet_history'].length,
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 3),
+                          ),
+                          itemBuilder: (context, index) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(kDefaultPadding),
+                              ),
+                              child: Material(
+                                color: kPrimaryColor,
+                                child: ListTile(
+                                  tileColor: kPrimaryColor,
+                                  title: responseData['wallet_history'][index]
+                                              ['wallet_description'] !=
+                                          "Card : undefined"
+                                      ? Text(
+                                          "${responseData['wallet_history'][index]['wallet_description']}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500),
+                                        )
+                                      : Text(
+                                          "Online Top-up",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                  subtitle: Text(
+                                      "${responseData['wallet_history'][index]['updated_at'].split("T")[0]} ${responseData['wallet_history'][index]['updated_at'].split("T")[1].split('.')[0]}"),
+                                  trailing: RichText(
+                                    text: TextSpan(
+                                      text: responseData['wallet_history']
+                                                  [index]['wallet_amount'] <
+                                              responseData['wallet_history']
+                                                  [index]['total_wallet_amount']
+                                          ? "+ "
+                                          : "- ",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleSmall
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.bold),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text:
+                                              " ${Provider.of<ZMetaData>(context, listen: false).currency} ",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
+                                        ),
+                                        TextSpan(
+                                          text: responseData['wallet_history']
+                                                  [index]['from_amount']
+                                              .toStringAsFixed(2),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                  color: responseData['wallet_history']
+                                                                  [index][
+                                                              'wallet_amount'] <
+                                                          responseData[
+                                                                      'wallet_history']
+                                                                  [index][
+                                                              'total_wallet_amount']
+                                                      ? Colors.green
+                                                      : kSecondaryColor,
+                                                  fontWeight: FontWeight.bold),
+                                        )
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3),
-                                ),
-                              ],
+                              ),
                             );
                           },
-                        )
-                      : Text("No wallet transactions yet!")
-                  : isLoading
-                      ? SpinKitWave(
-                          color: kSecondaryColor,
-                          size: getProportionateScreenWidth(kDefaultPadding),
-                        )
-                      : Text("Transaction history not found!")
-            ],
-          ),
+                        ),
+                      )
+                    : Text("No wallet transactions yet!")
+                : isLoading
+                    ? SpinKitWave(
+                        color: kSecondaryColor,
+                        size: getProportionateScreenWidth(kDefaultPadding),
+                      )
+                    : Text("Transaction history not found!")
+          ],
         ),
       ),
     );
@@ -520,7 +509,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       responseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -556,7 +545,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -595,7 +584,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -648,7 +637,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -689,9 +678,9 @@ class CustomCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             // boxShadow: [kDefaultShadow],
-            // borderRadius: BorderRadius.circular(
-            //   getProportionateScreenWidth(kDefaultPadding),
-            // ),
+            borderRadius: BorderRadius.circular(
+              getProportionateScreenWidth(kDefaultPadding),
+            ),
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(

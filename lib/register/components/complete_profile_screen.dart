@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:zmall/constants.dart';
+import 'package:zmall/size_config.dart';
 
-import '../../constants.dart';
-import '../../size_config.dart';
 import 'complete_profile_form.dart';
 
 class CompleteProfileScreen extends StatefulWidget {

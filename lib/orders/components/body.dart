@@ -25,7 +25,6 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
   }
@@ -76,9 +75,9 @@ class _BodyState extends State<Body> {
       child: userData != null && responseData != null
           ? Padding(
               padding: EdgeInsets.symmetric(
-                  // vertical: getProportionateScreenHeight(kDefaultPadding) / 2,
-                  // horizontal: getProportionateScreenWidth(kDefaultPadding) / 3,
-                  ),
+                vertical: getProportionateScreenHeight(kDefaultPadding) / 2,
+                horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+              ),
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: responseData['order_list'].length,
@@ -119,7 +118,7 @@ class _BodyState extends State<Body> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: kPrimaryColor,
-                        // borderRadius: BorderRadius.circular(kDefaultPadding),
+                        borderRadius: BorderRadius.circular(kDefaultPadding),
                       ),
                       padding: EdgeInsets.symmetric(
                         vertical:
@@ -139,6 +138,8 @@ class _BodyState extends State<Body> {
                             flex: 10,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: getProportionateScreenHeight(
+                                  kDefaultPadding / 5),
                               children: [
                                 Text(
                                   responseData['order_list'][index]
@@ -149,10 +150,12 @@ class _BodyState extends State<Body> {
                                                   [0]['note'] ==
                                               "Lunch from Home"
                                           ? "Lunch From Home"
-                                          : responseData['order_list'][index]
-                                              ['store_name']
-                                      : responseData['order_list'][index]
-                                          ['store_name'],
+                                          : Service.capitalizeFirstLetters(
+                                              responseData['order_list'][index]
+                                                  ['store_name'])
+                                      : Service.capitalizeFirstLetters(
+                                          responseData['order_list'][index]
+                                              ['store_name']),
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge
@@ -162,9 +165,7 @@ class _BodyState extends State<Body> {
                                       ),
                                   softWrap: true,
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
+
                                 Text(
                                   "Order No. #${responseData['order_list'][index]['unique_id']}",
                                   style: Theme.of(context)
@@ -174,9 +175,7 @@ class _BodyState extends State<Body> {
                                         color: kGreyColor,
                                       ),
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
+
                                 Text(
                                   "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${int.parse(responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[0]) + 3}:${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[1]}:${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0].split(':')[2]}",
                                   style: Theme.of(context)
@@ -186,9 +185,7 @@ class _BodyState extends State<Body> {
                                         color: kGreyColor,
                                       ),
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
+
 //                                  responseData['order_list'][index]
 //                                              ['delivery_type'] ==
 //                                          1
@@ -238,7 +235,7 @@ class _BodyState extends State<Body> {
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) => SizedBox(
-                  height: 1,
+                  height: getProportionateScreenHeight(kDefaultPadding / 4),
                 ),
               ),
             )

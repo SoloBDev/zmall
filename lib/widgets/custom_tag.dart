@@ -19,11 +19,11 @@ class CustomTag extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(
-            getProportionateScreenHeight(kDefaultPadding / 8),
+            getProportionateScreenHeight(kDefaultPadding / 4),
           ),
           color: color),
       padding: EdgeInsets.symmetric(
-        horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
+        horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
       ),
       child: Text(
         text!,

@@ -10,7 +10,6 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
-import 'package:zmall/widgets/custom_tag.dart';
 
 import 'order_history_detail.dart';
 
@@ -26,7 +25,6 @@ class _OrderHistoryState extends State<OrderHistory> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
   }
@@ -77,10 +75,9 @@ class _OrderHistoryState extends State<OrderHistory> {
       child: userData != null && responseData != null
           ? Padding(
               padding: EdgeInsets.symmetric(
-                  // vertical: getProportionateScreenHeight(kDefaultPadding) / 2,
-                  // horizontal:
-                  //     getProportionateScreenWidth(kDefaultPadding) / 1.5,
-                  ),
+                vertical: getProportionateScreenHeight(kDefaultPadding) / 2,
+                horizontal: getProportionateScreenWidth(kDefaultPadding) / 1.5,
+              ),
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: responseData['order_list'].length,
@@ -104,7 +101,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: kPrimaryColor,
-                        // borderRadius: BorderRadius.circular(kDefaultPadding),
+                        borderRadius: BorderRadius.circular(kDefaultPadding),
                       ),
                       padding: EdgeInsets.symmetric(
                         vertical:
@@ -124,10 +121,13 @@ class _OrderHistoryState extends State<OrderHistory> {
                             flex: 10,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: getProportionateScreenHeight(
+                                  kDefaultPadding / 5),
                               children: [
                                 Text(
-                                  responseData['order_list'][index]
-                                      ['store_detail']['name'],
+                                  Service.capitalizeFirstLetters(
+                                      responseData['order_list'][index]
+                                          ['store_detail']['name']),
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge
@@ -141,9 +141,6 @@ class _OrderHistoryState extends State<OrderHistory> {
                                       ),
                                   softWrap: true,
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
                                 Text(
                                   "Order No. #${responseData['order_list'][index]['unique_id']}",
                                   style: Theme.of(context)
@@ -153,9 +150,6 @@ class _OrderHistoryState extends State<OrderHistory> {
                                         color: kGreyColor,
                                       ),
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
                                 Text(
                                   "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0]}",
                                   style: Theme.of(context)
@@ -165,9 +159,6 @@ class _OrderHistoryState extends State<OrderHistory> {
                                         color: kGreyColor,
                                       ),
                                 ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 5)),
                                 Text(
                                   responseData['order_list'][index]
                                               ['order_status'] ==
@@ -213,7 +204,7 @@ class _OrderHistoryState extends State<OrderHistory> {
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) => SizedBox(
-                  height: 1,
+                  height: getProportionateScreenHeight(kDefaultPadding / 4),
                 ),
               ),
             )

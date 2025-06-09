@@ -47,7 +47,7 @@ class CoreServices {
       await Service.save('categories', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -145,7 +145,7 @@ class CoreServices {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
 
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
@@ -193,7 +193,7 @@ class CoreServices {
       await Service.save('p_items', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -233,7 +233,7 @@ class CoreServices {
       await Service.save('s_items', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -270,7 +270,7 @@ class CoreServices {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -294,8 +294,8 @@ class CoreServices {
           "ios_user_app_version_code": json.decode(response.body)['app_keys']
               ['ios_user_app_version_code'],
           "message": json.decode(response.body)['app_keys']['message'],
-          "ios_user_app_version_code": json.decode(response.body)['app_keys']
-              ['ios_user_app_version_code'],
+          // "ios_user_app_version_code": json.decode(response.body)['app_keys']
+          //     ['ios_user_app_version_code'],
           "is_ios_user_app_open_update_dialog":
               json.decode(response.body)['app_keys']
                   ['is_ios_user_app_open_update_dialog'],
@@ -310,7 +310,7 @@ class CoreServices {
         return data;
       }
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -330,7 +330,7 @@ class CoreServices {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }
@@ -362,7 +362,7 @@ class CoreServices {
       );
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

@@ -158,7 +158,7 @@ class _TelebirrState extends State<Telebirr> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

@@ -53,15 +53,13 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
 
   void getAbroadUser() async {
     var data = await Service.read('abroad_user');
-    if(data != null){
+    if (data != null) {
       setState(() {
         userData = AbroadData.fromJson(data);
       });
     }
     _getOrders(phone: userData!.abroadPhone);
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +270,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

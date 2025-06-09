@@ -95,13 +95,13 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
               onLoadStart: (controller, url) {
-                print("Started loading: $url");
+                // print("Started loading: $url");
               },
               onLoadStop: (controller, url) {
-                print("Finished loading: $url");
+                // print("Finished loading: $url");
               },
               onReceivedError: (controller, request, error) {
-                print("Error loading ${request.url}: ${error.description}");
+                // print("Error loading ${request.url}: ${error.description}");
                 ScaffoldMessenger.of(context).showSnackBar(
                   Service.showMessage(
                       "Failed to load payment page: ${error.description}",

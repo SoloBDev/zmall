@@ -10,6 +10,7 @@ import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
 
 class UpdatePasswordScreen extends StatefulWidget {
   static String id = '/password';
@@ -22,10 +23,13 @@ class UpdatePasswordScreen extends StatefulWidget {
 }
 
 class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
   late String phone;
-  late String newPassword;
-  late String confirmPassword;
+  String newPassword = '';
+  String confirmPassword = '';
   bool _loading = false;
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -70,88 +74,147 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(
-          "Update Password",
-          style: new TextStyle(
-            color: kBlackColor,
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(
+            "Update Password",
+            style: new TextStyle(
+              color: kBlackColor,
+            ),
           ),
+          elevation: 1.0,
         ),
-        elevation: 1.0,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              keyboardType: TextInputType.text,
-              cursorColor: kSecondaryColor,
-              obscureText: true,
-              style: TextStyle(color: kBlackColor),
-              onChanged: (value) {
-                newPassword = value;
-              },
-              decoration: InputDecoration(
-                hintText: 'New password',
-                hintStyle: TextStyle(
-                  color: kGreyColor,
+        body: Padding(
+          padding:
+              EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenHeight(kDefaultPadding)),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(kDefaultPadding),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: kSecondaryColor),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Reset Password",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "Update your password by entering a new one.",
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding * 2)),
+                      CustomTextField(
+                        keyboardType: TextInputType.text,
+                        cursorColor: kSecondaryColor,
+                        obscureText: !_showPassword,
+                        style: TextStyle(color: kBlackColor),
+                        onChanged: (value) {
+                          newPassword = value;
+                        },
+                        // decoration: InputDecoration(
+                        hintText: 'Enter your password',
+                        labelText: 'New password',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _showPassword = !_showPassword;
+                            });
+                          },
+                          icon: Icon(_showPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          }
+                          if (!passwordRegex.hasMatch(value)) {
+                            return "Password must be at least 8 characters, with uppercase, lowercase, number, and special character (@\$!%*?&)";
+                          }
+                          return null; // Return null if validation passes
+                        },
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding * 1.2)),
+                      CustomTextField(
+                        keyboardType: TextInputType.text,
+                        cursorColor: kSecondaryColor,
+                        obscureText: !_showConfirmPassword,
+                        style: TextStyle(color: kBlackColor),
+                        onChanged: (value) {
+                          confirmPassword = value;
+                        },
+                        labelText: 'Confirm password',
+                        hintText: 'Confirm your password',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _showConfirmPassword = !_showConfirmPassword;
+                            });
+                          },
+                          icon: Icon(_showConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != newPassword) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding * 2)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: _loading
+                            ? SpinKitWave(
+                                color: kSecondaryColor,
+                                size: getProportionateScreenHeight(
+                                    kDefaultPadding),
+                              )
+                            : CustomButton(
+                                title: "Update Password",
+                                color: kSecondaryColor,
+                                press: () {
+                                  print("Updating password");
+                                  if (_formKey.currentState!.validate()) {
+                                    updatePassword(phone, newPassword);
+                                  }
+                                }),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            SizedBox(
-              height: getProportionateScreenHeight(kDefaultPadding),
-            ),
-            TextField(
-              keyboardType: TextInputType.text,
-              cursorColor: kSecondaryColor,
-              obscureText: true,
-              style: TextStyle(color: kBlackColor),
-              onChanged: (value) {
-                confirmPassword = value;
-              },
-              decoration: InputDecoration(
-                hintText: 'Confirm password',
-                hintStyle: TextStyle(
-                  color: kGreyColor,
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: kSecondaryColor),
-                ),
-              ),
-            ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: _loading
-                  ? SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenHeight(kDefaultPadding),
-                    )
-                  : CustomButton(
-                      title: "Update Password",
-                      color: kSecondaryColor,
-                      press: () {
-                        print("Updating password");
-                        if (newPassword == confirmPassword) {
-                          updatePassword(phone, newPassword);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Password mismatch. Please try again", true));
-                          setState(() {
-                            _loading = false;
-                          });
-                        }
-                      }),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -162,8 +225,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/forgot_password";
     Map data = {
       "phone": phone
-          // .split(
-          // "${Provider.of<ZMetaData>(context, listen: false).areaCode}")[1]
+      // .split(
+      // "${Provider.of<ZMetaData>(context, listen: false).areaCode}")[1]
       ,
       "password": nPassword
     };
@@ -194,7 +257,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

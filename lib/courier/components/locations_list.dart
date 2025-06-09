@@ -29,11 +29,9 @@ class _LocationsListState extends State<LocationsList> {
   DeliveryLocation? deliveryLocation;
   DestinationAddress? destinationAddress;
 
-
   late Cart cart;
   bool currSelected = false;
   int selected = -2;
-
 
   @override
   void initState() {
@@ -53,15 +51,13 @@ class _LocationsListState extends State<LocationsList> {
     if (data != null) {
       setState(() {
         userData = data;
-        print(userData);
+        // print(userData);
       });
     }
     setState(() {
       _loading = false;
     });
   }
-
-
 
   void getLocations() async {
     var data = await Service.read('delivery');
@@ -89,7 +85,6 @@ class _LocationsListState extends State<LocationsList> {
     }
   }
 
-
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
     if (mounted) {
@@ -104,14 +99,14 @@ class _LocationsListState extends State<LocationsList> {
 
   void _doLocationTask() async {
     LocationPermission _permissionStatus =
-    await FlLocation.checkLocationPermission();
+        await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
         _permissionStatus == LocationPermission.always) {
       if (await FlLocation.isLocationServicesEnabled) {
         getLocation();
       } else {
         LocationPermission serviceStatus =
-        await FlLocation.requestLocationPermission();
+            await FlLocation.requestLocationPermission();
         if (serviceStatus == LocationPermission.always ||
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
@@ -185,7 +180,6 @@ class _LocationsListState extends State<LocationsList> {
                             selected = -1;
                           });
                           _doLocationTask();
-
                         },
                       ),
                       SizedBox(
@@ -264,10 +258,14 @@ class _LocationsListState extends State<LocationsList> {
                           if (currSelected) {
                             destinationAddress = DestinationAddress(
                                 name: "Current location",
-                                long: Provider.of<ZMetaData>(context, listen: false).longitude,
-                                lat: Provider.of<ZMetaData>(context, listen: false).latitude);
+                                long: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .longitude,
+                                lat: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .latitude);
                           }
-                          print(destinationAddress!.toJson());
+                          // print(destinationAddress!.toJson());
                           Navigator.of(context).pop(destinationAddress);
                         },
                         color: kSecondaryColor,

@@ -15,6 +15,7 @@ import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_progress_indicator.dart';
+import 'package:zmall/widgets/custom_search_bar.dart';
 import '../store_screen.dart';
 import 'custom_list_tile.dart';
 
@@ -381,33 +382,101 @@ class BodyState extends State<Body> {
               ? Column(
                   children: [
                     !widget.isStore!
-                        ? Container(
+                        ?
+                        // Padding(
+                        //     padding: EdgeInsets.symmetric(
+                        //       horizontal: getProportionateScreenWidth(
+                        //           kDefaultPadding / 4),
+                        //     ),
+                        //     child: CustomSearchBar(
+                        //       controller: controller,
+                        //       onChanged: onSearchTextChanged,
+                        //       trailing: [
+                        //         if (controller.text.isNotEmpty)
+                        //           IconButton(
+                        //             icon: Icon(Icons.cancel),
+                        //             onPressed: () {
+                        //               controller.clear();
+                        //               onSearchTextChanged('');
+                        //               setState(
+                        //                 () {
+                        //                   storeOpen(stores);
+                        //                 },
+                        //               );
+                        //             },
+                        //           ),
+                        //       ],
+                        //     ),
+                        //   )
+                        Container(
                             color: kPrimaryColor,
-                            child: Card(
-                              elevation: 0.3,
-                              child: TextField(
-                                controller: controller,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      Provider.of<ZLanguage>(context).search,
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(Icons.search),
-                                  suffixIcon: controller.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: Icon(Icons.cancel),
-                                          onPressed: () {
-                                            controller.clear();
-                                            onSearchTextChanged('');
-                                            setState(
-                                              () {
-                                                storeOpen(stores);
-                                              },
-                                            );
+                            child: Container(
+                              // color: kPrimaryColor,
+                              margin: EdgeInsets.all(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 4),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                              decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                  border:
+                                      Border.all(color: kWhiteColor, width: 2),
+                                  borderRadius: BorderRadius.circular(
+                                      kDefaultPadding * 2)),
+                              // child: Card(
+                              //   elevation: 0.3,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Icon(Icons.search),
+                                  SizedBox(
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding)),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: controller,
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            Provider.of<ZLanguage>(context)
+                                                .search,
+                                        border: InputBorder.none,
+                                        // prefixIcon: Icon(Icons.search),
+                                        // suffixIcon: controller.text.isNotEmpty
+                                        //     ? IconButton(
+                                        //         icon: Icon(Icons.cancel),
+                                        //         onPressed: () {
+                                        //           controller.clear();
+                                        //           onSearchTextChanged('');
+                                        //           setState(
+                                        //             () {
+                                        //               storeOpen(stores);
+                                        //             },
+                                        //           );
+                                        //         },
+                                        //       )
+                                        //     : null,
+                                      ),
+                                      onChanged: onSearchTextChanged,
+                                    ),
+                                  ),
+                                  if (controller.text.isNotEmpty)
+                                    IconButton(
+                                      icon: Icon(Icons.cancel),
+                                      onPressed: () {
+                                        controller.clear();
+                                        onSearchTextChanged('');
+                                        setState(
+                                          () {
+                                            storeOpen(stores);
                                           },
-                                        )
-                                      : null,
-                                ),
-                                onChanged: onSearchTextChanged,
+                                        );
+                                      },
+                                    ),
+                                ],
                               ),
                             ),
                           )
@@ -418,7 +487,7 @@ class BodyState extends State<Body> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: kDefaultPadding * 0.4,
-                                vertical: kDefaultPadding * 0.4,
+                                vertical: kDefaultPadding * 0.5,
                               ),
                               // padding: EdgeInsets.only(
                               //   left: kDefaultPadding * 0.4,
@@ -428,7 +497,7 @@ class BodyState extends State<Body> {
                               // ),
                               child: Container(
                                 height: getProportionateScreenHeight(
-                                    kDefaultPadding * 1.5),
+                                    kDefaultPadding * 2),
                                 child: ListView.separated(
                                   scrollDirection: Axis.horizontal,
                                   itemCount: tagFilters.length,
@@ -454,7 +523,7 @@ class BodyState extends State<Body> {
                                               : kPrimaryColor,
                                           borderRadius: BorderRadius.circular(
                                             getProportionateScreenWidth(
-                                                kDefaultPadding / 8),
+                                                kDefaultPadding / 2),
                                           ),
                                           border: Border.all(
                                             width: 1.0,
@@ -473,9 +542,9 @@ class BodyState extends State<Body> {
                                         child: Row(
                                           children: [
                                             Text(
-                                              tagFilters[index]
-                                                  .toString()
-                                                  .toUpperCase(),
+                                              Service.capitalizeFirstLetters(
+                                                  tagFilters[index].toString()),
+                                              // .toUpperCase(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodySmall
@@ -504,7 +573,7 @@ class BodyState extends State<Body> {
                                       (BuildContext context, int index) =>
                                           SizedBox(
                                     width: getProportionateScreenWidth(
-                                        kDefaultPadding / 5),
+                                        kDefaultPadding / 2),
                                   ),
                                 ),
                               ),

@@ -73,7 +73,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       setState(() {
         _loading = false;
       });
-      print(data);
+      // print(data);
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 2));
@@ -184,7 +184,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 imageUrl: vehicleList['vehicles'][index]
                                             ['image_url'] !=
                                         null
-                                    ? "http://159.65.147.111:8000/${vehicleList['vehicles'][index]['image_url']}"
+                                    ? "https://app.zmallapp.com/${vehicleList['vehicles'][index]['image_url']}"
+                                    // ? "http://159.65.147.111:8000/${vehicleList['vehicles'][index]['image_url']}"
                                     : "https://google.com",
                                 category: vehicleList['vehicles'][index]
                                     ['vehicle_name'],
@@ -675,10 +676,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
       "city_id": Provider.of<ZMetaData>(context, listen: false).cityId,
     };
 
-    print(url);
+    // print(url);
 
     var body = json.encode(data);
-    print(body);
+    // print(body);
     try {
       http.Response response = await http
           .post(
@@ -704,7 +705,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -734,10 +735,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      print(json.decode(response.body));
+      // print(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -771,7 +772,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       "is_round_trip": isRoundTrip,
     };
     var body = json.encode(data);
-    print(body);
+    // print(body);
     try {
       http.Response response = await http
           .post(
@@ -797,7 +798,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

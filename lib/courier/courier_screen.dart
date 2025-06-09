@@ -5,13 +5,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/courier/components/locations_list.dart';
 import 'package:zmall/courier/components/vehicle_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
-import 'package:zmall/location/components/address_search.dart';
-import 'package:zmall/location/components/place_service.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
@@ -132,13 +129,13 @@ class _CourierScreenState extends State<CourierScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Courier",
-          style: TextStyle(color: kPrimaryColor),
-        ),
-        elevation: 0.0,
-        backgroundColor: kSecondaryColor,
-      ),
+          title: Text(
+            "Courier",
+            style: TextStyle(color: kPrimaryColor),
+          ),
+          elevation: 0.0,
+          backgroundColor: kSecondaryColor,
+          iconTheme: IconThemeData(color: kPrimaryColor)),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -403,7 +400,8 @@ class _CourierScreenState extends State<CourierScreen> {
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: kSecondaryColor),
                       ),
-                      hintText: "$senderUser",
+                      hintText:
+                          senderPhone.isNotEmpty ? senderUser : "Sender Name",
                     ),
                   ),
                   SizedBox(
@@ -421,8 +419,9 @@ class _CourierScreenState extends State<CourierScreen> {
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: kSecondaryColor),
                       ),
-                      labelText:
-                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}$senderPhone",
+                      labelText: senderPhone.isNotEmpty
+                          ? "${Provider.of<ZMetaData>(context, listen: false).areaCode}$senderPhone"
+                          : "Sender Phone",
                       labelStyle: TextStyle(
                         color: kGreyColor,
                       ),
@@ -526,7 +525,7 @@ class _CourierScreenState extends State<CourierScreen> {
                   description = val;
                 },
                 decoration: InputDecoration(
-                  hintText: "document, key, electronics, others...",
+                  hintText: "Document, Key, Electronics, others...",
                   hintStyle: TextStyle(
                     color: kGreyColor,
                   ),
@@ -569,7 +568,7 @@ class _CourierScreenState extends State<CourierScreen> {
                             //     "Pickup: ${_controller.text}\nDropoff: ${_dropOffController.text}");
                             if (userData['user']['cart_id'] != null) {
                               print("Courier ready....");
-//                              _clearCart();
+                              //  _clearCart();
                             }
 
                             _addCourierToCart();
@@ -659,7 +658,7 @@ class _CourierScreenState extends State<CourierScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -759,7 +758,7 @@ class _CourierScreenState extends State<CourierScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

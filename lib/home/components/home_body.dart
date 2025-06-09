@@ -25,6 +25,7 @@ import 'package:zmall/events/events_screen.dart';
 import 'package:zmall/home/components/custom_banner.dart';
 import 'package:zmall/home/components/offer_card.dart';
 import 'package:zmall/home/components/stores_card.dart';
+import 'package:zmall/home/components/web_view_screen.dart';
 import 'package:zmall/item/item_screen.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/lunch_home/lunch_home_screen.dart';
@@ -94,6 +95,9 @@ class _HomeBodyState extends State<HomeBody> {
   var orderTo;
   var orderFrom;
   Timer? timer;
+  bool _isLocationDialogShown = false;
+  bool _isUpdateDialogShown = false;
+  bool _isMessageDialogShown = false;
 //////////////////////////////
 
   @override
@@ -108,16 +112,16 @@ class _HomeBodyState extends State<HomeBody> {
     getLocalPromotionalItems();
     getLocalPromotionalStores();
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Opened by notification open by app");
+      debugPrint("Opened by notification open by app");
 
       MyApp.analytics.logEvent(name: "notification_opened");
       if (message.data != null && !is_abroad) {
         var notificationData = message.data;
         if (notificationData['item_id'] != null) {
-          print("Navigate to item screen...");
+          debugPrint("Navigate to item screen...");
           _getItemInformation(notificationData['item_id']);
         } else if (notificationData['store_id'] != null) {
-          print("Navigate to store...");
+          debugPrint("Navigate to store...");
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -132,7 +136,7 @@ class _HomeBodyState extends State<HomeBody> {
       }
     });
     if (widget.isLaunched) {
-      print("=> \tChecking for version update");
+      debugPrint("=> \tChecking for version update");
       getAppKeys();
     }
     getCategories();
@@ -147,7 +151,12 @@ class _HomeBodyState extends State<HomeBody> {
       double distance = Service.calculateDistance(
           userLocation[0], userLocation[1], latitude, longitude);
 
-      if (orderFrom == orderTo && userOrderStatus < 25 && distance > 0.1000) {
+      if (orderFrom == orderTo &&
+          userOrderStatus < 25 &&
+          distance > 0.1000 &&
+          !_isLocationDialogShown) {
+        _isLocationDialogShown = true;
+
         Timer.periodic(const Duration(seconds: 30), (timer) {
           if (timer.tick > 1) {
             timer.cancel();
@@ -223,16 +232,16 @@ class _HomeBodyState extends State<HomeBody> {
     getLocalPromotionalItems();
     getLocalPromotionalStores();
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Opened by notification open by app");
+      debugPrint("Opened by notification open by app");
 
       MyApp.analytics.logEvent(name: "notification_opened");
       if (message.data != null && !is_abroad) {
         var notificationData = message.data;
         if (notificationData['item_id'] != null) {
-          print("Navigate to item screen...");
+          debugPrint("Navigate to item screen...");
           _getItemInformation(notificationData['item_id']);
         } else if (notificationData['store_id'] != null) {
-          print("Navigate to store...");
+          debugPrint("Navigate to store...");
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -247,7 +256,7 @@ class _HomeBodyState extends State<HomeBody> {
       }
     });
     if (widget.isLaunched) {
-      print("=> \tChecking for version update");
+      debugPrint("=> \tChecking for version update");
       getAppKeys();
     }
 
@@ -273,6 +282,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void getLocation() async {
+    debugPrint("\t=> \ in getLocation>>>>>");
     var currentLocation = await FlLocation.getLocation();
     if (mounted) {
       setState(() {
@@ -281,12 +291,13 @@ class _HomeBodyState extends State<HomeBody> {
       });
       Provider.of<ZMetaData>(context, listen: false)
           .setLocation(latitude, longitude);
+      // debugPrint( "\t=> \ in getLocation>>>>> latitude $latitude-longitude $longitude");
       _getNearbyStores();
     }
   }
 
   void _doLocationTask() async {
-    print("checking user location");
+    debugPrint("checking user location");
     LocationPermission _permissionStatus =
         await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
@@ -319,7 +330,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {
@@ -436,7 +447,8 @@ class _HomeBodyState extends State<HomeBody> {
         Service.save('app_close', data['app_close']);
         Service.save('app_open', data['app_open']);
       });
-      if (data['message_flag']) {
+      if (data['message_flag'] && !_isMessageDialogShown) {
+        _isMessageDialogShown = true;
         showSimpleNotification(
           Text(
             "⚠️ NOTICE ⚠️",
@@ -451,7 +463,7 @@ class _HomeBodyState extends State<HomeBody> {
           duration: Duration(seconds: 7),
           elevation: 2.0,
           autoDismiss: false,
-          slideDismiss: true,
+          // slideDismiss: true,
           slideDismissDirection: DismissDirection.up,
         );
       }
@@ -468,11 +480,12 @@ class _HomeBodyState extends State<HomeBody> {
         await Service.readBool('is_closed');
     promptMessage = await Service.read('closed_message');
     var showUpdateDialog = await Service.readBool('ios_update_dialog');
-    print("=====================");
+    debugPrint("=====================");
     if (data != null) {
       if (currentVersion.toString() != data.toString()) {
-        if (showUpdateDialog) {
-          print("\t=> \tShowing update dialog...");
+        if (showUpdateDialog && !_isUpdateDialogShown) {
+          _isUpdateDialogShown = true;
+          debugPrint("\t=> \tShowing update dialog...");
           showDialog(
             barrierDismissible: false,
             context: context,
@@ -615,6 +628,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void _getNearbyStores() async {
+    // debugPrint("\t=> \in nearbyStores>>>>>");
     setState(() {
       _loading = true;
     });
@@ -623,6 +637,7 @@ class _HomeBodyState extends State<HomeBody> {
       setState(() {
         nearbyStores = data['stores'];
       });
+      // debugPrint("\t=> \tGet nearbyStores>>>>> $nearbyStores");
     } else {
       // ScaffoldMessenger.of(context).showSnackBar(
       //   SnackBar(
@@ -685,11 +700,12 @@ class _HomeBodyState extends State<HomeBody> {
       _loading = false;
     });
     bool isStoreOpen = false;
-    if (store['store_open_close_time'] != null &&
-        store['store_open_close_time'].length != 0) {
+    // store_time
+    // store_open_close_timen
+    if (store['store_time'] != null && store['store_time'].length != 0) {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      for (var i = 0; i < store['store_open_close_time'].length; i++) {
+      for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
         DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         int weekday;
@@ -699,18 +715,18 @@ class _HomeBodyState extends State<HomeBody> {
           weekday = now.weekday;
         }
 
-        if (store['store_open_close_time'][i]['day'] == weekday) {
-          if (store['store_open_close_time'][i]['day_time'].length != 0 &&
-              store['store_open_close_time'][i]['is_store_open']) {
+        if (store['store_time'][i]['day'] == weekday) {
+          if (store['store_time'][i]['day_time'].length != 0 &&
+              store['store_time'][i]['is_store_open']) {
             for (var j = 0;
-                j < store['store_open_close_time'][i]['day_time'].length;
+                j < store['store_time'][i]['day_time'].length;
                 j++) {
-              DateTime open = dateFormat.parse(store['store_open_close_time'][i]
-                  ['day_time'][j]['store_open_time']);
+              DateTime open = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_open_time']);
               open = new DateTime(
                   now.year, now.month, now.day, open.hour, open.minute);
-              DateTime close = dateFormat.parse(store['store_open_close_time']
-                  [i]['day_time'][j]['store_close_time']);
+              DateTime close = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_close_time']);
               // DateTime zmallClose =
               //     DateTime(now.year, now.month, now.day, 21, 00);
               // DateTime zmallOpen =
@@ -730,15 +746,15 @@ class _HomeBodyState extends State<HomeBody> {
               zmallClose = new DateTime(now.year, now.month, now.day,
                   zmallClose.hour, zmallClose.minute);
 
-              // print(zmallOpen);
-              // print(open);
-              // print(now);
-              // print(close);
-              // print(zmallClose);
+              // debugPrint(zmallOpen);
+              // debugPrint(open);
+              // debugPrint(now);
+              // debugPrint(close);
+              // debugPrint(zmallClose);
               if (now.isAfter(open) &&
                   now.isAfter(zmallOpen) &&
                   now.isBefore(close) &&
-                  store['store_open_close_time'][i]['is_store_open'] &&
+                  store['store_time'][i]['is_store_open'] &&
                   now.isBefore(zmallClose)) {
                 isStoreOpen = true;
                 break;
@@ -747,7 +763,7 @@ class _HomeBodyState extends State<HomeBody> {
               }
             }
           } else {
-            isStoreOpen = store['store_open_close_time'][i]['is_store_open'];
+            isStoreOpen = store['store_time'][i]['is_store_open'];
           }
         }
       }
@@ -774,7 +790,6 @@ class _HomeBodyState extends State<HomeBody> {
         isStoreOpen = false;
       }
     }
-
     return isStoreOpen;
   }
 
@@ -829,7 +844,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void getNearByMerchants() async {
-    print("Fetching delivery categories...");
+    debugPrint("Fetching delivery categories...");
     setState(() {
       _loading = true;
     });
@@ -843,7 +858,7 @@ class _HomeBodyState extends State<HomeBody> {
       _loading = false;
     });
     if (responseData != null && responseData['success']) {
-      print("\t=>\tGet Merchants Completed...");
+      debugPrint("\t=>\tGet Merchants Completed...");
       setState(() {
         categories = responseData['deliveries'];
       });
@@ -911,7 +926,7 @@ class _HomeBodyState extends State<HomeBody> {
     }
     if (servicesData != null && servicesData['success']) {
       services = servicesData['deliveries'];
-      print("\t=> \tGet Services Completed");
+      debugPrint("\t=> \tGet Services Completed");
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
@@ -1166,7 +1181,7 @@ class _HomeBodyState extends State<HomeBody> {
                                 padding: EdgeInsets.symmetric(
                                     vertical: getProportionateScreenHeight(
                                         kDefaultPadding / 2)),
-                                child: GestureDetector(
+                                child: InkWell(
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -1197,6 +1212,8 @@ class _HomeBodyState extends State<HomeBody> {
                                       borderRadius: BorderRadius.circular(
                                           getProportionateScreenWidth(
                                               kDefaultPadding)),
+                                      //   getProportionateScreenWidth(
+                                      // kDefaultPadding * 1.5)),
                                       color: kWhiteColor,
                                     ),
                                     padding: EdgeInsets.symmetric(
@@ -1204,12 +1221,14 @@ class _HomeBodyState extends State<HomeBody> {
                                           kDefaultPadding),
                                     ),
                                     height: getProportionateScreenHeight(
-                                        kDefaultPadding * 2),
+                                        kDefaultPadding * 2.2),
+                                    // getProportionateScreenHeight(
+                                    // kDefaultPadding * 3),
                                     alignment: Alignment.centerLeft,
                                     child: Row(
                                       children: [
                                         Icon(
-                                          FontAwesomeIcons.search,
+                                          FontAwesomeIcons.magnifyingGlass,
                                           color: kGreyColor,
                                           size: getProportionateScreenHeight(
                                               kDefaultPadding),
@@ -1304,6 +1323,8 @@ class _HomeBodyState extends State<HomeBody> {
                                 color: kPrimaryColor,
                               ),
                               child: Column(
+                                spacing: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.symmetric(
@@ -1383,6 +1404,10 @@ class _HomeBodyState extends State<HomeBody> {
                                                             [index]);
 
                                                     if (isOp) {
+                                                      debugPrint(
+                                                          "================>>>>>>>>");
+                                                      debugPrint(
+                                                          "object isOp $isOp");
                                                       Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -1402,7 +1427,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                     }
                                                   },
                                                   press: () async {
-                                                    print(
+                                                    debugPrint(
                                                         "Promotional item pressed...");
                                                     bool isOp = await storeOpen(
                                                         promotionalItems[
@@ -1436,7 +1461,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                             .showSnackBar(
                                                           Service.showMessage(
                                                               "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                              false,
+                                                              true,
                                                               duration: 3),
                                                         );
                                                       }
@@ -1579,7 +1604,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                       .toString()
                                                       .toLowerCase(),
                                                   press: () async {
-                                                    print(
+                                                    debugPrint(
                                                         "Promotional store pressed...");
                                                     bool isOp = await storeOpen(
                                                         promotionalStores[
@@ -1587,7 +1612,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                             [index]);
 
                                                     if (isOp) {
-                                                      print("Open");
+                                                      debugPrint("Open");
                                                       Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -1628,7 +1653,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                             .showSnackBar(
                                                           Service.showMessage(
                                                               "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                              false,
+                                                              true,
                                                               duration: 3),
                                                         );
                                                       }
@@ -1799,6 +1824,7 @@ class _HomeBodyState extends State<HomeBody> {
                                         }
                                       },
                                       child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           CachedNetworkImage(
                                             imageUrl:
@@ -1809,10 +1835,10 @@ class _HomeBodyState extends State<HomeBody> {
                                               // margin: EdgeInsets.all(5),
                                               width:
                                                   getProportionateScreenWidth(
-                                                      kDefaultPadding * 5),
+                                                      kDefaultPadding * 4),
                                               height:
                                                   getProportionateScreenHeight(
-                                                      kDefaultPadding * 5),
+                                                      kDefaultPadding * 4),
                                               decoration: BoxDecoration(
                                                 color: kWhiteColor,
                                                 borderRadius: BorderRadius.circular(
@@ -1846,10 +1872,10 @@ class _HomeBodyState extends State<HomeBody> {
                                                     Container(
                                               width:
                                                   getProportionateScreenWidth(
-                                                      kDefaultPadding * 5),
+                                                      kDefaultPadding * 4),
                                               height:
                                                   getProportionateScreenHeight(
-                                                      kDefaultPadding * 6),
+                                                      kDefaultPadding * 4),
                                               decoration: BoxDecoration(
                                                 image: DecorationImage(
                                                   fit: BoxFit.contain,
@@ -1867,13 +1893,16 @@ class _HomeBodyState extends State<HomeBody> {
                                             categories[index]
                                                         ['delivery_name'] ==
                                                     "FOOD DELIVERY"
-                                                ? "FOOD"
-                                                : categories[index]
-                                                    ['delivery_name'],
+                                                ? "Food"
+                                                : Service
+                                                    .capitalizeFirstLetters(
+                                                        categories[index]
+                                                            ['delivery_name']),
                                             textAlign: TextAlign.center,
                                             maxLines: 1,
                                             style: Theme.of(context)
                                                 .textTheme
+                                                // .bodyMedium
                                                 .bodySmall
                                                 ?.copyWith(
                                                   color: kBlackColor,
@@ -1910,20 +1939,26 @@ class _HomeBodyState extends State<HomeBody> {
                                 color: kPrimaryColor,
                               ),
                               padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
+                                bottom: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                                left: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                                right: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
                               child: Column(
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle: "Laundry Pick & Drop",
-                                      subTitle: " ",
-                                    ),
+                                  // Padding(
+                                  //   padding: EdgeInsets.symmetric(
+                                  //     horizontal: getProportionateScreenWidth(
+                                  //         kDefaultPadding),
+                                  //   ),
+                                  //   child:
+                                  SectionTitle(
+                                    sectionTitle: "Laundry Pick & Drop",
+                                    subTitle: " ",
                                   ),
+                                  // ),
                                   CustomBanner(
                                     // imageUrl: 'images/laundry.png',
                                     isNetworkImage:
@@ -1980,76 +2015,7 @@ class _HomeBodyState extends State<HomeBody> {
                               height: getProportionateScreenHeight(
                                   kDefaultPadding / 4),
                             ),
-                      /////////////////////////////Aliexpress section////////////////
-                      services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'aliexpress'))
-                          ? SizedBox.shrink()
-                          : Container(
-                              padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle: "AliExpress",
-                                      subTitle: " ",
-                                    ),
-                                  ),
-                                  CustomBanner(
-                                    isNetworkImage:
-                                        isNetworkImage("aliexpress"),
-                                    imageUrl: isNetworkImage("aliexpress")
-                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("aliexpress")]['image_url']}"
-                                        : "images/aliexpress-banner.png",
-                                    title: "AliExpress",
-                                    subtitle: "",
-                                    press: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              AliProductListScreen(),
-                                        ),
-                                      ).then((value) {
-                                        if (userData != null) {
-                                          _getPromotionalItems();
-                                          getUserOrderCount();
-                                          _doLocationTask();
-                                          getNearByMerchants();
-                                        }
-                                      });
-                                    },
-                                  )
-                                ],
-                              ),
-                            ),
-                      services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'aliexpress'))
-                          ? SizedBox.shrink()
-                          : SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4),
-                            ),
-                      //////////////finish aliexpress//////////////////
+                      //////////////nearbyStores section/////////////////
                       nearbyStores != null && nearbyStores.length > 0
                           ? Container(
                               padding: EdgeInsets.only(
@@ -2060,6 +2026,8 @@ class _HomeBodyState extends State<HomeBody> {
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
+                                spacing: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.symmetric(
@@ -2115,13 +2083,13 @@ class _HomeBodyState extends State<HomeBody> {
                                                     ['delivery_type_detail']
                                                 ['delivery_name'],
                                             press: () async {
-                                              print(
+                                              debugPrint(
                                                   "Promotional item pressed...");
                                               bool isOp = await storeOpen(
                                                   nearbyStores[index]);
 
                                               if (isOp) {
-                                                print("Open");
+                                                debugPrint("Open");
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
@@ -2157,7 +2125,7 @@ class _HomeBodyState extends State<HomeBody> {
                                                       .showSnackBar(
                                                     Service.showMessage(
                                                         "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                        false,
+                                                        true,
                                                         duration: 3),
                                                   );
                                                 }
@@ -2178,38 +2146,16 @@ class _HomeBodyState extends State<HomeBody> {
                               ),
                             )
                           : SizedBox.shrink(),
-                      // SizedBox(
-                      //   height:
-                      //       getProportionateScreenHeight(kDefaultPadding / 4),
-                      // ),
-                      /////////Pridiction Started
-                      Provider.of<ZMetaData>(context, listen: false).country ==
-                                      "Ethiopia" &&
-                                  DateTime.now().isBefore(predictEnd) &&
-                                  DateTime.now().isAfter(predictStart) &&
-                                  services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'prediction'))
-                          ? SizedBox.shrink()
-                          : SizedBox(
+                      nearbyStores != null && nearbyStores.length > 0
+                          ? SizedBox(
                               height: getProportionateScreenHeight(
                                   kDefaultPadding / 4),
-                            ),
-                      Provider.of<ZMetaData>(context, listen: false).country ==
-                                      "Ethiopia" &&
-                                  DateTime.now().isBefore(predictEnd) &&
-                                  DateTime.now().isAfter(predictStart) &&
-                                  services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'prediction'))
+                            )
+                          : Container(),
+
+                      /////////////////////Other category services/////////////////////////////
+                      // Dynamic Services Section
+                      services == null || services.isEmpty
                           ? SizedBox.shrink()
                           : Container(
                               decoration: BoxDecoration(
@@ -2218,365 +2164,815 @@ class _HomeBodyState extends State<HomeBody> {
                               padding: EdgeInsets.only(
                                   bottom: getProportionateScreenHeight(
                                       kDefaultPadding / 2)),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle: DateTime.now()
-                                                  .isBefore(euroPredictEnd) &&
-                                              DateTime.now()
-                                                  .isAfter(euroPredictStart)
-                                          ? "UEFA Euro 2024"
-                                          : "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
-                                      subTitle: " ",
-                                    ),
-                                  ),
-                                  CustomBanner(
-                                    isNetworkImage:
-                                        isNetworkImage("prediction"),
-                                    imageUrl: isNetworkImage("prediction")
-                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("prediction")]['image_url']}"
-                                        : DateTime.now()
-                                                    .isBefore(euroPredictEnd) &&
-                                                DateTime.now()
-                                                    .isAfter(euroPredictStart)
-                                            ? 'images/pl_logos/game_banner.png'
-                                            : 'images/predict_pl.png',
-                                    title: "Predict & Win",
-                                    subtitle: "",
-                                    press: () async {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              WorldCupScreen(),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: services.length,
+                                itemBuilder: (context, index) {
+                                  final service = services[index];
+                                  final serviceName = service['delivery_name']
+                                      ?.toString()
+                                      .toLowerCase();
+                                  // Skip services that are handled elsewhere (e.g., Laundry in categories)
+                                  if (serviceName == 'laundry') {
+                                    return SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                        left: getProportionateScreenWidth(
+                                            kDefaultPadding),
+                                        right: getProportionateScreenWidth(
+                                            kDefaultPadding),
+                                        bottom: getProportionateScreenWidth(
+                                            kDefaultPadding)),
+                                    child: Column(
+                                      children: [
+                                        SectionTitle(
+                                          sectionTitle: serviceName == 'courier'
+                                              ? Provider.of<ZLanguage>(context)
+                                                  .thinkingOf
+                                              : serviceName == 'event'
+                                                  ? Provider.of<ZLanguage>(
+                                                          context)
+                                                      .discover
+                                                  : serviceName ==
+                                                          'lunch from home'
+                                                      ? Provider.of<ZLanguage>(
+                                                              context)
+                                                          .missingHome
+                                                      : serviceName ==
+                                                              'prediction'
+                                                          ? Provider.of<
+                                                                      ZLanguage>(
+                                                                  context)
+                                                              .predictAndwin
+                                                          : service[
+                                                              'delivery_name'],
+                                          subTitle: " ",
                                         ),
-                                      ).then((value) {
-                                        if (userData != null) {
-                                          _getPromotionalItems();
-                                          getUserOrderCount();
-                                          _doLocationTask();
-                                          getNearByMerchants();
-                                        }
-                                      });
-                                    },
-                                  )
-                                ],
-                              ),
-                            ),
-                      /////////////// WORLD CUP/////////////////
+                                        CustomBanner(
+                                            isNetworkImage: service['image_url']
+                                                    ?.isNotEmpty ??
+                                                false,
+                                            imageUrl: service['image_url']
+                                                        ?.isNotEmpty ??
+                                                    false
+                                                ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${service['image_url']}"
+                                                : "images/$serviceName.png", // Ensure you have a default image in assets
+                                            title: service['delivery_name'],
+                                            subtitle: "",
+                                            press: () {
+                                              int deliveryTipe =
+                                                  service['delivery_type'];
+                                              bool isWebView =
+                                                  service['description']
+                                                          .isNotEmpty &&
+                                                      service['description']
+                                                          .toString()
+                                                          .contains("webUrl-");
+                                              String? url =
+                                                  service['description']
+                                                      .split('webUrl-')
+                                                      .last;
+                                              // debugPrint(url);
 
-                      services == null ||
-                              // services.length > 1 &&
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'lunch from home'))
-                          ? SizedBox.shrink()
-                          : SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4),
-                            ),
-                      services == null ||
-                              //  &&services.length > 1 &&
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'lunch from home'))
-                          ? SizedBox.shrink()
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                              ),
-                              padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle:
-                                          Provider.of<ZLanguage>(context)
-                                              .missingHome,
-                                      subTitle: " ",
-                                    ),
-                                  ),
-                                  services != null && services.length > 1
-                                      ? CustomBanner(
-                                          isNetworkImage:
-                                              isNetworkImage("lunch from home"),
-                                          imageUrl: isNetworkImage(
-                                                  "lunch from home")
-                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("lunch from home")]['image_url']}"
-                                              : 'images/deal-of-the-day.png',
-                                          title: "Let us get your lunch from\n",
-                                          subtitle: "HOME",
-                                          press: () async {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    LunchHomeScreen(
-                                                  curLat:
-                                                      Provider.of<ZMetaData>(
-                                                              context,
-                                                              listen: false)
-                                                          .latitude,
-                                                  curLon:
-                                                      Provider.of<ZMetaData>(
-                                                              context,
-                                                              listen: false)
-                                                          .longitude,
-                                                ),
-                                              ),
-                                            ).then((value) {
-                                              if (userData != null) {
-                                                _getPromotionalItems();
-                                                getUserOrderCount();
-                                                _doLocationTask();
-                                                getNearByMerchants();
-                                              }
-                                            });
-                                          },
-                                        )
-                                      : SizedBox.shrink(),
-                                ],
-                              ),
-                            ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
+                                              Widget? screen;
 
-                      services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'courier'))
-                          ? SizedBox.shrink()
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                              ),
-                              padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle:
-                                          Provider.of<ZLanguage>(context)
-                                              .thinkingOf,
-                                      subTitle: " ",
-                                    ),
-                                  ),
-                                  services != null
-                                      ? CustomBanner(
-                                          isNetworkImage:
-                                              isNetworkImage("courier"),
-                                          imageUrl: isNetworkImage("courier")
-                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("courier")]['image_url']}"
-                                              : 'images/courier_delivery.png',
-                                          title: "Send and receive with\n",
-                                          subtitle: "COURIER",
-                                          press: () async {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    CourierScreen(
-                                                  curLat:
-                                                      Provider.of<ZMetaData>(
-                                                              context,
-                                                              listen: false)
-                                                          .latitude,
-                                                  curLon:
-                                                      Provider.of<ZMetaData>(
-                                                              context,
-                                                              listen: false)
-                                                          .longitude,
-                                                ),
-                                              ),
-                                            ).then((value) {
-                                              if (userData != null) {
-                                                _getPromotionalItems();
-                                                getUserOrderCount();
-                                                _doLocationTask();
-                                                getNearByMerchants();
+                                              switch (serviceName) {
+                                                case 'lottery':
+                                                  screen = WebViewScreen(
+                                                      url: url!,
+                                                      title: service[
+                                                          'delivery_name']);
+                                                  // 'https://www.ethiolottery.et/am?affiliate=68308ad291bef6c92f841c8b');
+                                                  break;
+                                                case 'aliexpress':
+                                                  screen =
+                                                      AliProductListScreen();
+                                                  break;
+                                                case 'prediction':
+                                                  screen = WorldCupScreen();
+                                                  break;
+                                                case 'lunch from home':
+                                                  screen = LunchHomeScreen(
+                                                    curLat:
+                                                        Provider.of<ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .latitude,
+                                                    curLon:
+                                                        Provider.of<ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .longitude,
+                                                  );
+                                                  break;
+                                                case 'courier':
+                                                  screen = CourierScreen(
+                                                    curLat:
+                                                        Provider.of<ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .latitude,
+                                                    curLon:
+                                                        Provider.of<ZMetaData>(
+                                                                context,
+                                                                listen: false)
+                                                            .longitude,
+                                                  );
+                                                  break;
+                                                case 'event':
+                                                  screen = EventsScreen();
+                                                  break;
                                               }
-                                            });
-                                          },
-                                        )
-                                      : SizedBox.shrink(),
-                                ],
+                                              if (screen != null) {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            screen!)).then(
+                                                    (value) {
+                                                  if (userData != null) {
+                                                    _getPromotionalItems();
+                                                    getUserOrderCount();
+                                                    _doLocationTask();
+                                                    getNearByMerchants();
+                                                  }
+                                                });
+                                              }
+                                            }),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                separatorBuilder: (context, index) => Container(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 4),
+                                    decoration:
+                                        BoxDecoration(color: kWhiteColor)),
                               ),
                             ),
-                      // services != null
-                      //     ? SizedBox(
-                      //         height: getProportionateScreenHeight(
-                      //             kDefaultPadding / 4),
-                      //       )
-                      //     : Container(),
-                      // Container(
-                      //   padding: EdgeInsets.only(
-                      //     bottom: getProportionateScreenHeight(
-                      //         kDefaultPadding / 2),
-                      //   ),
-                      //   decoration: BoxDecoration(
-                      //     color: kPrimaryColor,
-                      //   ),
-                      //   child: Column(
-                      //     children: [
-                      //       Padding(
-                      //         padding: EdgeInsets.symmetric(
-                      //           horizontal: getProportionateScreenWidth(
-                      //               kDefaultPadding),
+
+                      // ////////////////////////Lottery /////////////////////////////
+                      // !isLaundryActive
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
                       //         ),
-                      //         child: SectionTitle(
-                      //           sectionTitle: Provider.of<ZLanguage>(context)
-                      //               .yourFavorites,
-                      //           subTitle: " ",
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         child: Column(
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle: "Lottery",
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             CustomBanner(
+                      //               imageUrl: 'images/lottery.png',
+                      //               isNetworkImage:
+                      //                   "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[laundryIndex]['image_url']}"
+                      //                           .isNotEmpty
+                      //                       ? true
+                      //                       : false,
+                      //               // imageUrl: isNetworkImage("laundry")
+                      //               //     ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[laundryIndex]['image_url']}"
+                      //               //     : "images/laundry.png",
+                      //               title: "Laundry Pick & Drop",
+                      //               subtitle: "",
+                      //               press: () async {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                       builder: (context) => WebViewScreen(
+                      //                             title: "Lottery",
+                      //                             url:
+                      //                                 "https://www.ethiolottery.et/am?affiliate=68308ad291bef6c92f841c8b",
+                      //                           )),
+                      //                 ).then((value) {
+                      //                   if (userData != null) {
+                      //                     _getPromotionalItems();
+                      //                     getUserOrderCount();
+                      //                     _doLocationTask();
+                      //                     getNearByMerchants();
+                      //                   }
+                      //                 });
+                      //               },
+                      //             )
+                      //           ],
                       //         ),
                       //       ),
-                      //       // SizedBox(
-                      //       //   height:
-                      //       //       getProportionateScreenHeight(kDefaultPadding / 2),
-                      //       // ),
-                      //       userData != null
-                      //           ? Container(
+                      // !isLaundryActive
+                      //     ? SizedBox.shrink()
+                      //     : SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 8),
+                      //       ),
+
+                      // /////////////////////////////Aliexpress section////////////////
+                      // services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'aliexpress'))
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         child: Column(
+                      //           mainAxisSize: MainAxisSize.min,
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle: "AliExpress",
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             CustomBanner(
+                      //               isNetworkImage:
+                      //                   isNetworkImage("aliexpress"),
+                      //               imageUrl: isNetworkImage("aliexpress")
+                      //                   ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("aliexpress")]['image_url']}"
+                      //                   : "images/aliexpress-banner.png",
+                      //               title: "AliExpress",
+                      //               subtitle: "",
+                      //               press: () async {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                     builder: (context) =>
+                      //                         AliProductListScreen(),
+                      //                   ),
+                      //                 ).then((value) {
+                      //                   if (userData != null) {
+                      //                     _getPromotionalItems();
+                      //                     getUserOrderCount();
+                      //                     _doLocationTask();
+                      //                     getNearByMerchants();
+                      //                   }
+                      //                 });
+                      //               },
+                      //             )
+                      //           ],
+                      //         ),
+                      //       ),
+                      // services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'aliexpress'))
+                      //     ? SizedBox.shrink()
+                      //     : SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 4),
+                      //       ),
+                      // //////////////finish aliexpress//////////////////
+                      // nearbyStores != null && nearbyStores.length > 0
+                      //     ? Container(
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         child: Column(
+                      //           mainAxisSize: MainAxisSize.min,
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle:
+                      //                     Provider.of<ZLanguage>(context)
+                      //                         .nearbyStores, //Nearby stores
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             Container(
                       //               height: getProportionateScreenHeight(
-                      //                   kDefaultPadding * 10),
+                      //                   kDefaultPadding * 12),
                       //               width: double.infinity,
                       //               padding: EdgeInsets.only(
                       //                 right: getProportionateScreenWidth(
                       //                     kDefaultPadding / 2),
                       //               ),
-                      //               child: FavoritesScreen(
-                      //                 controller: controller,
-                      //                 latitude: Provider.of<ZMetaData>(context, listen: false).latitude,
-                      //                 longitude: Provider.of<ZMetaData>(context, listen: false).longitude,
-                      //               ),
-                      //             )
-                      //           : Container(
-                      //               height: getProportionateScreenHeight(
-                      //                   kDefaultPadding * 6),
-                      //               child: Center(
-                      //                 child: Padding(
-                      //                   padding: EdgeInsets.symmetric(
-                      //                     horizontal:
-                      //                         getProportionateScreenWidth(
-                      //                             kDefaultPadding),
-                      //                   ),
-                      //                   child: Text(
-                      //                     "Please login to add all of your favorites...",
-                      //                     textAlign: TextAlign.center,
-                      //                   ),
+                      //               child: ListView.separated(
+                      //                 shrinkWrap: true,
+                      //                 scrollDirection: Axis.horizontal,
+                      //                 itemCount: nearbyStores != null &&
+                      //                         nearbyStores.length > 0
+                      //                     ? nearbyStores.length
+                      //                     : 0,
+                      //                 itemBuilder: (context, index) => Row(
+                      //                   children: [
+                      //                     index == 0
+                      //                         ? SizedBox(
+                      //                             width:
+                      //                                 getProportionateScreenWidth(
+                      //                                     kDefaultPadding),
+                      //                           )
+                      //                         : Container(),
+                      //                     StoresCard(
+                      //                       imageUrl:
+                      //                           "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${nearbyStores[index]['image_url']}",
+                      //                       storeName:
+                      //                           "${nearbyStores[index]['name']}\n",
+                      //                       distance: nearbyStores[index]
+                      //                               ['distance']
+                      //                           .toStringAsFixed(2),
+                      //                       rating: nearbyStores[index]
+                      //                               ['user_rate']
+                      //                           .toStringAsFixed(2),
+                      //                       ratingCount: nearbyStores[index]
+                      //                               ['user_rate_count']
+                      //                           .toString(),
+                      //                       deliveryType: nearbyStores[index]
+                      //                               ['delivery_type_detail']
+                      //                           ['delivery_name'],
+                      //                       press: () async {
+                      //                         debugPrint(
+                      //                             "Promotional item pressed...");
+                      //                         bool isOp = await storeOpen(
+                      //                             nearbyStores[index]);
+
+                      //                         if (isOp) {
+                      //                           debugPrint("Open");
+                      //                           Navigator.push(
+                      //                             context,
+                      //                             MaterialPageRoute(
+                      //                               builder: (context) {
+                      //                                 return ProductScreen(
+                      //                                   store:
+                      //                                       nearbyStores[index],
+                      //                                   isOpen: isOp,
+                      //                                   location:
+                      //                                       nearbyStores[index]
+                      //                                           ['location'],
+                      //                                   longitude: Provider.of<
+                      //                                               ZMetaData>(
+                      //                                           context,
+                      //                                           listen: false)
+                      //                                       .longitude,
+                      //                                   latitude: Provider.of<
+                      //                                               ZMetaData>(
+                      //                                           context,
+                      //                                           listen: false)
+                      //                                       .latitude,
+                      //                                 );
+                      //                               },
+                      //                             ),
+                      //                           ).then((value) {
+                      //                             getCart();
+                      //                             _doLocationTask();
+                      //                             getNearByMerchants();
+                      //                           });
+                      //                         } else {
+                      //                           if (mounted) {
+                      //                             ScaffoldMessenger.of(context)
+                      //                                 .showSnackBar(
+                      //                               Service.showMessage(
+                      //                                   "Store is currently closed. We highly recommend you to try other store. We've got them all...",
+                      //                                   true,
+                      //                                   duration: 3),
+                      //                             );
+                      //                           }
+                      //                         }
+                      //                       },
+                      //                     ),
+                      //                   ],
+                      //                 ),
+                      //                 separatorBuilder:
+                      //                     (BuildContext context, int index) =>
+                      //                         SizedBox(
+                      //                   width: getProportionateScreenWidth(
+                      //                       kDefaultPadding / 2),
                       //                 ),
                       //               ),
+                      //             )
+                      //           ],
+                      //         ),
+                      //       )
+                      //     : SizedBox.shrink(),
+                      // // SizedBox(
+                      // //   height:
+                      // //       getProportionateScreenHeight(kDefaultPadding / 4),
+                      // // ),
+                      // /////////Pridiction Started
+                      // Provider.of<ZMetaData>(context, listen: false).country ==
+                      //                 "Ethiopia" &&
+                      //             DateTime.now().isBefore(predictEnd) &&
+                      //             DateTime.now().isAfter(predictStart) &&
+                      //             services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'prediction'))
+                      //     ? SizedBox.shrink()
+                      //     : SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 4),
+                      //       ),
+                      // Provider.of<ZMetaData>(context, listen: false).country ==
+                      //                 "Ethiopia" &&
+                      //             DateTime.now().isBefore(predictEnd) &&
+                      //             DateTime.now().isAfter(predictStart) &&
+                      //             services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'prediction'))
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         child: Column(
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle: DateTime.now()
+                      //                             .isBefore(euroPredictEnd) &&
+                      //                         DateTime.now()
+                      //                             .isAfter(euroPredictStart)
+                      //                     ? "UEFA Euro 2024"
+                      //                     : "Predict ${DateTime.now().year % 100}/${(DateTime.now().year + 1) % 100}",
+                      //                 subTitle: " ",
+                      //               ),
                       //             ),
-                      //     ],
-                      //   ),
+                      //             CustomBanner(
+                      //               isNetworkImage:
+                      //                   isNetworkImage("prediction"),
+                      //               imageUrl: isNetworkImage("prediction")
+                      //                   ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("prediction")]['image_url']}"
+                      //                   : DateTime.now()
+                      //                               .isBefore(euroPredictEnd) &&
+                      //                           DateTime.now()
+                      //                               .isAfter(euroPredictStart)
+                      //                       ? 'images/pl_logos/game_banner.png'
+                      //                       : 'images/predict_pl.png',
+                      //               title: "Predict & Win",
+                      //               subtitle: "",
+                      //               press: () async {
+                      //                 Navigator.push(
+                      //                   context,
+                      //                   MaterialPageRoute(
+                      //                     builder: (context) =>
+                      //                         WorldCupScreen(),
+                      //                   ),
+                      //                 ).then((value) {
+                      //                   if (userData != null) {
+                      //                     _getPromotionalItems();
+                      //                     getUserOrderCount();
+                      //                     _doLocationTask();
+                      //                     getNearByMerchants();
+                      //                   }
+                      //                 });
+                      //               },
+                      //             )
+                      //           ],
+                      //         ),
+                      //       ),
+                      // /////////////// WORLD CUP/////////////////
+
+                      // services == null ||
+                      //         // services.length > 1 &&
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'lunch from home'))
+                      //     ? SizedBox.shrink()
+                      //     : SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 4),
+                      //       ),
+                      // services == null ||
+                      //         //  &&services.length > 1 &&
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'lunch from home'))
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         child: Column(
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle:
+                      //                     Provider.of<ZLanguage>(context)
+                      //                         .missingHome,
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             services != null && services.length > 1
+                      //                 ? CustomBanner(
+                      //                     isNetworkImage:
+                      //                         isNetworkImage("lunch from home"),
+                      //                     imageUrl: isNetworkImage(
+                      //                             "lunch from home")
+                      //                         ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("lunch from home")]['image_url']}"
+                      //                         : 'images/deal-of-the-day.png',
+                      //                     title: "Let us get your lunch from\n",
+                      //                     subtitle: "HOME",
+                      //                     press: () async {
+                      //                       Navigator.push(
+                      //                         context,
+                      //                         MaterialPageRoute(
+                      //                           builder: (context) =>
+                      //                               LunchHomeScreen(
+                      //                             curLat:
+                      //                                 Provider.of<ZMetaData>(
+                      //                                         context,
+                      //                                         listen: false)
+                      //                                     .latitude,
+                      //                             curLon:
+                      //                                 Provider.of<ZMetaData>(
+                      //                                         context,
+                      //                                         listen: false)
+                      //                                     .longitude,
+                      //                           ),
+                      //                         ),
+                      //                       ).then((value) {
+                      //                         if (userData != null) {
+                      //                           _getPromotionalItems();
+                      //                           getUserOrderCount();
+                      //                           _doLocationTask();
+                      //                           getNearByMerchants();
+                      //                         }
+                      //                       });
+                      //                     },
+                      //                   )
+                      //                 : SizedBox.shrink(),
+                      //           ],
+                      //         ),
+                      //       ),
+                      // SizedBox(
+                      //   height:
+                      //       getProportionateScreenHeight(kDefaultPadding / 4),
                       // ),
-                      services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'courier'))
-                          ? SizedBox.shrink()
-                          : SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4),
-                            ),
-                      services == null ||
-                              (services.isEmpty ||
-                                  !services.any((delivery) =>
-                                      delivery['delivery_name']
-                                          ?.toString()
-                                          .toLowerCase() ==
-                                      'event'))
-                          ? SizedBox.shrink()
-                          : Container(
-                              padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                              ),
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    child: SectionTitle(
-                                      sectionTitle:
-                                          Provider.of<ZLanguage>(context)
-                                              .discover,
-                                      subTitle: " ",
-                                    ),
-                                  ),
-                                  services != null
-                                      ? CustomBanner(
-                                          isNetworkImage:
-                                              isNetworkImage("event"),
-                                          imageUrl: isNetworkImage("event")
-                                              ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("event")]['image_url']}"
-                                              : 'images/events.png',
-                                          title: "",
-                                          subtitle: "EVENTS",
-                                          press: () async {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EventsScreen(),
-                                              ),
-                                            ).then((value) {
-                                              if (userData != null) {
-                                                _getPromotionalItems();
-                                                getUserOrderCount();
-                                                _doLocationTask();
-                                                getNearByMerchants();
-                                              }
-                                            });
+                      ///////////////courier section///////////////
+                      // services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'courier'))
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         child: Column(
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle:
+                      //                     Provider.of<ZLanguage>(context)
+                      //                         .thinkingOf,
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             services != null
+                      //                 ? CustomBanner(
+                      //                     isNetworkImage:
+                      //                         isNetworkImage("courier"),
+                      //                     imageUrl: isNetworkImage("courier")
+                      //                         ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("courier")]['image_url']}"
+                      //                         : 'images/courier_delivery.png',
+                      //                     title: "Send and receive with\n",
+                      //                     subtitle: "COURIER",
+                      //                     press: () async {
+                      //                       Navigator.push(
+                      //                         context,
+                      //                         MaterialPageRoute(
+                      //                           builder: (context) =>
+                      //                               CourierScreen(
+                      //                             curLat:
+                      //                                 Provider.of<ZMetaData>(
+                      //                                         context,
+                      //                                         listen: false)
+                      //                                     .latitude,
+                      //                             curLon:
+                      //                                 Provider.of<ZMetaData>(
+                      //                                         context,
+                      //                                         listen: false)
+                      //                                     .longitude,
+                      //                           ),
+                      //                         ),
+                      //                       ).then((value) {
+                      //                         if (userData != null) {
+                      //                           _getPromotionalItems();
+                      //                           getUserOrderCount();
+                      //                           _doLocationTask();
+                      //                           getNearByMerchants();
+                      //                         }
+                      //                       });
+                      //                     },
+                      //                   )
+                      //                 : SizedBox.shrink(),
+                      //           ],
+                      //         ),
+                      //       ),
+                      // // services != null
+                      // //     ? SizedBox(
+                      // //         height: getProportionateScreenHeight(
+                      // //             kDefaultPadding / 4),
+                      // //       )
+                      // //     : Container(),
+                      // // Container(
+                      // //   padding: EdgeInsets.only(
+                      // //     bottom: getProportionateScreenHeight(
+                      // //         kDefaultPadding / 2),
+                      // //   ),
+                      // //   decoration: BoxDecoration(
+                      // //     color: kPrimaryColor,
+                      // //   ),
+                      // //   child: Column(
+                      // //     children: [
+                      // //       Padding(
+                      // //         padding: EdgeInsets.symmetric(
+                      // //           horizontal: getProportionateScreenWidth(
+                      // //               kDefaultPadding),
+                      // //         ),
+                      // //         child: SectionTitle(
+                      // //           sectionTitle: Provider.of<ZLanguage>(context)
+                      // //               .yourFavorites,
+                      // //           subTitle: " ",
+                      // //         ),
+                      // //       ),
+                      // //       // SizedBox(
+                      // //       //   height:
+                      // //       //       getProportionateScreenHeight(kDefaultPadding / 2),
+                      // //       // ),
+                      // //       userData != null
+                      // //           ? Container(
+                      // //               height: getProportionateScreenHeight(
+                      // //                   kDefaultPadding * 10),
+                      // //               width: double.infinity,
+                      // //               padding: EdgeInsets.only(
+                      // //                 right: getProportionateScreenWidth(
+                      // //                     kDefaultPadding / 2),
+                      // //               ),
+                      // //               child: FavoritesScreen(
+                      // //                 controller: controller,
+                      // //                 latitude: Provider.of<ZMetaData>(context, listen: false).latitude,
+                      // //                 longitude: Provider.of<ZMetaData>(context, listen: false).longitude,
+                      // //               ),
+                      // //             )
+                      // //           : Container(
+                      // //               height: getProportionateScreenHeight(
+                      // //                   kDefaultPadding * 6),
+                      // //               child: Center(
+                      // //                 child: Padding(
+                      // //                   padding: EdgeInsets.symmetric(
+                      // //                     horizontal:
+                      // //                         getProportionateScreenWidth(
+                      // //                             kDefaultPadding),
+                      // //                   ),
+                      // //                   child: Text(
+                      // //                     "Please login to add all of your favorites...",
+                      // //                     textAlign: TextAlign.center,
+                      // //                   ),
+                      // //                 ),
+                      // //               ),
+                      // //             ),
+                      // //     ],
+                      // //   ),
+                      // // ),
+                      // services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'courier'))
+                      //     ? SizedBox.shrink()
+                      //     : SizedBox(
+                      //         height: getProportionateScreenHeight(
+                      //             kDefaultPadding / 4),
+                      //       ),
+                      // services == null ||
+                      //         (services.isEmpty ||
+                      //             !services.any((delivery) =>
+                      //                 delivery['delivery_name']
+                      //                     ?.toString()
+                      //                     .toLowerCase() ==
+                      //                 'event'))
+                      //     ? SizedBox.shrink()
+                      //     : Container(
+                      //         padding: EdgeInsets.only(
+                      //             bottom: getProportionateScreenHeight(
+                      //                 kDefaultPadding / 2)),
+                      //         decoration: BoxDecoration(
+                      //           color: kPrimaryColor,
+                      //         ),
+                      //         child: Column(
+                      //           children: [
+                      //             Padding(
+                      //               padding: EdgeInsets.symmetric(
+                      //                 horizontal: getProportionateScreenWidth(
+                      //                     kDefaultPadding),
+                      //               ),
+                      //               child: SectionTitle(
+                      //                 sectionTitle:
+                      //                     Provider.of<ZLanguage>(context)
+                      //                         .discover,
+                      //                 subTitle: " ",
+                      //               ),
+                      //             ),
+                      //             services != null
+                      //                 ? CustomBanner(
+                      //                     isNetworkImage:
+                      //                         isNetworkImage("event"),
+                      //                     imageUrl: isNetworkImage("event")
+                      //                         ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[getServiceIndex("event")]['image_url']}"
+                      //                         : 'images/events.png',
+                      //                     title: "",
+                      //                     subtitle: "EVENTS",
+                      //                     press: () async {
+                      //                       Navigator.push(
+                      //                         context,
+                      //                         MaterialPageRoute(
+                      //                           builder: (context) =>
+                      //                               EventsScreen(),
+                      //                         ),
+                      //                       ).then((value) {
+                      //                         if (userData != null) {
+                      //                           _getPromotionalItems();
+                      //                           getUserOrderCount();
+                      //                           _doLocationTask();
+                      //                           getNearByMerchants();
+                      //                         }
+                      //                       });
 
-                                            // ScaffoldMessenger.of(context)
-                                            //     .showSnackBar(Service.showMessage(
-                                            //         "COMING SOON", false,
-                                            //         duration: 5));
-                                          },
-                                        )
-                                      : SizedBox.shrink(),
-                                ],
-                              ),
-                            ),
+                      //                       // ScaffoldMessenger.of(context)
+                      //                       //     .showSnackBar(Service.showMessage(
+                      //                       //         "COMING SOON", false,
+                      //                       //         duration: 5));
+                      //                     },
+                      //                   )
+                      //                 : SizedBox.shrink(),
+                      //           ],
+                      //         ),
+                      //       ),
 
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
+                      // SizedBox(
+                      //   height:
+                      //       getProportionateScreenHeight(kDefaultPadding / 2),
+                      // ),
                     ],
                   ),
                 )
@@ -2592,7 +2988,7 @@ class _HomeBodyState extends State<HomeBody> {
                           CustomButton(
                             title: "Retry",
                             press: () {
-                              print("Retry...");
+                              debugPrint("Retry...");
                               getNearByMerchants();
                             },
                             color: kSecondaryColor,
@@ -2644,7 +3040,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         _loading = false;
       });
@@ -2695,7 +3091,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         _loading = false;
       });
@@ -2750,7 +3146,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -2799,7 +3195,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -2857,7 +3253,7 @@ class _HomeBodyState extends State<HomeBody> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

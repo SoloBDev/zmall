@@ -10,6 +10,7 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
+import 'package:zmall/kifiya/components/addis_pay.dart';
 import 'package:zmall/kifiya/components/amole_screen.dart';
 import 'package:zmall/kifiya/components/cbe_ussd.dart';
 import 'package:zmall/kifiya/components/chapa_screen.dart';
@@ -26,6 +27,7 @@ import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/product/product_screen.dart';
+import 'package:zmall/random_digits.dart';
 import 'package:zmall/report/report_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
@@ -36,19 +38,21 @@ class KifiyaScreen extends StatefulWidget {
   static String routeName = '/kifiya';
 
   const KifiyaScreen({
-    @required this.price,
-    @required this.orderPaymentId,
-    @required this.orderPaymentUniqueId,
-    this.isCourier = false,
     this.vehicleId,
     this.onlyCashless = false,
+    @required this.price,
+    this.isCourier = false,
+    @required this.orderPaymentId,
+    @required this.orderPaymentUniqueId,
+    this.userpickupWithSchedule,
   });
   final double? price;
-  final String? orderPaymentId;
-  final String? orderPaymentUniqueId;
   final bool? isCourier;
   final String? vehicleId;
   final bool? onlyCashless;
+  final String? orderPaymentId;
+  final String? orderPaymentUniqueId;
+  final bool? userpickupWithSchedule;
 
   @override
   _KifiyaScreenState createState() => _KifiyaScreenState();
@@ -275,7 +279,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         _placeOrder = false;
       });
       await Future.delayed(Duration(seconds: 2));
-      if (paymentResponse['error_code'] == 999) {
+      if (paymentResponse['error_code'] != null &&
+          paymentResponse['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -532,24 +537,34 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                     children: [
                       Text(
                         "${Provider.of<ZLanguage>(context).howWouldYouPay} ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)}?",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w600),
+                        // Theme.of(context)
+                        //     .textTheme
+                        //     .titleLarge
+                        //     ?.copyWith(fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      CategoryContainer(
-                          title: Provider.of<ZLanguage>(context).balance),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2)),
+                      // CategoryContainer(
+                      //     title: Provider.of<ZLanguage>(context).balance),
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2)),
                       Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 3),
+                        // height:
+                        //     getProportionateScreenHeight(kDefaultPadding * 4),
                         width: double.infinity,
+                        padding: EdgeInsets.symmetric(
+                            horizontal:
+                                getProportionateScreenWidth(kDefaultPadding),
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
+                        margin: EdgeInsets.symmetric(
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
                         decoration: BoxDecoration(
                           color: kPrimaryColor,
                           border: Border.all(
@@ -559,18 +574,28 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                           ),
                         ),
                         child: Center(
-                          child: Text(
-                            "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                          child: Column(
+                            children: [
+                              Text(
+                                "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                Provider.of<ZLanguage>(context).balance,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: kGreyColor),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2)),
                       Text(Provider.of<ZLanguage>(context).addFundsInfo),
                       SizedBox(
                         height: getProportionateScreenHeight(kDefaultPadding),
@@ -609,79 +634,82 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                           ),
                           itemCount: paymentResponse['payment_gateway'].length,
                           itemBuilder: (BuildContext ctx, index) {
+                            String paymentName =
+                                paymentResponse['payment_gateway'][index]
+                                        ['name']
+                                    .toString()
+                                    .toLowerCase();
                             return KifiyaMethodContainer(
                                 selected: kifiyaMethod == index,
-                                imagePath: paymentResponse['payment_gateway']
-                                                [index]['name']
-                                            .toString()
-                                            .toLowerCase() ==
-                                        "wallet"
+                                title:
+                                    Service.capitalizeFirstLetters(paymentName),
+                                // .toUpperCase(),
+                                kifiyaMethod: kifiyaMethod,
+                                imagePath: paymentName == "wallet"
                                     ? 'images/wallet.png'
-                                    : paymentResponse['payment_gateway'][index]
-                                                    ['name']
-                                                .toString()
-                                                .toLowerCase() ==
-                                            "cash"
+                                    : paymentName == "cash"
                                         ? 'images/cod.png'
 
                                         ///******************"dashen mastercard"***********************
-                                        : paymentResponse['payment_gateway']
-                                                        [index]['name']
-                                                    .toString()
-                                                    .toLowerCase() ==
-                                                "dashen mastercard"
+                                        : paymentName == "dashen mastercard"
                                             ? 'images/dashenmpgs.png'
 
-                                            ///******************"dashen mastercard"***********************
-                                            ///
-                                            ///
-                                            ///******************MOMO***********************
-                                            // /* : paymentResponse['payment_gateway']
+                                            ///******************Telebirr InApp***********************
+                                            // : paymentResponse['payment_gateway']
                                             //                 [index]['name']
                                             //             .toString()
                                             //             .toLowerCase() ==
-                                            //         "momo"
-                                            //     ? 'images/momo.png'
-                                            ///******************MOMO***********************
-                                            : paymentResponse['payment_gateway']
-                                                            [index]['name']
-                                                        .toString()
-                                                        .toLowerCase() ==
-                                                    "santimpay"
-                                                ? 'images/santim.png'
-                                                : paymentResponse['payment_gateway']
-                                                                [index]['name']
-                                                            .toString()
-                                                            .toLowerCase() ==
-                                                        "etta card"
-                                                    ? 'images/dashen.png'
-                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "cbe birr"
-                                                        ? 'images/cbebirr.png'
-                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "ethswitch"
-                                                            ? 'images/ethswitch.png'
-                                                            : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "chapa"
-                                                                ? 'images/chapa.png'
-                                                                : paymentResponse['payment_gateway'][index]['name'] == "Amole"
-                                                                    ? 'images/amole.png'
-                                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "boa"
-                                                                        ? 'images/boa.png'
-                                                                        : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "zemen"
-                                                                            ? 'images/zemen.png'
-                                                                            : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "awash"
-                                                                                ? 'images/awash.png'
-                                                                                : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "etta card"
-                                                                                    ? 'images/zmall.jpg'
-                                                                                    : paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "dashen"
-                                                                                        ? 'images/dashen.png'
-                                                                                        : 'images/telebirr.png',
-                                title: paymentResponse['payment_gateway'][index]['description'].toString().toUpperCase(),
-                                kifiyaMethod: kifiyaMethod,
+                                            //         "telebirr inapp"
+                                            //     ? 'images/telebirr.png'
+                                            ///******************Addis Pay***********************
+                                            : paymentName == "addis pay"
+                                                ? 'images/addispay.png'
+
+                                                ///******************MOMO***********************
+                                                // /* : paymentResponse['payment_gateway']
+                                                //                 [index]['name']
+                                                //             .toString()
+                                                //             .toLowerCase() ==
+                                                //         "momo"
+                                                //     ? 'images/momo.png'
+                                                ///******************MOMO***********************
+                                                : paymentName == "santimpay"
+                                                    ? 'images/santim.png'
+                                                    : paymentName == "etta card"
+                                                        ? 'images/dashen.png'
+                                                        : paymentName ==
+                                                                "cbe birr"
+                                                            ? 'images/cbebirr.png'
+                                                            : paymentName ==
+                                                                    "ethswitch"
+                                                                ? 'images/ethswitch.png'
+                                                                : paymentName ==
+                                                                        "chapa"
+                                                                    ? 'images/chapa.png'
+                                                                    : paymentName ==
+                                                                            "amole"
+                                                                        ? 'images/amole.png'
+                                                                        : paymentName ==
+                                                                                "boa"
+                                                                            ? 'images/boa.png'
+                                                                            : paymentName == "zemen"
+                                                                                ? 'images/zemen.png'
+                                                                                : paymentName == "awash"
+                                                                                    ? 'images/awash.png'
+                                                                                    : paymentName == "etta card"
+                                                                                        ? 'images/zmall.jpg'
+                                                                                        : paymentName == "dashen"
+                                                                                            ? 'images/dashen.png'
+                                                                                            : paymentName.contains("telebirr") || paymentName.contains("tele birr")
+                                                                                                ? 'images/telebirr.png'
+                                                                                                : '',
+                                // 'images/telebirr.png',
+
                                 press: () async {
                                   setState(() {
                                     kifiyaMethod = index;
                                   });
-                                  if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() ==
-                                      "cash") {
+                                  if (paymentName == "cash") {
                                     if (widget.onlyCashless!) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -699,11 +727,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     } else {
                                       await useBorsa();
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "wallet") {
+                                  } else if (paymentName == "wallet") {
                                     if (widget.onlyCashless! &&
                                         paymentResponse != null &&
                                         paymentResponse['wallet'] <
@@ -722,10 +746,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     } else {
                                       await useBorsa();
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
+                                  } else if (paymentName ==
                                       "telebirr reference") {
                                     var data = await useBorsa();
                                     if (data['success']) {
@@ -817,11 +838,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             );
                                           });
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "boa") {
+                                  } else if (paymentName == "boa") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       setState(() {
@@ -845,11 +862,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               "Something went wrong! Please try again!",
                                               true));
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "amole") {
+                                  } else if (paymentName == "amole") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       Navigator.push(
@@ -878,11 +891,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "ethswitch") {
+                                  } else if (paymentName == "ethswitch") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -964,11 +973,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "etta card") {
+                                  } else if (paymentName == "etta card") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1045,11 +1050,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "santimpay") {
+                                  } else if (paymentName == "santimpay") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1128,7 +1129,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "chapa") {
+                                  } else if (paymentName == "chapa") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1206,7 +1207,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "cbe birr") {
+                                  } else if (paymentName == "cbe birr") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1282,15 +1283,15 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway'][index]['name'].toString().toLowerCase() == "tele birr") {
+                                  } else if (paymentName == "tele birr") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
                                           context: context,
                                           builder: (dialogContext) {
                                             return AlertDialog(
-                                              title:
-                                                  Text("Pay Using Tele Birr"),
+                                              title: Text(
+                                                  "Pay Using TeleBirr USSD"),
                                               content: Text(
                                                   "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Telebirr?"),
                                               actions: [
@@ -1316,8 +1317,15 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         color: kBlackColor),
                                                   ),
                                                   onPressed: () {
-                                                    Navigator.of(dialogContext)
-                                                        .pop();
+                                                    var uniqueId =
+                                                        RandomDigits.getString(
+                                                            6);
+                                                    String uniqueIdString = '';
+                                                    Navigator.of(context).pop();
+
+                                                    setState(() {
+                                                      uniqueIdString = uniqueId;
+                                                    });
 
                                                     Navigator.push(
                                                       context,
@@ -1336,8 +1344,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
                                                             hisab:
                                                                 widget.price!,
-                                                            traceNo: widget
-                                                                .orderPaymentUniqueId!,
+                                                            traceNo:
+                                                                "${uniqueIdString}_${widget.orderPaymentUniqueId!}",
+                                                            // widget.orderPaymentUniqueId!,
                                                             phone:
                                                                 userData['user']
                                                                     ['phone'],
@@ -1366,11 +1375,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                   }
 
                                   ///**************************Dashen mastercard***************************************
-                                  else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "dashen mastercard") {
+                                  else if (paymentName == "dashen mastercard") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1452,11 +1457,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                   ///
                                   ///**************************Telebirr InApp***************************************
 
-                                  else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "telebirr inapp") {
+                                  else if (paymentName == "telebirr inapp") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1555,6 +1556,96 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                   ///*******************************Telebirr InApp*******************************
                                   ///
                                   ///
+                                  ///*******************************Addis Pay*******************************
+                                  else if (paymentName == "addis pay") {
+                                    var data = await useBorsa();
+                                    if (data != null && data['success']) {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text("Pay Using AddisPay"),
+                                              content: Text(
+                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Addis Pay?"),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cancel,
+                                                    style: TextStyle(
+                                                        color: kSecondaryColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: Text(
+                                                    Provider.of<ZLanguage>(
+                                                            context)
+                                                        .cont,
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                  ),
+                                                  onPressed: () {
+                                                    var uniqueId =
+                                                        RandomDigits.getString(
+                                                            6);
+                                                    String uniqueIdString = '';
+                                                    Navigator.of(context).pop();
+
+                                                    setState(() {
+                                                      uniqueIdString = uniqueId;
+                                                    });
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) {
+                                                          return AddisPay(
+                                                            url:
+                                                                "https://pgw.shekla.app/addispay/api/checkout",
+                                                            amount:
+                                                                widget.price!,
+                                                            traceNo:
+                                                                "${widget.orderPaymentUniqueId!}_${uniqueIdString}",
+                                                            phone:
+                                                                userData['user']
+                                                                    ['phone'],
+                                                            firstName: userData[
+                                                                    'user']
+                                                                ["first_name"],
+                                                            lastName: userData[
+                                                                    'user']
+                                                                ["last_name"],
+                                                            email:
+                                                                userData['user']
+                                                                    ["email"],
+                                                          );
+                                                        },
+                                                      ),
+                                                    ).then((value) {
+                                                      _boaVerify();
+                                                    });
+                                                  },
+                                                )
+                                              ],
+                                            );
+                                          });
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "Something went wrong! Please try again!",
+                                              true));
+                                      setState(() {
+                                        kifiyaMethod = -1;
+                                      });
+                                    }
+                                  }
+
+                                  ///*******************************Addis Pay*******************************
+                                  ///
+                                  ///
                                   ///**************************MoMo***************************************
 
                                   //    else if (paymentResponse['payment_gateway']
@@ -1640,11 +1731,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
                                   ///*******************************MoMo*******************************
 
-                                  else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "zemen") {
+                                  else if (paymentName == "zemen") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1723,11 +1810,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                         kifiyaMethod = -1;
                                       });
                                     }
-                                  } else if (paymentResponse['payment_gateway']
-                                              [index]['name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "dashen") {
+                                  } else if (paymentName == "dashen") {
                                     var data = await useBorsa();
                                     if (data != null && data['success']) {
                                       showDialog(
@@ -1845,12 +1928,14 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       "city_id": Provider.of<ZMetaData>(context, listen: false).cityId,
       "server_token": userData['user']['server_token'],
       "store_delivery_id": widget.orderPaymentId,
+      "is_user_pickup_with_schedule": widget.userpickupWithSchedule,
       "vehicleId": widget.vehicleId,
       "device_type": deviceType
       // "device_type": "android",
       // "device_type": 'iOS',
     };
     var body = json.encode(data);
+    // debugPrint("kbody $body");
     try {
       http.Response response = await http
           .post(

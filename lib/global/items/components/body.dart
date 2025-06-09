@@ -471,7 +471,7 @@ class _BodyState extends State<Body> {
                                             selected.add(specItem);
                                           });
                                         } catch (e) {
-                                          print(e);
+                                          // print(e);
                                           setState(() {
                                             spec.list!.add(specItem);
                                             selected.add(specItem);

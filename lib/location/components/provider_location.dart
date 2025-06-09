@@ -85,7 +85,6 @@ class _ProviderLocationState extends State<ProviderLocation> {
 
   void updateMarkerAndCircle(LatLng latLng, Uint8List imageData) async {
     this.setState(() {
-
       marker = Marker(
         markerId: MarkerId("provider"),
         position: latLng,
@@ -138,7 +137,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
       }
       await Future.delayed(Duration(seconds: 6), () => getCurrentLocation());
     } on PlatformException catch (e) {
-      print(e);
+      // print(e);
       await Future.delayed(Duration(seconds: 10), () => getCurrentLocation());
     }
   }
@@ -264,7 +263,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

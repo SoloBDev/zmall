@@ -18,6 +18,7 @@ class ZLanguage extends ChangeNotifier {
   String nearbyStores = "Nearby Stores";
   String whatWould = "What would you like to order?";
   String missingHome = "Missing Home?";
+  String predictAndwin = "Predict & Win";
   String thinkingOf = "Thinking of sending anything?";
   String yourFavorites = "Your Favorites";
   String discover = "Discover";
@@ -48,7 +49,8 @@ class ZLanguage extends ChangeNotifier {
   String busy = "Busy";
   String kmAway = "KM away";
   String filter = "Filter";
-  String searchEngine = "Hi I'm Punjib Z-Search Engine";
+  // String searchEngine = "Hi I'm Punjib Z-Search Engine";
+  String searchEngine = "Hi I'm Z-Search Engine";
   String whatShould = "What should i search for you?";
   String nothingFound = "Nothing found";
   String tryAgain = "Please try again with a different item";
@@ -76,7 +78,8 @@ class ZLanguage extends ChangeNotifier {
   String deliveryDetails = "Delivery Details";
   String name = "Name";
   String phone = "Phone";
-  String farDeliveryLocation = "You're a little too far from the store. Please choose a different delivery option or order from a store closer to your location.";
+  String farDeliveryLocation =
+      "You're a little too far from the store. Please choose a different delivery option or order from a store closer to your location.";
   String changeDetails = "Change Details";
   String orderForOthers = "Order For Others";
   String receiverPhone = "Receiver Phone";
@@ -136,7 +139,8 @@ class ZLanguage extends ChangeNotifier {
   String orderDetails = "Order Details";
   String enjoyingZmall = "Are you enjoying ZMall?";
   String rateUs = "Rate Us";
-  String rateReviewBlock = "Your review helps spread the word and grow our ZMall Community. Whether you love us or feel like we can do better we want to know!";
+  String rateReviewBlock =
+      "Your review helps spread the word and grow our ZMall Community. Whether you love us or feel like we can do better we want to know!";
   String totalServicePrive = "Total Service Price";
   String cartPrice = "Cart Price";
   String totalCartPrice = "Total Cart Price";
@@ -146,11 +150,6 @@ class ZLanguage extends ChangeNotifier {
   String promo = "Promo";
   String totalPromo = "Total Promo";
   String quantity = "Quantity";
-
-
-
-
-
 
   void changeLanguage(String newString) {
     print("Setting language to $newString");
@@ -171,6 +170,7 @@ class ZLanguage extends ChangeNotifier {
       nearbyStores = "Nearby Stores";
       whatWould = "What would you like to order?";
       missingHome = "Missing Home?";
+      predictAndwin = "Predict & Win";
       thinkingOf = "Thinking of sending anything?";
       yourFavorites = "Your Favorites";
       discover = "Discover";
@@ -193,7 +193,8 @@ class ZLanguage extends ChangeNotifier {
       logout = "Logout";
 
       filter = "Filter";
-      searchEngine = "Hi I'm Punjib Z-Search Engine";
+      // searchEngine = "Hi I'm Punjib Z-Search Engine";
+      searchEngine = "Hi I'm Z-Search Engine";
       whatShould = "What should i search for you?";
       nothingFound = "Nothing found";
       tryAgain = "Please try again with a different item";
@@ -225,7 +226,8 @@ class ZLanguage extends ChangeNotifier {
       deliveryDetails = "Delivery Details";
       name = "Name";
       phone = "Phone";
-      farDeliveryLocation = "You're a little too far from the store. Please choose a different delivery option or order from a store closer to your location.";
+      farDeliveryLocation =
+          "You're a little too far from the store. Please choose a different delivery option or order from a store closer to your location.";
       changeDetails = "Change Details";
       orderForOthers = "Order For Others";
       receiverPhone = "Receiver Phone";
@@ -289,7 +291,8 @@ class ZLanguage extends ChangeNotifier {
       orderDetails = "Order Details";
       enjoyingZmall = "Are you enjoying ZMall?";
       rateUs = "Rate Us";
-      rateReviewBlock = "Your review helps spread the word and grow our ZMall Community. Whether you love us or feel like we can do better we want to know!";
+      rateReviewBlock =
+          "Your review helps spread the word and grow our ZMall Community. Whether you love us or feel like we can do better we want to know!";
       totalServicePrive = "Total Service Price";
       cartPrice = "Cart Price";
       totalCartPrice = "Total Cart Price";

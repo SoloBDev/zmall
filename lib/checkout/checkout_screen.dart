@@ -270,14 +270,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             padding: EdgeInsets.symmetric(
                 horizontal: getProportionateScreenWidth(kDefaultPadding)),
             child: Column(
+              spacing: getProportionateScreenHeight(kDefaultPadding / 1.5),
               children: [
-                SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
-                CustomTag(
-                    color: kSecondaryColor,
-                    text: Provider.of<ZLanguage>(context).deliveryOptions),
                 Container(
                   width: double.infinity,
+                  margin: EdgeInsets.only(
+                      top: getProportionateScreenHeight(kDefaultPadding / 2)),
                   decoration: BoxDecoration(
                     color: kPrimaryColor,
                     borderRadius: BorderRadius.circular(
@@ -286,10 +284,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     boxShadow: [boxShadow],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(
-                        getProportionateScreenWidth(kDefaultPadding / 2)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        vertical:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        CustomTag(
+                            color: kSecondaryColor,
+                            text: Provider.of<ZLanguage>(context)
+                                .deliveryOptions),
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
                         cart!.isLaundryService
                             ? Container()
                             : CheckboxListTile(
@@ -385,10 +394,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       ),
                                     ),
                                     style: ButtonStyle(
-                                      elevation: MaterialStateProperty.all(1.0),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              kPrimaryColor),
+                                      elevation: WidgetStateProperty.all(1.0),
+                                      backgroundColor: WidgetStateProperty.all(
+                                          kPrimaryColor),
                                     ),
                                     onPressed: () async {
                                       DateTime _now = DateTime.now();
@@ -552,11 +560,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
-                CustomTag(
-                    color: kSecondaryColor,
-                    text: Provider.of<ZLanguage>(context).deliveryDetails),
+                /////delivery details section//////
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -567,10 +571,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     boxShadow: [boxShadow],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(
-                        getProportionateScreenHeight(kDefaultPadding)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding / 1.5),
+                        vertical: getProportionateScreenHeight(
+                            kDefaultPadding / 1.5)),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        CustomTag(
+                            color: kSecondaryColor,
+                            text: Provider.of<ZLanguage>(context)
+                                .deliveryDetails),
+                        SizedBox(
+                            height:
+                                getProportionateScreenHeight(kDefaultPadding)),
                         DetailsRow(
                           title: Provider.of<ZLanguage>(context).name,
                           subtitle: widget.receiverName.isNotEmpty &&
@@ -602,18 +617,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               ? "${cart!.destinationAddress?.name?.split(',')[0]}"
                               : "",
                         ),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
-                CustomTag(
-                    color: kSecondaryColor,
-                    text: Provider.of<ZLanguage>(context).orderDetail),
+
+                //////Order details section//////
                 responseData != null && responseData['success']
                     ? Container(
                         width: double.infinity,
@@ -625,10 +634,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           boxShadow: [boxShadow],
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(
-                              getProportionateScreenHeight(kDefaultPadding)),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 1.5),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 1.5)),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              CustomTag(
+                                  color: kSecondaryColor,
+                                  text: Provider.of<ZLanguage>(context)
+                                      .orderDetail),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding)),
                               DetailsRow(
                                 title: Provider.of<ZLanguage>(context)
                                     .servicePrice,
@@ -666,14 +686,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               ),
                               SizedBox(
                                   height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
+                                      kDefaultPadding / 3)),
                               aliexpressCart != null &&
                                       aliexpressCart!.cart.storeId ==
                                           cart!.storeId
                                   ? SizedBox.shrink()
-                                  : Text(
-                                      Provider.of<ZLanguage>(context).orderTime,
-                                      textAlign: TextAlign.center,
+                                  : Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        Provider.of<ZLanguage>(context)
+                                            .orderTime,
+                                      ),
                                     ),
 
                               _etaLow == null ||
@@ -681,30 +705,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                           aliexpressCart!.cart.storeId ==
                                               cart!.storeId)
                                   ? SizedBox.shrink()
-                                  : Text(
-                                      "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.w700),
+                                  : Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                               // : Container(),
                               SizedBox(
                                   height: getProportionateScreenHeight(
                                       kDefaultPadding / 2)),
                               Center(
-                                child: Column(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      Provider.of<ZLanguage>(context).total,
+                                      "${Provider.of<ZLanguage>(context).total} :",
                                       style: TextStyle(
                                         fontSize: getProportionateScreenWidth(
                                             kDefaultPadding * .7),
                                       ),
                                     ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
+                                        width: getProportionateScreenHeight(
                                             kDefaultPadding / 3)),
                                     Text(
                                       promoCodeApplied
@@ -719,6 +747,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ],
                                 ),
                               ),
+                              // Center(
+                              //   child: Column(
+                              //     children: [
+                              //       Text(
+                              //         Provider.of<ZLanguage>(context).total,
+                              //         style: TextStyle(
+                              //           fontSize: getProportionateScreenWidth(
+                              //               kDefaultPadding * .7),
+                              //         ),
+                              //       ),
+                              //       SizedBox(
+                              //           height: getProportionateScreenHeight(
+                              //               kDefaultPadding / 3)),
+                              //       Text(
+                              //         promoCodeApplied
+                              //             ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
+                              //             : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
+                              //         style: Theme.of(context)
+                              //             .textTheme
+                              //             .headlineSmall
+                              //             ?.copyWith(
+                              //                 fontWeight: FontWeight.bold),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                               ////////////promo code and tip
                               Row(
                                 mainAxisAlignment:
@@ -1177,7 +1231,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               ),
                             ),
                           ),
-                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                // SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
                 _placeOrder
                     ? SpinKitWave(
                         color: kSecondaryColor,
@@ -1193,25 +1247,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 MaterialPageRoute(
                                   builder: (context) {
                                     return KifiyaScreen(
-                                        price: promoCodeApplied
-                                            ? promoCodeData['order_payment']
-                                                    ['user_pay_payment']
-                                                .toDouble()
-                                            : responseData['order_payment']
-                                                    ['user_pay_payment']
-                                                .toDouble(),
-                                        orderPaymentId:
-                                            responseData['order_payment']
-                                                ['_id'],
-                                        orderPaymentUniqueId:
-                                            responseData['order_payment']
-                                                    ['unique_id']
-                                                .toString(),
-                                        onlyCashless: onlyCashless,
-                                        vehicleId: responseData['vehicles'][0]
-                                            ['_id']
-                                        // vehicleId: '',
-                                        );
+                                      price: promoCodeApplied
+                                          ? promoCodeData['order_payment']
+                                                  ['user_pay_payment']
+                                              .toDouble()
+                                          : responseData['order_payment']
+                                                  ['user_pay_payment']
+                                              .toDouble(),
+                                      orderPaymentId:
+                                          responseData['order_payment']['_id'],
+                                      orderPaymentUniqueId:
+                                          responseData['order_payment']
+                                                  ['unique_id']
+                                              .toString(),
+                                      onlyCashless: onlyCashless,
+                                      vehicleId: responseData['vehicles'][0]
+                                          ['_id'],
+                                      userpickupWithSchedule:
+                                          cart!.isSchedule && selfPickup
+                                              ? true
+                                              : false,
+                                    );
                                   },
                                 ),
                               );
@@ -1230,34 +1286,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               MaterialPageRoute(
                                 builder: (context) {
                                   return KifiyaScreen(
-                                      price: promoCodeApplied
-                                          ? promoCodeData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble()
-                                          : responseData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble(),
-                                      orderPaymentId:
-                                          responseData['order_payment']['_id'],
-                                      orderPaymentUniqueId:
-                                          responseData['order_payment']
-                                                  ['unique_id']
-                                              .toString(),
-                                      onlyCashless: onlyCashless != null
-                                          ? onlyCashless
-                                          : selfPickup
-                                              ? true
-                                              : false,
-                                      // onlyCashless!
-                                      //     ? onlyCashless
-                                      //     : selfPickup
-                                      //         ? true
-                                      //         : false,
-                                      vehicleId: responseData['vehicles'][0]
-                                          ['_id']
-                                      // vehicleId: '',
+                                    price: promoCodeApplied
+                                        ? promoCodeData['order_payment']
+                                                ['user_pay_payment']
+                                            .toDouble()
+                                        : responseData['order_payment']
+                                                ['user_pay_payment']
+                                            .toDouble(),
+                                    orderPaymentId:
+                                        responseData['order_payment']['_id'],
+                                    orderPaymentUniqueId:
+                                        responseData['order_payment']
+                                                ['unique_id']
+                                            .toString(),
+                                    onlyCashless: (onlyCashless ??
+                                            false) ////new, safest way of old method
+                                        ? true
+                                        : (selfPickup ? true : false),
 
-                                      );
+                                    // onlyCashless: onlyCashless!  //old
+                                    //     ? onlyCashless
+                                    //     : selfPickup
+                                    //         ? true
+                                    //         : false,
+                                    vehicleId: responseData['vehicles'][0]
+                                        ['_id'],
+                                    userpickupWithSchedule:
+                                        cart!.isSchedule && selfPickup
+                                            ? true
+                                            : false,
+                                  );
                                 },
                               ),
                             );

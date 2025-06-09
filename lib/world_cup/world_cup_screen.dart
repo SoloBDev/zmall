@@ -8,6 +8,7 @@ import 'package:zmall/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/store/components/image_container.dart';
 import 'package:zmall/widgets/custom_tag.dart';
 import 'package:zmall/world_cup/predict_screen.dart';
 
@@ -189,12 +190,20 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                   borderRadius:
                                       BorderRadius.circular(kDefaultPadding),
                                   image: DecorationImage(
-                                    image: AssetImage(DateTime.now()
-                                                .isBefore(euroPredictEnd) &&
-                                            DateTime.now()
-                                                .isAfter(euroPredictStart)
-                                        ? "images/pl_logos/banner.png"
-                                        : "images/pl_logos/pl_bg_dr.png"),
+                                    image:
+                                        games[index]['game_banner'] != null &&
+                                                games[index]['game_banner']
+                                                    .isNotEmpty
+                                            ? NetworkImage(
+                                                games[index]['game_banner'])
+                                            : AssetImage(
+                                                DateTime.now().isBefore(
+                                                            euroPredictEnd) &&
+                                                        DateTime.now().isAfter(
+                                                            euroPredictStart)
+                                                    ? "images/pl_logos/banner.png"
+                                                    : "images/pl_logos/pl_bg_dr.png",
+                                              ),
                                     fit: BoxFit.fill,
                                   ),
                                 ),
@@ -217,7 +226,13 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                             Expanded(
                                               child: Column(
                                                 children: [
-                                                  Container(
+                                                  ImageContainer(
+                                                    shape: BoxShape.rectangle,
+                                                    url: games[index][
+                                                            'home_team_logo'] ??
+                                                        '',
+                                                    errorUrl:
+                                                        "images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png",
                                                     height:
                                                         getProportionateScreenHeight(
                                                             kDefaultPadding *
@@ -226,20 +241,43 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                         getProportionateScreenWidth(
                                                             kDefaultPadding *
                                                                 3),
-                                                    decoration: BoxDecoration(
-                                                      image: DecorationImage(
-                                                        image: AssetImage(
-                                                            "images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                      shape: BoxShape.rectangle,
-                                                      color: kPrimaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              getProportionateScreenHeight(
-                                                                  5)),
-                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            getProportionateScreenHeight(
+                                                                5)),
                                                   ),
+                                                  // Container(
+                                                  //   height:
+                                                  //       getProportionateScreenHeight(
+                                                  //           kDefaultPadding *
+                                                  //               3),
+                                                  //   width:
+                                                  //       getProportionateScreenWidth(
+                                                  //           kDefaultPadding *
+                                                  //               3),
+                                                  //   decoration: BoxDecoration(
+                                                  //     image: DecorationImage(
+                                                  //       image: games[index][
+                                                  //                       'home_team_logo'] !=
+                                                  //                   null &&
+                                                  //               games[index][
+                                                  //                       'home_team_logo']
+                                                  //                   .isNotEmpty
+                                                  //           ? NetworkImage(games[
+                                                  //                   index][
+                                                  //               'home_team_logo'])
+                                                  //           : AssetImage(
+                                                  //               "images/pl_logos/${games[index]['home_team'].toString().toLowerCase()}.png"),
+                                                  //       fit: BoxFit.fill,
+                                                  //     ),
+                                                  //     shape: BoxShape.rectangle,
+                                                  //     color: kPrimaryColor,
+                                                  //     borderRadius:
+                                                  //         BorderRadius.circular(
+                                                  //             getProportionateScreenHeight(
+                                                  //                 5)),
+                                                  //   ),
+                                                  // ),
                                                   SizedBox(
                                                     height:
                                                         getProportionateScreenHeight(
@@ -305,7 +343,13 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                             Expanded(
                                               child: Column(
                                                 children: [
-                                                  Container(
+                                                  ImageContainer(
+                                                    shape: BoxShape.rectangle,
+                                                    url: games[index][
+                                                            'away_team_logo'] ??
+                                                        '',
+                                                    errorUrl:
+                                                        "images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
                                                     height:
                                                         getProportionateScreenHeight(
                                                             kDefaultPadding *
@@ -314,21 +358,35 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                                         getProportionateScreenWidth(
                                                             kDefaultPadding *
                                                                 3),
-                                                    decoration: BoxDecoration(
-                                                      image: DecorationImage(
-                                                        image: AssetImage(
-                                                          "images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
-                                                        ),
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                      shape: BoxShape.rectangle,
-                                                      color: kPrimaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              getProportionateScreenHeight(
-                                                                  5)),
-                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            getProportionateScreenHeight(
+                                                                5)),
                                                   ),
+                                                  // Container(
+                                                  //   height:
+                                                  //       getProportionateScreenHeight(
+                                                  //           kDefaultPadding *
+                                                  //               3),
+                                                  //   width:
+                                                  //       getProportionateScreenWidth(
+                                                  //           kDefaultPadding *
+                                                  //               3),
+                                                  //   decoration: BoxDecoration(
+                                                  //     image: DecorationImage(
+                                                  //       image: AssetImage(
+                                                  //             "images/pl_logos/${games[index]['away_team'].toString().toLowerCase()}.png",
+                                                  //       ),
+                                                  //       fit: BoxFit.fill,
+                                                  //     ),
+                                                  //     shape: BoxShape.rectangle,
+                                                  //     color: kPrimaryColor,
+                                                  //     borderRadius:
+                                                  //         BorderRadius.circular(
+                                                  //             getProportionateScreenHeight(
+                                                  //                 5)),
+                                                  //   ),
+                                                  // ),
                                                   SizedBox(
                                                     height:
                                                         getProportionateScreenHeight(
@@ -458,7 +516,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
               ),
             ),
 
-            // My Predictions
+            ////////// My Predictions Screen/Tab//////
             ModalProgressHUD(
               inAsyncCall: _isLoading,
               color: kBlackColor.withValues(alpha: 0.3),
@@ -529,26 +587,43 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Container(
+                                          ImageContainer(
+                                            shape: BoxShape.rectangle,
+                                            url: userPredictions['scores']
+                                                        [index]['game_detail']
+                                                    ['home_team_logo'] ??
+                                                '',
+                                            errorUrl:
+                                                "images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png",
                                             height:
                                                 getProportionateScreenHeight(
-                                                    kDefaultPadding * 2.5),
+                                                    kDefaultPadding * 3),
                                             width: getProportionateScreenWidth(
-                                                kDefaultPadding * 2.5),
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: AssetImage(
-                                                    "images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
-                                                fit: BoxFit.fill,
-                                              ),
-                                              shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(
-                                                  getProportionateScreenHeight(
-                                                      5)),
-                                              color: kPrimaryColor,
-                                              boxShadow: [boxShadow],
-                                            ),
+                                                kDefaultPadding * 3),
+                                            borderRadius: BorderRadius.circular(
+                                                getProportionateScreenHeight(
+                                                    5)),
                                           ),
+                                          // Container(
+                                          //   height:
+                                          //       getProportionateScreenHeight(
+                                          //           kDefaultPadding * 2.5),
+                                          //   width: getProportionateScreenWidth(
+                                          //       kDefaultPadding * 2.5),
+                                          //   decoration: BoxDecoration(
+                                          //     image: DecorationImage(
+                                          //       image: AssetImage(
+                                          //           "images/pl_logos/${userPredictions['scores'][index]['game_detail']['home_team'].toString().toLowerCase()}.png"),
+                                          //       fit: BoxFit.fill,
+                                          //     ),
+                                          //     shape: BoxShape.rectangle,
+                                          //     borderRadius: BorderRadius.circular(
+                                          //         getProportionateScreenHeight(
+                                          //             5)),
+                                          //     color: kPrimaryColor,
+                                          //     boxShadow: [boxShadow],
+                                          //   ),
+                                          // ),
                                           SizedBox(
                                             width: getProportionateScreenHeight(
                                                 kDefaultPadding / 2),
@@ -580,26 +655,43 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
                                             width: getProportionateScreenHeight(
                                                 kDefaultPadding / 2),
                                           ),
-                                          Container(
+                                          ImageContainer(
+                                            shape: BoxShape.rectangle,
+                                            url: userPredictions['scores']
+                                                        [index]['game_detail']
+                                                    ['away_team_logo'] ??
+                                                '',
+                                            errorUrl:
+                                                "images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png",
                                             height:
                                                 getProportionateScreenHeight(
-                                                    kDefaultPadding * 2.5),
+                                                    kDefaultPadding * 3),
                                             width: getProportionateScreenWidth(
-                                                kDefaultPadding * 2.5),
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: AssetImage(
-                                                    "images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
-                                                fit: BoxFit.fill,
-                                              ),
-                                              shape: BoxShape.rectangle,
-                                              borderRadius: BorderRadius.circular(
-                                                  getProportionateScreenHeight(
-                                                      5)),
-                                              color: kPrimaryColor,
-                                              boxShadow: [boxShadow],
-                                            ),
+                                                kDefaultPadding * 3),
+                                            borderRadius: BorderRadius.circular(
+                                                getProportionateScreenHeight(
+                                                    5)),
                                           ),
+                                          // Container(
+                                          //   height:
+                                          //       getProportionateScreenHeight(
+                                          //           kDefaultPadding * 2.5),
+                                          //   width: getProportionateScreenWidth(
+                                          //       kDefaultPadding * 2.5),
+                                          //   decoration: BoxDecoration(
+                                          //     image: DecorationImage(
+                                          //       image: AssetImage(
+                                          //           "images/pl_logos/${userPredictions['scores'][index]['game_detail']['away_team'].toString().toLowerCase()}.png"),
+                                          //       fit: BoxFit.fill,
+                                          //     ),
+                                          //     shape: BoxShape.rectangle,
+                                          //     borderRadius: BorderRadius.circular(
+                                          //         getProportionateScreenHeight(
+                                          //             5)),
+                                          //     color: kPrimaryColor,
+                                          //     boxShadow: [boxShadow],
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                       SizedBox(

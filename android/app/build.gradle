@@ -38,7 +38,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.enigma.zmall"
     // compileSdkVersion 34
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "29.0.13113456"    //"27.0.12077973"
     compileSdk = flutter.compileSdkVersion
     // ndkVersion = flutter.ndkVersion
     compileOptions {

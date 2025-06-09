@@ -162,7 +162,7 @@ class _CbeUssdState extends State<CbeUssd> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -216,7 +216,7 @@ class _CbeUssdState extends State<CbeUssd> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });

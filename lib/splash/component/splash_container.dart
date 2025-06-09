@@ -86,11 +86,10 @@ class _SplashContainerState extends State<SplashContainer> {
       _loading = false;
     });
     bool isStoreOpen = false;
-    if (store['store_open_close_time'] != null &&
-        store['store_open_close_time'].length != 0) {
+    if (store['store_time'] != null && store['store_time'].length != 0) {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      for (var i = 0; i < store['store_open_close_time'].length; i++) {
+      for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
         DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         int weekday;
@@ -100,18 +99,18 @@ class _SplashContainerState extends State<SplashContainer> {
           weekday = now.weekday;
         }
 
-        if (store['store_open_close_time'][i]['day'] == weekday) {
-          if (store['store_open_close_time'][i]['day_time'].length != 0 &&
-              store['store_open_close_time'][i]['is_store_open']) {
+        if (store['store_time'][i]['day'] == weekday) {
+          if (store['store_time'][i]['day_time'].length != 0 &&
+              store['store_time'][i]['is_store_open']) {
             for (var j = 0;
-                j < store['store_open_close_time'][i]['day_time'].length;
+                j < store['store_time'][i]['day_time'].length;
                 j++) {
-              DateTime open = dateFormat.parse(store['store_open_close_time'][i]
-                  ['day_time'][j]['store_open_time']);
+              DateTime open = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_open_time']);
               open = new DateTime(
                   now.year, now.month, now.day, open.hour, open.minute);
-              DateTime close = dateFormat.parse(store['store_open_close_time']
-                  [i]['day_time'][j]['store_close_time']);
+              DateTime close = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_close_time']);
               // DateTime zmallClose =
               //     DateTime(now.year, now.month, now.day, 21, 00);
               // DateTime zmallOpen =
@@ -134,7 +133,7 @@ class _SplashContainerState extends State<SplashContainer> {
               if (now.isAfter(open) &&
                   now.isAfter(zmallOpen) &&
                   now.isBefore(close) &&
-                  store['store_open_close_time'][i]['is_store_open'] &&
+                  store['store_time'][i]['is_store_open'] &&
                   now.isBefore(zmallClose)) {
                 isStoreOpen = true;
                 break;
@@ -143,7 +142,7 @@ class _SplashContainerState extends State<SplashContainer> {
               }
             }
           } else {
-            isStoreOpen = store['store_open_close_time'][i]['is_store_open'];
+            isStoreOpen = store['store_time'][i]['is_store_open'];
           }
         }
       }

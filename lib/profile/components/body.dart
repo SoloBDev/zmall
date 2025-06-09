@@ -9,14 +9,12 @@ import 'package:zmall/core_services.dart';
 // import 'package:zmall/favorites/favorites_screen.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/login/login_screen.dart';
-import 'package:zmall/loyalty_card/loyalty_card_screen.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/profile/components/edit_profile.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
 import 'package:zmall/profile/components/referral_code.dart';
-import 'package:zmall/profile/components/subscribe.dart';
 import 'package:zmall/random_digits.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/constants.dart';
@@ -28,9 +26,7 @@ import 'package:zmall/store/components/image_container.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class Body extends StatefulWidget {
-  const Body({
-    Key? key,
-  }) : super(key: key);
+  const Body({super.key});
 
   @override
   _BodyState createState() => _BodyState();
@@ -266,7 +262,7 @@ class _BodyState extends State<Body> {
                                                   },
                                                   decoration:
                                                       textFieldInputDecorator
-                                                          ?.copyWith(
+                                                          .copyWith(
                                                     labelText: "OTP",
                                                   ),
                                                 ),
@@ -343,7 +339,7 @@ class _BodyState extends State<Body> {
                                                         },
                                                         decoration:
                                                             textFieldInputDecorator
-                                                                ?.copyWith(
+                                                                .copyWith(
                                                           labelText: "OTP",
                                                         ),
                                                       ),

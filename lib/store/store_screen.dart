@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/map_view/map_view.dart';
+import 'package:zmall/service.dart';
 import 'components/body.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -63,7 +64,8 @@ class _StoreScreenState extends State<StoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.category['delivery_name'],
+        title: Text(
+            Service.capitalizeFirstLetters(widget.category['delivery_name']),
             style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
         actions: [

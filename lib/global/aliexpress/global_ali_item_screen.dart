@@ -149,7 +149,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
   void getUser() async {
     // var data = await Service.read('user');
     var data = await Service.read('abroad_user');
-    print("User?>>>> $data");
+    // print("User?>>>> $data");
     if (data != null) {
       setState(() {
         abroadData = AbroadData.fromJson(data);

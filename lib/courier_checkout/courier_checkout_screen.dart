@@ -6,7 +6,6 @@ import 'package:zmall/kifiya/kifiya_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/section_title.dart';
 
 class CourierCheckout extends StatefulWidget {
   static String routeName = '/courier_checkout';

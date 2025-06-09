@@ -81,11 +81,11 @@ class TelebirrInappSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     }
                 })
             } catch (e: Exception) {
-                Log.e(TAG, "Error during payment", e)
+                // Log.e(TAG, "Error during payment", e)
                 result.error("PAYMENT_ERROR", "Error during payment", e.message)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in placeOrder", e)
+            // Log.e(TAG, "Error in placeOrder", e)
             result.error("UNEXPECTED_ERROR", "An unexpected error occurred", e.message)
         }
     }

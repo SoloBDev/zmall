@@ -114,9 +114,8 @@ class _SearchScreenState extends State<SearchScreen> {
     isOpen.clear();
     stores.forEach((store) {
       bool isStoreOpen = false;
-      if (store['store_open_close_time'] != null &&
-          store['store_open_close_time'].length != 0) {
-        for (var i = 0; i < store['store_open_close_time'].length; i++) {
+      if (store['store_time'] != null && store['store_time'].length != 0) {
+        for (var i = 0; i < store['store_time'].length; i++) {
           DateFormat dateFormat = new DateFormat.Hm();
           DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
           int weekday;
@@ -126,18 +125,18 @@ class _SearchScreenState extends State<SearchScreen> {
             weekday = now.weekday;
           }
 
-          if (store['store_open_close_time'][i]['day'] == weekday) {
-            if (store['store_open_close_time'][i]['day_time'].length != 0 &&
-                store['store_open_close_time'][i]['is_store_open']) {
+          if (store['store_time'][i]['day'] == weekday) {
+            if (store['store_time'][i]['day_time'].length != 0 &&
+                store['store_time'][i]['is_store_open']) {
               for (var j = 0;
-                  j < store['store_open_close_time'][i]['day_time'].length;
+                  j < store['store_time'][i]['day_time'].length;
                   j++) {
-                DateTime open = dateFormat.parse(store['store_open_close_time']
-                    [i]['day_time'][j]['store_open_time']);
+                DateTime open = dateFormat.parse(
+                    store['store_time'][i]['day_time'][j]['store_open_time']);
                 open = new DateTime(
                     now.year, now.month, now.day, open.hour, open.minute);
-                DateTime close = dateFormat.parse(store['store_open_close_time']
-                    [i]['day_time'][j]['store_close_time']);
+                DateTime close = dateFormat.parse(
+                    store['store_time'][i]['day_time'][j]['store_close_time']);
                 // print(appClose);
                 // DateTime close = dateFormat.parse(appClose);
                 close = new DateTime(
@@ -159,7 +158,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 if (now.isAfter(open) &&
                     now.isAfter(zmallOpen) &&
                     now.isBefore(close) &&
-                    store['store_open_close_time'][i]['is_store_open'] &&
+                    store['store_time'][i]['is_store_open'] &&
                     now.isBefore(zmallClose)) {
                   isStoreOpen = true;
                   break;
@@ -182,7 +181,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   zmallClose.hour, zmallClose.minute);
               if (now.isAfter(zmallOpen) &&
                   now.isBefore(zmallClose) &&
-                  store['store_open_close_time'][i]['is_store_open']) {
+                  store['store_time'][i]['is_store_open']) {
                 isStoreOpen = true;
               } else {
                 isStoreOpen = false;
@@ -227,19 +226,53 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
 ////////////////////////////////////////////////////////////////////////////////
-
   void _getCompanyList() async {
-    getAppKeys();
+    setState(() {
+      _loading = true; // Show loading indicator
+    });
+
     var data = await getCompanyList();
     if (data != null && data['success']) {
-      stores = data['stores'];
-      print(stores);
-      storeOpen(stores);
+      setState(() {
+        stores = data['stores'] ?? []; // Ensure stores is not null
+        _searchResult = []; // Clear _searchResult
+        isOpen = []; // Clear isOpen
+        // Filter stores based on current searchQuery
+        if (searchQuery.isEmpty) {
+          _searchResult = List.from(stores); // Show all stores if no query
+        } else {
+          for (var store in stores) {
+            if (store['name']
+                    ?.toString()
+                    .toLowerCase()
+                    .contains(searchQuery.toLowerCase()) ??
+                false) {
+              double similarity = calculateStoreSimilarity(
+                  store['name']?.toString().toLowerCase() ?? '',
+                  searchQuery.toLowerCase());
+              final updatedStore = {
+                ...store,
+                'similarity': similarity,
+              };
+              _searchResult.add(updatedStore);
+            }
+          }
+        }
+        storeOpen(_searchResult); // Populate isOpen for filtered results
+        _loading = false;
+      });
     } else {
+      setState(() {
+        _loading = false;
+        _searchResult = []; // Clear _searchResult on failure
+        isOpen = []; // Clear isOpen to avoid mismatches
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("${errorCodes['${responseData['error_code']}']}"),
+            content: Text(
+                "${errorCodes['${data?['error_code'] ?? 'Store not found'}']}"),
+            backgroundColor: kSecondaryColor,
           ),
         );
       }
@@ -251,7 +284,6 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // automaticallyImplyLeading: false,
         title: Text(
           Provider.of<ZLanguage>(context).search,
           style: TextStyle(color: kBlackColor),
@@ -333,11 +365,47 @@ class _SearchScreenState extends State<SearchScreen> {
           Padding(
             padding: const EdgeInsets.only(right: kDefaultPadding),
             child: GestureDetector(
+              // onTap: () {
+              //   setState(() {
+              //     isStoreSelected = !isStoreSelected;
+              //     storeDeliveryId = widget.categories[0]['_id'];
+              //     _getCompanyList();
+              //   });
+              // },
+              // onTap: () {
+              //   setState(() {
+              //     isStoreSelected = !isStoreSelected;
+              //     if (isStoreSelected) {
+              //       storeDeliveryId = widget.categories[0]['_id'];
+              //       _getCompanyList(); // Fetch and filter stores
+              //     } else {
+              //       _searchResult
+              //           .clear(); // Clear store results when switching back
+              //       isOpen.clear();
+              //     }
+              //   });
+              // },
               onTap: () {
                 setState(() {
                   isStoreSelected = !isStoreSelected;
-                  storeDeliveryId = widget.categories[0]['_id'];
-                  _getCompanyList();
+                  if (isStoreSelected) {
+                    storeDeliveryId = widget.categories.isNotEmpty
+                        ? widget.categories[0]['_id']
+                        : null;
+                    selectedCatagory = 0; // Set default category (e.g., "food")
+                    _searchResult = []; // Clear _searchResult
+                    isOpen = []; // Clear isOpen
+                    _getCompanyList(); // Fetch stores for default category
+                  } else {
+                    _searchResult = []; // Clear store results
+                    isOpen = []; // Clear isOpen
+                    // Repopulate isOpen for existing items
+                    if (filteredResult['items']?.isNotEmpty == true) {
+                      storeOpen(filteredResult['items']!);
+                    } else if (responseData?['items']?.isNotEmpty == true) {
+                      storeOpen(responseData['items']);
+                    }
+                  }
                 });
               },
               child: Container(
@@ -384,12 +452,29 @@ class _SearchScreenState extends State<SearchScreen> {
                     setState(() {
                       searchQuery = value;
                     });
+
+                    // Trigger filtering for both views
+                    if (isStoreSelected) {
+                      onSearchTextChanged(query: value);
+                    } else {
+                      if (value.isEmpty) {
+                        setState(() {
+                          filteredResult['items'] = [];
+                          responseData = null;
+                        });
+                      }
+                    }
                   },
                   onEditingComplete: () {
                     FocusScope.of(context).unfocus();
                     if (searchQuery.isNotEmpty) {
-                      onSearchTextChanged(query: searchQuery);
-                      _searchItem(query: searchQuery);
+                      // onSearchTextChanged(query: searchQuery);
+                      // _searchItem(query: searchQuery);
+                      if (isStoreSelected) {
+                        onSearchTextChanged(query: searchQuery);
+                      } else {
+                        _searchItem(query: searchQuery);
+                      }
                     }
                   },
                   decoration: InputDecoration(
@@ -411,45 +496,56 @@ class _SearchScreenState extends State<SearchScreen> {
                         horizontal:
                             getProportionateScreenWidth(kDefaultPadding / 4),
                       ),
-                      child: FocusScope.of(context).hasFocus
-                          ? IconButton(
-                              tooltip: 'Clear',
-                              icon: Icon(Icons.clear),
-                              onPressed: () {
+                      child: IconButton(
+                        tooltip: FocusScope.of(context).hasFocus
+                            ? 'Clear'
+                            : 'Search',
+                        icon: Icon(FocusScope.of(context).hasFocus
+                            ? Icons.clear
+                            : Icons.search),
+                        onPressed: FocusScope.of(context).hasFocus
+                            ? () {
                                 setState(() {
                                   searchQuery = '';
-                                  onSearchTextChanged(query: '');
+                                  if (isStoreSelected) {
+                                    _searchResult =
+                                        List.from(stores); // Restore all stores
+                                    storeOpen(_searchResult);
+                                  } else {
+                                    filteredResult['items'] = [];
+                                    responseData = null;
+                                    isOpen = []; // Clear isOpen for Items
+                                  }
                                 });
                                 _controller.clear();
-                              },
-                            )
-                          : IconButton(
-                              tooltip: 'Search',
-                              icon: Icon(Icons.search),
-                              onPressed: () {
+                              }
+                            : () {
                                 if (searchQuery.isNotEmpty) {
-                                  onSearchTextChanged(query: searchQuery);
-                                  _searchItem(query: searchQuery);
+                                  if (isStoreSelected) {
+                                    onSearchTextChanged(query: searchQuery);
+                                  } else {
+                                    _searchItem(query: searchQuery);
+                                  }
                                 } else {
                                   FocusScope.of(context).requestFocus();
-                                  // FocusScope.of(context).previousFocus();
                                 }
                               },
-                            ),
+                      ),
                     ),
                   ),
                 ),
               ),
+
+              ///////categories list///////
               isStoreSelected && widget.categories.length != 0
                   ? Padding(
-                      padding: EdgeInsets.only(
-                        left: kDefaultPadding * 0.4,
-                        right: kDefaultPadding * 0.4,
-                        bottom: kDefaultPadding * 0.4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: kDefaultPadding * 0.4,
+                        vertical: kDefaultPadding * 0.4,
                       ),
                       child: Container(
                         height:
-                            getProportionateScreenHeight(kDefaultPadding * 1.5),
+                            getProportionateScreenHeight(kDefaultPadding * 2),
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: widget.categories.length,
@@ -475,7 +571,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                       : kPrimaryColor,
                                   borderRadius: BorderRadius.circular(
                                     getProportionateScreenWidth(
-                                        kDefaultPadding / 8),
+                                        kDefaultPadding / 2),
                                   ),
                                   border: Border.all(
                                     width: 1.0,
@@ -491,9 +587,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      widget.categories[index]['delivery_name']
-                                          .toString()
-                                          .toUpperCase(),
+                                      Service.capitalizeFirstLetters(widget
+                                          .categories[index]['delivery_name']
+                                          .toString()),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
@@ -516,25 +612,18 @@ class _SearchScreenState extends State<SearchScreen> {
                           separatorBuilder: (BuildContext context, int index) =>
                               SizedBox(
                             width: getProportionateScreenWidth(
-                                kDefaultPadding / 5),
+                                kDefaultPadding / 4),
                           ),
                         ),
                       ),
                     )
                   : SizedBox.shrink(),
 
-              // SizedBox(
-              //     height: getProportionateScreenHeight(kDefaultPadding / 5)),
               _loading
                   ? Expanded(
                       child: ListView.separated(
                         itemBuilder: (context, index) => Column(
                           children: [
-                            // index == 0
-                            //     ? SizedBox(
-                            //         height: getProportionateScreenHeight(
-                            //             kDefaultPadding / 2))
-                            //     : Container(),
                             ShimmerSkeleton(),
                           ],
                         ),
@@ -544,195 +633,215 @@ class _SearchScreenState extends State<SearchScreen> {
                         itemCount: 5,
                       ),
                     )
+
+                  ///////price filterd items list///////
                   : !isStoreSelected
-                      ? (filteredResult != null &&
-                              filteredResult['items']!.length > 0)
+                      ? (filteredResult['items']?.isNotEmpty == true &&
+                              isOpen.length >= filteredResult['items']!.length)
                           ? Expanded(
                               child: ListView.separated(
-                                itemBuilder: (context, index) => Column(
-                                  children: [
-                                    // index == 0
-                                    //     ? SizedBox(
-                                    //         height: getProportionateScreenHeight(
-                                    //             kDefaultPadding / 2))
-                                    //     : Container(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        if (isOpen[index]) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) {
-                                                return ItemScreen(
-                                                    item: filteredResult[
-                                                        'items']![index],
-                                                    location: filteredResult[
-                                                            'items']![index]
-                                                        ['store_location']);
-                                              },
-                                            ),
-                                          );
-                                        } else {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            Service.showMessage(
-                                                "Sorry, store is currently closed. Please comeback soon.",
-                                                false,
-                                                duration: 3),
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: kPrimaryColor,
-                                          // borderRadius: BorderRadius.all(
-                                          //   Radius.circular(
-                                          //     getProportionateScreenWidth(
-                                          //         kDefaultPadding * .75),
-                                          //   ),
-                                          // ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            SearchImageContainer(
-                                              url: filteredResult['items']![
-                                                                  index]
-                                                              ['image_url']
-                                                          .length >
-                                                      0
-                                                  ? "http://159.65.147.111:8000/${filteredResult['items']![index]['image_url'][0]}"
-                                                  : "https://ibb.co/vkhzjd6",
-                                            ),
-                                            SizedBox(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 2),
-                                            ),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    filteredResult['items']![
-                                                        index]['store_name'],
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding /
-                                                                  1.7),
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      // color: kBlackColor,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    filteredResult['items']![
-                                                        index]['name'],
-                                                    style: TextStyle(
-                                                      fontSize:
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding /
-                                                                  1.3),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      // color: kBlackColor,
-                                                    ),
-                                                  ),
-                                                  filteredResult['items']![
-                                                              index]['details']
-                                                          .toString()
-                                                          .isNotEmpty
-                                                      ? Text(
-                                                          filteredResult['items']![
-                                                                      index]
-                                                                  ['details']
-                                                              .toString()
-                                                              .toLowerCase(),
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodySmall
-                                                                  ?.copyWith(
-                                                                    color:
-                                                                        kGreyColor,
-                                                                  ),
-                                                        )
-                                                      : Container(),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        "${filteredResult['items']![index]['price'].toString()} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                        style: TextStyle(
-                                                          fontSize:
-                                                              getProportionateScreenWidth(
-                                                                  kDefaultPadding /
-                                                                      1.5),
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: kGreyColor,
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(
-                                                            horizontal:
-                                                                getProportionateScreenHeight(
-                                                                    kDefaultPadding /
-                                                                        2)),
-                                                        child: Text(
-                                                          "${(filteredResult['items']![index]['similarity'] * 100).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodySmall
-                                                                  ?.copyWith(
-                                                                    color: (filteredResult['items']![index]['similarity'] * 100).toInt() >
-                                                                            90
-                                                                        ? Colors
-                                                                            .green
-                                                                        : (filteredResult['items']![index]['similarity'] * 100).toInt() >
-                                                                                70
-                                                                            ? Colors.orange
-                                                                            : (filteredResult['items']![index]['similarity'] * 100).toInt() > 50
-                                                                                ? kSecondaryColor
-                                                                                : kGreyColor,
-                                                                  ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                    isOpen[index]
-                                                        ? Provider.of<
-                                                                    ZLanguage>(
-                                                                context)
-                                                            .open
-                                                        : Provider.of<
-                                                                    ZLanguage>(
-                                                                context)
-                                                            .closed,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleMedium
-                                                        ?.copyWith(
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: isOpen[index]
-                                                                ? Colors.green
-                                                                : kSecondaryColor),
-                                                  )
-                                                ],
+                                itemBuilder: (context, index) {
+                                  if (index >=
+                                          filteredResult['items']!.length ||
+                                      index >= isOpen.length) {
+                                    return SizedBox.shrink(); // Safety check
+                                  }
+                                  return Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (isOpen[index]) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return ItemScreen(
+                                                      item: filteredResult[
+                                                          'items']![index],
+                                                      location: filteredResult[
+                                                              'items']![index]
+                                                          ['store_location']);
+                                                },
                                               ),
-                                            )
-                                          ],
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              Service.showMessage(
+                                                  "Sorry, store is currently closed. Please comeback soon.",
+                                                  false,
+                                                  duration: 3),
+                                            );
+                                          }
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(
+                                              left: kDefaultPadding / 2,
+                                              right: kDefaultPadding / 2,
+                                              top: kDefaultPadding / 4),
+                                          padding: const EdgeInsets.all(
+                                              kDefaultPadding / 2),
+                                          decoration: BoxDecoration(
+                                            color: kPrimaryColor,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding),
+                                              ),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              SearchImageContainer(
+                                                url: filteredResult['items']![
+                                                                    index]
+                                                                ['image_url']
+                                                            .length >
+                                                        0
+                                                    ? "https://app.zmallapp.com/${filteredResult['items']![index]['image_url'][0]}"
+
+                                                    // ? "http://159.65.147.111:8000/${filteredResult['items']![index]['image_url'][0]}"
+                                                    : "https://ibb.co/vkhzjd6",
+                                              ),
+                                              SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding / 2),
+                                              ),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      Service.capitalizeFirstLetters(
+                                                          filteredResult[
+                                                                      'items']![
+                                                                  index]
+                                                              ['store_name']),
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding /
+                                                                    1.7),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        // color: kBlackColor,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      Service
+                                                          .capitalizeFirstLetters(
+                                                              filteredResult[
+                                                                      'items']![
+                                                                  index]['name']),
+                                                      style: TextStyle(
+                                                        fontSize:
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding /
+                                                                    1.3),
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    filteredResult['items']![
+                                                                    index]
+                                                                ['details']
+                                                            .toString()
+                                                            .isNotEmpty
+                                                        ? Text(
+                                                            filteredResult['items']![
+                                                                        index]
+                                                                    ['details']
+                                                                .toString()
+                                                                .toLowerCase(),
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodySmall
+                                                                ?.copyWith(
+                                                                  color:
+                                                                      kGreyColor,
+                                                                ),
+                                                          )
+                                                        : Container(),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          "${filteredResult['items']![index]['price'].toString()} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                          style: TextStyle(
+                                                            fontSize:
+                                                                getProportionateScreenWidth(
+                                                                    kDefaultPadding /
+                                                                        1.5),
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: kGreyColor,
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding: EdgeInsets.symmetric(
+                                                              horizontal:
+                                                                  getProportionateScreenHeight(
+                                                                      kDefaultPadding /
+                                                                          2)),
+                                                          child: Text(
+                                                            "${(filteredResult['items']![index]['similarity'] * 100).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
+                                                            style:
+                                                                Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .bodySmall
+                                                                    ?.copyWith(
+                                                                      color: (filteredResult['items']![index]['similarity'] * 100).toInt() >
+                                                                              90
+                                                                          ? Colors
+                                                                              .green
+                                                                          : (filteredResult['items']![index]['similarity'] * 100).toInt() > 70
+                                                                              ? Colors.orange
+                                                                              : (filteredResult['items']![index]['similarity'] * 100).toInt() > 50
+                                                                                  ? kSecondaryColor
+                                                                                  : kGreyColor,
+                                                                    ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                      isOpen[index]
+                                                          ? Provider.of<
+                                                                      ZLanguage>(
+                                                                  context)
+                                                              .open
+                                                          : Provider.of<
+                                                                      ZLanguage>(
+                                                                  context)
+                                                              .closed,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleSmall
+                                                          ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: isOpen[
+                                                                      index]
+                                                                  ? Colors.green
+                                                                  : kSecondaryColor),
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                  ],
-                                ),
+                                      )
+                                    ],
+                                  );
+                                },
                                 separatorBuilder: (context, index) =>
                                     SizedBox(height: 1),
                                 itemCount: filteredResult['items']!.length,
@@ -745,6 +854,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                     textAlign: TextAlign.center,
                                   ),
                                 )
+
+                              ///////searched items list///////
                               : responseData != null &&
                                       responseData['success'] &&
                                       responseData['items'].length > 0
@@ -752,12 +863,6 @@ class _SearchScreenState extends State<SearchScreen> {
                                       child: ListView.separated(
                                         itemBuilder: (context, index) => Column(
                                           children: [
-                                            // index == 0
-                                            //     ? SizedBox(
-                                            //         height:
-                                            //             getProportionateScreenHeight(
-                                            //                 kDefaultPadding / 2))
-                                            //     : Container(),
                                             GestureDetector(
                                               onTap: () {
                                                 if (isOpen[index]) {
@@ -786,14 +891,21 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 }
                                               },
                                               child: Container(
+                                                margin: const EdgeInsets.only(
+                                                    left: kDefaultPadding / 2,
+                                                    right: kDefaultPadding / 2,
+                                                    top: kDefaultPadding / 4),
+                                                padding: const EdgeInsets.all(
+                                                    kDefaultPadding / 2),
                                                 decoration: BoxDecoration(
                                                   color: kPrimaryColor,
-                                                  // borderRadius: BorderRadius.all(
-                                                  //   Radius.circular(
-                                                  //     getProportionateScreenWidth(
-                                                  //         kDefaultPadding * .75),
-                                                  //   ),
-                                                  // ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                    Radius.circular(
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding),
+                                                    ),
+                                                  ),
                                                 ),
                                                 child: Row(
                                                   children: [
@@ -811,7 +923,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                       'image_url']
                                                                   .length >
                                                               0
-                                                          ? "http://159.65.147.111:8000/${responseData['items'][index]['image_url'][0]}"
+                                                          ? "https://app.zmallapp.com/${responseData['items'][index]['image_url'][0]}"
                                                           : "https://ibb.co/vkhzjd6",
                                                     ),
                                                     SizedBox(
@@ -832,10 +944,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                     3),
                                                           ),
                                                           Text(
-                                                            responseData[
-                                                                        'items']
-                                                                    [index]
-                                                                ['store_name'],
+                                                            Service.capitalizeFirstLetters(
+                                                                responseData[
+                                                                            'items']
+                                                                        [index][
+                                                                    'store_name']),
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
@@ -848,10 +961,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                     5),
                                                           ),
                                                           Text(
-                                                              responseData[
-                                                                          'items']
-                                                                      [index]
-                                                                  ['name'],
+                                                              Service.capitalizeFirstLetters(
+                                                                  responseData[
+                                                                              'items']
+                                                                          [
+                                                                          index]
+                                                                      ['name']),
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
@@ -860,35 +975,6 @@ class _SearchScreenState extends State<SearchScreen> {
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .w600)),
-                                                          // responseData['items']
-                                                          //                 [index]
-                                                          //             ['details']
-                                                          //         .toString()
-                                                          //         .isNotEmpty
-                                                          //     ? Padding(
-                                                          //         padding: EdgeInsets
-                                                          //             .only(
-                                                          //                 right:
-                                                          //                     8.0),
-                                                          //         child: Text(
-                                                          //           responseData['items']
-                                                          //                       [
-                                                          //                       index]
-                                                          //                   [
-                                                          //                   'details']
-                                                          //               .toString()
-                                                          //               .toLowerCase(),
-                                                          //           style: Theme.of(
-                                                          //                   context)
-                                                          //               .textTheme
-                                                          //               .bodySmall
-                                                          //               ?.copyWith(
-                                                          //                 color:
-                                                          //                     kGreyColor,
-                                                          //               ),
-                                                          //         ),
-                                                          //       )
-                                                          //     : Container(),
                                                           Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
@@ -946,7 +1032,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                             style: Theme.of(
                                                                     context)
                                                                 .textTheme
-                                                                .titleMedium
+                                                                .titleSmall
                                                                 ?.copyWith(
                                                                     fontWeight:
                                                                         FontWeight
@@ -993,20 +1079,22 @@ class _SearchScreenState extends State<SearchScreen> {
                                 textAlign: TextAlign.center,
                               ),
                             )
-                          : _searchResult.length != 0 && selectedCatagory != -1
+                          // : _loading
+                          //     ? Center(child: CircularProgressIndicator())
+
+                          ///////filterd stores list///////
+                          : _searchResult.isNotEmpty && selectedCatagory != -1
                               ? Expanded(
                                   child: ListView.separated(
                                     itemCount: _searchResult.length,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       return SearchLists(index: index);
-
-                                      /////////////////
                                     },
                                     separatorBuilder:
                                         (BuildContext context, int index) =>
                                             SizedBox(
-                                      height: 2,
+                                      height: kDefaultPadding / 4,
                                     ),
                                   ),
                                 )
@@ -1132,42 +1220,54 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   onSearchTextChanged({required String query}) async {
-    _searchResult.clear();
+    setState(() {
+      _searchResult.clear();
+      isOpen.clear(); // Clear isOpen to avoid mismatches
+    });
+
     if (query.isEmpty) {
       setState(() {
-        storeOpen(stores);
+        _searchResult =
+            List.from(stores); // Show all stores when query is empty
+        storeOpen(_searchResult); // Update isOpen for all stores
       });
       return;
     }
 
-    stores.forEach((store) {
+    for (var store in stores) {
       if (store['name']
-          .toString()
-          .toLowerCase()
-          .contains(query.toLowerCase())) {
+              ?.toString()
+              .toLowerCase()
+              .contains(query.toLowerCase()) ??
+          false) {
         double similarity = calculateStoreSimilarity(
-            store['name'].toString().toLowerCase(), query.toLowerCase());
+            store['name']?.toString().toLowerCase() ?? '', query.toLowerCase());
         final updatedStore = {
           ...store,
           'similarity': similarity,
         };
         _searchResult.add(updatedStore);
       }
-    });
+    }
 
     setState(() {
-      storeOpen(_searchResult);
+      storeOpen(_searchResult); // Update isOpen for filtered results
     });
   }
 
   Widget SearchLists({required int index}) {
+    if (index >= _searchResult.length || index >= isOpen.length) {
+      return SizedBox.shrink(); // Return empty widget if index is invalid
+    }
+
     double rating =
-        double.parse(_searchResult[index]['user_rate'].toStringAsFixed(2));
+        double.tryParse(_searchResult[index]['user_rate'].toString()) ?? 0.0;
     List ratingVal = ["☆", "☆", "☆", "☆", "☆"];
-    for (int i = 0; i < int.parse(rating.ceil().toString()); i++) {
+    for (int i = 0; i < rating.ceil() && i < ratingVal.length; i++) {
       ratingVal[i] = '★';
     }
     String parsedRVAl = ratingVal.join("");
+
     return GestureDetector(
       onTap: () {
         if (isOpen[index]) {
@@ -1177,9 +1277,9 @@ class _SearchScreenState extends State<SearchScreen> {
               builder: (context) {
                 return ProductScreen(
                   store: _searchResult[index],
-                  location: _searchResult[index]["location"],
-                  latitude: _searchResult[index]["location"][0],
-                  longitude: _searchResult[index]["location"][1],
+                  location: _searchResult[index]["location"] ?? [0.0, 0.0],
+                  latitude: _searchResult[index]["location"]?[0] ?? 0.0,
+                  longitude: _searchResult[index]["location"]?[1] ?? 0.0,
                   isOpen: isOpen[index],
                 );
               },
@@ -1195,10 +1295,11 @@ class _SearchScreenState extends State<SearchScreen> {
         }
       },
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
         padding: const EdgeInsets.all(kDefaultPadding / 2),
         decoration: BoxDecoration(
-          color: kPrimaryColor,
-        ),
+            color: kPrimaryColor,
+            borderRadius: BorderRadius.circular(kDefaultPadding)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1208,24 +1309,24 @@ class _SearchScreenState extends State<SearchScreen> {
                   SizedBox(
                       height: getProportionateScreenWidth(kDefaultPadding / 2)),
                   SearchImageContainer(
-                    url: _searchResult[index]['image_url'].length > 0
-                        ? "http://159.65.147.111:8000/${_searchResult[index]['image_url']}"
+                    url: _searchResult[index]['image_url']?.isNotEmpty == true
+                        ? "https://app.zmallapp.com/${_searchResult[index]['image_url']}"
                         : "https://ibb.co/vkhzjd6",
                   ),
                   SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
+                      width: getProportionateScreenWidth(kDefaultPadding / 2)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _searchResult[index]['name'],
+                          Service.capitalizeFirstLetters(
+                              _searchResult[index]['name']?.toString() ??
+                                  'Unknown'),
                           style: TextStyle(
                             fontSize: getProportionateScreenWidth(
                                 kDefaultPadding / 1.3),
                             fontWeight: FontWeight.bold,
-                            // color: kBlackColor,
                           ),
                         ),
                         Text(
@@ -1243,26 +1344,28 @@ class _SearchScreenState extends State<SearchScreen> {
                               : Provider.of<ZLanguage>(context).closed,
                           style: Theme.of(context)
                               .textTheme
-                              .titleMedium
+                              .titleSmall
                               ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: isOpen[index]
                                       ? Colors.green
                                       : kSecondaryColor),
-                        )
+                        ),
                       ],
                     ),
                   ),
                   Text(
-                    "${(_searchResult[index]['similarity']).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}",
+                    "${(_searchResult[index]['similarity'] ?? 0.0).toInt()}% ${Provider.of<ZLanguage>(context).match}",
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: (_searchResult[index]['similarity']).toInt() >
+                          color: (_searchResult[index]['similarity'] ?? 0.0)
+                                      .toInt() >
                                   90
                               ? Colors.green
-                              : (_searchResult[index]['similarity']).toInt() >
+                              : (_searchResult[index]['similarity'] ?? 0.0)
+                                          .toInt() >
                                       70
                                   ? Colors.orange
-                                  : (_searchResult[index]['similarity'])
+                                  : (_searchResult[index]['similarity'] ?? 0.0)
                                               .toInt() >
                                           50
                                       ? kSecondaryColor
@@ -1277,6 +1380,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+
 ///////////////////////////////////////////////////////////
 }
 

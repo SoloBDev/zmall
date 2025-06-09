@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
+import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 
 class StoresCard extends StatelessWidget {
@@ -43,13 +44,10 @@ class StoresCard extends StatelessWidget {
               children: [
                 Container(
                   margin: EdgeInsets.only(
-                    top: isFeatured
-                        ? getProportionateScreenWidth(kDefaultPadding)
-                        : 0,
-                    right: isFeatured
-                        ? getProportionateScreenWidth(kDefaultPadding)
-                        : 0,
-                  ),
+                      top: getProportionateScreenWidth(
+                          isFeatured ? kDefaultPadding : kDefaultPadding / 8),
+                      right: getProportionateScreenWidth(
+                          isFeatured ? kDefaultPadding : kDefaultPadding / 8)),
                   decoration: BoxDecoration(
                     color: kPrimaryColor,
                     boxShadow: [boxShadow],
@@ -60,32 +58,41 @@ class StoresCard extends StatelessWidget {
                   ),
                   height: getProportionateScreenHeight(kDefaultPadding * 6),
                   width: getProportionateScreenWidth(kDefaultPadding * 10),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    imageBuilder: (context, imageProvider) => Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: imageProvider,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                      topLeft: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: imageProvider,
+                          ),
                         ),
                       ),
-                    ),
-                    placeholder: (context, url) => Center(
-                      child: Container(
-                        width: getProportionateScreenWidth(kDefaultPadding * 5),
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 5),
-                        child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.transparent),
+                      placeholder: (context, url) => Center(
+                        child: Container(
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding * 5),
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding * 5),
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.transparent),
+                          ),
                         ),
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: AssetImage('images/trending.png'),
+                      errorWidget: (context, url, error) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage('images/trending.png'),
+                          ),
                         ),
                       ),
                     ),
@@ -95,6 +102,7 @@ class StoresCard extends StatelessWidget {
                   color: kPrimaryColor,
                   width: getProportionateScreenWidth(kDefaultPadding * 10),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
@@ -102,7 +110,7 @@ class StoresCard extends StatelessWidget {
                             top: getProportionateScreenHeight(
                                 kDefaultPadding / 5)),
                         child: Text(
-                          storeName,
+                          Service.capitalizeFirstLetters(storeName),
                           style:
                               Theme.of(context).textTheme.labelLarge?.copyWith(
                                     fontWeight: FontWeight.w900,
@@ -112,7 +120,8 @@ class StoresCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        deliveryType,
+                        Service.capitalizeFirstLetters(deliveryType),
+                        // Service.capitalizeFirstLetters(storeName),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.w500,
                               color: kBlackColor,
@@ -120,13 +129,15 @@ class StoresCard extends StatelessWidget {
                         maxLines: 1,
                       ),
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.star_rounded,
                             color: Colors.amber,
-                            size: getProportionateScreenWidth(kDefaultPadding),
+                            size: getProportionateScreenWidth(
+                                kDefaultPadding * 0.9),
                           ),
-                          SizedBox(width: 3),
+                          SizedBox(width: 2),
                           Text(
                             "$rating ($ratingCount)",
                             style:
@@ -135,17 +146,18 @@ class StoresCard extends StatelessWidget {
                                       color: kGreyColor,
                                     ),
                           ),
-                          SizedBox(
-                            width: 8,
+                          Container(
+                            width: 5,
+                            height: kDefaultPadding / 1.2,
+                            // color: kGreyColor.withValues(alpha: 0.8),
                           ),
                           Icon(
                             Icons.social_distance_rounded,
                             color: kGreyColor,
-                            size: getProportionateScreenWidth(kDefaultPadding),
+                            size: getProportionateScreenWidth(
+                                kDefaultPadding * 0.9),
                           ),
-                          SizedBox(
-                            width: 3,
-                          ),
+                          SizedBox(width: 2),
                           Text(
                             "$distance KM",
                             style:
@@ -153,7 +165,7 @@ class StoresCard extends StatelessWidget {
                                       fontWeight: FontWeight.w500,
                                       color: kGreyColor,
                                     ),
-                          ),
+                          )
                         ],
                       ),
                     ],
@@ -161,6 +173,18 @@ class StoresCard extends StatelessWidget {
                 )
               ],
             ),
+
+            if (isFeatured)
+              Positioned(
+                right: 0,
+                child: Container(
+                  height: getProportionateScreenWidth(kDefaultPadding * 3),
+                  width: getProportionateScreenWidth(kDefaultPadding * 3),
+                  //
+                  child: Center(
+                      child: Image.asset("images/store_tags/$featuredTag.png")),
+                ),
+              )
 
             // isFeatured ? Align(
             //   alignment: Alignment.topRight,
@@ -173,19 +197,6 @@ class StoresCard extends StatelessWidget {
             //     ),
             //   ),
             // ) : Container(),
-            isFeatured
-                ? Positioned(
-                    right: 0,
-                    child: Container(
-                      height: getProportionateScreenWidth(kDefaultPadding * 3),
-                      width: getProportionateScreenWidth(kDefaultPadding * 3),
-                      //
-                      child: Center(
-                          child: Image.asset(
-                              "images/store_tags/$featuredTag.png")),
-                    ),
-                  )
-                : Container()
           ],
         ),
       ),

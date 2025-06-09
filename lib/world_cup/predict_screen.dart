@@ -4,21 +4,15 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
-import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
-import 'package:zmall/world_cup.dart';
 
 class PredictScreen extends StatefulWidget {
-  const PredictScreen({
-    Key? key,
-    @required this.game,
-  }) : super(key: key);
+  const PredictScreen({super.key, @required this.game});
 
   final game;
 
@@ -993,6 +987,7 @@ class _PredictScreenState extends State<PredictScreen> {
       "search_field": "user_detail._id",
       "search_value": userData['user']["_id"],
     };
+    print('data?????? $data');
     var body = json.encode(data);
 
     try {
@@ -1048,6 +1043,7 @@ class _PredictScreenState extends State<PredictScreen> {
       "penalties": false,
       "penalty_score": 0
     };
+    print('data>>>>>>> $data');
     var body = json.encode(data);
     try {
       http.Response response = await http

@@ -38,10 +38,10 @@ class CustomListTile extends StatelessWidget {
             child: Row(
               children: [
                 ImageContainer(
-                  // url: "https://app.zmallapp.com/${store['image_url']}",
-                  url: "http://159.65.147.111:8000/${store['image_url']}",
+                  url: "https://app.zmallapp.com/${store['image_url']}",
+                  // url: "http://159.65.147.111:8000/${store['image_url']}",
                 ),
-                SizedBox(width: kDefaultPadding / 2),
+                SizedBox(width: kDefaultPadding),
                 StoreInfo(
                   store: store,
                   isOpen: isOpen!,
@@ -82,8 +82,7 @@ class FavoriteCustomListTile extends StatelessWidget {
             child: Column(
               children: [
                 FavoriteImageContainer(
-                  // url: "https://app.zmallapp.com/${store['image_url']}",
-                  url: "http://159.65.147.111:8000/${store['image_url']}",
+                  url: "https://app.zmallapp.com/${store['image_url']}",
                 ),
                 SizedBox(height: kDefaultPadding / 4),
                 FavoriteStoreInfo(

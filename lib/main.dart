@@ -49,6 +49,13 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: kWhiteColor,
             appBarTheme: AppBarTheme(
               color: kWhiteColor,
+              // titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+              //       color: kGreyColor,
+              //     ),
+              titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: kBlackColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
               iconTheme: IconThemeData(color: kBlackColor),
             ),
             textTheme: Theme.of(context).textTheme.apply(

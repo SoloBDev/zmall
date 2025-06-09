@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -151,6 +150,34 @@ class Service {
 
   static double _degreesToRadians(double degrees) {
     return degrees * pi / 180;
+  }
+
+  /////////////////////////////////////////////////////////
+  static String capitalizeFirstLetters(String input) {
+    input = input.toLowerCase();
+    if (input.contains('[') && input.contains(']')) {
+      input = input.replaceAll('[', '').replaceAll(']', '');
+    }
+    // // Split by commas, preserving spaces within each part
+    List<String> parts = input.split(',');
+
+    // Capitalize each part and preserve commas and spaces
+    String result = parts.map((part) {
+      List<String> words = part.trim().split(RegExp(r'\s+'));
+      return words
+          .map((word) => word.trim().isEmpty
+              ? word.trim()
+              : word.trim().substring(0, 1).toUpperCase() +
+                  word.trim().substring(1))
+          .join(' ');
+    }).join(', ');
+
+    // Remove any duplicated values
+    result = result.trim().replaceAll(RegExp(r'\s*,+\s*'), ', ');
+    List<String> capitalizedWords = result.split(',');
+    Set<String> uniqueWords = {};
+    capitalizedWords.forEach((word) => uniqueWords.add(word.trim()));
+    return uniqueWords.join(', ');
   }
   /////////////////////////////////////////////////////////
 }

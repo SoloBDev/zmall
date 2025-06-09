@@ -64,7 +64,7 @@ class _GlobalProductState extends State<GlobalProduct> {
     var data = await Service.read('abroad_cart');
 
     if (data != null) {
-      print(data);
+      // print(data);
       setState(() {
         cart = AbroadCart.fromJson(data);
       });
@@ -286,7 +286,8 @@ class _GlobalProductState extends State<GlobalProduct> {
                                 _searchResult[index]['image_url'].length > 0
                                     ? ImageContainer(
                                         url:
-                                            "http://159.65.147.111:8000/${_searchResult[index]['image_url'][0]}",
+                                            "https://app.zmallapp.com/${_searchResult[index]['image_url'][0]}",
+                                        // "http://159.65.147.111:8000/${_searchResult[index]['image_url'][0]}",
                                       )
                                     : ImageContainer(
                                         url: "https://ibb.co/vkhzjd6"),
@@ -422,7 +423,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                                                       0
                                                   ? ImageContainer(
                                                       url:
-                                                          "http://159.65.147.111:8000/${products[index]['items'][idx]['image_url'][0]}",
+                                                          "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
                                                     )
                                                   : ImageContainer(
                                                       url:
@@ -629,7 +630,7 @@ class _GlobalProductState extends State<GlobalProduct> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -665,9 +666,9 @@ class _GlobalProductState extends State<GlobalProduct> {
         body: body,
       );
       print("Product clicked");
-      print(json.decode(response.body));
+      // print(json.decode(response.body));
     } catch (e) {
-      print(e);
+      // print(e);
     }
   }
 }

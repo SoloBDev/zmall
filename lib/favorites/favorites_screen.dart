@@ -270,7 +270,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       }
       return val;
     } catch (e) {
-      print(e);
+      // print(e);
       return null;
     }
   }

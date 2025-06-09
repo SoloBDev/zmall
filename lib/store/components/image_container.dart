@@ -4,50 +4,63 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/size_config.dart';
 
 class ImageContainer extends StatelessWidget {
-  ImageContainer({Key? key, this.url,}) : super(key: key);
+  final BoxFit? fit;
   final String? url;
-  
+  final String? errorUrl;
+  final double? width;
+  final double? height;
+  final BorderRadiusGeometry? borderRadius;
+  final BoxShape? shape;
 
-
+  ImageContainer({
+    super.key,
+    this.url,
+    this.fit,
+    this.errorUrl,
+    this.width,
+    this.height,
+    this.borderRadius,
+    this.shape,
+  });
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
       imageUrl: url!,
       imageBuilder: (context, imageProvider) => Container(
-        width: getProportionateScreenWidth(kDefaultPadding * 5),
-        height: getProportionateScreenHeight(kDefaultPadding * 5),
+        width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
+        height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(
-            getProportionateScreenWidth(
-              kDefaultPadding / 8,
-            ),
-          ),
+          borderRadius: borderRadius ??
+              BorderRadius.circular(
+                getProportionateScreenWidth(kDefaultPadding / 1.5),
+              ),
           color: kWhiteColor,
           image: DecorationImage(
-            fit: BoxFit.cover,
+            fit: fit ?? BoxFit.cover,
             image: imageProvider,
           ),
         ),
       ),
       placeholder: (context, url) => Center(
         child: Container(
-          width: getProportionateScreenWidth(kDefaultPadding * 5),
-          height: getProportionateScreenHeight(kDefaultPadding * 5),
+          width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
+          height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(kWhiteColor),
           ),
         ),
       ),
       errorWidget: (context, url, error) => Container(
-        width: getProportionateScreenWidth(kDefaultPadding * 5),
-        height: getProportionateScreenHeight(kDefaultPadding * 5),
+        width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
+        height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
+          shape: shape ?? BoxShape.circle,
           color: kWhiteColor,
+          borderRadius: borderRadius,
           image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(zmallLogo),
+            fit: fit ?? BoxFit.cover,
+            image: AssetImage(errorUrl ?? zmallLogo),
           ),
         ),
       ),

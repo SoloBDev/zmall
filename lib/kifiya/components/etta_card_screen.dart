@@ -41,13 +41,12 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
 
   bool _loading = false;
 
-
   void _payPayment() async {
     setState(() {
       _loading = true;
     });
     var data = await payPayment();
-    if(data != null && data['success']){
+    if (data != null && data['success']) {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "Payment completed successfully.", false,
           duration: 5));
@@ -56,12 +55,10 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "Payment failed. Please try other payment methods", true,
           duration: 4));
-      await Future.delayed(Duration(seconds: 4)).then((value) => Navigator.pop(context));
+      await Future.delayed(Duration(seconds: 4))
+          .then((value) => Navigator.pop(context));
     }
-
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +95,8 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                           ),
                           Text(
                             'Powered by Dashen Bank S.C.',
-                            style: TextStyle(fontSize: 21, color: Colors.black45),
+                            style:
+                                TextStyle(fontSize: 21, color: Colors.black45),
                           ),
                         ],
                       ),
@@ -106,13 +104,13 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                     Expanded(
                       child: Image.asset(
                         "images/dashen.png",
-                        height: getProportionateScreenHeight(kDefaultPadding * 4),
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 4),
                         width: getProportionateScreenWidth(kDefaultPadding * 4),
                       ),
                     ),
                   ],
                 ),
-
                 const Spacer(),
                 Form(
                   child: Column(
@@ -126,7 +124,7 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                           CardNumberInputFormatter(),
                         ],
                         decoration: InputDecoration(hintText: "Card number"),
-                        onChanged: (value){
+                        onChanged: (value) {
                           setState(() {
                             cardNumber = value;
                           });
@@ -150,18 +148,19 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                                 // Limit the input
                                 LengthLimitingTextInputFormatter(4),
                               ],
-                              onChanged: (value){
+                              onChanged: (value) {
                                 setState(() {
                                   pin = value;
                                 });
                               },
-                              decoration: const InputDecoration(hintText: "PIN"),
+                              decoration:
+                                  const InputDecoration(hintText: "PIN"),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
-                              onChanged: (value){
+                              onChanged: (value) {
                                 setState(() {
                                   exp = value;
                                 });
@@ -207,10 +206,11 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
     setState(() {
       _loading = true;
     });
-    var url = "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/pay_payment_ettacard";
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/pay_payment_ettacard";
 
     Map data = {
-      "card": cardNumber.replaceAll(" ",""),
+      "card": cardNumber.replaceAll(" ", ""),
       "pin": pin,
       "amount": widget.amount,
       "description": "ZMall Order Payment for order ${widget.traceNo}",
@@ -245,7 +245,7 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      print(e);
+      // print(e);
       setState(() {
         this._loading = false;
       });
@@ -260,7 +260,6 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     cardNumberController.dispose();
   }

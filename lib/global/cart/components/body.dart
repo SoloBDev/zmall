@@ -40,12 +40,12 @@ class _BodyState extends State<Body> {
     try {
       var data = await Service.read('abroad_cart');
       var aliCart = await Service.read('abroad_aliexpressCart');
-      print(data);
+      // print(data);
       if (data != null) {
         setState(() {
           cart = AbroadCart.fromJson(data);
         });
-        print(cart);
+        // print(cart);
         calculatePrice();
       }
       // print("ALI CART>>> ${aliCart != null}");
@@ -64,7 +64,7 @@ class _BodyState extends State<Body> {
       //   print("ALI CART NOT FOUND>>>");
       // }
     } catch (e) {
-      print(e);
+      // print(e);
     }
     setState(() {
       _loading = false;
@@ -206,10 +206,10 @@ class _BodyState extends State<Body> {
                                                           aliexpressCart); // Save updated aliexpressCart
                                                     }
                                                   });
-                                                  print(
-                                                      "cart ${cart!.toJson()}");
-                                                  print(
-                                                      "Alicart ${aliexpressCart!.toJson()}");
+                                                  // print(
+                                                  //     "cart ${cart!.toJson()}");
+                                                  // print(
+                                                  //     "Alicart ${aliexpressCart!.toJson()}");
                                                   calculatePrice();
                                                 }),
                                       Text(
@@ -257,9 +257,9 @@ class _BodyState extends State<Body> {
                                                     aliexpressCart); // Save updated aliexpressCart
                                               }
                                             });
-                                            print("cart ${cart!.toJson()}");
-                                            print(
-                                                "Alicart ${aliexpressCart!.toJson()}");
+                                            // print("cart ${cart!.toJson()}");
+                                            // print(
+                                            //     "Alicart ${aliexpressCart!.toJson()}");
                                             calculatePrice();
                                           }),
                                     ],
@@ -282,9 +282,9 @@ class _BodyState extends State<Body> {
                                               aliexpressCart); //NEW
                                         }
                                       });
-                                      print("cart ${cart!.toJson()}");
-                                      print(
-                                          "Alicart ${aliexpressCart!.toJson()}");
+                                      // print("cart ${cart!.toJson()}");
+                                      // print(
+                                      //     "Alicart ${aliexpressCart!.toJson()}");
                                       calculatePrice();
                                     },
                                     child: Text(

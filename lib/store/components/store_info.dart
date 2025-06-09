@@ -4,6 +4,7 @@ import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.da
 
 import 'package:zmall/constants.dart';
 import 'package:zmall/models/language.dart';
+import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 
 class StoreInfo extends StatelessWidget {
@@ -31,7 +32,7 @@ class StoreInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            store['name'],
+            Service.capitalizeFirstLetters(store['name']),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: kBlackColor,
