@@ -24,97 +24,106 @@ class ReferralScreen extends StatelessWidget {
         ),
         elevation: 1.0,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Spacer(),
-            Container(
-              decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  boxShadow: [boxShadow]),
-              child: Padding(
-                padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.share_outlined,
-                      size: getProportionateScreenWidth(kDefaultPadding * 3),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Spacer(),
+              Container(
+                decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding / 2),
                     ),
-                    Text(
-                      "Refer now and earn up to 50 ${Provider.of<ZMetaData>(context, listen: false).currency}.",
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding)),
-                    Text(
-                      "Send a referral link to your friends and family via SMS / Email / Whatsapp",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding)),
-                    Text(
-                      "REFERRAL CODE",
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                    ),
-                    SizedBox(
+                    boxShadow: [boxShadow]),
+                child: Padding(
+                  padding: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.share_outlined,
+                        size: getProportionateScreenWidth(kDefaultPadding * 3),
+                      ),
+                      Text(
+                        "Refer now and earn up to 50 ${Provider.of<ZMetaData>(context, listen: false).currency}.",
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
+                      Text(
+                        "Send a referral link to your friends and family via SMS / Email / Whatsapp",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
+                      Text(
+                        "REFERRAL CODE",
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      Container(
+                        width:
+                            getProportionateScreenWidth(kDefaultPadding * 10),
                         height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Container(
-                      width: getProportionateScreenWidth(kDefaultPadding * 10),
-                      height: getProportionateScreenHeight(kDefaultPadding * 3),
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
+                            getProportionateScreenHeight(kDefaultPadding * 3),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          borderRadius: BorderRadius.circular(
+                            getProportionateScreenWidth(kDefaultPadding / 2),
+                          ),
+                          border: Border.all(
+                            color: kSecondaryColor,
+                          ),
+                          boxShadow: [boxShadow],
                         ),
-                        border: Border.all(
-                          color: kSecondaryColor,
+                        child: Center(
+                          child: Text(
+                            referralCode,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                          ),
                         ),
-                        boxShadow: [boxShadow],
                       ),
-                      child: Center(
-                        child: Text(
-                          referralCode,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-//            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-            Spacer(),
-            CustomButton(
-              title: "COPY CODE",
-              press: () {
-                Clipboard.setData(new ClipboardData(text: referralCode))
-                    .then((_) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      Service.showMessage(
-                          "Referral code copied to clipboard", false));
-                });
-              },
-              color: kBlackColor,
-            )
-          ],
+              //            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              Spacer(),
+              CustomButton(
+                title: "COPY CODE",
+                press: () {
+                  Clipboard.setData(new ClipboardData(text: referralCode))
+                      .then((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        Service.showMessage(
+                            "Referral code copied to clipboard", false));
+                  });
+                },
+                color: kBlackColor,
+              )
+            ],
+          ),
         ),
       ),
     );

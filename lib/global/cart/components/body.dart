@@ -40,31 +40,31 @@ class _BodyState extends State<Body> {
     try {
       var data = await Service.read('abroad_cart');
       var aliCart = await Service.read('abroad_aliexpressCart');
-      // print(data);
+      // debugPrint(data);
       if (data != null) {
         setState(() {
           cart = AbroadCart.fromJson(data);
         });
-        // print(cart);
+        // debugPrint(cart);
         calculatePrice();
       }
-      // print("ALI CART>>> ${aliCart != null}");
+      // debugPrint("ALI CART>>> ${aliCart != null}");
       if (aliCart != null) {
         setState(() {
           aliexpressCart = AbroadAliExpressCart.fromJson(aliCart);
           Service.save('abroad_aliexpressCart', aliexpressCart);
         });
-        // print("ALI CART>>> ${aliexpressCart!.toJson()}");
-        // print(
+        // debugPrint("ALI CART>>> ${aliexpressCart!.toJson()}");
+        // debugPrint(
         //     "ALI CART ITEM>>> ${aliexpressCart!.toJson()['cart']['items']}");
-        // print("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
-        // print("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
+        // debugPrint("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
+        // debugPrint("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
       }
       // else {
-      //   print("ALI CART NOT FOUND>>>");
+      //   debugPrint("ALI CART NOT FOUND>>>");
       // }
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
     }
     setState(() {
       _loading = false;
@@ -206,9 +206,9 @@ class _BodyState extends State<Body> {
                                                           aliexpressCart); // Save updated aliexpressCart
                                                     }
                                                   });
-                                                  // print(
+                                                  // debugPrint(
                                                   //     "cart ${cart!.toJson()}");
-                                                  // print(
+                                                  // debugPrint(
                                                   //     "Alicart ${aliexpressCart!.toJson()}");
                                                   calculatePrice();
                                                 }),
@@ -257,8 +257,8 @@ class _BodyState extends State<Body> {
                                                     aliexpressCart); // Save updated aliexpressCart
                                               }
                                             });
-                                            // print("cart ${cart!.toJson()}");
-                                            // print(
+                                            // debugPrint("cart ${cart!.toJson()}");
+                                            // debugPrint(
                                             //     "Alicart ${aliexpressCart!.toJson()}");
                                             calculatePrice();
                                           }),
@@ -282,8 +282,8 @@ class _BodyState extends State<Body> {
                                               aliexpressCart); //NEW
                                         }
                                       });
-                                      // print("cart ${cart!.toJson()}");
-                                      // print(
+                                      // debugPrint("cart ${cart!.toJson()}");
+                                      // debugPrint(
                                       //     "Alicart ${aliexpressCart!.toJson()}");
                                       calculatePrice();
                                     },

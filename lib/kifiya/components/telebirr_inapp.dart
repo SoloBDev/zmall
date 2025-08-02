@@ -40,10 +40,10 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         'shortCode': shortCode,
         // 'returnUrl': returnUrl
       };
-      // print('Invoking native placeOrder method with arguments:>>>> $arguments\n');
+      // debugPrint('Invoking native placeOrder method with arguments:>>>> $arguments\n');
 
       final response = await _channel.invokeMethod('placeOrder', arguments);
-      // print("Native iOS Response:>>>> ${response.toString()}\n");
+      // debugPrint("Native iOS Response:>>>> ${response.toString()}\n");
 
       // Check if the response is a map and contains status and code
       if (response.isNotEmpty) {
@@ -78,10 +78,10 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             Duration(seconds: 2), () => Navigator.pop(context, false));
       }
     } on PlatformException catch (e) {
-      // print('PlatformException caught:');
-      // print('Error details: ${e.details}');
-      // print('Error message: ${e.message}');
-      // print('Error code: ${e.details["code"]}');
+      // debugPrint('PlatformException caught:');
+      // debugPrint('Error details: ${e.details}');
+      // debugPrint('Error message: ${e.message}');
+      // debugPrint('Error code: ${e.details["code"]}');
       _handlePaymentResponse(code: e.details["code"]);
       if (mounted) {
         // Check if the widget is still mounted
@@ -92,7 +92,7 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         });
       }
     } catch (e) {
-      // print('Unexpected error in placeOrderIOS: $e');
+      // debugPrint('Unexpected error in placeOrderIOS: $e');
       Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
     }
   }
@@ -112,7 +112,7 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       final Map<Object?, Object?> response =
           await _channel.invokeMethod('placeOrder', arguments);
 
-      // print("***Response From Native (Android/iOS)***: ${response.toString()}");
+      // debugPrint("***Response From Native (Android/iOS)***: ${response.toString()}");
 
       // Check if the response is a map and contains status and code
       if (response.isNotEmpty) {
@@ -146,9 +146,9 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             Duration(seconds: 2), () => Navigator.pop(context, false));
       }
     } on PlatformException catch (e) {
-      // print('Error details: ${e.details}');
-      // print('Error message: ${e.message}');
-      // print('Error code: ${e.details["code"]}');
+      // debugPrint('Error details: ${e.details}');
+      // debugPrint('Error message: ${e.message}');
+      // debugPrint('Error code: ${e.details["code"]}');
       _handlePaymentResponse(code: e.details["code"]);
       Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
     }

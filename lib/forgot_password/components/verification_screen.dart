@@ -260,7 +260,7 @@ class _VerificationScreenState extends State<VerificationScreen>
           if (widget.login) {
             // Handle login case
           } else {
-            // print('OTP Entered: $otp');
+            // debugPrint('OTP Entered: $otp');
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(

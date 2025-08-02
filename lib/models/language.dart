@@ -152,7 +152,7 @@ class ZLanguage extends ChangeNotifier {
   String quantity = "Quantity";
 
   void changeLanguage(String newString) {
-    print("Setting language to $newString");
+    debugPrint("Setting language to $newString");
     if (newString == "en_US") {
       password = "Password";
       country = "Country";
@@ -452,6 +452,6 @@ class ZLanguage extends ChangeNotifier {
       Service.save("lang", "cn_CN");
     }
     notifyListeners();
-    print("Language changed....");
+    debugPrint("Language changed....");
   }
 }

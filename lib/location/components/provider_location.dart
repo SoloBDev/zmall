@@ -113,7 +113,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
 
   void getCurrentLocation() async {
     try {
-      print("getting provider location....");
+      debugPrint("getting provider location....");
       var location = await getProviderLocation();
       if (location != null && location['success']) {
         Uint8List imageData = await getMarker(true);
@@ -137,7 +137,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
       }
       await Future.delayed(Duration(seconds: 6), () => getCurrentLocation());
     } on PlatformException catch (e) {
-      // print(e);
+      // debugPrint(e);
       await Future.delayed(Duration(seconds: 10), () => getCurrentLocation());
     }
   }
@@ -263,7 +263,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

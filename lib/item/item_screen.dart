@@ -33,13 +33,13 @@ class ItemScreen extends StatelessWidget {
       //   backgroundColor: kPrimaryColor,
       // ),
       body: SafeArea(
+        top: false,
         child: Body(
           item: item,
           location: location,
           isDineIn: isDineIn,
           tableNumber: tableNumber,
           isSplashRedirect: isSplashRedirect,
-
         ),
       ),
     );

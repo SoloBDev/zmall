@@ -13,7 +13,7 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/custom_tag.dart';
+
 
 class Body extends StatefulWidget {
   const Body({
@@ -68,8 +68,8 @@ class _BodyState extends State<Body> {
           clearedRequired = true;
         });
       }
-      // print("$reqCount required specifications found");
-      // print(requiredSpecs);
+      // debugPrint("$reqCount required specifications found");
+      // debugPrint(requiredSpecs);
     } else {
       setState(() {
         clearedRequired = true;
@@ -79,9 +79,10 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
+    // debugPrint("Item: ${widget.item}");
+    // debugPrint("specifications: ${widget.item['specifications']}");
     requiredCount();
     getCart();
     initialPrice = widget.item['price'] != null ? widget.item['price'] + .0 : 0;
@@ -93,7 +94,7 @@ class _BodyState extends State<Body> {
     specification!.forEach((spec) {
       spec.list!.forEach((element) {
         temPrice += element.price!;
-        // print(element.price);
+        // debugPrint(element.price);
       });
     });
     setState(() {
@@ -108,7 +109,7 @@ class _BodyState extends State<Body> {
         if (requiredSpecs!.contains(element.uniqueId)) {
           count += 1;
         }
-        // print("$count/$reqCount required specifications added");
+        // debugPrint("$count/$reqCount required specifications added");
       });
       if (reqCount == count) {
         setState(() {
@@ -145,7 +146,7 @@ class _BodyState extends State<Body> {
 
   void getCart() async {
     var data = await Service.read('cart');
-    // print(data);
+    // debugPrint(data);
     if (data != null) {
       setState(() {
         cart = Cart.fromJson(data);
@@ -162,8 +163,8 @@ class _BodyState extends State<Body> {
       storeId: widget.item['store_id'],
       storeLocation: storeLocation,
     );
-    // print(cart!.toJson());
-
+    // debugPrint(cart!.toJson());
+    // debugPrint("cart ${cart!.toJson()}");
     Service.save('cart', cart!.toJson());
     ScaffoldMessenger.of(context)
         .showSnackBar(Service.showMessage("Item added to cart!", false));
@@ -174,6 +175,7 @@ class _BodyState extends State<Body> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        //////image section
         Container(
           decoration: BoxDecoration(
             color: kPrimaryColor,
@@ -186,23 +188,23 @@ class _BodyState extends State<Body> {
           ),
           child: Stack(
             children: [
-              GestureDetector(
+              InkWell(
                 child: CachedNetworkImage(
                   imageUrl: widget.item['image_url'].length > 0
                       ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.item['image_url'][0]}"
                       : "https://ibb.co/vkhzjd6",
                   imageBuilder: (context, imageProvider) => Container(
                     width: double.infinity,
-                    height: getProportionateScreenHeight(kDefaultPadding * 16),
+                    height: getProportionateScreenHeight(kDefaultPadding * 20),
                     decoration: BoxDecoration(
                       color: kPrimaryColor,
                       boxShadow: [boxShadow],
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
-                        bottomRight: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
-                      ),
+                      // borderRadius: BorderRadius.only(
+                      //   bottomLeft: Radius.circular(
+                      //       getProportionateScreenWidth(kDefaultPadding / 2)),
+                      //   bottomRight: Radius.circular(
+                      //       getProportionateScreenWidth(kDefaultPadding / 2)),
+                      // ),
                       image: DecorationImage(
                         fit: BoxFit.cover,
                         image: imageProvider,
@@ -262,30 +264,34 @@ class _BodyState extends State<Body> {
               widget.item['image_url'].length > 0
                   ? Align(
                       alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
+                      child: SafeArea(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
                             horizontal:
                                 getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenWidth(
-                                kDefaultPadding * 1.5)),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.zoom_out_map,
-                            color: kPrimaryColor,
+                            // vertical: getProportionateScreenWidth(
+                            //     kDefaultPadding * 1.5)
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return PhotoViewer(
-                                    imageUrl: widget.item['image_url'][0],
-                                    itemName: widget.item['name'],
-                                  );
-                                },
+                          child: IconButton(
+                              icon: Icon(
+                                Icons.zoom_out_map,
+                                color: kBlackColor,
                               ),
-                            );
-                          },
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return PhotoViewer(
+                                        imageUrl: widget.item['image_url'][0],
+                                        itemName: widget.item['name'],
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              style: IconButton.styleFrom(
+                                  backgroundColor: kWhiteColor)),
                         ),
                       ),
                     )
@@ -294,40 +300,37 @@ class _BodyState extends State<Body> {
                 height: getProportionateScreenHeight(kDefaultPadding / 4),
               ),
               Align(
-                  alignment: Alignment.topLeft,
+                alignment: Alignment.topLeft,
+                child: SafeArea(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding),
-                        vertical:
-                            getProportionateScreenWidth(kDefaultPadding * 1.5)),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: kPrimaryColor,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            if (widget.isSplashRedirect) {
-                              Navigator.pushNamedAndRemoveUntil(context,
-                                  "/start", (Route<dynamic> route) => false);
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: kBlackColor,
-                          ),
-                        ),
-                      ),
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                      // vertical:
+                      //     getProportionateScreenWidth(kDefaultPadding * 1.5)
                     ),
-                  )),
+                    child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: kBlackColor,
+                        ),
+                        onPressed: () {
+                          if (widget.isSplashRedirect) {
+                            Navigator.pushNamedAndRemoveUntil(context, "/start",
+                                (Route<dynamic> route) => false);
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                        style:
+                            IconButton.styleFrom(backgroundColor: kWhiteColor)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+
+        /////item name and details section//////
         Container(
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -337,32 +340,61 @@ class _BodyState extends State<Body> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.item['name'],
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: kBlackColor,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        Service.capitalizeFirstLetters(widget.item['name']),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: kBlackColor,
+                                ),
+                        textAlign: TextAlign.left,
                       ),
-                  textAlign: TextAlign.left,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return NotificationStore(
+                              storeId: widget.item['store_id'],
+                              storeName: "Loading...");
+                        }));
+                      },
+                      child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding / 2,
+                              vertical: kDefaultPadding / 4),
+                          decoration: BoxDecoration(
+                              color: kSecondaryColor.withValues(alpha: 0.2),
+                              borderRadius:
+                                  BorderRadius.circular(kDefaultPadding / 2)),
+                          child: Row(
+                            spacing: kDefaultPadding / 3,
+                            children: [
+                              Icon(
+                                size: 16,
+                                Icons.more_outlined,
+                                color: kSecondaryColor,
+                              ),
+                              Text(
+                                "More items",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                      // fontWeight: FontWeight.w900,
+                                      color: kSecondaryColor,
+                                    ),
+                                textAlign: TextAlign.left,
+                              ),
+                            ],
+                          )),
+                    )
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return NotificationStore(
-                          storeId: widget.item['store_id'],
-                          storeName: "Loading...");
-                    }));
-                  },
-                  child: Text(
-                    "See other items >>",
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: kSecondaryColor,
-                        ),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
+
                 Text(
                   widget.item['details'].toString().replaceAll("\n", "").trim(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -371,20 +403,22 @@ class _BodyState extends State<Body> {
                       ),
                   textAlign: TextAlign.left,
                 ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 5),
-                ),
+                // SizedBox(
+                //   height: getProportionateScreenHeight(kDefaultPadding / 5),
+                // ),
               ],
             ),
           ),
         ),
-        Container(
-          width: double.infinity,
-          height: 0.2,
-          color: kGreyColor,
-        ),
-        widget.item['specifications'].length > 0
-            ? Expanded(
+        // Container(
+        //   width: double.infinity,
+        //   height: 0.2,
+        //   color: kGreyColor,
+        // ),
+        ////////specifications section
+        widget.item['specifications'].length == 0
+            ? Spacer()
+            : Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal:
@@ -393,532 +427,638 @@ class _BodyState extends State<Body> {
                     shrinkWrap: true,
                     itemCount: widget.item['specifications'].length,
                     itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                // mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CustomTag(
-                                    text:
-                                        "${widget.item['specifications'][index]['name'].toString().toUpperCase()}",
-                                    color: kBlackColor,
-                                  ),
-                                  widget.item['specifications'][index]
-                                          ['is_required']
-                                      ? Text(
-                                          "${Provider.of<ZLanguage>(context).chooseOne} ${widget.item['specifications'][index]['range']}",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
-                                        )
-                                      : Container(),
-                                ],
-                              ),
-                              widget.item['specifications'][index]
-                                      ['is_required']
-                                  ? CustomTag(
-                                      text: Provider.of<ZLanguage>(context)
-                                          .required,
-                                      color: kSecondaryColor,
-                                    )
-                                  : Container(),
-                            ],
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4)),
-                          ListView.separated(
-                            physics: ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: widget
-                                .item['specifications'][index]['list'].length,
-                            itemBuilder: (context, idx) {
-                              return GestureDetector(
-                                onTap: () {
-                                  ListElement specItem = ListElement(
-                                      uniqueId: widget.item['specifications']
-                                          [index]['list'][idx]['unique_id'],
-                                      price: widget.item['specifications']
-                                              [index]['list'][idx]['price'] +
-                                          .0);
-
-                                  if (specification!
-                                          .where((element) =>
-                                              element.uniqueId ==
-                                              widget.item?['specifications']
-                                                  ?[index]['unique_id'])
-                                          .length >
-                                      0) {
-                                    // print(specification!.first.toJson());
-                                    // print(specItem.toJson());
-                                    // print(
-                                    //     "Specification list with sUnqId ${widget.item['specifications'][index]['unique_id']}  found");
-
-                                    // Found specification with this unique_id
-                                    var spec = (specification!.firstWhere(
-                                        (element) =>
-                                            element.uniqueId ==
-                                            widget.item['specifications'][index]
-                                                ['unique_id']));
-                                    if (spec.list!
-                                            .where((element) =>
-                                                element.uniqueId ==
-                                                specItem.uniqueId)
-                                            .length >
-                                        0) {
-                                      // Item found in specifications
-                                      setState(() {
-                                        spec.list!.removeWhere((element) =>
-                                            element.uniqueId ==
-                                            specItem.uniqueId);
-                                        selected.removeWhere((element) =>
-                                            element.uniqueId ==
-                                            specItem.uniqueId);
-                                        if (spec.list!.length == 0) {
-                                          setState(() {
-                                            specification!.removeWhere(
-                                                (element) =>
-                                                    element.uniqueId ==
-                                                    spec.uniqueId);
-                                          });
-                                        }
-                                      });
-                                    } else {
-                                      // Item not found in specifications...
-                                      if (widget.item['specifications'][index]
-                                              ['type'] ==
-                                          2) {
-                                        if (widget.item['specifications'][index]
-                                                ['range'] ==
-                                            0) {
-                                          setState(() {
-                                            spec.list!.add(specItem);
-                                            selected.add(specItem);
-                                          });
-                                        } else if (spec.list!.length <
-                                            widget.item['specifications'][index]
-                                                ['range']) {
-                                          setState(() {
-                                            spec.list!.add(specItem);
-                                            selected.add(specItem);
-                                          });
-                                        }
-                                      } else {
-                                        try {
-                                          setState(() {
-                                            selected.removeWhere((element) =>
-                                                element.uniqueId ==
-                                                spec.list![0].uniqueId);
-                                            spec.list!.removeAt(0);
-                                            spec.list!.add(specItem);
-                                            selected.add(specItem);
-                                          });
-                                        } catch (e) {
-                                          // print(e);
-                                          setState(() {
-                                            spec.list!.add(specItem);
-                                            selected.add(specItem);
-                                          });
-                                        }
-                                      }
-                                    }
-                                  } else {
-                                    // Specification with this unique_id not found adding a new one
-                                    // print(
-                                    //     "Specification with sUnqId ${widget.item['specifications'][index]['unique_id']} not found");
-                                    setState(() {
-                                      Specification spec = Specification(
-                                          uniqueId:
-                                              widget.item['specifications']
-                                                  [index]['unique_id'],
-                                          list: [specItem]);
-                                      specification!.add(spec);
-                                      selected.add(specItem);
-                                    });
-                                  }
-
-                                  checkRequired();
-                                  updatePrice();
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 1.5)),
-                                  decoration: BoxDecoration(
-                                    boxShadow: [kDefaultShadow],
-                                    color: selected
-                                                .where((element) =>
-                                                    element.uniqueId ==
-                                                    widget.item['specifications']
-                                                            ?[index]['list']
-                                                        [idx]['unique_id'])
-                                                .length >
-                                            0
-                                        ? kSecondaryColor.withValues(alpha: 0.2)
-                                        : kWhiteColor,
-                                    // color: ((selected.firstWhere(
-                                    //           (it) =>
-                                    //               it.uniqueId ==
-                                    //               widget.item['specifications']
-                                    //                       [index]['list'][idx]
-                                    //                   ['unique_id'],
-                                    //           orElse: () => null,
-                                    //         )) !=
-                                    //         null)
-                                    //     ? kSecondaryColor.withValues(alpha: 0.2)
-                                    //     : kWhiteColor,
-                                    borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 4),
+                      return Container(
+                        padding: EdgeInsets.all(
+                          kDefaultPadding,
+                        ),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          boxShadow: [kDefaultShadow],
+                          border: Border.all(color: kWhiteColor),
+                          borderRadius: BorderRadius.circular(kDefaultPadding),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  // mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: kDefaultPadding / 2,
+                                          vertical: kDefaultPadding / 4),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                              kDefaultPadding / 2),
+                                          color: kBlackColor.withValues(
+                                              alpha: 0.2)),
+                                      child: Text(
+                                        "${Service.capitalizeFirstLetters(widget.item['specifications'][index]['name'].toString().toUpperCase())}",
+                                        style: TextStyle(
+                                            color: kBlackColor,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: kDefaultPadding / 2,
+                                    ),
+                                    if (widget.item['specifications'][index]
+                                        ['is_required'])
+                                      Text(
+                                        "${Provider.of<ZLanguage>(context).chooseOne} ${widget.item['specifications'][index]['range']}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelMedium,
+                                      )
+                                  ],
+                                ),
+                                if (widget.item['specifications'][index]
+                                    ['is_required'])
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: kDefaultPadding / 2,
+                                        vertical: kDefaultPadding / 4),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                            kDefaultPadding),
+                                        color: kSecondaryColor.withValues(
+                                            alpha: 0.2)),
+                                    child: Text(
+                                      Provider.of<ZLanguage>(context).required,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium!
+                                          .copyWith(color: kSecondaryColor),
+                                      // style: TextStyle(color: kSecondaryColor),
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "${widget.item['specifications'][index]['list'][idx]['name']}",
-                                              softWrap: true,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.item['specifications'][index]['list'][idx]['price'].toStringAsFixed(2)}",
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                            separatorBuilder:
-                                (BuildContext context, int index) => SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                              ],
                             ),
-                          )
-                        ],
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                            ListView.separated(
+                              physics: ClampingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: widget
+                                  .item['specifications'][index]['list'].length,
+                              itemBuilder: (context, idx) {
+                                return InkWell(
+                                  onTap: () {
+                                    ListElement specItem = ListElement(
+                                        uniqueId: widget.item['specifications']
+                                            [index]['list'][idx]['unique_id'],
+                                        price: widget.item['specifications']
+                                                [index]['list'][idx]['price'] +
+                                            .0);
+
+                                    if (specification!
+                                            .where((element) =>
+                                                element.uniqueId ==
+                                                widget.item?['specifications']
+                                                    ?[index]['unique_id'])
+                                            .length >
+                                        0) {
+                                      // debugPrint(specification!.first.toJson());
+                                      // debugPrint(specItem.toJson());
+                                      // debugPrint(
+                                      //     "Specification list with sUnqId ${widget.item['specifications'][index]['unique_id']}  found");
+
+                                      // Found specification with this unique_id
+                                      var spec = (specification!.firstWhere(
+                                          (element) =>
+                                              element.uniqueId ==
+                                              widget.item['specifications']
+                                                  [index]['unique_id']));
+                                      if (spec.list!
+                                              .where((element) =>
+                                                  element.uniqueId ==
+                                                  specItem.uniqueId)
+                                              .length >
+                                          0) {
+                                        // Item found in specifications
+                                        setState(() {
+                                          spec.list!.removeWhere((element) =>
+                                              element.uniqueId ==
+                                              specItem.uniqueId);
+                                          selected.removeWhere((element) =>
+                                              element.uniqueId ==
+                                              specItem.uniqueId);
+                                          if (spec.list!.length == 0) {
+                                            setState(() {
+                                              specification!.removeWhere(
+                                                  (element) =>
+                                                      element.uniqueId ==
+                                                      spec.uniqueId);
+                                            });
+                                          }
+                                        });
+                                      } else {
+                                        // Item not found in specifications...
+                                        if (widget.item['specifications'][index]
+                                                ['type'] ==
+                                            2) {
+                                          if (widget.item['specifications']
+                                                  [index]['range'] ==
+                                              0) {
+                                            setState(() {
+                                              spec.list!.add(specItem);
+                                              selected.add(specItem);
+                                            });
+                                          } else if (spec.list!.length <
+                                              widget.item['specifications']
+                                                  [index]['range']) {
+                                            setState(() {
+                                              spec.list!.add(specItem);
+                                              selected.add(specItem);
+                                            });
+                                          }
+                                        } else {
+                                          try {
+                                            setState(() {
+                                              selected.removeWhere((element) =>
+                                                  element.uniqueId ==
+                                                  spec.list![0].uniqueId);
+                                              spec.list!.removeAt(0);
+                                              spec.list!.add(specItem);
+                                              selected.add(specItem);
+                                            });
+                                          } catch (e) {
+                                            // debugPrint(e);
+                                            setState(() {
+                                              spec.list!.add(specItem);
+                                              selected.add(specItem);
+                                            });
+                                          }
+                                        }
+                                      }
+                                    } else {
+                                      // Specification with this unique_id not found adding a new one
+                                      // debugPrint(
+                                      //     "Specification with sUnqId ${widget.item['specifications'][index]['unique_id']} not found");
+                                      setState(() {
+                                        Specification spec = Specification(
+                                            uniqueId:
+                                                widget.item['specifications']
+                                                    [index]['unique_id'],
+                                            list: [specItem]);
+                                        specification!.add(spec);
+                                        selected.add(specItem);
+                                      });
+                                    }
+
+                                    checkRequired();
+                                    updatePrice();
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 1.5)),
+                                    decoration: BoxDecoration(
+                                      // boxShadow: [kDefaultShadow],
+                                      border: Border.all(
+                                        color: selected
+                                                    .where((element) =>
+                                                        element.uniqueId ==
+                                                        widget.item['specifications']
+                                                                ?[index]['list']
+                                                            [idx]['unique_id'])
+                                                    .length >
+                                                0
+                                            ? kSecondaryColor.withValues(
+                                                alpha: 0.2)
+                                            : kBlackColor.withValues(
+                                                alpha: 0.1),
+                                      ),
+                                      color: selected
+                                                  .where((element) =>
+                                                      element.uniqueId ==
+                                                      widget.item['specifications']
+                                                              ?[index]['list']
+                                                          [idx]['unique_id'])
+                                                  .length >
+                                              0
+                                          ? kSecondaryColor.withValues(
+                                              alpha: 0.2)
+                                          : kWhiteColor,
+                                      // color: ((selected.firstWhere(
+                                      //           (it) =>
+                                      //               it.uniqueId ==
+                                      //               widget.item['specifications']
+                                      //                       [index]['list'][idx]
+                                      //                   ['unique_id'],
+                                      //           orElse: () => null,
+                                      //         )) !=
+                                      //         null)
+                                      //     ? kSecondaryColor.withValues(alpha: 0.2)
+                                      //     : kWhiteColor,
+                                      borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 4),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${Service.capitalizeFirstLetters(widget.item['specifications'][index]['list'][idx]['name'])}",
+                                                softWrap: true,
+                                                style: TextStyle(
+                                                  color: selected
+                                                              .where((element) =>
+                                                                  element
+                                                                      .uniqueId ==
+                                                                  widget.item['specifications']
+                                                                              ?[
+                                                                              index]
+                                                                          [
+                                                                          'list'][idx]
+                                                                      [
+                                                                      'unique_id'])
+                                                              .length >
+                                                          0
+                                                      ? kSecondaryColor
+                                                      : kBlackColor,
+                                                  fontWeight: selected
+                                                              .where((element) =>
+                                                                  element
+                                                                      .uniqueId ==
+                                                                  widget.item['specifications']
+                                                                              ?[
+                                                                              index]
+                                                                          [
+                                                                          'list'][idx]
+                                                                      [
+                                                                      'unique_id'])
+                                                              .length >
+                                                          0
+                                                      ? FontWeight.bold
+                                                      : FontWeight.normal,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.item['specifications'][index]['list'][idx]['price'].toStringAsFixed(2)}",
+                                          style: TextStyle(
+                                            color: selected
+                                                        .where((element) =>
+                                                            element.uniqueId ==
+                                                            widget.item['specifications']
+                                                                        ?[index]
+                                                                    [
+                                                                    'list'][idx]
+                                                                ['unique_id'])
+                                                        .length >
+                                                    0
+                                                ? kSecondaryColor
+                                                : kBlackColor,
+                                            fontWeight: selected
+                                                        .where((element) =>
+                                                            element.uniqueId ==
+                                                            widget.item['specifications']
+                                                                        ?[index]
+                                                                    [
+                                                                    'list'][idx]
+                                                                ['unique_id'])
+                                                        .length >
+                                                    0
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) => SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                              ),
+                            )
+                          ],
+                        ),
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) =>
                         SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
+                      height: getProportionateScreenHeight(kDefaultPadding),
                     ),
                   ),
                 ),
-              )
-            : Column(
+              ),
+        // widget.item['specifications'].length > 0 ? Container() : Spacer(),
+
+        //////////price and button section////
+        Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: getProportionateScreenWidth(kDefaultPadding),
+              vertical: getProportionateScreenHeight(kDefaultPadding)),
+          decoration: BoxDecoration(
+            color: kPrimaryColor,
+            border: Border(top: BorderSide(color: kWhiteColor)),
+            borderRadius: BorderRadius.only(
+              topLeft:
+                  Radius.circular(getProportionateScreenWidth(kDefaultPadding)),
+              topRight:
+                  Radius.circular(getProportionateScreenWidth(kDefaultPadding)),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: kDefaultPadding / 2,
+            children: [
+              ////proce section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
+                  Text(
+                    "${Provider.of<ZLanguage>(context).price}: ",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: kBlackColor),
                   ),
-                  Center(
-                    child: Text(Provider.of<ZLanguage>(context).noExtra),
+                  Text(
+                    "${Provider.of<ZMetaData>(context, listen: false).currency} ${price!.toStringAsFixed(2)}",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: kBlackColor, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-        widget.item['specifications'].length > 0 ? Container() : Spacer(),
-        Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: getProportionateScreenWidth(kDefaultPadding)),
-          decoration: BoxDecoration(
-            color: kPrimaryColor,
-//              borderRadius: BorderRadius.circular(
-//                  getProportionateScreenWidth(kDefaultPadding)),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: getProportionateScreenHeight(kDefaultPadding / 3)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "${Provider.of<ZLanguage>(context).price}:",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(color: kBlackColor),
-                ),
-                Text(
-                  "${Provider.of<ZMetaData>(context, listen: false).currency} ${price!.toStringAsFixed(2)}",
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: kBlackColor, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: kPrimaryColor,
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: getProportionateScreenWidth(kDefaultPadding),
-              right: getProportionateScreenWidth(kDefaultPadding),
-              bottom: getProportionateScreenHeight(kDefaultPadding),
-//              top: getProportionateScreenHeight(kDefaultPadding / 4),
-            ),
-            child: Container(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    child: Container(
-                      child: Padding(
-                        padding: EdgeInsets.all(
-                          getProportionateScreenWidth(kDefaultPadding / 3),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add,
-                              color: kPrimaryColor,
-                              size: getProportionateScreenWidth(
-                                kDefaultPadding / 1.5,
-                              ),
-                            ),
-                            Text(
-                              Provider.of<ZLanguage>(context).note,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
-                                  ?.copyWith(color: kPrimaryColor),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        color: kBlackColor,
-                        borderRadius:
-                            BorderRadius.circular(kDefaultPadding / 2),
-                      ),
-                    ),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            backgroundColor: kPrimaryColor,
-                            title: Text(Provider.of<ZLanguage>(context).note),
-                            content: TextField(
-                              style: TextStyle(color: kBlackColor),
-                              maxLines: null,
-                              keyboardType: TextInputType.multiline,
-                              onChanged: (val) {
-                                note = val;
-                              },
-                              decoration: textFieldInputDecorator.copyWith(
-                                  labelText:
-                                      Provider.of<ZLanguage>(context).note),
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text(
-                                  Provider.of<ZLanguage>(context).note,
-                                  style: TextStyle(
-                                    color: kSecondaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+
+              ////
+              ///button section///
+              Container(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      child: Container(
+                        child: Padding(
+                          padding: EdgeInsets.all(
+                            getProportionateScreenWidth(kDefaultPadding / 3),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add,
+                                color: kPrimaryColor,
+                                size: getProportionateScreenWidth(
+                                  kDefaultPadding / 1.5,
                                 ),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
+                              ),
+                              Text(
+                                Provider.of<ZLanguage>(context).note,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(color: kPrimaryColor),
+                                textAlign: TextAlign.center,
                               ),
                             ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding),
-                  ),
-                  Expanded(
-                    child: CustomButton(
-                      title: Provider.of<ZLanguage>(context).addToCart,
-                      press: clearedRequired && price != 0
-                          ? () async {
-                              await Service.remove('images');
-
-                              Item item = Item(
-                                id: widget.item['_id'],
-                                quantity: quantity,
-                                specification: specification,
-                                noteForItem: note,
-                                price: price,
-                                itemName: widget.item['name'],
-                                imageURL: widget.item['image_url'].length > 0
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.item['image_url'][0]}"
-                                    : "https://ibb.co/vkhzjd6",
-                              );
-                              StoreLocation storeLocation = StoreLocation(
-                                  long: widget.location[1],
-                                  lat: widget.location[0]);
-                              DestinationAddress destination =
-                                  DestinationAddress(
-                                long: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .longitude,
-                                lat: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .latitude,
-                                name: "Current Location",
-                                note: "User current location",
-                              );
-                              if (cart != null) {
-                                if (userData != null) {
-                                  if (cart!.storeId ==
-                                      widget.item['store_id']) {
-                                    setState(() {
-                                      cart!.items!.add(item);
-                                      Service.save('cart', cart);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        Service.showMessage(
-                                            "Item added to cart", false),
-                                      );
-                                      Navigator.of(context).pop();
-                                    });
-                                  } else {
-                                    _showDialog(
-                                        item, destination, storeLocation);
-                                  }
-                                } else {
-                                  // print("User not logged in...");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please login in...", true));
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LoginScreen(
-                                        firstRoute: false,
-                                      ),
-                                    ),
-                                  ).then((value) => getUser());
-                                }
-                              } else {
-                                if (userData != null) {
-                                  // print("Empty cart! Adding new item.");
-                                  addToCart(item, destination, storeLocation);
-                                  Navigator.of(context).pop();
-                                } else {
-                                  // print("User not logged in...");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please login in...", true));
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LoginScreen(
-                                        firstRoute: false,
-                                      ),
-                                    ),
-                                  ).then((value) => getUser());
-                                }
-                              }
-                            }
-                          : () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Make sure to select required specifications!",
-                                      true));
-                            },
-                      color: clearedRequired && price != 0
-                          ? kSecondaryColor
-                          : kGreyColor,
-                    ),
-                  ),
-                  SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding),
-                  ),
-                  Row(
-                    children: [
-                      InkWell(
-                        child: Container(
-                          child: Padding(
-                            padding: EdgeInsets.all(
-                              getProportionateScreenWidth(kDefaultPadding / 3),
-                            ),
-                            child: Icon(
-                              Icons.remove,
-                              color: kPrimaryColor,
-                            ),
-                          ),
-                          decoration: BoxDecoration(
-                            color: quantity != 1 ? kSecondaryColor : kGreyColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(kDefaultPadding / 2),
-                              bottomLeft: Radius.circular(kDefaultPadding / 2),
-                            ),
                           ),
                         ),
-                        onTap: quantity != 1
-                            ? () {
-                                setState(() {
-                                  quantity -= 1;
-                                  updatePrice();
-                                });
+                        decoration: BoxDecoration(
+                          color: kBlackColor,
+                          borderRadius:
+                              BorderRadius.circular(kDefaultPadding / 2),
+                        ),
+                      ),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              backgroundColor: kPrimaryColor,
+                              title: Text(Provider.of<ZLanguage>(context).note),
+                              content: TextField(
+                                style: TextStyle(color: kBlackColor),
+                                maxLines: null,
+                                keyboardType: TextInputType.multiline,
+                                onChanged: (val) {
+                                  note = val;
+                                },
+                                decoration: textFieldInputDecorator.copyWith(
+                                    labelText:
+                                        Provider.of<ZLanguage>(context).note),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text(
+                                    Provider.of<ZLanguage>(context).note,
+                                    style: TextStyle(
+                                      color: kSecondaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      width: getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    Expanded(
+                      child: CustomButton(
+                        title: Provider.of<ZLanguage>(context).addToCart,
+                        press: clearedRequired && price != 0
+                            ? () async {
+                                await Service.remove('images');
+
+                                Item item = Item(
+                                  id: widget.item['_id'],
+                                  quantity: quantity,
+                                  specification: specification,
+                                  noteForItem: note,
+                                  price: price,
+                                  itemName: widget.item['name'],
+                                  imageURL: widget.item['image_url'].length > 0
+                                      ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.item['image_url'][0]}"
+                                      : "https://ibb.co/vkhzjd6",
+                                );
+                                StoreLocation storeLocation = StoreLocation(
+                                    long: widget.location[1],
+                                    lat: widget.location[0]);
+                                DestinationAddress destination =
+                                    DestinationAddress(
+                                  long: Provider.of<ZMetaData>(context,
+                                          listen: false)
+                                      .longitude,
+                                  lat: Provider.of<ZMetaData>(context,
+                                          listen: false)
+                                      .latitude,
+                                  name: "Current Location",
+                                  note: "User current location",
+                                );
+                                if (cart != null) {
+                                  if (userData != null) {
+                                    if (cart!.storeId ==
+                                        widget.item['store_id']) {
+                                      setState(() {
+                                        cart!.items!.add(item);
+                                        Service.save('cart', cart);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          Service.showMessage(
+                                              "Item added to cart", false),
+                                        );
+                                        Navigator.of(context).pop();
+                                      });
+                                      // debugPrint("cart ${cart!.toJson()}");
+                                    } else {
+                                      _showDialog(
+                                          item, destination, storeLocation);
+                                    }
+                                  } else {
+                                    // debugPrint("User not logged in...");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        Service.showMessage(
+                                            "Please login in...", true));
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LoginScreen(
+                                          firstRoute: false,
+                                        ),
+                                      ),
+                                    ).then((value) => getUser());
+                                  }
+                                } else {
+                                  if (userData != null) {
+                                    // debugPrint("Empty cart! Adding new item.");
+                                    addToCart(item, destination, storeLocation);
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    // debugPrint("User not logged in...");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        Service.showMessage(
+                                            "Please login in...", true));
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LoginScreen(
+                                          firstRoute: false,
+                                        ),
+                                      ),
+                                    ).then((value) => getUser());
+                                  }
+                                }
                               }
                             : () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     Service.showMessage(
-                                        "Minimum order quantity is 1", true));
+                                        "Make sure to select required specifications!",
+                                        true));
                               },
+                        color: clearedRequired && price != 0
+                            ? kSecondaryColor
+                            : kGreyColor,
                       ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 3)),
-                        child: Text(
-                          quantity.toString(),
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                      InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: kSecondaryColor,
-                            borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(kDefaultPadding / 2),
-                              bottomRight: Radius.circular(kDefaultPadding / 2),
+                    ),
+                    SizedBox(
+                      width: getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    Row(
+                      children: [
+                        InkWell(
+                          child: Container(
+                            child: Padding(
+                              padding: EdgeInsets.all(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 3),
+                              ),
+                              child: Icon(
+                                Icons.remove,
+                                color: kPrimaryColor,
+                              ),
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  quantity != 1 ? kSecondaryColor : kGreyColor,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(kDefaultPadding / 2),
+                                bottomLeft:
+                                    Radius.circular(kDefaultPadding / 2),
+                              ),
                             ),
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.all(
-                              getProportionateScreenWidth(kDefaultPadding / 3),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: kPrimaryColor,
-                            ),
+                          onTap: quantity != 1
+                              ? () {
+                                  setState(() {
+                                    quantity -= 1;
+                                    updatePrice();
+                                  });
+                                }
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      Service.showMessage(
+                                          "Minimum order quantity is 1", true));
+                                },
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 3)),
+                          child: Text(
+                            quantity.toString(),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
-                        onTap: () {
-                          setState(() {
-                            quantity += 1;
-                            updatePrice();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                        InkWell(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: kSecondaryColor,
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(kDefaultPadding / 2),
+                                bottomRight:
+                                    Radius.circular(kDefaultPadding / 2),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 3),
+                              ),
+                              child: Icon(
+                                Icons.add,
+                                color: kPrimaryColor,
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              quantity += 1;
+                              updatePrice();
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],

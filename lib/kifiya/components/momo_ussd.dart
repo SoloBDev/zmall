@@ -182,10 +182,10 @@
 //       setState(() {
 //         this._loading = false;
 //       });
-//       print('responce ${response.body}');
+//       debugPrint('responce ${response.body}');
 //       return json.decode(response.body);
 //     } catch (e) {
-//       print(e);
+//       debugPrint(e);
 //       setState(() {
 //         this._loading = false;
 //       });
@@ -238,7 +238,7 @@
 
 //       return json.decode(response.body);
 //     } catch (e) {
-//       print(e);
+//       debugPrint(e);
 //       setState(() {
 //         this._loading = false;
 //       });

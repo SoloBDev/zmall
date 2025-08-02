@@ -90,7 +90,7 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {
@@ -107,7 +107,7 @@ class _ProductScreenState extends State<ProductScreen> {
       });
       getUser();
     } else {
-      print("No logged user found");
+      debugPrint("No logged user found");
     }
   }
 
@@ -229,7 +229,7 @@ class _ProductScreenState extends State<ProductScreen> {
         await Service.save("user_favorite_stores", val);
       }
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -259,7 +259,7 @@ class _ProductScreenState extends State<ProductScreen> {
     } else {
       if (responseData['error_code'] != null &&
           favoriteResponseData['error_code'] == 999) {
-        // print('Server token expired please log user out');
+        // debugPrint('Server token expired please log user out');
         await Service.saveBool('logged', false);
         await Service.remove('user');
         // Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -522,899 +522,887 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        color: kPrimaryColor,
-        backgroundColor: kSecondaryColor,
-        onRefresh: _onRefresh,
-        child: ModalProgressHUD(
-          inAsyncCall: _loading,
+      body: SafeArea(
+        child: RefreshIndicator(
           color: kPrimaryColor,
-          progressIndicator: linearProgressIndicator,
-          child: Column(
-            children: [
-              Container(
-                color: kPrimaryColor,
-                child: Container(
-                  margin: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  ),
+          backgroundColor: kSecondaryColor,
+          onRefresh: _onRefresh,
+          child: ModalProgressHUD(
+            inAsyncCall: _loading,
+            color: kPrimaryColor,
+            progressIndicator: linearProgressIndicator,
+            child: Column(
+              children: [
+                Container(
+                  color: kPrimaryColor,
+                  child: Container(
+                    margin: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding / 2),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    ),
 
-                  decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      border: Border.all(color: kWhiteColor, width: 2),
-                      borderRadius: BorderRadius.circular(kDefaultPadding * 2)),
+                    decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        border: Border.all(color: kWhiteColor, width: 2),
+                        borderRadius:
+                            BorderRadius.circular(kDefaultPadding * 2)),
 
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Icon(Icons.search),
-                      SizedBox(
-                          width: getProportionateScreenWidth(kDefaultPadding)),
-                      Expanded(
-                        child: TextField(
-                          controller: controller,
-                          decoration: InputDecoration(
-                            hintText: Provider.of<ZLanguage>(context).search,
-                            border: InputBorder.none,
-                            // prefixIcon: Icon(Icons.search),
-                            // suffixIcon: controller.text.isNotEmpty
-                            //     ? IconButton(
-                            //         icon: Icon(Icons.cancel),
-                            //         onPressed: () {
-                            //           controller.clear();
-                            //           onSearchTextChanged('');
-                            //           setState(
-                            //             () {
-                            //               storeOpen(stores);
-                            //             },
-                            //           );
-                            //         },
-                            //       )
-                            //     : null,
-                          ),
-                          onChanged: onSearchTextChanged,
-                        ),
-                      ),
-                      if (controller.text.isNotEmpty)
-                        IconButton(
-                          icon: Icon(Icons.cancel),
-                          onPressed: () {
-                            controller.clear();
-                            onSearchTextChanged('');
-                          },
-                        ),
-                    ],
-                  ),
-                  // ),
-                ),
-              ),
-              // Container(
-              //   color: kPrimaryColor,
-              //   child: Card(
-              //     elevation: 0.1,
-              //     child: TextField(
-              //       controller: controller,
-              //       decoration: InputDecoration(
-              //         hintText: Provider.of<ZLanguage>(context).search,
-              //         border: InputBorder.none,
-              //         prefixIcon: Icon(Icons.search),
-              //         suffixIcon: controller.text.isNotEmpty
-              //             ? IconButton(
-              //                 icon: Icon(Icons.cancel),
-              //                 onPressed: () {
-              //                   controller.clear();
-              //                   onSearchTextChanged('');
-              //                 },
-              //               )
-              //             : null,
-              //       ),
-              //       onChanged: onSearchTextChanged,
-              //     ),
-              //   ),
-              // ),
-              StoreHeader(
-                storeName: widget.store['name'],
-                distance: widget.store['distance'] != null
-                    ? widget.store['distance'].toStringAsFixed(2)
-                    : "",
-                imageUrl:
-                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.store['image_url']}",
-                rating: widget.store['user_rate'].toString(),
-                ratingCount: widget.store['user_rate_count'].toString(),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 4),
-              ),
-              _searchResult.length != 0 || controller.text.isNotEmpty
-                  ? Expanded(
-                      child: ListView.separated(
-                        physics: ClampingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _searchResult.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return InkWell(
-                            onTap: () async {
-                              if (isLoggedIn) {
-                                productClicked(_searchResult[index]['_id']);
-                              }
-
-                              widget.isOpen!
-                                  ? Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ItemScreen(
-                                            item: _searchResult[index],
-                                            location: widget.location,
-                                          );
-                                        },
-                                      ),
-                                    ).then((value) => getCart())
-                                  : ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Sorry the store is closed at this time!",
-                                          true));
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                                // borderRadius:
-                                //     BorderRadius.circular(kDefaultPadding),
-                              ),
-                              // padding: EdgeInsets.symmetric(
-                              //     vertical: getProportionateScreenHeight(
-                              //         kDefaultPadding / 10),
-                              //     horizontal: getProportionateScreenWidth(
-                              //         kDefaultPadding / 3),
-                              //     ),
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                    left: 8.0, top: 10.0, bottom: 10.0),
-                                child: Row(
-                                  children: [
-                                    _searchResult[index]['image_url'].length > 0
-                                        ? ImageContainer(
-                                            url:
-                                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${_searchResult[index]['image_url'][0]}",
-                                          )
-                                        : ImageContainer(
-                                            url: "https://ibb.co/vkhzjd6"),
-                                    SizedBox(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2)),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            Service.capitalizeFirstLetters(
-                                                _searchResult[index]['name']),
-                                            style: TextStyle(
-                                              fontSize:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding * .9),
-                                              fontWeight: FontWeight.bold,
-                                              color: kBlackColor,
-                                            ),
-                                            softWrap: true,
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding / 5)),
-                                          _searchResult[index]['details'] !=
-                                                      null &&
-                                                  _searchResult[index]
-                                                              ['details']
-                                                          .length >
-                                                      0
-                                              ? Text(
-                                                  _searchResult[index]
-                                                      ['details'],
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                        color: kGreyColor,
-                                                      ),
-                                                )
-                                              : SizedBox(height: 0.5),
-                                          SizedBox(
-                                              height:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding / 5)),
-                                          Text(
-                                            "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall
-                                                ?.copyWith(
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(Icons.search),
+                        SizedBox(
+                            width:
+                                getProportionateScreenWidth(kDefaultPadding)),
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                              hintText: Provider.of<ZLanguage>(context).search,
+                              border: InputBorder.none,
+                              // prefixIcon: Icon(Icons.search),
+                              // suffixIcon: controller.text.isNotEmpty
+                              //     ? IconButton(
+                              //         icon: Icon(Icons.cancel),
+                              //         onPressed: () {
+                              //           controller.clear();
+                              //           onSearchTextChanged('');
+                              //           setState(
+                              //             () {
+                              //               storeOpen(stores);
+                              //             },
+                              //           );
+                              //         },
+                              //       )
+                              //     : null,
                             ),
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            SizedBox(
-                          height: 1,
+                            onChanged: onSearchTextChanged,
+                          ),
                         ),
-                      ),
-                    )
-                  : products != null
-                      ? Expanded(
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            itemCount: products.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return ExpansionTile(
-                                textColor: kBlackColor,
-                                collapsedBackgroundColor: kPrimaryColor,
-                                backgroundColor: kPrimaryColor,
-                                leading: const Icon(
-                                  Icons.dining,
-                                  size: kDefaultPadding,
-                                  color: kBlackColor,
-                                ),
-                                childrenPadding: EdgeInsets.only(
-                                  left: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                  right: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                  bottom: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                title: Text(
-                                  "${Service.capitalizeFirstLetters(products[index]["_id"]["name"])}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                                children: [
-                                  ListView.separated(
-                                    physics: ClampingScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: products[index]['items'].length,
-                                    itemBuilder:
-                                        (BuildContext context, int idx) {
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          if (isLoggedIn) {
-                                            productClicked(products[index]
-                                                ['items'][idx]['_id']);
-                                          }
+                        if (controller.text.isNotEmpty)
+                          IconButton(
+                            icon: Icon(Icons.cancel),
+                            onPressed: () {
+                              controller.clear();
+                              onSearchTextChanged('');
+                            },
+                          ),
+                      ],
+                    ),
+                    // ),
+                  ),
+                ),
+                // Container(
+                //   color: kPrimaryColor,
+                //   child: Card(
+                //     elevation: 0.1,
+                //     child: TextField(
+                //       controller: controller,
+                //       decoration: InputDecoration(
+                //         hintText: Provider.of<ZLanguage>(context).search,
+                //         border: InputBorder.none,
+                //         prefixIcon: Icon(Icons.search),
+                //         suffixIcon: controller.text.isNotEmpty
+                //             ? IconButton(
+                //                 icon: Icon(Icons.cancel),
+                //                 onPressed: () {
+                //                   controller.clear();
+                //                   onSearchTextChanged('');
+                //                 },
+                //               )
+                //             : null,
+                //       ),
+                //       onChanged: onSearchTextChanged,
+                //     ),
+                //   ),
+                // ),
+                StoreHeader(
+                  storeName: widget.store['name'],
+                  distance: widget.store['distance'] != null
+                      ? widget.store['distance'].toStringAsFixed(2)
+                      : "",
+                  imageUrl:
+                      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.store['image_url']}",
+                  rating: widget.store['user_rate'].toString(),
+                  ratingCount: widget.store['user_rate_count'].toString(),
+                ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 4),
+                ),
+                _searchResult.length != 0 || controller.text.isNotEmpty
+                    ? Expanded(
+                        child: ListView.separated(
+                          physics: ClampingScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: _searchResult.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return InkWell(
+                              onTap: () async {
+                                if (isLoggedIn) {
+                                  productClicked(_searchResult[index]['_id']);
+                                }
 
-                                          widget.isOpen!
-                                              ? Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) {
-                                                      return ItemScreen(
-                                                        item: products[index]
-                                                            ['items'][idx],
-                                                        location:
-                                                            widget.location,
-                                                      );
-                                                    },
-                                                  ),
-                                                ).then((value) => getCart())
-                                              : ScaffoldMessenger.of(context)
-                                                  .showSnackBar(Service.showMessage(
-                                                      "Sorry the store is closed at this time!",
-                                                      true));
-                                        },
+                                widget.isOpen!
+                                    ? Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) {
+                                            return ItemScreen(
+                                              item: _searchResult[index],
+                                              location: widget.location,
+                                            );
+                                          },
+                                        ),
+                                      ).then((value) => getCart())
+                                    : ScaffoldMessenger.of(context)
+                                        .showSnackBar(Service.showMessage(
+                                            "Sorry the store is closed at this time!",
+                                            true));
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                  // borderRadius:
+                                  //     BorderRadius.circular(kDefaultPadding),
+                                ),
+                                // padding: EdgeInsets.symmetric(
+                                //     vertical: getProportionateScreenHeight(
+                                //         kDefaultPadding / 10),
+                                //     horizontal: getProportionateScreenWidth(
+                                //         kDefaultPadding / 3),
+                                //     ),
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                      left: 8.0, top: 10.0, bottom: 10.0),
+                                  child: Row(
+                                    children: [
+                                      _searchResult[index]['image_url'].length >
+                                              0
+                                          ? ImageContainer(
+                                              url:
+                                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${_searchResult[index]['image_url'][0]}",
+                                            )
+                                          : ImageContainer(
+                                              url: "https://ibb.co/vkhzjd6"),
+                                      SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 2)),
+                                      Expanded(
                                         child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Container(
-                                              width: double.infinity,
-                                              decoration: BoxDecoration(
-                                                color: kPrimaryColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        kDefaultPadding),
+                                            Text(
+                                              Service.capitalizeFirstLetters(
+                                                  _searchResult[index]['name']),
+                                              style: TextStyle(
+                                                fontSize:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding * .9),
+                                                fontWeight: FontWeight.bold,
+                                                color: kBlackColor,
                                               ),
-                                              padding: EdgeInsets.symmetric(
-                                                vertical:
+                                              softWrap: true,
+                                            ),
+                                            SizedBox(
+                                                height:
                                                     getProportionateScreenHeight(
-                                                        kDefaultPadding / 10),
-                                                // horizontal:
-                                                //     getProportionateScreenWidth(
-                                                //         kDefaultPadding / 4),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          Service.capitalizeFirstLetters(
-                                                              products[index]
-                                                                      ['items'][
-                                                                  idx]['name']),
-                                                          style: TextStyle(
-                                                            fontSize:
-                                                                getProportionateScreenWidth(
-                                                                    kDefaultPadding *
-                                                                        .9),
-                                                            color: kBlackColor,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                          ),
-                                                          softWrap: true,
+                                                        kDefaultPadding / 5)),
+                                            _searchResult[index]['details'] !=
+                                                        null &&
+                                                    _searchResult[index]
+                                                                ['details']
+                                                            .length >
+                                                        0
+                                                ? Text(
+                                                    _searchResult[index]
+                                                        ['details'],
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: kGreyColor,
                                                         ),
-                                                        SizedBox(
-                                                            height: getProportionateScreenHeight(
-                                                                kDefaultPadding /
-                                                                    5)),
-                                                        products[index]['items']
-                                                                            [
-                                                                            idx]
-                                                                        [
-                                                                        'details'] !=
-                                                                    null &&
-                                                                products[index]['items'][idx]
-                                                                            [
-                                                                            'details']
-                                                                        .length >
-                                                                    0
-                                                            ? Text(
+                                                  )
+                                                : SizedBox(height: 0.5),
+                                            SizedBox(
+                                                height:
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding / 5)),
+                                            Text(
+                                              "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleSmall
+                                                  ?.copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (BuildContext context, int index) =>
+                              SizedBox(
+                            height: 1,
+                          ),
+                        ),
+                      )
+                    : products != null
+                        ? Expanded(
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: products.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return ExpansionTile(
+                                  textColor: kBlackColor,
+                                  collapsedBackgroundColor: kPrimaryColor,
+                                  backgroundColor: kPrimaryColor,
+                                  leading: const Icon(
+                                    Icons.dining,
+                                    size: kDefaultPadding,
+                                    color: kBlackColor,
+                                  ),
+                                  childrenPadding: EdgeInsets.only(
+                                    left: getProportionateScreenWidth(
+                                        kDefaultPadding / 2),
+                                    right: getProportionateScreenWidth(
+                                        kDefaultPadding / 2),
+                                    bottom: getProportionateScreenWidth(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  title: Text(
+                                    "${Service.capitalizeFirstLetters(products[index]["_id"]["name"])}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                  children: [
+                                    ListView.separated(
+                                      physics: ClampingScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          products[index]['items'].length,
+                                      itemBuilder:
+                                          (BuildContext context, int idx) {
+                                        return GestureDetector(
+                                          onTap: () async {
+                                            if (isLoggedIn) {
+                                              productClicked(products[index]
+                                                  ['items'][idx]['_id']);
+                                            }
+
+                                            widget.isOpen!
+                                                ? Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return ItemScreen(
+                                                          item: products[index]
+                                                              ['items'][idx],
+                                                          location:
+                                                              widget.location,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ).then((value) => getCart())
+                                                : ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                        Service.showMessage(
+                                                            "Sorry the store is closed at this time!",
+                                                            true));
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: double.infinity,
+                                                decoration: BoxDecoration(
+                                                  color: kPrimaryColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          kDefaultPadding),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding / 10),
+                                                  // horizontal:
+                                                  //     getProportionateScreenWidth(
+                                                  //         kDefaultPadding / 4),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            Service.capitalizeFirstLetters(
                                                                 products[index][
-                                                                            'items']
-                                                                        [idx]
-                                                                    ['details'],
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .bodySmall
-                                                                    ?.copyWith(
-                                                                      color:
-                                                                          kGreyColor,
-                                                                    ),
-                                                              )
-                                                            : SizedBox(
-                                                                height: 0.5),
-                                                        Text(
-                                                          "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                          style: Theme.of(
-                                                                  context)
-                                                              .textTheme
-                                                              .labelLarge
-                                                              ?.copyWith(
-                                                                  color:
-                                                                      kBlackColor,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
-                                                        SizedBox(
-                                                            height: getProportionateScreenHeight(
-                                                                kDefaultPadding /
-                                                                    5)),
-                                                        GestureDetector(
-                                                          onTap: () async {
-                                                            if (widget
-                                                                .isOpen!) {
-                                                              if (products[index]['items']
+                                                                        'items']
+                                                                    [
+                                                                    idx]['name']),
+                                                            style: TextStyle(
+                                                              fontSize:
+                                                                  getProportionateScreenWidth(
+                                                                      kDefaultPadding *
+                                                                          .9),
+                                                              color:
+                                                                  kBlackColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                            softWrap: true,
+                                                          ),
+                                                          SizedBox(
+                                                              height: getProportionateScreenHeight(
+                                                                  kDefaultPadding /
+                                                                      5)),
+                                                          products[index]['items']
                                                                               [
                                                                               idx]
                                                                           [
-                                                                          'specifications']
-                                                                      .length >
-                                                                  0) {
-                                                                if (isLoggedIn) {
-                                                                  productClicked(
-                                                                      products[index]
+                                                                          'details'] !=
+                                                                      null &&
+                                                                  products[index]['items'][idx]
                                                                               [
-                                                                              'items'][idx]
-                                                                          [
-                                                                          '_id']);
-                                                                }
+                                                                              'details']
+                                                                          .length >
+                                                                      0
+                                                              ? Text(
+                                                                  products[index]
+                                                                              [
+                                                                              'items']
+                                                                          [idx][
+                                                                      'details'],
+                                                                  style: Theme.of(
+                                                                          context)
+                                                                      .textTheme
+                                                                      .bodySmall
+                                                                      ?.copyWith(
+                                                                        color:
+                                                                            kGreyColor,
+                                                                      ),
+                                                                )
+                                                              : SizedBox(
+                                                                  height: 0.5),
+                                                          Text(
+                                                            "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .labelLarge
+                                                                ?.copyWith(
+                                                                    color:
+                                                                        kBlackColor,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                          ),
+                                                          SizedBox(
+                                                              height: getProportionateScreenHeight(
+                                                                  kDefaultPadding /
+                                                                      5)),
+                                                          GestureDetector(
+                                                            onTap: () async {
+                                                              if (widget
+                                                                  .isOpen!) {
+                                                                if (products[index]['items'][idx]
+                                                                            [
+                                                                            'specifications']
+                                                                        .length >
+                                                                    0) {
+                                                                  if (isLoggedIn) {
+                                                                    productClicked(products[index]['items']
+                                                                            [
+                                                                            idx]
+                                                                        [
+                                                                        '_id']);
+                                                                  }
 
-                                                                widget.isOpen!
-                                                                    ? Navigator
-                                                                        .push(
+                                                                  widget.isOpen!
+                                                                      ? Navigator
+                                                                          .push(
+                                                                          context,
+                                                                          MaterialPageRoute(
+                                                                            builder:
+                                                                                (context) {
+                                                                              return ItemScreen(
+                                                                                item: products[index]['items'][idx],
+                                                                                location: widget.location,
+                                                                              );
+                                                                            },
+                                                                          ),
+                                                                        ).then(
+                                                                          (value) =>
+                                                                              getCart())
+                                                                      : ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+                                                                          "Sorry the store is closed at this time!",
+                                                                          true));
+                                                                } else {
+                                                                  // TODO: Add to cart.....
+
+                                                                  Item item =
+                                                                      Item(
+                                                                    id: products[index]
+                                                                            [
+                                                                            'items']
+                                                                        [
+                                                                        idx]['_id'],
+                                                                    quantity: 1,
+                                                                    specification: [],
+                                                                    noteForItem:
+                                                                        "",
+                                                                    price: _getPrice(products[index]['items'][idx]) !=
+                                                                            null
+                                                                        ? double
+                                                                            .parse(
+                                                                            _getPrice(products[index]['items'][idx]),
+                                                                          )
+                                                                        : 0,
+                                                                    itemName: products[index]['items']
+                                                                            [
+                                                                            idx]
+                                                                        [
+                                                                        'name'],
+                                                                    imageURL: products[index]['items'][idx]['image_url'].length >
+                                                                            0
+                                                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}"
+                                                                        : "https://ibb.co/vkhzjd6",
+                                                                  );
+                                                                  StoreLocation
+                                                                      storeLocation =
+                                                                      StoreLocation(
+                                                                          long: widget.location[
+                                                                              1],
+                                                                          lat: widget
+                                                                              .location[0]);
+                                                                  DestinationAddress
+                                                                      destination =
+                                                                      DestinationAddress(
+                                                                    long: Provider.of<ZMetaData>(
+                                                                            context,
+                                                                            listen:
+                                                                                false)
+                                                                        .longitude,
+                                                                    lat: Provider.of<ZMetaData>(
+                                                                            context,
+                                                                            listen:
+                                                                                false)
+                                                                        .latitude,
+                                                                    name:
+                                                                        "Current Location",
+                                                                    note:
+                                                                        "User current location",
+                                                                  );
+
+                                                                  if (cart !=
+                                                                      null) {
+                                                                    if (userData !=
+                                                                        null) {
+                                                                      if (cart!
+                                                                              .storeId ==
+                                                                          products[index]['items'][idx]
+                                                                              [
+                                                                              'store_id']) {
+                                                                        setState(
+                                                                            () {
+                                                                          cart!
+                                                                              .items!
+                                                                              .add(item);
+                                                                          Service.save(
+                                                                              'cart',
+                                                                              cart);
+                                                                          ScaffoldMessenger.of(context)
+                                                                              .showSnackBar(
+                                                                            Service.showMessage("Item added to cart",
+                                                                                false),
+                                                                          );
+                                                                          // Navigator.of(
+                                                                          //         context)
+                                                                          //     .pop();
+                                                                        });
+                                                                      } else {
+                                                                        _showDialog(
+                                                                            item,
+                                                                            destination,
+                                                                            storeLocation,
+                                                                            products[index]['items'][idx]['store_id']);
+                                                                      }
+                                                                    } else {
+                                                                      debugPrint(
+                                                                          "User not logged in...");
+                                                                      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+                                                                          "Please login in...",
+                                                                          true));
+                                                                      Navigator
+                                                                          .push(
                                                                         context,
                                                                         MaterialPageRoute(
-                                                                          builder:
-                                                                              (context) {
-                                                                            return ItemScreen(
-                                                                              item: products[index]['items'][idx],
-                                                                              location: widget.location,
-                                                                            );
-                                                                          },
+                                                                          builder: (context) =>
+                                                                              LoginScreen(
+                                                                            firstRoute:
+                                                                                false,
+                                                                          ),
                                                                         ),
-                                                                      ).then(
-                                                                        (value) =>
-                                                                            getCart())
-                                                                    : ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage(
-                                                                            "Sorry the store is closed at this time!",
-                                                                            true));
-                                                              } else {
-                                                                // TODO: Add to cart.....
-
-                                                                Item item =
-                                                                    Item(
-                                                                  id: products[
-                                                                              index]
-                                                                          [
-                                                                          'items']
-                                                                      [
-                                                                      idx]['_id'],
-                                                                  quantity: 1,
-                                                                  specification: [],
-                                                                  noteForItem:
-                                                                      "",
-                                                                  price: _getPrice(products[index]['items']
-                                                                              [
-                                                                              idx]) !=
-                                                                          null
-                                                                      ? double
-                                                                          .parse(
-                                                                          _getPrice(products[index]['items']
-                                                                              [
-                                                                              idx]),
-                                                                        )
-                                                                      : 0,
-                                                                  itemName: products[
-                                                                              index]
-                                                                          [
-                                                                          'items']
-                                                                      [
-                                                                      idx]['name'],
-                                                                  imageURL: products[index]['items'][idx]['image_url']
-                                                                              .length >
-                                                                          0
-                                                                      ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}"
-                                                                      : "https://ibb.co/vkhzjd6",
-                                                                );
-                                                                StoreLocation
-                                                                    storeLocation =
-                                                                    StoreLocation(
-                                                                        long: widget.location[
-                                                                            1],
-                                                                        lat: widget
-                                                                            .location[0]);
-                                                                DestinationAddress
-                                                                    destination =
-                                                                    DestinationAddress(
-                                                                  long: Provider.of<
-                                                                              ZMetaData>(
-                                                                          context,
-                                                                          listen:
-                                                                              false)
-                                                                      .longitude,
-                                                                  lat: Provider.of<
-                                                                              ZMetaData>(
-                                                                          context,
-                                                                          listen:
-                                                                              false)
-                                                                      .latitude,
-                                                                  name:
-                                                                      "Current Location",
-                                                                  note:
-                                                                      "User current location",
-                                                                );
-
-                                                                if (cart !=
-                                                                    null) {
-                                                                  if (userData !=
-                                                                      null) {
-                                                                    if (cart!
-                                                                            .storeId ==
-                                                                        products[index]['items'][idx]
-                                                                            [
-                                                                            'store_id']) {
-                                                                      setState(
-                                                                          () {
-                                                                        cart!
-                                                                            .items!
-                                                                            .add(item);
-                                                                        Service.save(
-                                                                            'cart',
-                                                                            cart);
-                                                                        ScaffoldMessenger.of(context)
-                                                                            .showSnackBar(
-                                                                          Service.showMessage(
-                                                                              "Item added to cart",
-                                                                              false),
-                                                                        );
-                                                                        // Navigator.of(
-                                                                        //         context)
-                                                                        //     .pop();
-                                                                      });
-                                                                    } else {
-                                                                      _showDialog(
+                                                                      ).then((value) =>
+                                                                          getUser());
+                                                                    }
+                                                                  } else {
+                                                                    if (userData !=
+                                                                        null) {
+                                                                      debugPrint(
+                                                                          "Empty cart! Adding new item.");
+                                                                      addToCart(
                                                                           item,
                                                                           destination,
                                                                           storeLocation,
                                                                           products[index]['items'][idx]
                                                                               [
                                                                               'store_id']);
+                                                                      getCart();
+                                                                      // Navigator.of(
+                                                                      //         context)
+                                                                      //     .pop();
+                                                                    } else {
+                                                                      debugPrint(
+                                                                          "User not logged in...");
+                                                                      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+                                                                          "Please login in...",
+                                                                          true));
+                                                                      Navigator
+                                                                          .push(
+                                                                        context,
+                                                                        MaterialPageRoute(
+                                                                          builder: (context) =>
+                                                                              LoginScreen(
+                                                                            firstRoute:
+                                                                                false,
+                                                                          ),
+                                                                        ),
+                                                                      ).then((value) =>
+                                                                          getUser());
                                                                     }
-                                                                  } else {
-                                                                    print(
-                                                                        "User not logged in...");
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage(
-                                                                            "Please login in...",
-                                                                            true));
-                                                                    Navigator
-                                                                        .push(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                        builder:
-                                                                            (context) =>
-                                                                                LoginScreen(
-                                                                          firstRoute:
-                                                                              false,
-                                                                        ),
-                                                                      ),
-                                                                    ).then((value) =>
-                                                                        getUser());
-                                                                  }
-                                                                } else {
-                                                                  if (userData !=
-                                                                      null) {
-                                                                    print(
-                                                                        "Empty cart! Adding new item.");
-                                                                    addToCart(
-                                                                        item,
-                                                                        destination,
-                                                                        storeLocation,
-                                                                        products[index]['items'][idx]
-                                                                            [
-                                                                            'store_id']);
-                                                                    getCart();
-                                                                    // Navigator.of(
-                                                                    //         context)
-                                                                    //     .pop();
-                                                                  } else {
-                                                                    print(
-                                                                        "User not logged in...");
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage(
-                                                                            "Please login in...",
-                                                                            true));
-                                                                    Navigator
-                                                                        .push(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                        builder:
-                                                                            (context) =>
-                                                                                LoginScreen(
-                                                                          firstRoute:
-                                                                              false,
-                                                                        ),
-                                                                      ),
-                                                                    ).then((value) =>
-                                                                        getUser());
                                                                   }
                                                                 }
-                                                              }
-                                                            } else {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      Service.showMessage(
-                                                                          "Sorry the store is closed at this time!",
-                                                                          true));
-                                                            }
-                                                          },
-                                                          child: Container(
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color:
-                                                                  kBlackColor,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                getProportionateScreenWidth(
-                                                                    kDefaultPadding /
-                                                                        3),
-                                                              ),
-                                                            ),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(
-                                                                getProportionateScreenWidth(
-                                                                    kDefaultPadding /
-                                                                        4),
-                                                              ),
-                                                              child: Text(
-                                                                "${Provider.of<ZLanguage>(context).addToCart} >>",
-                                                                style: Theme.of(
+                                                              } else {
+                                                                ScaffoldMessenger.of(
                                                                         context)
-                                                                    .textTheme
-                                                                    .bodySmall
-                                                                    ?.copyWith(
-                                                                      color:
-                                                                          kPrimaryColor,
-                                                                    ),
+                                                                    .showSnackBar(
+                                                                        Service.showMessage(
+                                                                            "Sorry the store is closed at this time!",
+                                                                            true));
+                                                              }
+                                                            },
+                                                            child: Container(
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color:
+                                                                    kBlackColor,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                  getProportionateScreenWidth(
+                                                                      kDefaultPadding /
+                                                                          3),
+                                                                ),
+                                                              ),
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsets
+                                                                        .all(
+                                                                  getProportionateScreenWidth(
+                                                                      kDefaultPadding /
+                                                                          4),
+                                                                ),
+                                                                child: Text(
+                                                                  "${Provider.of<ZLanguage>(context).addToCart} >>",
+                                                                  style: Theme.of(
+                                                                          context)
+                                                                      .textTheme
+                                                                      .bodySmall
+                                                                      ?.copyWith(
+                                                                        color:
+                                                                            kPrimaryColor,
+                                                                      ),
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                  products[index]['items'][idx]
-                                                                  ['image_url']
-                                                              .length >
-                                                          0
-                                                      ? ImageContainer(
-                                                          url:
-                                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}",
-                                                        )
-                                                      : Container(),
-                                                  // : ImageContainer(
-                                                  //     url:
-                                                  //         "https://ibb.co/vkhzjd6"),
-                                                  SizedBox(
-                                                      width:
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding /
-                                                                  4)),
-                                                ],
+                                                    products[index]['items']
+                                                                        [idx][
+                                                                    'image_url']
+                                                                .length >
+                                                            0
+                                                        ? ImageContainer(
+                                                            url:
+                                                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}",
+                                                          )
+                                                        : Container(),
+                                                    // : ImageContainer(
+                                                    //     url:
+                                                    //         "https://ibb.co/vkhzjd6"),
+                                                    SizedBox(
+                                                        width:
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding /
+                                                                    4)),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              height:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding * 0.8),
-                                            ),
-                                            Container(
-                                              height: 0.1,
-                                              width: double.infinity,
-                                              color: kGreyColor.withValues(
-                                                  alpha: 0.5),
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    separatorBuilder:
-                                        (BuildContext context, int index) =>
-                                            SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 4),
-                                    ),
-                                  )
-                                ],
-                              );
-                              //   Padding(
-                              //   padding: EdgeInsets.symmetric(
-                              //     horizontal: getProportionateScreenWidth(
-                              //         kDefaultPadding / 3),
-                              //     vertical: getProportionateScreenHeight(
-                              //         kDefaultPadding / 4),
-                              //   ),
-                              //   child: Column(
-                              //     children: [
-                              //       CategoryContainer(
-                              //         title: "${products[index]["_id"]["name"]}",
-                              //       ),
-                              //       SizedBox(
-                              //         height: getProportionateScreenHeight(
-                              //             kDefaultPadding / 4),
-                              //       ),
-                              //       ListView.separated(
-                              //         physics: ClampingScrollPhysics(),
-                              //         shrinkWrap: true,
-                              //         itemCount: products[index]['items'].length,
-                              //         itemBuilder:
-                              //             (BuildContext context, int idx) {
-                              //           return TextButton(
-                              //             onPressed: () async {
-                              //               if (isLoggedIn) {
-                              //                 productClicked(products[index]
-                              //                     ['items'][idx]['_id']);
-                              //               }
-                              //
-                              //               widget.isOpen
-                              //                   ? Navigator.push(
-                              //                       context,
-                              //                       MaterialPageRoute(
-                              //                         builder: (context) {
-                              //                           return ItemScreen(
-                              //                             item: products[index]
-                              //                                 ['items'][idx],
-                              //                             location:
-                              //                                 widget.location,
-                              //                           );
-                              //                         },
-                              //                       ),
-                              //                     ).then((value) => getCart())
-                              //                   : ScaffoldMessenger.of(context)
-                              //                       .showSnackBar(Service.showMessage(
-                              //                           "Sorry the store is closed at this time!",
-                              //                           true));
-                              //             },
-                              //             child: Container(
-                              //               width: double.infinity,
-                              //               decoration: BoxDecoration(
-                              //                 color: kPrimaryColor,
-                              //                 borderRadius: BorderRadius.circular(
-                              //                     kDefaultPadding),
-                              //               ),
-                              //               padding: EdgeInsets.symmetric(
-                              //                 vertical:
-                              //                     getProportionateScreenHeight(
-                              //                         kDefaultPadding / 10),
-                              //                 horizontal:
-                              //                     getProportionateScreenWidth(
-                              //                         kDefaultPadding / 3),
-                              //               ),
-                              //               child: Row(
-                              //                 children: [
-                              //                   products[index]['items'][idx]
-                              //                                   ['image_url']
-                              //                               .length >
-                              //                           0
-                              //                       ? ImageContainer(
-                              //                           url:
-                              //                               "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
-                              //                         )
-                              //                       : ImageContainer(
-                              //                           url:
-                              //                               "https://ibb.co/vkhzjd6"),
-                              //                   SizedBox(
-                              //                       width:
-                              //                           getProportionateScreenWidth(
-                              //                               kDefaultPadding / 4)),
-                              //                   Expanded(
-                              //                     child: Column(
-                              //                       crossAxisAlignment:
-                              //                           CrossAxisAlignment.start,
-                              //                       children: [
-                              //                         Text(
-                              //                           products[index]['items']
-                              //                               [idx]['name'],
-                              //                           style: Theme.of(context)
-                              //                               .textTheme
-                              //                               .subtitle1
-                              //                               ?.copyWith(
-                              //                                 fontWeight:
-                              //                                     FontWeight.bold,
-                              //                               ),
-                              //                           softWrap: true,
-                              //                         ),
-                              //                         SizedBox(
-                              //                             height:
-                              //                                 getProportionateScreenHeight(
-                              //                                     kDefaultPadding /
-                              //                                         5)),
-                              //                         products[index]['items']
-                              //                                             [idx][
-                              //                                         'details'] !=
-                              //                                     null &&
-                              //                                 products[index]['items']
-                              //                                                 [
-                              //                                                 idx]
-                              //                                             [
-                              //                                             'details']
-                              //                                         .length >
-                              //                                     0
-                              //                             ? Text(
-                              //                                 products[index]
-                              //                                         ['items'][
-                              //                                     idx]['details'],
-                              //                                 style: Theme.of(
-                              //                                         context)
-                              //                                     .textTheme
-                              //                                     .bodySmall
-                              //                                     ?.copyWith(
-                              //                                       color:
-                              //                                           kGreyColor,
-                              //                                     ),
-                              //                               )
-                              //                             : SizedBox(height: 0.5),
-                              //                         SizedBox(
-                              //                             height:
-                              //                                 getProportionateScreenHeight(
-                              //                                     kDefaultPadding /
-                              //                                         5)),
-                              //                         Text(
-                              //                           "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} Birr",
-                              //                           style: Theme.of(context)
-                              //                               .textTheme
-                              //                               .subtitle2
-                              //                               ?.copyWith(
-                              //                                 color:
-                              //                                     kSecondaryColor,
-                              //                                 fontWeight:
-                              //                                     FontWeight.bold,
-                              //                               ),
-                              //                         ),
-                              //                       ],
-                              //                     ),
-                              //                   )
-                              //                 ],
-                              //               ),
-                              //             ),
-                              //           );
-                              //         },
-                              //         separatorBuilder:
-                              //             (BuildContext context, int index) =>
-                              //                 SizedBox(
-                              //           height: getProportionateScreenHeight(
-                              //               kDefaultPadding / 4),
-                              //         ),
-                              //       )
-                              //     ],
-                              //   ),
-                              // );
-                            },
-                            separatorBuilder:
-                                (BuildContext context, int index) =>
-                                    const SizedBox(
-                              height: 1,
+                                              SizedBox(
+                                                height:
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding * 0.8),
+                                              ),
+                                              Container(
+                                                height: 0.1,
+                                                width: double.infinity,
+                                                color: kGreyColor.withValues(
+                                                    alpha: 0.5),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      separatorBuilder:
+                                          (BuildContext context, int index) =>
+                                              SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 4),
+                                      ),
+                                    )
+                                  ],
+                                );
+                                //   Padding(
+                                //   padding: EdgeInsets.symmetric(
+                                //     horizontal: getProportionateScreenWidth(
+                                //         kDefaultPadding / 3),
+                                //     vertical: getProportionateScreenHeight(
+                                //         kDefaultPadding / 4),
+                                //   ),
+                                //   child: Column(
+                                //     children: [
+                                //       CategoryContainer(
+                                //         title: "${products[index]["_id"]["name"]}",
+                                //       ),
+                                //       SizedBox(
+                                //         height: getProportionateScreenHeight(
+                                //             kDefaultPadding / 4),
+                                //       ),
+                                //       ListView.separated(
+                                //         physics: ClampingScrollPhysics(),
+                                //         shrinkWrap: true,
+                                //         itemCount: products[index]['items'].length,
+                                //         itemBuilder:
+                                //             (BuildContext context, int idx) {
+                                //           return TextButton(
+                                //             onPressed: () async {
+                                //               if (isLoggedIn) {
+                                //                 productClicked(products[index]
+                                //                     ['items'][idx]['_id']);
+                                //               }
+                                //
+                                //               widget.isOpen
+                                //                   ? Navigator.push(
+                                //                       context,
+                                //                       MaterialPageRoute(
+                                //                         builder: (context) {
+                                //                           return ItemScreen(
+                                //                             item: products[index]
+                                //                                 ['items'][idx],
+                                //                             location:
+                                //                                 widget.location,
+                                //                           );
+                                //                         },
+                                //                       ),
+                                //                     ).then((value) => getCart())
+                                //                   : ScaffoldMessenger.of(context)
+                                //                       .showSnackBar(Service.showMessage(
+                                //                           "Sorry the store is closed at this time!",
+                                //                           true));
+                                //             },
+                                //             child: Container(
+                                //               width: double.infinity,
+                                //               decoration: BoxDecoration(
+                                //                 color: kPrimaryColor,
+                                //                 borderRadius: BorderRadius.circular(
+                                //                     kDefaultPadding),
+                                //               ),
+                                //               padding: EdgeInsets.symmetric(
+                                //                 vertical:
+                                //                     getProportionateScreenHeight(
+                                //                         kDefaultPadding / 10),
+                                //                 horizontal:
+                                //                     getProportionateScreenWidth(
+                                //                         kDefaultPadding / 3),
+                                //               ),
+                                //               child: Row(
+                                //                 children: [
+                                //                   products[index]['items'][idx]
+                                //                                   ['image_url']
+                                //                               .length >
+                                //                           0
+                                //                       ? ImageContainer(
+                                //                           url:
+                                //                               "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
+                                //                         )
+                                //                       : ImageContainer(
+                                //                           url:
+                                //                               "https://ibb.co/vkhzjd6"),
+                                //                   SizedBox(
+                                //                       width:
+                                //                           getProportionateScreenWidth(
+                                //                               kDefaultPadding / 4)),
+                                //                   Expanded(
+                                //                     child: Column(
+                                //                       crossAxisAlignment:
+                                //                           CrossAxisAlignment.start,
+                                //                       children: [
+                                //                         Text(
+                                //                           products[index]['items']
+                                //                               [idx]['name'],
+                                //                           style: Theme.of(context)
+                                //                               .textTheme
+                                //                               .subtitle1
+                                //                               ?.copyWith(
+                                //                                 fontWeight:
+                                //                                     FontWeight.bold,
+                                //                               ),
+                                //                           softWrap: true,
+                                //                         ),
+                                //                         SizedBox(
+                                //                             height:
+                                //                                 getProportionateScreenHeight(
+                                //                                     kDefaultPadding /
+                                //                                         5)),
+                                //                         products[index]['items']
+                                //                                             [idx][
+                                //                                         'details'] !=
+                                //                                     null &&
+                                //                                 products[index]['items']
+                                //                                                 [
+                                //                                                 idx]
+                                //                                             [
+                                //                                             'details']
+                                //                                         .length >
+                                //                                     0
+                                //                             ? Text(
+                                //                                 products[index]
+                                //                                         ['items'][
+                                //                                     idx]['details'],
+                                //                                 style: Theme.of(
+                                //                                         context)
+                                //                                     .textTheme
+                                //                                     .bodySmall
+                                //                                     ?.copyWith(
+                                //                                       color:
+                                //                                           kGreyColor,
+                                //                                     ),
+                                //                               )
+                                //                             : SizedBox(height: 0.5),
+                                //                         SizedBox(
+                                //                             height:
+                                //                                 getProportionateScreenHeight(
+                                //                                     kDefaultPadding /
+                                //                                         5)),
+                                //                         Text(
+                                //                           "${_getPrice(products[index]['items'][idx]) != null ? _getPrice(products[index]['items'][idx]) : 0} Birr",
+                                //                           style: Theme.of(context)
+                                //                               .textTheme
+                                //                               .subtitle2
+                                //                               ?.copyWith(
+                                //                                 color:
+                                //                                     kSecondaryColor,
+                                //                                 fontWeight:
+                                //                                     FontWeight.bold,
+                                //                               ),
+                                //                         ),
+                                //                       ],
+                                //                     ),
+                                //                   )
+                                //                 ],
+                                //               ),
+                                //             ),
+                                //           );
+                                //         },
+                                //         separatorBuilder:
+                                //             (BuildContext context, int index) =>
+                                //                 SizedBox(
+                                //           height: getProportionateScreenHeight(
+                                //               kDefaultPadding / 4),
+                                //         ),
+                                //       )
+                                //     ],
+                                //   ),
+                                // );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) =>
+                                      const SizedBox(
+                                height: 1,
+                              ),
                             ),
-                          ),
-                        )
-                      : !_loading
-                          ? Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding * 4),
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding * 4),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  CustomButton(
-                                    title: "Retry",
-                                    press: () {
-                                      _getStoreProductList();
-                                    },
-                                    color: kSecondaryColor,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(),
-              cart != null && cart!.items!.length > 0
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        left: getProportionateScreenWidth(kDefaultPadding),
-                        right: getProportionateScreenWidth(kDefaultPadding),
-                        bottom: getProportionateScreenWidth(kDefaultPadding),
-                      ),
-                      child: CustomButton(
-                        title: Provider.of<ZLanguage>(context).goToCart,
-                        press: () {
-                          Navigator.pushNamed(context, CartScreen.routeName)
-                              .then((value) => getCart());
-                        },
-                        color: kSecondaryColor,
-                      ),
-                    )
-                  : Container(),
-            ],
+                          )
+                        : !_loading
+                            ? Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding * 4),
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding * 4),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    CustomButton(
+                                      title: "Retry",
+                                      press: () {
+                                        _getStoreProductList();
+                                      },
+                                      color: kSecondaryColor,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Container(),
+                cart != null && cart!.items!.length > 0
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                          left: getProportionateScreenWidth(kDefaultPadding),
+                          right: getProportionateScreenWidth(kDefaultPadding),
+                          bottom: getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                        child: CustomButton(
+                          title: Provider.of<ZLanguage>(context).goToCart,
+                          press: () {
+                            Navigator.pushNamed(context, CartScreen.routeName)
+                                .then((value) => getCart());
+                          },
+                          color: kSecondaryColor,
+                        ),
+                      )
+                    : Container(),
+              ],
+            ),
           ),
         ),
       ),
@@ -1550,8 +1538,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                 backgroundColor: kSecondaryColor,
                               ),
                             );
-                            // print(e);
-                            // print(st);
+                            // debugPrint(e);
+                            // debugPrint(st);
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1692,12 +1680,12 @@ class _ProductScreenState extends State<ProductScreen> {
     mergeSort(list, 0, list.length - 1, sortType);
   }
 
-  void printList(List list) {
+  void debugPrintList(List list) {
     List p = [];
     for (int i = 0; i < list.length; i++) {
       p.add({"name": list[i]["name"], "price": list[i]['price']});
     }
-    // print(p);
+    // debugPrint(p);
   }
 
   Future<dynamic> getStoreProductList() async {
@@ -1737,7 +1725,7 @@ class _ProductScreenState extends State<ProductScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted) {
         setState(() {
           this._loading = false;
@@ -1770,7 +1758,7 @@ class _ProductScreenState extends State<ProductScreen> {
         body: body,
       );
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
     }
   }
 
@@ -1805,7 +1793,7 @@ class _ProductScreenState extends State<ProductScreen> {
       favoriteResponseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -1841,7 +1829,7 @@ class _ProductScreenState extends State<ProductScreen> {
       favoriteResponseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

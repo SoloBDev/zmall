@@ -86,7 +86,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                      // print(responseData['order_list'][index]);
+                      // debugPrint(responseData['order_list'][index]);
 //                       if (responseData['order_list'][index]['delivery_type'] ==
 //                           2) {
 //                         Navigator.push(
@@ -115,7 +115,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
 //                             },
 //                           ),
 //                         ).then((value) => getUser());
-//                         print(
+//                         debugPrint(
 //                             responseData['order_list'][index]['order_details']);
 //                       }
 //
@@ -307,7 +307,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Your internet connection is bad!"),

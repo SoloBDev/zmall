@@ -6,11 +6,11 @@ import 'components/body.dart';
 
 class CartScreen extends StatelessWidget {
   static String routeName = '/cart';
-    
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
           Provider.of<ZLanguage>(context).basket,
@@ -18,7 +18,7 @@ class CartScreen extends StatelessWidget {
         ),
         elevation: 1.0,
       ),
-      body: Body( ),
+      body: SafeArea(child: Body()),
     );
   }
 }

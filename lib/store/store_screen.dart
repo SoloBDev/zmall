@@ -3,6 +3,7 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/map_view/map_view.dart';
 import 'package:zmall/service.dart';
+import 'package:zmall/widgets/open_close_status_card.dart';
 import 'components/body.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -63,6 +64,7 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
             Service.capitalizeFirstLetters(widget.category['delivery_name']),
@@ -76,20 +78,28 @@ class _StoreScreenState extends State<StoreScreen> {
                   filterOpenedStore = !filterOpenedStore;
                 });
               },
-              child: Container(
-                  padding: const EdgeInsets.all(5.0),
-                  decoration: BoxDecoration(
-                    color: !allClosed && filterOpenedStore
-                        ? Colors.green
-                        : kSecondaryColor,
-                    borderRadius:
-                        BorderRadius.circular(kDefaultPadding * 0.666),
-                  ),
-                  child: Text(
+              child: OpenCloseStatusCard(
+                isOpen: !allClosed && filterOpenedStore,
+                statusText:
                     !allClosed && filterOpenedStore ? 'Opened' : 'All stores',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: kPrimaryColor),
-                  )),
+                padding: EdgeInsets.symmetric(
+                    horizontal: kDefaultPadding / 1.5,
+                    vertical: kDefaultPadding / 4),
+              ),
+              // Container(
+              //     padding: const EdgeInsets.all(5.0),
+              //     decoration: BoxDecoration(
+              //       color: !allClosed && filterOpenedStore
+              //           ? Colors.green
+              //           : kSecondaryColor,
+              //       borderRadius:
+              //           BorderRadius.circular(kDefaultPadding * 0.666),
+              //     ),
+              //     child: Text(
+              //       !allClosed && filterOpenedStore ? 'Opened' : 'All stores',
+              //       style: TextStyle(
+              //           fontWeight: FontWeight.bold, color: kPrimaryColor),
+              //     )),
             ),
           IconButton(
               onPressed: () {
@@ -97,8 +107,8 @@ class _StoreScreenState extends State<StoreScreen> {
               },
               tooltip: "Map view",
               icon: Icon(
-                Icons.map,
-                // color: kSecondaryColor,
+                Icons.map_outlined,
+                color: kSecondaryColor,
               ))
         ],
       ),

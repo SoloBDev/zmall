@@ -9,7 +9,7 @@ class NetworkUtility {
         return response.body;
       }
     } catch (e) {
-      // print(e.toString());
+      // debugPrint(e.toString());
     }
     return null;
   }

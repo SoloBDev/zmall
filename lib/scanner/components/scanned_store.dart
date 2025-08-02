@@ -48,7 +48,7 @@
 //   }
 //
 //   void getCart() async {
-//     print("Fetching data");
+//     debugPrint("Fetching data");
 //     var data = await Service.read('cart');
 //     if (data != null) {
 //       setState(() {
@@ -66,14 +66,14 @@
 //       });
 //       getUser();
 //     } else {
-//       print("No logged user found");
+//       debugPrint("No logged user found");
 //     }
 //   }
 //
 //   void getUser() async {
 //     var data = await Service.read('user');
 //     if (data != null) {
-//       print("Found user data...");
+//       debugPrint("Found user data...");
 //       setState(() {
 //         userData = data;
 //       });
@@ -89,7 +89,7 @@
 //   }
 //
 //   void addToCart(item, destination, storeLocation, storeId) {
-//     print("Adding to cart......");
+//     debugPrint("Adding to cart......");
 //
 //     cart = Cart(
 //       userId: userData['user']['_id'],
@@ -137,7 +137,7 @@
 //     if (data != null && data['success']) {
 //       responseData = data;
 //       products = data['products'];
-//       print(products);
+//       debugPrint(products);
 //     } else {
 //       ScaffoldMessenger.of(context).showSnackBar(
 //         SnackBar(
@@ -159,7 +159,7 @@
 //         actions: [
 //           InkWell(
 //             onTap: () {
-//               print(cart.isDineIn);
+//               debugPrint(cart.isDineIn);
 //               if (cart.isDineIn) {
 //                 Navigator.push(
 //                   context,
@@ -578,7 +578,7 @@
 //                                                                       "Item added to cart",
 //                                                                       false),
 //                                                                 );
-//                                                                 print(cart
+//                                                                 debugPrint(cart
 //                                                                     .toJson());
 //                                                                 getCart();
 //                                                                 // Navigator.of(
@@ -597,7 +597,7 @@
 //                                                                       'store_id']);
 //                                                             }
 //                                                           } else {
-//                                                             print(
+//                                                             debugPrint(
 //                                                                 "User not logged in...");
 //                                                             ScaffoldMessenger
 //                                                                     .of(context)
@@ -621,7 +621,7 @@
 //                                                         } else {
 //                                                           if (userData !=
 //                                                               null) {
-//                                                             print(
+//                                                             debugPrint(
 //                                                                 "Empty cart! Adding new item.");
 //                                                             addToCart(
 //                                                                 item,
@@ -636,7 +636,7 @@
 //                                                             //         context)
 //                                                             //     .pop();
 //                                                           } else {
-//                                                             print(
+//                                                             debugPrint(
 //                                                                 "User not logged in...");
 //                                                             ScaffoldMessenger
 //                                                                     .of(context)
@@ -962,8 +962,8 @@
 //                     Service.remove('cart');
 //                     cart = Cart();
 //                     addToCart(item, destination, storeLocation, storeId);
-//                     // print(item.id);
-//                     // print(cart.toJson());
+//                     // debugPrint(item.id);
+//                     // debugPrint(cart.toJson());
 //                   });
 //
 //                   Navigator.of(alertContext).pop();
@@ -1012,7 +1012,7 @@
 //
 //       return json.decode(response.body);
 //     } catch (e) {
-//       // print(e);
+//       // debugPrint(e);
 //       if (mounted) {
 //         setState(() {
 //           _loading = false;

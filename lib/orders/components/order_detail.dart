@@ -103,7 +103,7 @@
 //   }
 
 //   void _userCancelOrder() async {
-//     print("Cancel order");
+//     debugPrint("Cancel order");
 //     setState(() {
 //       _loading = true;
 //     });
@@ -1062,7 +1062,7 @@
 //       responseData = json.decode(response.body);
 //       return json.decode(response.body);
 //     } catch (e) {
-//       // print(e);
+//       // debugPrint(e);
 //       return null;
 //     }
 //   }
@@ -1113,7 +1113,7 @@
 
 //       return json.decode(response.body);
 //     } catch (e) {
-//       // print(e);
+//       // debugPrint(e);
 //       setState(() {
 //         this._loading = false;
 //       });
@@ -1172,7 +1172,7 @@
 
 //       return json.decode(response.body);
 //     } catch (e) {
-//       // print(e);
+//       // debugPrint(e);
 //       setState(() {
 //         this._loading = false;
 //       });
@@ -1413,7 +1413,7 @@ class _OrderDetailState extends State<OrderDetail> {
   }
 
   void _userCancelOrder() async {
-    print("Cancel order");
+    debugPrint("Cancel order");
     setState(() {
       _loading = true;
     });
@@ -1561,564 +1561,580 @@ class _OrderDetailState extends State<OrderDetail> {
         body: TabBarView(
           children: [
             //////Order status Tab section/////
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical:
-                              getProportionateScreenHeight(kDefaultPadding)),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: kSecondaryColor,
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                              "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: kPrimaryColor,
-                                  )),
-                          Text(
-                            "Total Price",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: kPrimaryColor),
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding)),
-                          Center(
-                            child: Text(
-                              "Order ID: #${widget.order['unique_id']}",
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: getProportionateScreenHeight(kDefaultPadding),
-                      ),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                      ),
-                      child: Padding(
+            SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal:
-                              getProportionateScreenHeight(kDefaultPadding),
+                            vertical:
+                                getProportionateScreenHeight(kDefaultPadding)),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: kSecondaryColor,
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing:
-                              getProportionateScreenHeight(kDefaultPadding),
                           children: [
-                            CustomTag(
-                                color: kSecondaryColor,
-                                text: "Delivery Location"),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                  flex: 1,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "${Service.capitalizeFirstLetters(widget.order['store_name'])}",
-                                        style: TextStyle(
-                                          color: kBlackColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        softWrap: true,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.left,
-                                      ),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 4)),
-                                      Text(
-                                        "Store",
-                                        style: TextStyle(
-                                          color: kGreyColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.left,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding / 2)),
-                                Flexible(
-                                  flex: 1,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "${widget.order['destination_addresses'][0]['address']}",
-                                        style: TextStyle(
-                                          color: kBlackColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        softWrap: true,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.right,
-                                      ),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 4)),
-                                      Text(
-                                        "Delivery Address",
-                                        style: TextStyle(
-                                          color: kGreyColor,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        textAlign: TextAlign.right,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            Text(
+                                "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: kPrimaryColor,
+                                    )),
+                            Text(
+                              "Total Price",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: kPrimaryColor),
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding)),
+                            Center(
+                              child: Text(
+                                "Order ID: #${widget.order['unique_id']}",
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color: kPrimaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    // Container(
-                    //   padding: EdgeInsets.symmetric(
-                    //       vertical:
-                    //           getProportionateScreenHeight(kDefaultPadding)),
-                    //   width: double.infinity,
-                    //   decoration: BoxDecoration(
-                    //     color: kSecondaryColor,
-                    //   ),
-                    //   child: Column(
-                    //     children: [
-                    //       Center(
-                    //         child: Text(
-                    //           "Delivery Address",
-                    //           textAlign: TextAlign.center,
-                    //           style: TextStyle(
-                    //             color: kBlackColor,
-                    //             fontWeight: FontWeight.w500,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //       SizedBox(
-                    //           height: getProportionateScreenHeight(
-                    //               kDefaultPadding / 3)),
-                    //       Center(
-                    //         child: Text(
-                    //           "${widget.order['destination_addresses'][0]['address']}",
-                    //           textAlign: TextAlign.center,
-                    //           style: TextStyle(
-                    //             color: kPrimaryColor,
-                    //             fontWeight: FontWeight.bold,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-
-                    orderStatus['order_status'] != 25 &&
-                            orderStatus['delivery_status'] != null &&
-                            orderStatus['delivery_status'] < 100
-                        ? Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CustomTag(
-                                    color: kSecondaryColor,
-                                    text: "Order Status"),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding * 1.2)),
-                                // Order status timeline nodes
-                                _buildTimelineNode(
-                                  isCompleted: orderStatus['order_status'] >= 1,
-                                  title: "${order_status['1']}",
-                                  isLast: false,
-                                ),
-
-                                _buildTimelineNode(
-                                  isCompleted: orderStatus['order_status'] >= 3,
-                                  title: "${order_status['3']}",
-                                  isLast: false,
-                                ),
-
-                                _buildTimelineNode(
-                                  isCompleted: orderStatus['order_status'] >= 5,
-                                  title: "${order_status['5']}",
-                                  isLast: false,
-                                ),
-
-                                _buildTimelineNode(
-                                  isCompleted: orderStatus['order_status'] >= 7,
-                                  title: "${order_status['7']}",
-                                  isLast: widget.order['destination_addresses']
-                                              [0]['address']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "user pickup",
-                                ),
-                                // Delivery status timeline nodes
-                                if (widget.order['destination_addresses'][0]
-                                            ['address']
-                                        .toString()
-                                        .toLowerCase() !=
-                                    "user pickup")
-                                  Column(
-                                    children: [
-                                      _buildTimelineNode(
-                                        isCompleted:
-                                            orderStatus['delivery_status'] >=
-                                                19,
-                                        title: "${order_status['19']}",
-                                        isLast: false,
-                                      ),
-                                      _buildTimelineNode(
-                                        isCompleted:
-                                            orderStatus['delivery_status'] >=
-                                                23,
-                                        title: "${order_status['23']}",
-                                        isLast: true,
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          )
-                        : Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            child: _buildTimelineNode(
-                              isCompleted: true,
-                              title:
-                                  "${order_status['${orderStatus['order_status']}']}",
-                              isLast: true,
-                            ),
-                          ),
-                    orderStatus['order_status'] != 25 &&
-                            orderStatus['delivery_status'] != null &&
-                            orderStatus['delivery_status'] > 100
-                        ? Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: kSecondaryColor,
-                            ),
-                            child: _buildTimelineNode(
-                              isCompleted: true,
-                              title:
-                                  "${order_status['${orderStatus['delivery_status']}']}",
-                              isLast: true,
-                            ),
-                          )
-                        : Container(),
-                  ],
-                ),
-                Column(
-                  children: [
-                    orderStatus['order_status'] == 3
-                        ? TextButton(
-                            onPressed: () {
-                              _showDialog();
-                            },
-                            child: Text(
-                              "Cancel Order",
-                              style: TextStyle(color: kBlackColor),
-                            ),
-                          )
-                        : Container(),
-                    orderStatus != null &&
-                            orderStatus['provider_id'] != null &&
-                            orderStatus['order_status'] != 25 &&
-                            orderStatus['delivery_status'] != null &&
-                            orderStatus['delivery_status'] >= 17 &&
-                            orderStatus['delivery_status'] < 25
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              left:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              right:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                            child: CustomButton(
-                              title: "Track My Order",
-                              press: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return ProviderLocation(
-                                        providerId: orderStatus['provider_id'],
-                                        providerImage:
-                                            orderStatus['provider_image'],
-                                        providerName:
-                                            orderStatus['provider_first_name'],
-                                        providerPhone:
-                                            orderStatus['provider_phone'],
-                                        destLat:
-                                            orderStatus['destination_addresses']
-                                                [0]['location'][0],
-                                        destLong:
-                                            orderStatus['destination_addresses']
-                                                [0]['location'][1],
-                                        userId: widget.userId,
-                                        serverToken: widget.serverToken,
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                              color: kSecondaryColor,
-                            ),
-                          )
-                        : Container(),
-                    orderStatus['order_status'] == 25
-                        ? Padding(
-                            padding: EdgeInsets.only(
-                              bottom:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              left:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              right:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                            child: _loading
-                                ? Container()
-                                : CustomButton(
-                                    title: "SUBMIT",
-                                    press: () {
-                                      _showInvoice();
-                                    },
-                                    color: kBlackColor,
-                                  ),
-                          )
-                        : Container()
-                  ],
-                ),
-              ],
-            ),
-
-            //////Order cart Tab section/////
-            Padding(
-              padding:
-                  EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: widget.order['order_details'].length,
-                      separatorBuilder: (context, index) => SizedBox(
-                          height:
-                              getProportionateScreenWidth(kDefaultPadding / 2)),
-                      itemBuilder: (context, index) {
-                        String extractProductName(String? noteForItem) {
-                          if (noteForItem == null || noteForItem.isEmpty)
-                            return '';
-                          return noteForItem.split(': ').first;
-                        }
-
-                        return Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius:
-                                  BorderRadius.circular(kDefaultPadding)),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding),
+                        ),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                        ),
+                        child: Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                            vertical:
+                            horizontal:
                                 getProportionateScreenHeight(kDefaultPadding),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing:
+                                getProportionateScreenHeight(kDefaultPadding),
                             children: [
-                              CategoryContainer(
-                                  title: widget.order['order_details'][index]
-                                                  ['product_name']
-                                              .toString()
-                                              .toLowerCase() ==
-                                          "aliexpress"
-                                      ? "${Service.capitalizeFirstLetters(extractProductName(widget.order['order_details'][index]['items'][0]['note_for_item']))}"
-                                      : widget.order['order_details'][index]
-                                                  ['product_name'] !=
-                                              null
-                                          ? Service.capitalizeFirstLetters(
-                                              widget.order['order_details']
-                                                  [index]['product_name'])
-                                          : "Item"),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 4)),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding / 2),
-                                    vertical: getProportionateScreenHeight(
-                                        kDefaultPadding),
-                                  ),
-                                  child: ListView.separated(
-                                    physics: ClampingScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: widget
-                                        .order['order_details'][index]['items']
-                                        .length,
-                                    separatorBuilder: (context, index) =>
-                                        SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 5),
-                                    ),
-                                    itemBuilder: (context, idx) {
-                                      String extractItemName(
-                                          String? noteForItem) {
-                                        if (noteForItem == null ||
-                                            noteForItem.isEmpty) return '';
-                                        var parts = noteForItem.split(': ');
-                                        return parts.length >= 3
-                                            ? "${parts[2]}:\n${parts[1]}"
-                                            : parts.length >= 2
-                                                ? "${parts[1]}"
-                                                : '';
-                                      }
-
-                                      return Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  widget.order['order_details']
-                                                                  [index][
-                                                                  'product_name']
-                                                              .toString()
-                                                              .toLowerCase() ==
-                                                          "aliexpress"
-                                                      ? "${extractItemName(widget.order['order_details'][index]['items'][idx]['note_for_item'])}"
-                                                      : "${Service.capitalizeFirstLetters(widget.order['order_details'][index]['items'][idx]['item_name'])}",
-                                                  softWrap: true,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                ),
-                                                Text(
-                                                  "Quantity: ${widget.order['order_details'][index]['items'][idx]['quantity']}",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                )
-                                              ],
-                                            ),
+                              CustomTag(
+                                  color: kSecondaryColor,
+                                  text: "Delivery Location"),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Flexible(
+                                    flex: 1,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "${Service.capitalizeFirstLetters(widget.order['store_name'])}",
+                                          style: TextStyle(
+                                            color: kBlackColor,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          Text(
-                                            "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w700),
-                                          )
-                                        ],
-                                      );
-                                    },
+                                          softWrap: true,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.left,
+                                        ),
+                                        SizedBox(
+                                            height:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding / 4)),
+                                        Text(
+                                          "Store",
+                                          style: TextStyle(
+                                            color: kGreyColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding / 2)),
+                                  Flexible(
+                                    flex: 1,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "${widget.order['destination_addresses'][0]['address']}",
+                                          style: TextStyle(
+                                            color: kBlackColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          softWrap: true,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.right,
+                                        ),
+                                        SizedBox(
+                                            height:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding / 4)),
+                                        Text(
+                                          "Delivery Address",
+                                          style: TextStyle(
+                                            color: kGreyColor,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          textAlign: TextAlign.right,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(kDefaultPadding)),
-                    padding: EdgeInsets.symmetric(
-                      horizontal:
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                      vertical: getProportionateScreenHeight(kDefaultPadding),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Total Price : ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
                       ),
-                    ),
+                      // Container(
+                      //   padding: EdgeInsets.symmetric(
+                      //       vertical:
+                      //           getProportionateScreenHeight(kDefaultPadding)),
+                      //   width: double.infinity,
+                      //   decoration: BoxDecoration(
+                      //     color: kSecondaryColor,
+                      //   ),
+                      //   child: Column(
+                      //     children: [
+                      //       Center(
+                      //         child: Text(
+                      //           "Delivery Address",
+                      //           textAlign: TextAlign.center,
+                      //           style: TextStyle(
+                      //             color: kBlackColor,
+                      //             fontWeight: FontWeight.w500,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //       SizedBox(
+                      //           height: getProportionateScreenHeight(
+                      //               kDefaultPadding / 3)),
+                      //       Center(
+                      //         child: Text(
+                      //           "${widget.order['destination_addresses'][0]['address']}",
+                      //           textAlign: TextAlign.center,
+                      //           style: TextStyle(
+                      //             color: kPrimaryColor,
+                      //             fontWeight: FontWeight.bold,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+
+                      orderStatus['order_status'] != 25 &&
+                              orderStatus['delivery_status'] != null &&
+                              orderStatus['delivery_status'] < 100
+                          ? Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding),
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CustomTag(
+                                      color: kSecondaryColor,
+                                      text: "Order Status"),
+                                  SizedBox(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding * 1.2)),
+                                  // Order status timeline nodes
+                                  _buildTimelineNode(
+                                    isCompleted:
+                                        orderStatus['order_status'] >= 1,
+                                    title: "${order_status['1']}",
+                                    isLast: false,
+                                  ),
+
+                                  _buildTimelineNode(
+                                    isCompleted:
+                                        orderStatus['order_status'] >= 3,
+                                    title: "${order_status['3']}",
+                                    isLast: false,
+                                  ),
+
+                                  _buildTimelineNode(
+                                    isCompleted:
+                                        orderStatus['order_status'] >= 5,
+                                    title: "${order_status['5']}",
+                                    isLast: false,
+                                  ),
+
+                                  _buildTimelineNode(
+                                    isCompleted:
+                                        orderStatus['order_status'] >= 7,
+                                    title: "${order_status['7']}",
+                                    isLast: widget
+                                            .order['destination_addresses'][0]
+                                                ['address']
+                                            .toString()
+                                            .toLowerCase() ==
+                                        "user pickup",
+                                  ),
+                                  // Delivery status timeline nodes
+                                  if (widget.order['destination_addresses'][0]
+                                              ['address']
+                                          .toString()
+                                          .toLowerCase() !=
+                                      "user pickup")
+                                    Column(
+                                      children: [
+                                        _buildTimelineNode(
+                                          isCompleted:
+                                              orderStatus['delivery_status'] >=
+                                                  19,
+                                          title: "${order_status['19']}",
+                                          isLast: false,
+                                        ),
+                                        _buildTimelineNode(
+                                          isCompleted:
+                                              orderStatus['delivery_status'] >=
+                                                  23,
+                                          title: "${order_status['23']}",
+                                          isLast: true,
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding),
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                              ),
+                              child: _buildTimelineNode(
+                                isCompleted: true,
+                                title:
+                                    "${order_status['${orderStatus['order_status']}']}",
+                                isLast: true,
+                              ),
+                            ),
+                      orderStatus['order_status'] != 25 &&
+                              orderStatus['delivery_status'] != null &&
+                              orderStatus['delivery_status'] > 100
+                          ? Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding),
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: kSecondaryColor,
+                              ),
+                              child: _buildTimelineNode(
+                                isCompleted: true,
+                                title:
+                                    "${order_status['${orderStatus['delivery_status']}']}",
+                                isLast: true,
+                              ),
+                            )
+                          : Container(),
+                    ],
                   ),
-                  Container(
-                    width: double.infinity,
-                    height: 0.1,
-                    color: kSecondaryColor,
+                  Column(
+                    children: [
+                      orderStatus['order_status'] == 3
+                          ? TextButton(
+                              onPressed: () {
+                                _showDialog();
+                              },
+                              child: Text(
+                                "Cancel Order",
+                                style: TextStyle(color: kBlackColor),
+                              ),
+                            )
+                          : Container(),
+                      orderStatus != null &&
+                              orderStatus['provider_id'] != null &&
+                              orderStatus['order_status'] != 25 &&
+                              orderStatus['delivery_status'] != null &&
+                              orderStatus['delivery_status'] >= 17 &&
+                              orderStatus['delivery_status'] < 25
+                          ? Padding(
+                              padding: EdgeInsets.only(
+                                bottom: getProportionateScreenHeight(
+                                    kDefaultPadding),
+                                left: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                                right: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                              child: CustomButton(
+                                title: "Track My Order",
+                                press: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return ProviderLocation(
+                                          providerId:
+                                              orderStatus['provider_id'],
+                                          providerImage:
+                                              orderStatus['provider_image'],
+                                          providerName: orderStatus[
+                                              'provider_first_name'],
+                                          providerPhone:
+                                              orderStatus['provider_phone'],
+                                          destLat: orderStatus[
+                                                  'destination_addresses'][0]
+                                              ['location'][0],
+                                          destLong: orderStatus[
+                                                  'destination_addresses'][0]
+                                              ['location'][1],
+                                          userId: widget.userId,
+                                          serverToken: widget.serverToken,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                                color: kSecondaryColor,
+                              ),
+                            )
+                          : Container(),
+                      orderStatus['order_status'] == 25
+                          ? Padding(
+                              padding: EdgeInsets.only(
+                                bottom: getProportionateScreenHeight(
+                                    kDefaultPadding),
+                                left: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                                right: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                              child: _loading
+                                  ? Container()
+                                  : CustomButton(
+                                      title: "SUBMIT",
+                                      press: () {
+                                        _showInvoice();
+                                      },
+                                      color: kBlackColor,
+                                    ),
+                            )
+                          : Container()
+                    ],
                   ),
                 ],
+              ),
+            ),
+
+            //////Order cart Tab section/////
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: widget.order['order_details'].length,
+                        separatorBuilder: (context, index) => SizedBox(
+                            height: getProportionateScreenWidth(
+                                kDefaultPadding / 2)),
+                        itemBuilder: (context, index) {
+                          String extractProductName(String? noteForItem) {
+                            if (noteForItem == null || noteForItem.isEmpty)
+                              return '';
+                            return noteForItem.split(': ').first;
+                          }
+
+                          return Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding)),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 2),
+                              vertical:
+                                  getProportionateScreenHeight(kDefaultPadding),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CategoryContainer(
+                                    title: widget.order['order_details'][index]
+                                                    ['product_name']
+                                                .toString()
+                                                .toLowerCase() ==
+                                            "aliexpress"
+                                        ? "${Service.capitalizeFirstLetters(extractProductName(widget.order['order_details'][index]['items'][0]['note_for_item']))}"
+                                        : widget.order['order_details'][index]
+                                                    ['product_name'] !=
+                                                null
+                                            ? Service.capitalizeFirstLetters(
+                                                widget.order['order_details']
+                                                    [index]['product_name'])
+                                            : "Item"),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 4)),
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 2),
+                                      vertical: getProportionateScreenHeight(
+                                          kDefaultPadding),
+                                    ),
+                                    child: ListView.separated(
+                                      physics: ClampingScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: widget
+                                          .order['order_details'][index]
+                                              ['items']
+                                          .length,
+                                      separatorBuilder: (context, index) =>
+                                          SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 5),
+                                      ),
+                                      itemBuilder: (context, idx) {
+                                        String extractItemName(
+                                            String? noteForItem) {
+                                          if (noteForItem == null ||
+                                              noteForItem.isEmpty) return '';
+                                          var parts = noteForItem.split(': ');
+                                          return parts.length >= 3
+                                              ? "${parts[2]}:\n${parts[1]}"
+                                              : parts.length >= 2
+                                                  ? "${parts[1]}"
+                                                  : '';
+                                        }
+
+                                        return Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    widget.order['order_details']
+                                                                    [index][
+                                                                    'product_name']
+                                                                .toString()
+                                                                .toLowerCase() ==
+                                                            "aliexpress"
+                                                        ? "${extractItemName(widget.order['order_details'][index]['items'][idx]['note_for_item'])}"
+                                                        : "${Service.capitalizeFirstLetters(widget.order['order_details'][index]['items'][idx]['item_name'])}",
+                                                    softWrap: true,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                  Text(
+                                                    "Quantity: ${widget.order['order_details'][index]['items'][idx]['quantity']}",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w700),
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        vertical: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Total Price : ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 0.1,
+                      color: kSecondaryColor,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

@@ -51,7 +51,7 @@ class _LocationsListState extends State<LocationsList> {
     if (data != null) {
       setState(() {
         userData = data;
-        // print(userData);
+        // debugPrint(userData);
       });
     }
     setState(() {
@@ -135,160 +135,164 @@ class _LocationsListState extends State<LocationsList> {
           },
         ),
       ),
-      body: ModalProgressHUD(
-          color: kPrimaryColor,
-          progressIndicator: linearProgressIndicator,
-          inAsyncCall: _loading,
-          child: !_loading
-              ? Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding),
-                      vertical:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  child: Column(
-                    children: [
-                      SectionTitle(
-                        sectionTitle: "Locations",
-                        subTitle: "",
-                        press: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                {
-                                  return LocationScreen(
-                                    currLat: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .latitude,
-                                    currLon: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .longitude,
-                                  );
-                                }
-                              },
-                            ),
-                          ).then((value) => {getLocations()});
-                        },
-                      ),
-                      LocationContainer(
-                        title: "Current Location",
-                        note: "Use current location",
-                        isSelected: currSelected,
-                        press: () {
-                          setState(() {
-                            currSelected = true;
-                            selected = -1;
-                          });
-                          _doLocationTask();
-                        },
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: deliveryLocation != null &&
-                                  deliveryLocation!.list!.length > 0
-                              ? deliveryLocation!.list!.length
-                              : 0,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              child: Dismissible(
-                                background: Container(
-                                  color: kSecondaryColor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Icon(
-                                        Icons.delete,
-                                        color: kPrimaryColor,
-                                        size: getProportionateScreenWidth(
-                                          kDefaultPadding,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                key: Key(deliveryLocation!.list![index].lat
-                                    .toString()),
-                                onDismissed: (direction) {
-                                  // Remove the item from the data source.
-                                  setState(() {
-                                    deliveryLocation!.list!.removeAt(index);
-                                    Service.save(
-                                        'delivery', deliveryLocation!.toJson());
-                                  });
-
-                                  // Then show a snackbar.
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(Service.showMessage(
-                                    '${deliveryLocation!.list?[index].name} deleted',
-                                    true,
-                                  ));
+      body: SafeArea(
+        child: ModalProgressHUD(
+            color: kPrimaryColor,
+            progressIndicator: linearProgressIndicator,
+            inAsyncCall: _loading,
+            child: !_loading
+                ? Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding),
+                        vertical:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                    child: Column(
+                      children: [
+                        SectionTitle(
+                          sectionTitle: "Locations",
+                          subTitle: "",
+                          press: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  {
+                                    return LocationScreen(
+                                      currLat: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .latitude,
+                                      currLon: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .longitude,
+                                    );
+                                  }
                                 },
-                                child: LocationContainer(
-                                  title: deliveryLocation!.list![index].name!
-                                      .split(",")[0],
-                                  note: deliveryLocation!.list?[index].note,
-                                  press: () {
-                                    setState(() {
-                                      currSelected = false;
-                                      selected = index;
-                                      destinationAddress =
-                                          deliveryLocation!.list![index];
-                                    });
-                                  },
-                                  isSelected: index == selected,
-                                ),
                               ),
-                            );
+                            ).then((value) => {getLocations()});
                           },
                         ),
-                      ),
-                      CustomButton(
-                        title: "Select",
-                        press: () {
-                          if (currSelected) {
-                            destinationAddress = DestinationAddress(
-                                name: "Current location",
-                                long: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .longitude,
-                                lat: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .latitude);
-                          }
-                          // print(destinationAddress!.toJson());
-                          Navigator.of(context).pop(destinationAddress);
-                        },
+                        LocationContainer(
+                          title: "Current Location",
+                          note: "Use current location",
+                          isSelected: currSelected,
+                          press: () {
+                            setState(() {
+                              currSelected = true;
+                              selected = -1;
+                            });
+                            _doLocationTask();
+                          },
+                        ),
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: deliveryLocation != null &&
+                                    deliveryLocation!.list!.length > 0
+                                ? deliveryLocation!.list!.length
+                                : 0,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: getProportionateScreenHeight(
+                                        kDefaultPadding / 2)),
+                                child: Dismissible(
+                                  background: Container(
+                                    color: kSecondaryColor,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Icon(
+                                          Icons.delete,
+                                          color: kPrimaryColor,
+                                          size: getProportionateScreenWidth(
+                                            kDefaultPadding,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  key: Key(deliveryLocation!.list![index].lat
+                                      .toString()),
+                                  onDismissed: (direction) {
+                                    // Remove the item from the data source.
+                                    setState(() {
+                                      deliveryLocation!.list!.removeAt(index);
+                                      Service.save('delivery',
+                                          deliveryLocation!.toJson());
+                                    });
+
+                                    // Then show a snackbar.
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(Service.showMessage(
+                                      '${deliveryLocation!.list?[index].name} deleted',
+                                      true,
+                                    ));
+                                  },
+                                  child: LocationContainer(
+                                    title: deliveryLocation!.list![index].name!
+                                        .split(",")[0],
+                                    note: deliveryLocation!.list?[index].note,
+                                    press: () {
+                                      setState(() {
+                                        currSelected = false;
+                                        selected = index;
+                                        destinationAddress =
+                                            deliveryLocation!.list![index];
+                                      });
+                                    },
+                                    isSelected: index == selected,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        CustomButton(
+                          title: "Select",
+                          press: () {
+                            if (currSelected) {
+                              destinationAddress = DestinationAddress(
+                                  name: "Current location",
+                                  long: Provider.of<ZMetaData>(context,
+                                          listen: false)
+                                      .longitude,
+                                  lat: Provider.of<ZMetaData>(context,
+                                          listen: false)
+                                      .latitude);
+                            }
+                            // debugPrint(destinationAddress!.toJson());
+                            Navigator.of(context).pop(destinationAddress);
+                          },
+                          color: kSecondaryColor,
+                        ),
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SpinKitWave(
                         color: kSecondaryColor,
+                        size: getProportionateScreenWidth(kDefaultPadding),
                       ),
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      Text("Loading...")
                     ],
-                  ),
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenWidth(kDefaultPadding),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 2),
-                    ),
-                    Text("Loading...")
-                  ],
-                )),
+                  )),
+      ),
     );
   }
 }

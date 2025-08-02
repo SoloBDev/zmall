@@ -48,12 +48,9 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
   String phoneMessage = "Start phone with 9 or 7";
   bool _loading = false;
   bool success = false;
-  final _codeController = TextEditingController();
-  String? smsCode;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -69,119 +66,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       setState(() {
         errors.remove(error);
       });
-  }
-
-  Future<bool> sendOTP(phone, email, otp) async {
-    var response = await verificationSms(phone, email, otp);
-    if (response != null && response['success']) {
-      setState(() {
-        success = true;
-      });
-    }
-    return success;
-  }
-
-  Future<void> verifyUser(String phone, BuildContext context) async {
-    setState(() {
-      _loading = true;
-    });
-    FirebaseAuth _auth = FirebaseAuth.instance;
-
-    _auth.verifyPhoneNumber(
-        phoneNumber: phone,
-        timeout: Duration(seconds: 60),
-        verificationCompleted: (AuthCredential credential) async {
-          if (_codeController.text.isEmpty) {
-            await _register();
-          }
-
-          UserCredential result = await _auth.signInWithCredential(credential);
-          Navigator.of(context).pop();
-          User? user = result.user;
-          setState(() {
-            _loading = false;
-          });
-          if (user != null) {
-            await _register();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-                "Verification failed...",
-                true)); // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-            //     "Something went wrong. Please try to login if you have already registered.",
-            //     true));
-            Navigator.of(context).pop();
-          }
-          //This callback would gets called when verification is done automatically
-        },
-        verificationFailed: (FirebaseAuthException exception) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage(exception.message, true));
-          setState(() {
-            _loading = false;
-          });
-        },
-        codeSent: (verificationId, forceResending) {
-          showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) {
-                return AlertDialog(
-                  backgroundColor: kPrimaryColor,
-                  title: Text("Phone Number Verification"),
-                  content: Wrap(
-                    children: [
-                      Text(
-                          "Please enter the one time pin(OTP) sent to your phone.\n"),
-                      SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding),
-                      ),
-                      TextField(
-                        controller: _codeController,
-                      ),
-                    ],
-                  ),
-                  actions: <Widget>[
-                    CustomButton(
-                      title: "Confirm",
-                      color: kSecondaryColor,
-                      press: () async {
-                        final code = _codeController.text.trim();
-                        AuthCredential credential =
-                            PhoneAuthProvider.credential(
-                                verificationId: verificationId, smsCode: code);
-
-                        UserCredential result =
-                            await _auth.signInWithCredential(credential);
-
-                        User? user = result.user;
-
-                        if (user != null) {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            _loading = true;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  ("Verification successful. Registering user.."),
-                                  false));
-                          await _register();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  ("Error while verifying phone number. Please try again"),
-                                  true));
-                          setState(() {
-                            _loading = false;
-                          });
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    )
-                  ],
-                );
-              });
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {});
   }
 
   Future<void> _register() async {
@@ -234,94 +118,23 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
                   color: kSecondaryColor,
                 )
               : CustomButton(
-                  title: "Verify Phone",
+                  title: "Complete",
+                  // "Verify Phone",
                   color: kSecondaryColor,
                   press: () {
                     if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        smsCode = RandomDigits.getString(6);
-                      });
-                      sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
-                              widget.email, smsCode)
-                          .then(
-                        (success) {
-                          if (success) {
-                            _loading = !_loading;
-                            // Navigator.pushReplacement(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => VerificationScreen(
-                            //       phone: phoneNumber!,
-                            //       code: smsCode!,
-                            //     ),
-                            //   ),
-                            // );
-                            showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    backgroundColor: kPrimaryColor,
-                                    title: Text("Phone Number Verification"),
-                                    content: Wrap(
-                                      children: [
-                                        Text(
-                                            "Please enter the one time password(OTP) sent to your phone or email.\n"),
-                                        SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding),
-                                        ),
-                                        TextField(
-                                          controller: _codeController,
-                                        ),
-                                      ],
-                                    ),
-                                    actions: <Widget>[
-                                      CustomButton(
-                                        title: "Confirm",
-                                        color: kSecondaryColor,
-                                        press: () async {
-                                          final code =
-                                              _codeController.text.trim();
-
-                                          if (code == smsCode) {
-                                            Navigator.of(context).pop();
-                                            setState(() {
-                                              _loading = true;
-                                            });
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(Service.showMessage(
-                                                    ("Verification successful. Registering user.."),
-                                                    false));
-                                            await _register();
-                                          } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(Service.showMessage(
-                                                    ("Error while verifying phone number. Please try again"),
-                                                    true));
-                                            setState(() {
-                                              _loading = false;
-                                            });
-                                            Navigator.of(context).pop();
-                                          }
-                                        },
-                                      )
-                                    ],
-                                  );
-                                });
-                          } else {
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //     Service.showMessage(
-                            //         "ስልክ ቁጥር ተሳስተዋል", true));
-                            verifyUser(
-                                "${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
-                                context);
-                          }
-                        },
-                      );
+                      _register();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          Service.showMessage(
+                              "Please enter a valid phone number", true));
+                      // "ስልክ ቁጥር ተሳስተዋል"
                     }
                   },
                 ),
+          // }
+          // },
+          // ),
         ],
       ),
     );
@@ -346,8 +159,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       decoration: InputDecoration(
         labelText: "Address",
         hintText: "Enter your phone address",
-        // If  you are using latest version of flutter then lable text and hint text shown like this
-        // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
         suffixIcon: CustomSuffixIcon(
           iconData: Icons.person_pin_circle_rounded,
@@ -404,45 +215,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     );
   }
 
-  // Widget buildPhoneNumberFormField() {
-  //   return CustomTextField(
-  //     keyboardType: TextInputType.number,
-  //     maxLength: 9,
-  //     onSaved: (newValue) => phoneNumber = newValue!,
-  //     onChanged: (value) {
-  //       phoneNumber = value;
-  //       if (value.isNotEmpty) {
-  //         removeError(error: kPhoneInvalidError);
-  //       }
-  //       return null;
-  //     },
-  //     validator: (value) {
-  //       if (value!.isEmpty || value.length < 9) {
-  //         addError(error: kPhoneInvalidError);
-  //         return "";
-  //       }
-  //       // else if (value.length != 9 ||
-  //       //     value.substring(0, 1) != 9.toString() &&
-  //       //         value.substring(0, 1) != 7.toString()) {
-  //       //   addError(error: kPhoneInvalidError);
-  //       //   return "";
-  //       // }
-
-  //       return null;
-  //     },
-  //     // decoration: InputDecoration(
-  //     labelText: "Phone Number",
-  //     prefix: Text(Provider.of<ZMetaData>(context, listen: false).areaCode),
-  //     hintText: "Enter your phone number",
-  //     // If  you are using latest version of flutter then lable text and hint text shown like this
-  //     // if you r using flutter less then 1.20.* then maybe this is not working properly
-  //     floatingLabelBehavior: FloatingLabelBehavior.always,
-  //     suffixIcon: CustomSuffixIcon(
-  //       iconData: Icons.phone,
-  //     ),
-  //     // ),
-  //   );
-  // }
   Widget buildPhoneNumberFormField() {
     return CustomTextField(
       keyboardType: TextInputType.number,
@@ -457,20 +229,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         }
         return null;
       },
-      // validator: (value) {
-      // if (value!.isEmpty || value.length < 9) {
-      //   addError(error: kPhoneInvalidError);
-      //   return "";
-      // }
-      // // else if (value.length != 9 ||
-      // //     value.substring(0, 1) != 9.toString() &&
-      // //         value.substring(0, 1) != 7.toString()) {
-      // //   addError(error: kPhoneInvalidError);
-      // //   return "";
-      // // }
 
-      // return null;
-      // },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter a phone number';
@@ -480,15 +239,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         }
         return null; // Return null if validation passes
       },
-      // decoration: InputDecoration(
-      // labelText: Provider.of<ZLanguage>(context).phone,
-      // prefix: Text(Provider.of<ZMetaData>(context, listen: false).areaCode),
       hintText: "$areaCode...",
-      // "Enter your phone number",
-      // If  you are using latest version of flutter then lable text and hint text shown like this
-      // if you r using flutter less then 1.20.* then maybe this is not working properly
       floatingLabelBehavior: FloatingLabelBehavior.always,
-      // suffixIcon: CustomSuffixIcon(iconData: Icons.phone),
       isPhoneWithFlag: true,
       initialSelection:
           Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
@@ -497,7 +249,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       countryFilter: ['ET', 'SS'],
       onFlagChanged: (CountryCode code) {
         setState(() {
-          print("code $code");
+          // debugPrint("code $code");
           if (code.toString() == "+251") {
             setUrl = BASE_URL;
             country = "Ethiopia";
@@ -511,8 +263,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             city = "Juba";
             phoneMessage = "Start phone number with 9...";
           }
-          print("country $country");
-          // print("after _country $_country");
+          // debugPrint("country $country");
+          // debugPrint("after _country $_country");
           Provider.of<ZMetaData>(
             context,
             listen: false,
@@ -530,8 +282,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       // decoration: InputDecoration(
       labelText: "Last Name",
       hintText: "Enter your last name",
-      // If  you are using latest version of flutter then lable text and hint text shown like this
-      // if you r using flutter less then 1.20.* then maybe this is not working properly
       floatingLabelBehavior: FloatingLabelBehavior.always,
       suffixIcon: CustomSuffixIcon(
         iconData: Icons.account_circle_rounded,
@@ -557,11 +307,8 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         }
         return null;
       },
-      // decoration: InputDecoration(
       labelText: "First Name",
       hintText: "Enter your first name",
-      // If  you are using latest version of flutter then lable text and hint text shown like this
-      // if you r using flutter less then 1.20.* then maybe this is not working properly
       floatingLabelBehavior: FloatingLabelBehavior.always,
       suffixIcon: CustomSuffixIcon(
         iconData: Icons.account_circle_rounded,
@@ -608,7 +355,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -644,8 +391,211 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
 }
+
+///////before otp auth
+
+  // Future<bool> sendOTP(phone, email, otp) async {
+  //   var response = await verificationSms(phone, email, otp);
+  //   if (response != null && response['success']) {
+  //     setState(() {
+  //       success = true;
+  //     });
+  //   }
+  //   return success;
+  // }
+
+  // Future<void> verifyUser(String phone, BuildContext context) async {
+  //   setState(() {
+  //     _loading = true;
+  //   });
+  //   FirebaseAuth _auth = FirebaseAuth.instance;
+
+  //   _auth.verifyPhoneNumber(
+  //       phoneNumber: phone,
+  //       timeout: Duration(seconds: 60),
+  //       verificationCompleted: (AuthCredential credential) async {
+  //         if (_codeController.text.isEmpty) {
+  //           await _register();
+  //         }
+
+  //         UserCredential result = await _auth.signInWithCredential(credential);
+  //         Navigator.of(context).pop();
+  //         User? user = result.user;
+  //         setState(() {
+  //           _loading = false;
+  //         });
+  //         if (user != null) {
+  //           await _register();
+  //         } else {
+  //           ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //               "Verification failed...",
+  //               true)); // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //           //     "Something went wrong. Please try to login if you have already registered.",
+  //           //     true));
+  //           Navigator.of(context).pop();
+  //         }
+  //         //This callback would gets called when verification is done automatically
+  //       },
+  //       verificationFailed: (FirebaseAuthException exception) {
+  //         ScaffoldMessenger.of(context)
+  //             .showSnackBar(Service.showMessage(exception.message, true));
+  //         setState(() {
+  //           _loading = false;
+  //         });
+  //       },
+  //       codeSent: (verificationId, forceResending) {
+  //         showDialog(
+  //             context: context,
+  //             barrierDismissible: false,
+  //             builder: (context) {
+  //               return AlertDialog(
+  //                 backgroundColor: kPrimaryColor,
+  //                 title: Text("Phone Number Verification"),
+  //                 content: Wrap(
+  //                   children: [
+  //                     Text(
+  //                         "Please enter the one time pin(OTP) sent to your phone.\n"),
+  //                     SizedBox(
+  //                       height: getProportionateScreenHeight(kDefaultPadding),
+  //                     ),
+  //                     TextField(
+  //                       controller: _codeController,
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 actions: <Widget>[
+  //                   CustomButton(
+  //                     title: "Confirm",
+  //                     color: kSecondaryColor,
+  //                     press: () async {
+  //                       final code = _codeController.text.trim();
+  //                       AuthCredential credential =
+  //                           PhoneAuthProvider.credential(
+  //                               verificationId: verificationId, smsCode: code);
+
+  //                       UserCredential result =
+  //                           await _auth.signInWithCredential(credential);
+
+  //                       User? user = result.user;
+
+  //                       if (user != null) {
+  //                         Navigator.of(context).pop();
+  //                         setState(() {
+  //                           _loading = true;
+  //                         });
+  //                         ScaffoldMessenger.of(context).showSnackBar(
+  //                             Service.showMessage(
+  //                                 ("Verification successful. Registering user.."),
+  //                                 false));
+  //                         await _register();
+  //                       } else {
+  //                         ScaffoldMessenger.of(context).showSnackBar(
+  //                             Service.showMessage(
+  //                                 ("Error while verifying phone number. Please try again"),
+  //                                 true));
+  //                         setState(() {
+  //                           _loading = false;
+  //                         });
+  //                         Navigator.of(context).pop();
+  //                       }
+  //                     },
+  //                   )
+  //                 ],
+  //               );
+  //             });
+  //       },
+  //       codeAutoRetrievalTimeout: (String verificationId) {});
+  // }
+///
+//  CustomButton(
+//                   title: "Verify Phone",
+//                   color: kSecondaryColor,
+//                   press: () {
+//                     if (_formKey.currentState!.validate()) {
+//                       setState(() {
+//                         smsCode = RandomDigits.getString(6);
+//                       });
+                
+                      // sendOTP("${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
+                      //         widget.email, smsCode)
+                      //     .then(
+                      //   (success) {
+                      //     if (success) {
+                      //       _loading = !_loading;
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => VerificationScreen(
+                      //       phone: phoneNumber!,
+                      //       code: smsCode!,
+                      //     ),
+                      //   ),
+                      // );
+                      // showDialog(
+                      //     context: context,
+                      //     barrierDismissible: false,
+                      //     builder: (context) {
+                      //       return AlertDialog(
+                      //         backgroundColor: kPrimaryColor,
+                      //         title: Text("Phone Number Verification"),
+                      //         content: Wrap(
+                      //           children: [
+                      //             Text(
+                      //                 "Please enter the one time password(OTP) sent to your phone or email.\n"),
+                      //             SizedBox(
+                      //               height: getProportionateScreenHeight(
+                      //                   kDefaultPadding),
+                      //             ),
+                      //             TextField(
+                      //               controller: _codeController,
+                      //             ),
+                      //           ],
+                      //         ),
+                      //         actions: <Widget>[
+                      //           CustomButton(
+                      //             title: "Confirm",
+                      //             color: kSecondaryColor,
+                      //             press: () async {
+                      //               final code =
+                      //                   _codeController.text.trim();
+
+                      //               if (code == smsCode) {
+                      //                 Navigator.of(context).pop();
+                      //                 setState(() {
+                      //                   _loading = true;
+                      //                 });
+                      //                 ScaffoldMessenger.of(context)
+                      //                     .showSnackBar(Service.showMessage(
+                      //                         ("Verification successful. Registering user.."),
+                      //                         false));
+                      //                 await _register();
+                      //               } else {
+                      //                 ScaffoldMessenger.of(context)
+                      //                     .showSnackBar(Service.showMessage(
+                      //                         ("Error while verifying phone number. Please try again"),
+                      //                         true));
+                      //                 setState(() {
+                      //                   _loading = false;
+                      //                 });
+                      //                 Navigator.of(context).pop();
+                      //               }
+                      //             },
+                      //           )
+                      //         ],
+                      //       );
+                      //     });
+                //     } else {
+                //       // ScaffoldMessenger.of(context).showSnackBar(
+                //       //     Service.showMessage(
+                //       //         "ስልክ ቁጥር ተሳስተዋል", true));
+                      // verifyUser(
+                      //     "${Provider.of<ZMetaData>(context, listen: false).areaCode}$phoneNumber",
+                      //     context);
+                //     }
+                //   },
+                // ),

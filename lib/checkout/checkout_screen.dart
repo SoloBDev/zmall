@@ -88,7 +88,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
   }
@@ -112,6 +111,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (data != null) {
       setState(() {
         cart = Cart.fromJson(data);
+        // debugPrint("cart ${Cart.fromJson(data)}");
         if (cart!.destinationAddress?.name == "User Pickup") {
           setState(() {
             selfPickup = true;
@@ -235,6 +235,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _loading = true;
     });
     var data = await getCartInvoice();
+    // debugPrint("getCartInvoice data $data");
     if (data != null && data['success']) {
       _getETA();
     } else {
@@ -254,6 +255,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
           Provider.of<ZLanguage>(context).checkout,
@@ -265,1069 +267,790 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         inAsyncCall: _loading,
         color: kPrimaryColor,
         progressIndicator: linearProgressIndicator,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: getProportionateScreenWidth(kDefaultPadding)),
-            child: Column(
-              spacing: getProportionateScreenHeight(kDefaultPadding / 1.5),
-              children: [
-                Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(
-                      top: getProportionateScreenHeight(kDefaultPadding / 2)),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding / 2),
-                    ),
-                    boxShadow: [boxShadow],
-                  ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                            getProportionateScreenWidth(kDefaultPadding)),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing:
+                          getProportionateScreenHeight(kDefaultPadding / 1.5),
                       children: [
-                        CustomTag(
-                            color: kSecondaryColor,
-                            text: Provider.of<ZLanguage>(context)
-                                .deliveryOptions),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                        cart!.isLaundryService
-                            ? Container()
-                            : CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.timelapse,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text(
-                                    Provider.of<ZLanguage>(context).asSoon),
-                                subtitle: Text(Provider.of<ZLanguage>(context)
-                                    .expressOrder),
-                                activeColor: kSecondaryColor,
-                                value: this.orderAsap,
-                                onChanged: (bool? value) {
-                                  if (!onlyScheduledOrder!) {
-                                    if (value!) {
-                                      setState(() {
-                                        this.orderAsap = value;
-                                        this.scheduledOrder = false;
-                                        cart!.isSchedule = false;
-                                        cart!.scheduleStart = DateTime.now();
-                                      });
-                                    }
-                                    Service.save('cart', cart!.toJson());
-                                    getCart();
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                        "Store only accepts scheduled orders. Please schedule your order!",
-                                        false,
-                                        duration: 5,
-                                      ),
-                                    );
-                                    setState(() {
-                                      this.orderAsap = false;
-                                      this.scheduledOrder = true;
-                                    });
-                                  }
-                                },
-                              ),
-                        CheckboxListTile(
-                          secondary: Icon(
-                            Icons.calendar_today,
-                            color: kSecondaryColor,
-                            size: getProportionateScreenWidth(kDefaultPadding),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(
+                              top: getProportionateScreenHeight(
+                                  kDefaultPadding / 2)),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            border: Border.all(color: kWhiteColor),
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            boxShadow: [boxShadow],
                           ),
-                          title: Text(
-                              Provider.of<ZLanguage>(context).scheduleOrder),
-                          subtitle:
-                              Text(Provider.of<ZLanguage>(context).preOrder),
-                          activeColor: kSecondaryColor,
-                          value: this.scheduledOrder,
-                          onChanged: (bool? value) {
-                            if (!onlyScheduledOrder!) {
-                              if (value!) {
-                                setState(() {
-                                  this.scheduledOrder = value;
-                                  this.orderAsap = false;
-                                });
-                              } else {
-                                setState(() {
-                                  this.scheduledOrder = false;
-                                  this.orderAsap = true;
-                                  cart!.isSchedule = false;
-                                });
-                                Service.save("cart", cart!.toJson());
-                              }
-                            } else {
-                              setState(() {
-                                this.scheduledOrder = onlyScheduledOrder!;
-                                this.orderAsap = false;
-                              });
-                            }
-                          },
-                        ),
-                        scheduledOrder
-                            ? Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  TextButton(
-                                    child: Text(
-                                      _scheduledDate != null
-                                          ? _scheduledDate
-                                              .toString()
-                                              .split('.')[0]
-                                          : Provider.of<ZLanguage>(context)
-                                              .addDate,
-                                      style: TextStyle(
-                                        color: kSecondaryColor,
-                                      ),
-                                    ),
-                                    style: ButtonStyle(
-                                      elevation: WidgetStateProperty.all(1.0),
-                                      backgroundColor: WidgetStateProperty.all(
-                                          kPrimaryColor),
-                                    ),
-                                    onPressed: () async {
-                                      DateTime _now = DateTime.now();
-                                      DateTime? pickedDate =
-                                          await showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: _now,
-                                        lastDate: _now.add(
-                                          Duration(days: 7),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // CustomTag(
+                                //     color: kSecondaryColor,
+                                //     text: Provider.of<ZLanguage>(context)
+                                //         .deliveryOptions),
+                                CustomContainerTag(
+                                  title: Provider.of<ZLanguage>(context)
+                                      .deliveryOptions,
+                                ),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2)),
+                                cart!.isLaundryService
+                                    ? Container()
+                                    : CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.timelapse,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
                                         ),
-                                      );
-                                      TimeOfDay? time = await showTimePicker(
-                                          context: context,
-                                          initialTime: TimeOfDay.fromDateTime(
-                                              DateTime.now()));
-                                      setState(() {
-                                        _scheduledDate = pickedDate!.add(
-                                            Duration(
-                                                hours: time!.hour,
-                                                minutes: time.minute));
-                                        cart!.isSchedule = true;
-                                        cart!.scheduleStart = _scheduledDate;
-                                      });
-                                      await Service.save(
-                                          'cart', cart!.toJson());
-                                      getCart();
-                                    },
-                                  ),
-                                ],
-                              )
-                            : Container(),
-                        cart!.isLaundryService
-                            ? Container()
-                            : CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.perm_identity,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text(
-                                    Provider.of<ZLanguage>(context).selfPickup),
-                                subtitle:
-                                    Text(Provider.of<ZLanguage>(context).diy),
-                                activeColor: kSecondaryColor,
-                                value: this.selfPickup,
-                                onChanged: (bool? value) {
-                                  if (!onlySelfPickup!) {
-                                    setState(() {
-                                      this.selfPickup = value!;
-                                    });
-                                    getCart();
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                        "Store only allows self pickup. No delivery fee",
-                                        false,
-                                        duration: 5,
-                                      ),
-                                    );
-                                    setState(() {
-                                      this.selfPickup = onlySelfPickup!;
-                                    });
-                                  }
-                                },
-                              ),
-                        cart!.isLaundryService
-                            ? CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.timer_sharp,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text("Normal delivery"),
-                                subtitle: Text("Delivered in 4-5 days"),
-                                activeColor: kSecondaryColor,
-                                value: normalDelivery,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    normalDelivery = true;
-                                    halfExpress = false;
-                                    nextDay = false;
-                                    threeHours = false;
-                                  });
-                                  getCart();
-                                },
-                              )
-                            : Container(),
-                        cart!.isLaundryService
-                            ? CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.fast_forward_rounded,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text("Half express delivery"),
-                                subtitle: Text("Delivered within 2 days"),
-                                activeColor: kSecondaryColor,
-                                value: halfExpress,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    normalDelivery = false;
-                                    halfExpress = true;
-                                    nextDay = false;
-                                    threeHours = false;
-                                  });
-                                  getCart();
-                                },
-                              )
-                            : Container(),
-                        cart!.isLaundryService
-                            ? CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.today_outlined,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text("Next day delivery"),
-                                subtitle: Text("Delivered the next day"),
-                                activeColor: kSecondaryColor,
-                                value: nextDay,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    normalDelivery = false;
-                                    halfExpress = false;
-                                    nextDay = true;
-                                    threeHours = false;
-                                  });
-                                  getCart();
-                                },
-                              )
-                            : Container(),
-                        cart!.isLaundryService
-                            ? CheckboxListTile(
-                                secondary: Icon(
-                                  Icons.timer_3_select_sharp,
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
-                                title: Text("Three hours delivery"),
-                                subtitle: Text("Delivered within 3 hours"),
-                                activeColor: kSecondaryColor,
-                                value: threeHours,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    normalDelivery = false;
-                                    halfExpress = false;
-                                    nextDay = false;
-                                    threeHours = true;
-                                  });
-                                  getCart();
-                                },
-                              )
-                            : Container(),
-                      ],
-                    ),
-                  ),
-                ),
-                /////delivery details section//////
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding / 2),
-                    ),
-                    boxShadow: [boxShadow],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 1.5),
-                        vertical: getProportionateScreenHeight(
-                            kDefaultPadding / 1.5)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CustomTag(
-                            color: kSecondaryColor,
-                            text: Provider.of<ZLanguage>(context)
-                                .deliveryDetails),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        DetailsRow(
-                          title: Provider.of<ZLanguage>(context).name,
-                          subtitle: widget.receiverName.isNotEmpty &&
-                                  widget.isForOthers
-                              ? widget.receiverName
-                              : userData != null
-                                  ? "${userData['user']['first_name']} ${userData['user']['last_name']} "
-                                  : "",
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 3)),
-                        DetailsRow(
-                          title: Provider.of<ZLanguage>(context).phone,
-                          subtitle: widget.receiverPhone.isNotEmpty &&
-                                  widget.isForOthers
-                              ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.receiverPhone}"
-                              : userData != null
-                                  ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}"
-                                  : "",
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 3)),
-                        DetailsRow(
-                          title:
-                              Provider.of<ZLanguage>(context).deliveryAddress,
-                          subtitle: cart != null
-                              ? "${cart!.destinationAddress?.name?.split(',')[0]}"
-                              : "",
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                //////Order details section//////
-                responseData != null && responseData['success']
-                    ? Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                          boxShadow: [boxShadow],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding / 1.5),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 1.5)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomTag(
-                                  color: kSecondaryColor,
-                                  text: Provider.of<ZLanguage>(context)
-                                      .orderDetail),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding)),
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context)
-                                    .servicePrice,
-                                subtitle: promoCodeApplied
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_delivery_price'].toStringAsFixed(2)}"
-                                    : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_delivery_price'].toStringAsFixed(2)}",
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context)
-                                    .totalOrderPrice,
-                                subtitle: promoCodeApplied
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_order_price'].toStringAsFixed(2)}"
-                                    : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_order_price'].toStringAsFixed(2)}",
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context)
-                                    .promoPayment,
-                                subtitle: promoCodeApplied
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).currency} -${promoCodeData['order_payment']['promo_payment'].toStringAsFixed(2)}"
-                                    : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['promo_payment'].toStringAsFixed(2)}",
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context).tip,
-                                subtitle:
-                                    "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              aliexpressCart != null &&
-                                      aliexpressCart!.cart.storeId ==
-                                          cart!.storeId
-                                  ? SizedBox.shrink()
-                                  : Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        textAlign: TextAlign.center,
-                                        Provider.of<ZLanguage>(context)
-                                            .orderTime,
-                                      ),
-                                    ),
-
-                              _etaLow == null ||
-                                      (aliexpressCart != null &&
-                                          aliexpressCart!.cart.storeId ==
-                                              cart!.storeId)
-                                  ? SizedBox.shrink()
-                                  : Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.w700),
-                                      ),
-                                    ),
-                              // : Container(),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
-                              Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "${Provider.of<ZLanguage>(context).total} :",
-                                      style: TextStyle(
-                                        fontSize: getProportionateScreenWidth(
-                                            kDefaultPadding * .7),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                        width: getProportionateScreenHeight(
-                                            kDefaultPadding / 3)),
-                                    Text(
-                                      promoCodeApplied
-                                          ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
-                                          : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Center(
-                              //   child: Column(
-                              //     children: [
-                              //       Text(
-                              //         Provider.of<ZLanguage>(context).total,
-                              //         style: TextStyle(
-                              //           fontSize: getProportionateScreenWidth(
-                              //               kDefaultPadding * .7),
-                              //         ),
-                              //       ),
-                              //       SizedBox(
-                              //           height: getProportionateScreenHeight(
-                              //               kDefaultPadding / 3)),
-                              //       Text(
-                              //         promoCodeApplied
-                              //             ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
-                              //             : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
-                              //         style: Theme.of(context)
-                              //             .textTheme
-                              //             .headlineSmall
-                              //             ?.copyWith(
-                              //                 fontWeight: FontWeight.bold),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-                              ////////////promo code and tip
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      if (promoCodeApplied) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          Service.showMessage(
-                                              "Promo Code already applied!",
-                                              true),
-                                        );
-                                        setState(() {});
-                                      } else {
-                                        showModalBottomSheet<void>(
-                                          backgroundColor: Colors.transparent,
-                                          context: context,
-                                          builder: (context) {
-                                            return StatefulBuilder(builder:
-                                                (BuildContext context,
-                                                    StateSetter setState) {
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft: Radius.circular(
-                                                        kDefaultPadding),
-                                                    topRight: Radius.circular(
-                                                        kDefaultPadding),
-                                                  ),
-                                                  color: kPrimaryColor,
-                                                ),
-                                                padding: EdgeInsets.all(
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding)),
-                                                child: SingleChildScrollView(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        Provider.of<ZLanguage>(
-                                                                context)
-                                                            .applyPromoCode,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .titleLarge
-                                                            ?.copyWith(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                      ),
-                                                      SizedBox(
-                                                        height:
-                                                            getProportionateScreenHeight(
-                                                                kDefaultPadding),
-                                                      ),
-                                                      TextField(
-                                                        style: TextStyle(
-                                                            color: kBlackColor),
-                                                        keyboardType:
-                                                            TextInputType.text,
-                                                        onChanged: (val) {
-                                                          promoCode = val;
-                                                        },
-                                                        decoration: textFieldInputDecorator.copyWith(
-                                                            labelText: Provider
-                                                                    .of<ZLanguage>(
-                                                                        context)
-                                                                .promoCode),
-                                                      ),
-                                                      SizedBox(
-                                                        height:
-                                                            getProportionateScreenHeight(
-                                                                kDefaultPadding /
-                                                                    2),
-                                                      ),
-                                                      SizedBox(
-                                                        height:
-                                                            getProportionateScreenHeight(
-                                                                kDefaultPadding /
-                                                                    2),
-                                                      ),
-                                                      _loading
-                                                          ? SpinKitWave(
-                                                              color:
-                                                                  kSecondaryColor,
-                                                              size: getProportionateScreenWidth(
-                                                                  kDefaultPadding),
-                                                            )
-                                                          : CustomButton(
-                                                              title: Provider.of<
-                                                                          ZLanguage>(
-                                                                      context)
-                                                                  .apply,
-                                                              color:
-                                                                  kSecondaryColor,
-                                                              press: () async {
-                                                                if (promoCode
-                                                                    .isNotEmpty) {
-                                                                  setState(() {
-                                                                    _loading =
-                                                                        true;
-                                                                  });
-                                                                  _applyPromoCode();
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop();
-                                                                } else {
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop();
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(Service.showMessage(
-                                                                          "Promo Code cannot be empty!",
-                                                                          false));
-                                                                }
-                                                              },
-                                                            ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            });
-                                          },
-                                        ).whenComplete(() {
-                                          setState(() {});
-                                        });
-                                      }
-                                    },
-                                    child: Text(
-                                      Provider.of<ZLanguage>(context)
-                                          .applyPromoCode,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: kSecondaryColor,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ),
-                                  /////Tip
-                                  GestureDetector(
-                                    onTap: () {
-                                      showModalBottomSheet<void>(
-                                        isScrollControlled: true,
-                                        context: context,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(30.0),
-                                              topRight: Radius.circular(30.0)),
-                                        ),
-                                        builder: (BuildContext context) {
-                                          return StatefulBuilder(builder:
-                                              (BuildContext context,
-                                                  StateSetter setState) {
-                                            return Padding(
-                                              padding: MediaQuery.of(context)
-                                                  .viewInsets,
-                                              child: Container(
-                                                padding: EdgeInsets.all(
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding)),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: <Widget>[
-                                                    SizedBox(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding),
-                                                    ),
-                                                    Text(
-                                                      Provider.of<ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .addTip,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .titleLarge
-                                                          ?.copyWith(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                    ),
-                                                    SizedBox(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding),
-                                                    ),
-                                                    TextField(
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                      keyboardType:
-                                                          TextInputType.number,
-                                                      inputFormatters: [
-                                                        FilteringTextInputFormatter
-                                                            .digitsOnly,
-                                                        FilteringTextInputFormatter
-                                                            .singleLineFormatter,
-                                                        FilteringTextInputFormatter
-                                                            .deny(
-                                                                RegExp(r'^0')),
-                                                      ],
-                                                      onChanged: (val) {
-                                                        tipTemp =
-                                                            double.parse(val);
-                                                      },
-                                                      decoration: textFieldInputDecorator
-                                                          .copyWith(
-                                                              labelText: Provider
-                                                                      .of<ZLanguage>(
-                                                                          context)
-                                                                  .tip),
-                                                    ),
-                                                    SizedBox(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding),
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceAround,
-                                                      children: [
-                                                        GestureDetector(
-                                                          onTap: () {
-                                                            tip = 20.00;
-                                                            Navigator.pop(
-                                                                context);
-                                                            _getCartInvoice();
-                                                          },
-                                                          child: CustomTag(
-                                                            text:
-                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                          ),
-                                                        ),
-                                                        GestureDetector(
-                                                          onTap: () {
-                                                            tip = 30.00;
-                                                            Navigator.pop(
-                                                                context);
-                                                            _getCartInvoice();
-                                                          },
-                                                          child: CustomTag(
-                                                            text:
-                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                          ),
-                                                        ),
-                                                        GestureDetector(
-                                                          onTap: () {
-                                                            tip = 40.00;
-                                                            Navigator.pop(
-                                                                context);
-                                                            _getCartInvoice();
-                                                          },
-                                                          child: CustomTag(
-                                                            text:
-                                                                "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    SizedBox(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding),
-                                                    ),
-                                                    CustomButton(
-                                                      title: Provider.of<
-                                                                  ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .submit,
-                                                      color: kSecondaryColor,
-                                                      press: () async {
-                                                        tip = tipTemp;
-                                                        Navigator.pop(context);
-                                                        _getCartInvoice();
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
+                                        title: Text(
+                                            Provider.of<ZLanguage>(context)
+                                                .asSoon),
+                                        subtitle: Text(
+                                            Provider.of<ZLanguage>(context)
+                                                .expressOrder),
+                                        activeColor: kSecondaryColor,
+                                        value: this.orderAsap,
+                                        onChanged: (bool? value) {
+                                          if (!onlyScheduledOrder!) {
+                                            if (value!) {
+                                              setState(() {
+                                                this.orderAsap = value;
+                                                this.scheduledOrder = false;
+                                                cart!.isSchedule = false;
+                                                cart!.scheduleStart =
+                                                    DateTime.now();
+                                              });
+                                            }
+                                            Service.save(
+                                                'cart', cart!.toJson());
+                                            getCart();
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              Service.showMessage(
+                                                "Store only accepts scheduled orders. Please schedule your order!",
+                                                false,
+                                                duration: 5,
                                               ),
                                             );
-                                          });
+                                            setState(() {
+                                              this.orderAsap = false;
+                                              this.scheduledOrder = true;
+                                            });
+                                          }
                                         },
-                                      ).whenComplete(() {
-                                        setState(() {});
-                                      });
-                                      // showModalBottomSheet<void>(
-                                      //   isScrollControlled: true,
-                                      //   context: context,
-                                      //   shape: RoundedRectangleBorder(
-                                      //     borderRadius: BorderRadius.only(
-                                      //         topLeft: Radius.circular(30.0),
-                                      //         topRight: Radius.circular(30.0)),
-                                      //   ),
-                                      //   builder: (BuildContext context) {
-                                      //     return StatefulBuilder(builder:
-                                      //         (BuildContext context,
-                                      //             StateSetter setState) {
-                                      //       return Container(
-                                      //         decoration: BoxDecoration(
-                                      //           borderRadius: BorderRadius.only(
-                                      //             topLeft: Radius.circular(
-                                      //                 kDefaultPadding),
-                                      //             topRight: Radius.circular(
-                                      //                 kDefaultPadding),
-                                      //           ),
-                                      //           color: kPrimaryColor,
-                                      //         ),
-                                      //         padding: EdgeInsets.all(
-                                      //             getProportionateScreenHeight(
-                                      //                 kDefaultPadding)),
-                                      //         child: SingleChildScrollView(
-                                      //           child: Column(
-                                      //             mainAxisAlignment:
-                                      //                 MainAxisAlignment.start,
-                                      //             crossAxisAlignment:
-                                      //                 CrossAxisAlignment.start,
-                                      //             mainAxisSize:
-                                      //                 MainAxisSize.min,
-                                      //             children: [
-                                      //               Text(
-                                      //                 Provider.of<ZLanguage>(
-                                      //                         context)
-                                      //                     .addTip,
-                                      //                 style: Theme.of(context)
-                                      //                     .textTheme
-                                      //                     .titleLarge
-                                      //                     ?.copyWith(
-                                      //                       fontWeight:
-                                      //                           FontWeight.bold,
-                                      //                     ),
-                                      //               ),
-                                      //               SizedBox(
-                                      //                 height:
-                                      //                     getProportionateScreenHeight(
-                                      //                         kDefaultPadding),
-                                      //               ),
-                                      //               TextField(
-                                      //                 style: TextStyle(
-                                      //                     color: kBlackColor),
-                                      //                 keyboardType:
-                                      //                     TextInputType.number,
-                                      //                 onChanged: (val) {
-                                      //                   tip = double.parse(val);
-                                      //                 },
-                                      //                 decoration: textFieldInputDecorator
-                                      //                     .copyWith(
-                                      //                         labelText: Provider
-                                      //                                 .of<ZLanguage>(
-                                      //                                     context)
-                                      //                             .tip),
-                                      //               ),
-                                      //               SizedBox(
-                                      //                 height:
-                                      //                     getProportionateScreenHeight(
-                                      //                         kDefaultPadding /
-                                      //                             2),
-                                      //               ),
-                                      //               SizedBox(
-                                      //                 height:
-                                      //                     getProportionateScreenHeight(
-                                      //                         kDefaultPadding /
-                                      //                             2),
-                                      //               ),
-                                      //               _loading
-                                      //                   ? SpinKitWave(
-                                      //                       color:
-                                      //                           kSecondaryColor,
-                                      //                       size: getProportionateScreenWidth(
-                                      //                           kDefaultPadding),
-                                      //                     )
-                                      //                   : CustomButton(
-                                      //                       title: Provider.of<
-                                      //                                   ZLanguage>(
-                                      //                               context)
-                                      //                           .apply,
-                                      //                       color:
-                                      //                           kSecondaryColor,
-                                      //                       press: () async {
-                                      //                         Navigator.pop(
-                                      //                             context);
-                                      //                         _getCartInvoice();
-                                      //                       },
-                                      //                     ),
-                                      //             ],
-                                      //           ),
-                                      //         ),
-                                      //       );
-                                      //     });
-                                      //   },
-                                      // ).whenComplete(() {
-                                      //   setState(() {});
-                                      // });
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          Provider.of<ZLanguage>(context)
-                                              .addTip,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
-                                                color: kSecondaryColor,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                        Icon(
-                                          Icons.monetization_on_outlined,
-                                          size: getProportionateScreenHeight(
-                                              kDefaultPadding * 1.2),
-                                          color: kSecondaryColor,
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                CheckboxListTile(
+                                  secondary: Icon(
+                                    Icons.calendar_today,
+                                    color: kSecondaryColor,
+                                    size: getProportionateScreenWidth(
+                                        kDefaultPadding),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : _loading
-                        ? SpinKitDancingSquare(
-                            color: kSecondaryColor,
-                            size: getProportionateScreenHeight(kDefaultPadding),
-                          )
-                        : Container(
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: getProportionateScreenHeight(
-                                        kDefaultPadding)),
-                                child: Text(
-                                    "${errorCodes['${responseData['message']}']}"),
-                              ),
-                            ),
-                          ),
-                // SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-                _placeOrder
-                    ? SpinKitWave(
-                        color: kSecondaryColor,
-                        size: getProportionateScreenWidth(kDefaultPadding),
-                      )
-                    : CustomButton(
-                        title: Provider.of<ZLanguage>(context).placeOrder,
-                        press: () {
-                          if (scheduledOrder) {
-                            if (_scheduledDate != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return KifiyaScreen(
-                                      price: promoCodeApplied
-                                          ? promoCodeData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble()
-                                          : responseData['order_payment']
-                                                  ['user_pay_payment']
-                                              .toDouble(),
-                                      orderPaymentId:
-                                          responseData['order_payment']['_id'],
-                                      orderPaymentUniqueId:
-                                          responseData['order_payment']
-                                                  ['unique_id']
-                                              .toString(),
-                                      onlyCashless: onlyCashless,
-                                      vehicleId: responseData['vehicles'][0]
-                                          ['_id'],
-                                      userpickupWithSchedule:
-                                          cart!.isSchedule && selfPickup
-                                              ? true
-                                              : false,
-                                    );
+                                  title: Text(Provider.of<ZLanguage>(context)
+                                      .scheduleOrder),
+                                  subtitle: Text(
+                                      Provider.of<ZLanguage>(context).preOrder),
+                                  activeColor: kSecondaryColor,
+                                  value: this.scheduledOrder,
+                                  onChanged: (bool? value) {
+                                    if (!onlyScheduledOrder!) {
+                                      if (value!) {
+                                        setState(() {
+                                          this.scheduledOrder = value;
+                                          this.orderAsap = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          this.scheduledOrder = false;
+                                          this.orderAsap = true;
+                                          cart!.isSchedule = false;
+                                        });
+                                        Service.save("cart", cart!.toJson());
+                                      }
+                                    } else {
+                                      setState(() {
+                                        this.scheduledOrder =
+                                            onlyScheduledOrder!;
+                                        this.orderAsap = false;
+                                      });
+                                    }
                                   },
                                 ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage(
-                                  "Please select date & time for schedule",
-                                  false,
-                                  duration: 5,
+                                scheduledOrder
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          TextButton(
+                                            child: Text(
+                                              _scheduledDate != null
+                                                  ? _scheduledDate
+                                                      .toString()
+                                                      .split('.')[0]
+                                                  : Provider.of<ZLanguage>(
+                                                          context)
+                                                      .addDate,
+                                              style: TextStyle(
+                                                color: kSecondaryColor,
+                                              ),
+                                            ),
+                                            style: ButtonStyle(
+                                              elevation:
+                                                  WidgetStateProperty.all(1.0),
+                                              backgroundColor:
+                                                  WidgetStateProperty.all(
+                                                      kPrimaryColor),
+                                            ),
+                                            onPressed: () async {
+                                              DateTime _now = DateTime.now();
+                                              DateTime? pickedDate =
+                                                  await showDatePicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: _now,
+                                                lastDate: _now.add(
+                                                  Duration(days: 7),
+                                                ),
+                                              );
+                                              TimeOfDay? time =
+                                                  await showTimePicker(
+                                                      context: context,
+                                                      initialTime: TimeOfDay
+                                                          .fromDateTime(
+                                                              DateTime.now()));
+                                              setState(() {
+                                                _scheduledDate = pickedDate!
+                                                    .add(Duration(
+                                                        hours: time!.hour,
+                                                        minutes: time.minute));
+                                                cart!.isSchedule = true;
+                                                cart!.scheduleStart =
+                                                    _scheduledDate;
+                                              });
+                                              await Service.save(
+                                                  'cart', cart!.toJson());
+                                              getCart();
+                                            },
+                                          ),
+                                        ],
+                                      )
+                                    : Container(),
+                                cart!.isLaundryService
+                                    ? Container()
+                                    : CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.perm_identity,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        title: Text(
+                                            Provider.of<ZLanguage>(context)
+                                                .selfPickup),
+                                        subtitle: Text(
+                                            Provider.of<ZLanguage>(context)
+                                                .diy),
+                                        activeColor: kSecondaryColor,
+                                        value: this.selfPickup,
+                                        onChanged: (bool? value) {
+                                          if (!onlySelfPickup!) {
+                                            setState(() {
+                                              this.selfPickup = value!;
+                                            });
+                                            getCart();
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              Service.showMessage(
+                                                "Store only allows self pickup. No delivery fee",
+                                                false,
+                                                duration: 5,
+                                              ),
+                                            );
+                                            setState(() {
+                                              this.selfPickup = onlySelfPickup!;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                cart!.isLaundryService
+                                    ? CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.timer_sharp,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        title: Text("Normal delivery"),
+                                        subtitle: Text("Delivered in 4-5 days"),
+                                        activeColor: kSecondaryColor,
+                                        value: normalDelivery,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            normalDelivery = true;
+                                            halfExpress = false;
+                                            nextDay = false;
+                                            threeHours = false;
+                                          });
+                                          getCart();
+                                        },
+                                      )
+                                    : Container(),
+                                cart!.isLaundryService
+                                    ? CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.fast_forward_rounded,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        title: Text("Half express delivery"),
+                                        subtitle:
+                                            Text("Delivered within 2 days"),
+                                        activeColor: kSecondaryColor,
+                                        value: halfExpress,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            normalDelivery = false;
+                                            halfExpress = true;
+                                            nextDay = false;
+                                            threeHours = false;
+                                          });
+                                          getCart();
+                                        },
+                                      )
+                                    : Container(),
+                                cart!.isLaundryService
+                                    ? CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.today_outlined,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        title: Text("Next day delivery"),
+                                        subtitle:
+                                            Text("Delivered the next day"),
+                                        activeColor: kSecondaryColor,
+                                        value: nextDay,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            normalDelivery = false;
+                                            halfExpress = false;
+                                            nextDay = true;
+                                            threeHours = false;
+                                          });
+                                          getCart();
+                                        },
+                                      )
+                                    : Container(),
+                                cart!.isLaundryService
+                                    ? CheckboxListTile(
+                                        secondary: Icon(
+                                          Icons.timer_3_select_sharp,
+                                          color: kSecondaryColor,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        title: Text("Three hours delivery"),
+                                        subtitle:
+                                            Text("Delivered within 3 hours"),
+                                        activeColor: kSecondaryColor,
+                                        value: threeHours,
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            normalDelivery = false;
+                                            halfExpress = false;
+                                            nextDay = false;
+                                            threeHours = true;
+                                          });
+                                          getCart();
+                                        },
+                                      )
+                                    : Container(),
+                              ],
+                            ),
+                          ),
+                        ),
+                        /////delivery details section//////
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            border: Border.all(color: kWhiteColor),
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            boxShadow: [boxShadow],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 1.5),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 1.5)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // CustomTag(
+                                //     color: kSecondaryColor,
+                                //     text: Provider.of<ZLanguage>(context)
+                                //         .deliveryDetails),
+                                CustomContainerTag(
+                                  title: Provider.of<ZLanguage>(context)
+                                      .deliveryDetails,
                                 ),
-                              );
-                            }
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return KifiyaScreen(
-                                    price: promoCodeApplied
-                                        ? promoCodeData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble()
-                                        : responseData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble(),
-                                    orderPaymentId:
-                                        responseData['order_payment']['_id'],
-                                    orderPaymentUniqueId:
-                                        responseData['order_payment']
-                                                ['unique_id']
-                                            .toString(),
-                                    onlyCashless: (onlyCashless ??
-                                            false) ////new, safest way of old method
-                                        ? true
-                                        : (selfPickup ? true : false),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding)),
+                                DetailsRow(
+                                  title: Provider.of<ZLanguage>(context).name,
+                                  subtitle: widget.receiverName.isNotEmpty &&
+                                          widget.isForOthers
+                                      ? widget.receiverName
+                                      : userData != null
+                                          ? "${userData['user']['first_name']} ${userData['user']['last_name']} "
+                                          : "",
+                                ),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3)),
+                                DetailsRow(
+                                  title: Provider.of<ZLanguage>(context).phone,
+                                  subtitle: widget.receiverPhone.isNotEmpty &&
+                                          widget.isForOthers
+                                      ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.receiverPhone}"
+                                      : userData != null
+                                          ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}"
+                                          : "",
+                                ),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3)),
+                                DetailsRow(
+                                  title: Provider.of<ZLanguage>(context)
+                                      .deliveryAddress,
+                                  subtitle: cart != null
+                                      ? "${cart!.destinationAddress?.name?.split(',')[0]}"
+                                      : "",
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
 
-                                    // onlyCashless: onlyCashless!  //old
-                                    //     ? onlyCashless
-                                    //     : selfPickup
-                                    //         ? true
-                                    //         : false,
-                                    vehicleId: responseData['vehicles'][0]
-                                        ['_id'],
-                                    userpickupWithSchedule:
-                                        cart!.isSchedule && selfPickup
-                                            ? true
-                                            : false,
-                                  );
-                                },
+                        //////Order details section//////
+                        responseData != null && responseData['success']
+                            ? Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                  border: Border.all(color: kWhiteColor),
+                                  borderRadius: BorderRadius.circular(
+                                    getProportionateScreenWidth(
+                                        kDefaultPadding),
+                                  ),
+                                  boxShadow: [boxShadow],
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 1.5),
+                                      vertical: getProportionateScreenHeight(
+                                          kDefaultPadding / 1.5)),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // CustomTag(
+                                      //     color: kSecondaryColor,
+                                      //     text: Provider.of<ZLanguage>(context)
+                                      //         .orderDetail),
+                                      CustomContainerTag(
+                                        title: Provider.of<ZLanguage>(context)
+                                            .orderDetail,
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding)),
+                                      DetailsRow(
+                                        title: Provider.of<ZLanguage>(context)
+                                            .servicePrice,
+                                        subtitle: promoCodeApplied
+                                            ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_delivery_price'].toStringAsFixed(2)}"
+                                            : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_delivery_price'].toStringAsFixed(2)}",
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 3)),
+                                      DetailsRow(
+                                        title: Provider.of<ZLanguage>(context)
+                                            .totalOrderPrice,
+                                        subtitle: promoCodeApplied
+                                            ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_order_price'].toStringAsFixed(2)}"
+                                            : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_order_price'].toStringAsFixed(2)}",
+                                      ),
+                                      // SizedBox(
+                                      //     height: getProportionateScreenHeight(
+                                      //         kDefaultPadding / 3)),
+                                      // DetailsRow(
+                                      //   title: Provider.of<ZLanguage>(context)
+                                      //       .promoPayment,
+                                      //   subtitle: promoCodeApplied
+                                      //       ? "${Provider.of<ZMetaData>(context, listen: false).currency} -${promoCodeData['order_payment']['promo_payment'].toStringAsFixed(2)}"
+                                      //       : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['promo_payment'].toStringAsFixed(2)}",
+                                      // ),
+                                      // SizedBox(
+                                      //     height: getProportionateScreenHeight(
+                                      //         kDefaultPadding / 3)),
+                                      // DetailsRow(
+                                      //   title:
+                                      //       Provider.of<ZLanguage>(context).tip,
+                                      //   subtitle:
+                                      //       "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
+                                      // ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 3)),
+                                      // aliexpressCart != null &&
+                                      //         aliexpressCart!.cart.storeId ==
+                                      //             cart!.storeId
+                                      //     ? SizedBox.shrink()
+                                      //     : Align(
+                                      //         alignment: Alignment.center,
+                                      //         child: Text(
+                                      //           textAlign: TextAlign.center,
+                                      //           Provider.of<ZLanguage>(context)
+                                      //               .orderTime,
+                                      //         ),
+                                      //       ),
+                                      DetailsRow(
+                                        title: Provider.of<ZLanguage>(context)
+                                            .promoPayment,
+                                        subtitle: promoCodeApplied
+                                            ? "${Provider.of<ZMetaData>(context, listen: false).currency} -${promoCodeData['order_payment']['promo_payment'].toStringAsFixed(2)}"
+                                            : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['promo_payment'].toStringAsFixed(2)}",
+                                        onTap: () {
+                                          _showApplyPromoCodeWidget();
+                                        },
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 3)),
+
+                                      DetailsRow(
+                                        title:
+                                            Provider.of<ZLanguage>(context).tip,
+                                        subtitle:
+                                            "${tip!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                        onTap: () {
+                                          _showTipWidget();
+                                        },
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 3)),
+                                      if (_etaLow != null ||
+                                          (aliexpressCart != null &&
+                                              aliexpressCart!.cart.storeId !=
+                                                  cart!.storeId))
+                                        DetailsRow(
+                                          title: "Estimated Time",
+                                          subtitle:
+                                              "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
+                                        ),
+                                      // _etaLow == null ||
+                                      //         (aliexpressCart != null &&
+                                      //             aliexpressCart!
+                                      //                     .cart.storeId ==
+                                      //                 cart!.storeId)
+                                      //     ? SizedBox.shrink()
+                                      //     : Align(
+                                      //   alignment: Alignment.center,
+                                      //   child: Text(
+                                      //     "${_etaLow.toString().split(" ")[1].split(".")[0]} - ${_etaHigh.toString().split(' ')[1].split('.')[0]}",
+                                      //     style: Theme.of(context)
+                                      //         .textTheme
+                                      //         .bodyLarge
+                                      //         ?.copyWith(
+                                      //             fontWeight:
+                                      //                 FontWeight.w700),
+                                      //   ),
+                                      // ),
+                                      // : Container(),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 2)),
+                                      // Center(
+                                      //   child: Row(
+                                      //     mainAxisAlignment:
+                                      //         MainAxisAlignment.center,
+                                      //     children: [
+                                      //       Text(
+                                      //         "${Provider.of<ZLanguage>(context).total} :",
+                                      //         style: TextStyle(
+                                      //           fontSize:
+                                      //               getProportionateScreenWidth(
+                                      //                   kDefaultPadding * .7),
+                                      //         ),
+                                      //       ),
+                                      //       SizedBox(
+                                      //           width:
+                                      //               getProportionateScreenHeight(
+                                      //                   kDefaultPadding / 3)),
+                                      //       Text(
+                                      //         promoCodeApplied
+                                      //             ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
+                                      //             : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
+                                      //         style: Theme.of(context)
+                                      //             .textTheme
+                                      //             .headlineSmall
+                                      //             ?.copyWith(
+                                      //                 fontWeight:
+                                      //                     FontWeight.bold),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
+                                      // Center(
+                                      //   child: Column(
+                                      //     children: [
+                                      //       Text(
+                                      //         Provider.of<ZLanguage>(context).total,
+                                      //         style: TextStyle(
+                                      //           fontSize: getProportionateScreenWidth(
+                                      //               kDefaultPadding * .7),
+                                      //         ),
+                                      //       ),
+                                      //       SizedBox(
+                                      //           height: getProportionateScreenHeight(
+                                      //               kDefaultPadding / 3)),
+                                      //       Text(
+                                      //         promoCodeApplied
+                                      //             ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
+                                      //             : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
+                                      //         style: Theme.of(context)
+                                      //             .textTheme
+                                      //             .headlineSmall
+                                      //             ?.copyWith(
+                                      //                 fontWeight: FontWeight.bold),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
+                                      ////////////promo code and tip
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : _loading
+                                ? SpinKitDancingSquare(
+                                    color: kSecondaryColor,
+                                    size: getProportionateScreenHeight(
+                                        kDefaultPadding),
+                                  )
+                                : Container(
+                                    child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding)),
+                                        child: Text(
+                                            "${errorCodes['${responseData['message']}']}"),
+                                      ),
+                                    ),
+                                  ),
+                        // SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              /////place order button
+              Container(
+                width: double.infinity,
+                // height: kDefaultPadding * 4,
+                padding: EdgeInsets.symmetric(
+                    vertical: kDefaultPadding / 2,
+                    horizontal: kDefaultPadding / 2),
+                decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    border: Border(top: BorderSide(color: kWhiteColor)),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(kDefaultPadding),
+                        topRight: Radius.circular(kDefaultPadding))),
+                child: Column(
+                  spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+                  children: [
+                    if (responseData != null && responseData['success'])
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${Provider.of<ZLanguage>(context).total} :",
+                              style: TextStyle(
+                                fontSize: getProportionateScreenWidth(
+                                    kDefaultPadding * .7),
                               ),
-                            );
-                          }
-                        },
-                        color: kSecondaryColor,
+                            ),
+                            SizedBox(
+                                width: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                            Text(
+                              promoCodeApplied
+                                  ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
+                                  : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
-                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              ],
-            ),
+                    _placeOrder
+                        ? SpinKitWave(
+                            color: kSecondaryColor,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          )
+                        : CustomButton(
+                            title: Provider.of<ZLanguage>(context).placeOrder,
+                            press: () {
+                              if (scheduledOrder) {
+                                if (_scheduledDate != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return KifiyaScreen(
+                                          price: promoCodeApplied
+                                              ? promoCodeData['order_payment']
+                                                      ['user_pay_payment']
+                                                  .toDouble()
+                                              : responseData['order_payment']
+                                                      ['user_pay_payment']
+                                                  .toDouble(),
+                                          orderPaymentId:
+                                              responseData['order_payment']
+                                                  ['_id'],
+                                          orderPaymentUniqueId:
+                                              responseData['order_payment']
+                                                      ['unique_id']
+                                                  .toString(),
+                                          onlyCashless: onlyCashless,
+                                          vehicleId: responseData['vehicles'][0]
+                                              ['_id'],
+                                          userpickupWithSchedule:
+                                              cart!.isSchedule && selfPickup
+                                                  ? true
+                                                  : false,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                      "Please select date & time for schedule",
+                                      false,
+                                      duration: 5,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return KifiyaScreen(
+                                        price: promoCodeApplied
+                                            ? promoCodeData['order_payment']
+                                                    ['user_pay_payment']
+                                                .toDouble()
+                                            : responseData['order_payment']
+                                                    ['user_pay_payment']
+                                                .toDouble(),
+                                        orderPaymentId:
+                                            responseData['order_payment']
+                                                ['_id'],
+                                        orderPaymentUniqueId:
+                                            responseData['order_payment']
+                                                    ['unique_id']
+                                                .toString(),
+                                        onlyCashless: (onlyCashless ??
+                                                false) ////new, safest way of old method
+                                            ? true
+                                            : (selfPickup ? true : false),
+
+                                        // onlyCashless: onlyCashless!  //old
+                                        //     ? onlyCashless
+                                        //     : selfPickup
+                                        //         ? true
+                                        //         : false,
+                                        vehicleId: responseData['vehicles'][0]
+                                            ['_id'],
+                                        userpickupWithSchedule:
+                                            cart!.isSchedule && selfPickup
+                                                ? true
+                                                : false,
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                            },
+                            color: kSecondaryColor,
+                          ),
+                  ],
+                ),
+              ),
+              // SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget CustomContainerTag({
+    required String title,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: kDefaultPadding / 2, vertical: kDefaultPadding / 4),
+      decoration: BoxDecoration(
+          color: kSecondaryColor.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(kDefaultPadding / 2)),
+      child: Text(
+        title,
+        style: Theme.of(context)
+            .textTheme
+            .labelMedium!
+            .copyWith(color: kSecondaryColor, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -1515,11 +1238,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         this.responseData = json.decode(response.body);
         this._loading = false;
       });
-      // print("orderPaymentUniqueId:${responseData['order_payment']['unique_id']}");
-      // print("====================\n");
-      // print("vehicles>>>> ${responseData['vehicles'][0]['_id']}");
-      // print("====================\n");
-      // print("responseData>>> $responseData");
+      // debugPrint("orderPaymentUniqueId:${responseData['order_payment']['unique_id']}");
+      // debugPrint("====================\n");
+      // debugPrint("vehicles>>>> ${responseData['vehicles'][0]['_id']}");
+      // debugPrint("====================\n");
+      // debugPrint("responseData>>> $responseData");
       return json.decode(response.body);
     } catch (e) {
       setState(() {
@@ -1736,39 +1459,375 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return null;
     }
   }
+
+  ////Promo///////////////
+  void _showApplyPromoCodeWidget() {
+    showModalBottomSheet<void>(
+      backgroundColor: kPrimaryColor,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kDefaultPadding),
+                  topRight: Radius.circular(kDefaultPadding),
+                ),
+                color: kPrimaryColor,
+              ),
+              padding:
+                  EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      Provider.of<ZLanguage>(context).applyPromoCode,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    TextField(
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.text,
+                      onChanged: (val) {
+                        promoCode = val;
+                      },
+                      decoration: textFieldInputDecorator.copyWith(
+                          labelText: Provider.of<ZLanguage>(context).promoCode),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    _loading
+                        ? SpinKitWave(
+                            color: kSecondaryColor,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          )
+                        : CustomButton(
+                            title: Provider.of<ZLanguage>(context).apply,
+                            color: kSecondaryColor,
+                            press: () async {
+                              if (promoCode.isNotEmpty) {
+                                setState(() {
+                                  _loading = true;
+                                });
+                                _applyPromoCode();
+                                Navigator.of(context).pop();
+                              } else {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                        "Promo Code cannot be empty!", false));
+                              }
+                            },
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    ).whenComplete(() {
+      setState(() {});
+    });
+  }
+
+  ////////////////////Tip////////////////
+  void _showTipWidget() {
+    showModalBottomSheet<void>(
+      isScrollControlled: true,
+      backgroundColor: kPrimaryColor,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return SafeArea(
+            child: Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: Container(
+                padding: EdgeInsets.all(
+                    getProportionateScreenHeight(kDefaultPadding)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Text(
+                      Provider.of<ZLanguage>(context, listen: false).addTip,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    TextField(
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        FilteringTextInputFormatter.singleLineFormatter,
+                        FilteringTextInputFormatter.deny(RegExp(r'^0')),
+                      ],
+                      onChanged: (val) {
+                        tipTemp = double.parse(val);
+                      },
+                      decoration: textFieldInputDecorator.copyWith(
+                          labelText: Provider.of<ZLanguage>(context).tip),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // InkWell(
+                        //   onTap: () {
+                        //     tip =
+                        //         20.00;
+                        //     Navigator.pop(
+                        //         context);
+                        //     _getCartInvoice();
+                        //   },
+                        //   child:
+                        //       CustomTag(
+                        //     text:
+                        //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                        //   ),
+                        // ),
+                        InkWell(
+                          onTap: () {
+                            tip = 20.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: kDefaultPadding / 2,
+                                vertical: kDefaultPadding / 4),
+                            decoration: BoxDecoration(
+                                color: kBlackColor,
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding / 2)),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            tip = 30.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: kDefaultPadding / 2,
+                                vertical: kDefaultPadding / 4),
+                            decoration: BoxDecoration(
+                                color: kBlackColor,
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding / 2)),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            tip = 40.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: kDefaultPadding / 2,
+                                vertical: kDefaultPadding / 4),
+                            decoration: BoxDecoration(
+                                color: kBlackColor,
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding / 2)),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        // InkWell(
+                        //   onTap: () {
+                        //     tip =
+                        //         40.00;
+                        //     Navigator.pop(
+                        //         context);
+                        //     _getCartInvoice();
+                        //   },
+                        //   child:
+                        //       CustomTag(
+                        //     text:
+                        //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CustomButton(
+                      title:
+                          Provider.of<ZLanguage>(context, listen: false).submit,
+                      color: kSecondaryColor,
+                      press: () async {
+                        tip = tipTemp;
+                        Navigator.pop(context);
+                        _getCartInvoice();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    ).whenComplete(() {
+      setState(() {});
+    });
+  }
 }
 
 class DetailsRow extends StatelessWidget {
   const DetailsRow({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+    this.textColor,
+    this.fontWeight,
+    this.onTap,
+  });
   final String title, subtitle;
-
+  final Color? textColor;
+  final FontWeight? fontWeight;
+  final void Function()? onTap;
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-        ),
-        Expanded(
-          child: Text(
-            subtitle,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: kSecondaryColor,
-                ),
-            softWrap: true,
-            textAlign: TextAlign.right,
+          style: textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.normal,
           ),
         ),
+        onTap != null
+            ? Row(
+                spacing: kDefaultPadding / 2,
+                children: [
+                  InkWell(
+                    onTap: onTap,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: kDefaultPadding / 2,
+                          vertical: kDefaultPadding / 4),
+                      decoration: BoxDecoration(
+                        color: kSecondaryColor.withValues(alpha: 0.18),
+                        borderRadius:
+                            BorderRadius.circular(kDefaultPadding / 2),
+                      ),
+                      child: Icon(
+                        Icons.add,
+                        size: 18,
+                        color: kSecondaryColor,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: textTheme.labelLarge?.copyWith(
+                      fontWeight: fontWeight ?? FontWeight.normal,
+                      color: textColor ?? kBlackColor,
+                    ),
+                    softWrap: true,
+                    textAlign: TextAlign.right,
+                  ),
+                ],
+              )
+            : Expanded(
+                child: Text(
+                  subtitle,
+                  style: textTheme.labelLarge?.copyWith(
+                    fontWeight: fontWeight ?? FontWeight.normal,
+                    color: textColor ?? kBlackColor,
+                  ),
+                  softWrap: true,
+                  textAlign: TextAlign.right,
+                ),
+              ),
       ],
     );
   }
 }
+// class DetailsRow extends StatelessWidget {
+//   const DetailsRow({
+//     Key? key,
+//     required this.title,
+//     required this.subtitle,
+//   }) : super(key: key);
+//   final String title, subtitle;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//       children: [
+//         Text(
+//           title,
+//           style: Theme.of(context).textTheme.titleSmall?.copyWith(
+//                 fontWeight: FontWeight.w500,
+//               ),
+//         ),
+//         Expanded(
+//           child: Text(
+//             subtitle,
+//             style: Theme.of(context).textTheme.titleMedium?.copyWith(
+//                   fontWeight: FontWeight.bold,
+//                   color: kSecondaryColor,
+//                 ),
+//             softWrap: true,
+//             textAlign: TextAlign.right,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

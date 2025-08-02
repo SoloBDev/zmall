@@ -14,6 +14,8 @@ import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 
 class OrderHistoryDetail extends StatefulWidget {
   static String routeName = '/order_history_detail';
@@ -46,7 +48,6 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
   );
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
     _rateMyApp.init().then((_) => {
@@ -102,13 +103,13 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
   }
 
   void _getDetails() async {
-    print("Fetching order detail");
+    debugPrint("Fetching order detail");
     var data = await getDetail();
     if (data != null) {
       setState(
         () {
           responseData = data;
-//          print(responseData['order_list']);
+//          debugPrint(responseData['order_list']);
         },
       );
     }
@@ -179,246 +180,45 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
             ],
           ),
         ),
-        body: ModalProgressHUD(
-          inAsyncCall: _loading,
-          progressIndicator: linearProgressIndicator,
-          color: kPrimaryColor,
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Padding(
-              padding:
-                  EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-              child: TabBarView(
-                children: [
-                  responseData != null
-                      ? SingleChildScrollView(
-                          child: Column(
-                            spacing: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                            children: [
-                              ///////Order Details section/////
-                              // CategoryContainer(
-                              //     title: Provider.of<ZLanguage>(context,
-                              //             listen: false)
-                              //         .orderDetails),
-                              // SizedBox(
-                              //   height: getProportionateScreenHeight(
-                              //       kDefaultPadding / 2),
-                              // ),
-                              Container(
-                                padding: EdgeInsets.all(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 2)),
-                                decoration: BoxDecoration(
-                                    color: kPrimaryColor,
-                                    borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding))),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  spacing: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                  children: [
-                                    CategoryContainer(
-                                        title: Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .orderDetails),
-                                    orderDetailRow(
-                                        isStore: true,
-                                        isRated: responseData['order_list']
-                                            ['is_user_rated_to_store'],
-                                        isCompleted:
-                                            responseData['store_detail']
-                                                        ['name'] !=
-                                                    null &&
-                                                responseData['order_list']
-                                                        ['order_status'] ==
-                                                    25,
-                                        userName: responseData['order_list']
-                                                    ['cart_detail']
-                                                ['destination_addresses'][0]
-                                            ['user_details']['name'],
-                                        storeName: responseData['store_detail']
-                                                    ['name'] !=
-                                                null
-                                            ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
-                                            : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
-                                        imageUrl: "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                        onRatePressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) {
-                                                return OrderRating(
-                                                  userId: widget.userId!,
-                                                  orderId: widget.orderId!,
-                                                  serverToken:
-                                                      widget.serverToken!,
-                                                  imageUrl:
-                                                      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                                  name:
-                                                      "${responseData['store_detail']['name']}",
-                                                  isStore: true,
-                                                );
-                                              },
-                                            ),
-                                          ).then((value) => getUser());
-                                        }),
-                                    // Row(
-                                    //   mainAxisAlignment:
-                                    //       MainAxisAlignment.spaceBetween,
-                                    //   crossAxisAlignment:
-                                    //       CrossAxisAlignment.center,
-                                    //   children: [
-                                    //     Container(
-                                    //       width: getProportionateScreenWidth(
-                                    //           kDefaultPadding * 5),
-                                    //       height:
-                                    //           getProportionateScreenHeight(
-                                    //               kDefaultPadding * 5),
-                                    //       child: ImageContainer(
-                                    //         url:
-                                    //             "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                    //       ),
-                                    //     ),
-                                    //     SizedBox(
-                                    //         width:
-                                    //             getProportionateScreenWidth(
-                                    //                 kDefaultPadding)),
-                                    //     Expanded(
-                                    //       child: Column(
-                                    //         crossAxisAlignment:
-                                    //             CrossAxisAlignment.start,
-                                    //         children: [
-                                    //           Text(
-                                    //             responseData['store_detail']
-                                    //                         ['name'] !=
-                                    //                     null
-                                    //                 ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
-                                    //                 : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
-                                    //             style: Theme.of(context)
-                                    //                 .textTheme
-                                    //                 .bodyLarge
-                                    //                 ?.copyWith(
-                                    //                   color: kBlackColor,
-                                    //                   fontWeight:
-                                    //                       FontWeight.bold,
-                                    //                 ),
-                                    //             softWrap: true,
-                                    //           ),
-                                    //           Text(Provider.of<ZLanguage>(
-                                    //                   context,
-                                    //                   listen: false)
-                                    //               .receivedBy),
-                                    //           Text(
-                                    //             responseData['order_list']
-                                    //                         ['cart_detail'][
-                                    //                     'destination_addresses']
-                                    //                 [
-                                    //                 0]['user_details']['name'],
-                                    //             style: Theme.of(context)
-                                    //                 .textTheme
-                                    //                 .bodyLarge
-                                    //                 ?.copyWith(
-                                    //                   fontWeight:
-                                    //                       FontWeight.bold,
-                                    //                 ),
-                                    //           )
-                                    //         ],
-                                    //       ),
-                                    //     ),
-                                    //     responseData['order_list']
-                                    //             ['is_user_rated_to_store']
-                                    //         ? Column(
-                                    //             children: [
-                                    //               IconButton(
-                                    //                   icon: Icon(
-                                    //                     Icons.star,
-                                    //                     color:
-                                    //                         kSecondaryColor,
-                                    //                   ),
-                                    //                   onPressed: () {}),
-                                    //               Text(
-                                    //                 Provider.of<ZLanguage>(
-                                    //                         context,
-                                    //                         listen: false)
-                                    //                     .thankYou,
-                                    //                 textAlign:
-                                    //                     TextAlign.center,
-                                    //               )
-                                    //             ],
-                                    //           )
-                                    //         : responseData['store_detail']
-                                    //                         ['name'] !=
-                                    //                     null &&
-                                    //                 responseData['order_list']
-                                    //                         [
-                                    //                         'order_status'] ==
-                                    //                     25
-                                    //             ? Column(
-                                    //                 children: [
-                                    //                   IconButton(
-                                    //                       icon: Icon(Icons
-                                    //                           .star_border),
-                                    //                       onPressed: () {
-                                    //                         Navigator.push(
-                                    //                           context,
-                                    //                           MaterialPageRoute(
-                                    //                             builder:
-                                    //                                 (context) {
-                                    //                               return OrderRating(
-                                    //                                 userId: widget
-                                    //                                     .userId!,
-                                    //                                 orderId:
-                                    //                                     widget
-                                    //                                         .orderId!,
-                                    //                                 serverToken:
-                                    //                                     widget
-                                    //                                         .serverToken!,
-                                    //                                 imageUrl:
-                                    //                                     "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                    //                                 name:
-                                    //                                     "${responseData['store_detail']['name']}",
-                                    //                                 isStore:
-                                    //                                     true,
-                                    //                               );
-                                    //                             },
-                                    //                           ),
-                                    //                         ).then((value) =>
-                                    //                             getUser());
-                                    //                       }),
-                                    //                   Text(Provider.of<
-                                    //                               ZLanguage>(
-                                    //                           context,
-                                    //                           listen: false)
-                                    //                       .rateUs),
-                                    //                 ],
-                                    //               )
-                                    //             : Container()
-                                    //   ],
-                                    // ),
-                                  ],
-                                ),
-                              ),
-                              // CategoryContainer(
-                              //     title: Provider.of<ZLanguage>(context,
-                              //             listen: false)
-                              //         .deliveryDetails),
-                              // SizedBox(
-                              //   height: getProportionateScreenHeight(
-                              //       kDefaultPadding / 2),
-                              // ),
-                              ///////Delivery Details section/////
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: kPrimaryColor,
-                                    borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding))),
-                                child: Padding(
+        body: SafeArea(
+          child: ModalProgressHUD(
+            inAsyncCall: _loading,
+            progressIndicator: LinearLoadingIndicator(),
+            // progressIndicator: userData != null && responseData != null
+            //     ? LinearLoadingIndicator()
+            //     : ProductListShimmer(),
+            color: kPrimaryColor,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Padding(
+                padding: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                child: TabBarView(
+                  children: [
+                    responseData != null
+                        ? SingleChildScrollView(
+                            child: Column(
+                              spacing: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                              children: [
+                                ///////Order Details section/////
+                                // CategoryContainer(
+                                //     title: Provider.of<ZLanguage>(context,
+                                //             listen: false)
+                                //         .orderDetails),
+                                // SizedBox(
+                                //   height: getProportionateScreenHeight(
+                                //       kDefaultPadding / 2),
+                                // ),
+                                Container(
                                   padding: EdgeInsets.all(
                                       getProportionateScreenWidth(
                                           kDefaultPadding / 2)),
+                                  decoration: BoxDecoration(
+                                      color: kPrimaryColor,
+                                      borderRadius: BorderRadius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding))),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -428,515 +228,573 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                       CategoryContainer(
                                           title: Provider.of<ZLanguage>(context,
                                                   listen: false)
-                                              .deliveryDetails),
+                                              .orderDetails),
+                                      orderDetailRow(
+                                          isStore: true,
+                                          isRated: responseData['order_list']
+                                              ['is_user_rated_to_store'],
+                                          isCompleted:
+                                              responseData['store_detail']
+                                                          ['name'] !=
+                                                      null &&
+                                                  responseData['order_list']
+                                                          ['order_status'] ==
+                                                      25,
+                                          userName: responseData['order_list']
+                                                      ['cart_detail']
+                                                  ['destination_addresses'][0]
+                                              ['user_details']['name'],
+                                          storeName: responseData['store_detail']
+                                                      ['name'] !=
+                                                  null
+                                              ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
+                                              : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
+                                          imageUrl: "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                          onRatePressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return OrderRating(
+                                                    userId: widget.userId!,
+                                                    orderId: widget.orderId!,
+                                                    serverToken:
+                                                        widget.serverToken!,
+                                                    imageUrl:
+                                                        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                                    name:
+                                                        "${responseData['store_detail']['name']}",
+                                                    isStore: true,
+                                                  );
+                                                },
+                                              ),
+                                            ).then((value) => getUser());
+                                          }),
+                                      // Row(
+                                      //   mainAxisAlignment:
+                                      //       MainAxisAlignment.spaceBetween,
+                                      //   crossAxisAlignment:
+                                      //       CrossAxisAlignment.center,
+                                      //   children: [
+                                      //     Container(
+                                      //       width: getProportionateScreenWidth(
+                                      //           kDefaultPadding * 5),
+                                      //       height:
+                                      //           getProportionateScreenHeight(
+                                      //               kDefaultPadding * 5),
+                                      //       child: ImageContainer(
+                                      //         url:
+                                      //             "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                      //       ),
+                                      //     ),
+                                      //     SizedBox(
+                                      //         width:
+                                      //             getProportionateScreenWidth(
+                                      //                 kDefaultPadding)),
+                                      //     Expanded(
+                                      //       child: Column(
+                                      //         crossAxisAlignment:
+                                      //             CrossAxisAlignment.start,
+                                      //         children: [
+                                      //           Text(
+                                      //             responseData['store_detail']
+                                      //                         ['name'] !=
+                                      //                     null
+                                      //                 ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
+                                      //                 : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
+                                      //             style: Theme.of(context)
+                                      //                 .textTheme
+                                      //                 .bodyLarge
+                                      //                 ?.copyWith(
+                                      //                   color: kBlackColor,
+                                      //                   fontWeight:
+                                      //                       FontWeight.bold,
+                                      //                 ),
+                                      //             softWrap: true,
+                                      //           ),
+                                      //           Text(Provider.of<ZLanguage>(
+                                      //                   context,
+                                      //                   listen: false)
+                                      //               .receivedBy),
+                                      //           Text(
+                                      //             responseData['order_list']
+                                      //                         ['cart_detail'][
+                                      //                     'destination_addresses']
+                                      //                 [
+                                      //                 0]['user_details']['name'],
+                                      //             style: Theme.of(context)
+                                      //                 .textTheme
+                                      //                 .bodyLarge
+                                      //                 ?.copyWith(
+                                      //                   fontWeight:
+                                      //                       FontWeight.bold,
+                                      //                 ),
+                                      //           )
+                                      //         ],
+                                      //       ),
+                                      //     ),
+                                      //     responseData['order_list']
+                                      //             ['is_user_rated_to_store']
+                                      //         ? Column(
+                                      //             children: [
+                                      //               IconButton(
+                                      //                   icon: Icon(
+                                      //                     Icons.star,
+                                      //                     color:
+                                      //                         kSecondaryColor,
+                                      //                   ),
+                                      //                   onPressed: () {}),
+                                      //               Text(
+                                      //                 Provider.of<ZLanguage>(
+                                      //                         context,
+                                      //                         listen: false)
+                                      //                     .thankYou,
+                                      //                 textAlign:
+                                      //                     TextAlign.center,
+                                      //               )
+                                      //             ],
+                                      //           )
+                                      //         : responseData['store_detail']
+                                      //                         ['name'] !=
+                                      //                     null &&
+                                      //                 responseData['order_list']
+                                      //                         [
+                                      //                         'order_status'] ==
+                                      //                     25
+                                      //             ? Column(
+                                      //                 children: [
+                                      //                   IconButton(
+                                      //                       icon: Icon(Icons
+                                      //                           .star_border),
+                                      //                       onPressed: () {
+                                      //                         Navigator.push(
+                                      //                           context,
+                                      //                           MaterialPageRoute(
+                                      //                             builder:
+                                      //                                 (context) {
+                                      //                               return OrderRating(
+                                      //                                 userId: widget
+                                      //                                     .userId!,
+                                      //                                 orderId:
+                                      //                                     widget
+                                      //                                         .orderId!,
+                                      //                                 serverToken:
+                                      //                                     widget
+                                      //                                         .serverToken!,
+                                      //                                 imageUrl:
+                                      //                                     "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                      //                                 name:
+                                      //                                     "${responseData['store_detail']['name']}",
+                                      //                                 isStore:
+                                      //                                     true,
+                                      //                               );
+                                      //                             },
+                                      //                           ),
+                                      //                         ).then((value) =>
+                                      //                             getUser());
+                                      //                       }),
+                                      //                   Text(Provider.of<
+                                      //                               ZLanguage>(
+                                      //                           context,
+                                      //                           listen: false)
+                                      //                       .rateUs),
+                                      //                 ],
+                                      //               )
+                                      //             : Container()
+                                      //   ],
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                                // CategoryContainer(
+                                //     title: Provider.of<ZLanguage>(context,
+                                //             listen: false)
+                                //         .deliveryDetails),
+                                // SizedBox(
+                                //   height: getProportionateScreenHeight(
+                                //       kDefaultPadding / 2),
+                                // ),
+                                ///////Delivery Details section/////
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: kPrimaryColor,
+                                      borderRadius: BorderRadius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding))),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 2)),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      spacing: getProportionateScreenHeight(
+                                          kDefaultPadding),
+                                      children: [
+                                        CategoryContainer(
+                                            title: Provider.of<ZLanguage>(
+                                                    context,
+                                                    listen: false)
+                                                .deliveryDetails),
 
-                                      responseData['order_list']
-                                                  ['order_status'] ==
-                                              25
-                                          ? orderDetailRow(
-                                              isStore: false,
-                                              isRated: responseData[
-                                                      'order_list']
-                                                  ['is_user_rated_to_provider'],
-                                              userName:
-                                                  "${responseData['provider_detail']['first_name']}",
-                                              imageUrl:
-                                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
-                                              onRatePressed: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) {
-                                                      return OrderRating(
-                                                        userId: widget.userId!,
-                                                        orderId:
-                                                            widget.orderId!,
-                                                        serverToken:
-                                                            widget.serverToken!,
-                                                        imageUrl:
-                                                            "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
-                                                        name:
-                                                            "${responseData['provider_detail']['first_name']} ${responseData['provider_detail']['last_name']}",
-                                                        isStore: false,
-                                                      );
-                                                    },
+                                        responseData['order_list']
+                                                    ['order_status'] ==
+                                                25
+                                            ? orderDetailRow(
+                                                isStore: false,
+                                                isRated: responseData[
+                                                        'order_list'][
+                                                    'is_user_rated_to_provider'],
+                                                userName:
+                                                    "${responseData['provider_detail']['first_name']}",
+                                                imageUrl:
+                                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
+                                                onRatePressed: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return OrderRating(
+                                                          userId:
+                                                              widget.userId!,
+                                                          orderId:
+                                                              widget.orderId!,
+                                                          serverToken: widget
+                                                              .serverToken!,
+                                                          imageUrl:
+                                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
+                                                          name:
+                                                              "${responseData['provider_detail']['first_name']} ${responseData['provider_detail']['last_name']}",
+                                                          isStore: false,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ).then((value) => getUser());
+                                                },
+                                              )
+
+                                            // Row(
+                                            //     mainAxisAlignment:
+                                            //         MainAxisAlignment.start,
+                                            //     crossAxisAlignment:
+                                            //         CrossAxisAlignment.center,
+                                            //     children: [
+                                            //       Container(
+                                            //         width:
+                                            //             getProportionateScreenWidth(
+                                            //                 kDefaultPadding * 5),
+                                            //         height:
+                                            //             getProportionateScreenHeight(
+                                            //                 kDefaultPadding * 5),
+                                            //         child: ImageContainer(
+                                            //           url:
+                                            //               "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
+                                            //         ),
+                                            //       ),
+                                            //       SizedBox(
+                                            //           width:
+                                            //               getProportionateScreenWidth(
+                                            //                   kDefaultPadding)),
+                                            //       Column(
+                                            //         crossAxisAlignment:
+                                            //             CrossAxisAlignment.start,
+                                            //         children: [
+                                            //           Text(Provider.of<ZLanguage>(
+                                            //                   context,
+                                            //                   listen: false)
+                                            //               .deliveredBy),
+                                            //           Text(
+                                            //             "${responseData['provider_detail']['first_name']}",
+                                            //             style: Theme.of(context)
+                                            //                 .textTheme
+                                            //                 .bodyLarge
+                                            //                 ?.copyWith(
+                                            //                   color: kBlackColor,
+                                            //                   fontWeight:
+                                            //                       FontWeight.bold,
+                                            //                 ),
+                                            //           ),
+                                            //         ],
+                                            //       ),
+                                            //       Spacer(),
+                                            //       responseData['order_list'][
+                                            //               'is_user_rated_to_provider']
+                                            //           ? Column(
+                                            //               children: [
+                                            //                 // IconButton(icon:
+                                            //                 Icon(
+                                            //                   Icons.star,
+                                            //                   color:
+                                            //                       kSecondaryColor,
+                                            //                 ),
+                                            //                 // onPressed: () {}),
+                                            //                 Text(
+                                            //                   Provider.of<ZLanguage>(
+                                            //                           context,
+                                            //                           listen:
+                                            //                               false)
+                                            //                       .thankYou,
+                                            //                   textAlign: TextAlign
+                                            //                       .center,
+                                            //                 )
+                                            //               ],
+                                            //             )
+                                            //           : Column(
+                                            //               children: [
+                                            //                 IconButton(
+                                            //                     icon: Icon(Icons
+                                            //                         .star_border),
+                                            //                     onPressed: () {
+                                            //                       Navigator.push(
+                                            //                         context,
+                                            //                         MaterialPageRoute(
+                                            //                           builder:
+                                            //                               (context) {
+                                            //                             return OrderRating(
+                                            //                               userId:
+                                            //                                   widget.userId!,
+                                            //                               orderId:
+                                            //                                   widget.orderId!,
+                                            //                               serverToken:
+                                            //                                   widget.serverToken!,
+                                            //                               imageUrl:
+                                            //                                   "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
+                                            //                               name:
+                                            //                                   "${responseData['provider_detail']['first_name']} ${responseData['provider_detail']['last_name']}",
+                                            //                               isStore:
+                                            //                                   false,
+                                            //                             );
+                                            //                           },
+                                            //                         ),
+                                            //                       ).then((value) =>
+                                            //                           getUser());
+                                            //                     }),
+                                            //                 Text(Provider.of<
+                                            //                             ZLanguage>(
+                                            //                         context,
+                                            //                         listen: false)
+                                            //                     .rateUs),
+                                            //               ],
+                                            //             )
+                                            //     ],
+                                            //   )
+
+                                            : Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding /
+                                                                2)),
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    color: kWhiteColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            getProportionateScreenWidth(
+                                                                kDefaultPadding)),
                                                   ),
-                                                ).then((value) => getUser());
-                                              },
-                                            )
-
-                                          // Row(
-                                          //     mainAxisAlignment:
-                                          //         MainAxisAlignment.start,
-                                          //     crossAxisAlignment:
-                                          //         CrossAxisAlignment.center,
-                                          //     children: [
-                                          //       Container(
-                                          //         width:
-                                          //             getProportionateScreenWidth(
-                                          //                 kDefaultPadding * 5),
-                                          //         height:
-                                          //             getProportionateScreenHeight(
-                                          //                 kDefaultPadding * 5),
-                                          //         child: ImageContainer(
-                                          //           url:
-                                          //               "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
-                                          //         ),
-                                          //       ),
-                                          //       SizedBox(
-                                          //           width:
-                                          //               getProportionateScreenWidth(
-                                          //                   kDefaultPadding)),
-                                          //       Column(
-                                          //         crossAxisAlignment:
-                                          //             CrossAxisAlignment.start,
-                                          //         children: [
-                                          //           Text(Provider.of<ZLanguage>(
-                                          //                   context,
-                                          //                   listen: false)
-                                          //               .deliveredBy),
-                                          //           Text(
-                                          //             "${responseData['provider_detail']['first_name']}",
-                                          //             style: Theme.of(context)
-                                          //                 .textTheme
-                                          //                 .bodyLarge
-                                          //                 ?.copyWith(
-                                          //                   color: kBlackColor,
-                                          //                   fontWeight:
-                                          //                       FontWeight.bold,
-                                          //                 ),
-                                          //           ),
-                                          //         ],
-                                          //       ),
-                                          //       Spacer(),
-                                          //       responseData['order_list'][
-                                          //               'is_user_rated_to_provider']
-                                          //           ? Column(
-                                          //               children: [
-                                          //                 // IconButton(icon:
-                                          //                 Icon(
-                                          //                   Icons.star,
-                                          //                   color:
-                                          //                       kSecondaryColor,
-                                          //                 ),
-                                          //                 // onPressed: () {}),
-                                          //                 Text(
-                                          //                   Provider.of<ZLanguage>(
-                                          //                           context,
-                                          //                           listen:
-                                          //                               false)
-                                          //                       .thankYou,
-                                          //                   textAlign: TextAlign
-                                          //                       .center,
-                                          //                 )
-                                          //               ],
-                                          //             )
-                                          //           : Column(
-                                          //               children: [
-                                          //                 IconButton(
-                                          //                     icon: Icon(Icons
-                                          //                         .star_border),
-                                          //                     onPressed: () {
-                                          //                       Navigator.push(
-                                          //                         context,
-                                          //                         MaterialPageRoute(
-                                          //                           builder:
-                                          //                               (context) {
-                                          //                             return OrderRating(
-                                          //                               userId:
-                                          //                                   widget.userId!,
-                                          //                               orderId:
-                                          //                                   widget.orderId!,
-                                          //                               serverToken:
-                                          //                                   widget.serverToken!,
-                                          //                               imageUrl:
-                                          //                                   "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
-                                          //                               name:
-                                          //                                   "${responseData['provider_detail']['first_name']} ${responseData['provider_detail']['last_name']}",
-                                          //                               isStore:
-                                          //                                   false,
-                                          //                             );
-                                          //                           },
-                                          //                         ),
-                                          //                       ).then((value) =>
-                                          //                           getUser());
-                                          //                     }),
-                                          //                 Text(Provider.of<
-                                          //                             ZLanguage>(
-                                          //                         context,
-                                          //                         listen: false)
-                                          //                     .rateUs),
-                                          //               ],
-                                          //             )
-                                          //     ],
-                                          //   )
-
-                                          : Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding / 2)),
-                                              child: Container(
-                                                width: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  color: kWhiteColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          getProportionateScreenWidth(
-                                                              kDefaultPadding)),
-                                                ),
-                                                child: Center(
-                                                  child: Padding(
-                                                    padding: EdgeInsets.symmetric(
-                                                        vertical:
-                                                            getProportionateScreenHeight(
-                                                                kDefaultPadding /
-                                                                    2)),
-                                                    child: Text(
-                                                      "${order_status['${responseData['order_list']['order_status']}']}",
-                                                      style: TextStyle(
-                                                          color:
-                                                              kSecondaryColor),
+                                                  child: Center(
+                                                    child: Padding(
+                                                      padding: EdgeInsets.symmetric(
+                                                          vertical:
+                                                              getProportionateScreenHeight(
+                                                                  kDefaultPadding /
+                                                                      2)),
+                                                      child: Text(
+                                                        "${order_status['${responseData['order_list']['order_status']}']}",
+                                                        style: TextStyle(
+                                                            color:
+                                                                kSecondaryColor),
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
+                                        ////////Address Section
+                                        Column(
+                                          children: [
+                                            addressDetailRow(
+                                              icon: Icons.tour_outlined,
+                                              iconColor: kSecondaryColor,
+                                              title: responseData['order_list']
+                                                          ['cart_detail']
+                                                      ['pickup_addresses'][0]
+                                                  ['address'],
                                             ),
-                                      ////////Address Section
-                                      Column(
-                                        children: [
-                                          addressDetailRow(
-                                            icon: Icons.tour_outlined,
-                                            iconColor: kSecondaryColor,
-                                            title: responseData['order_list']
-                                                        ['cart_detail']
-                                                    ['pickup_addresses'][0]
-                                                ['address'],
-                                          ),
-                                          addressDetailRow(
-                                            icon: Icons.tour,
-                                            title: responseData['order_list']
-                                                        ['cart_detail']
-                                                    ['destination_addresses'][0]
-                                                ['address'],
-                                          ),
-                                          addressDetailRow(
-                                            icon: Icons.access_time,
-                                            iconColor: kSecondaryColor,
-                                            title:
-                                                "${responseData['order_list']['order_payment_detail']['total_time'].toStringAsFixed(2)} mins",
-                                          ),
-                                          addressDetailRow(
-                                            icon: Icons.delivery_dining,
-                                            title:
-                                                "${responseData['order_list']['order_payment_detail']['total_distance'].toStringAsFixed(2)} KM",
-                                          )
-                                        ],
-                                        // ),
-                                      ),
-                                    ],
+                                            addressDetailRow(
+                                              icon: Icons.tour,
+                                              title: responseData['order_list']
+                                                          ['cart_detail']
+                                                      ['destination_addresses']
+                                                  [0]['address'],
+                                            ),
+                                            addressDetailRow(
+                                              icon: Icons.access_time,
+                                              iconColor: kSecondaryColor,
+                                              title:
+                                                  "${responseData['order_list']['order_payment_detail']['total_time'].toStringAsFixed(2)} mins",
+                                            ),
+                                            addressDetailRow(
+                                              icon: Icons.delivery_dining,
+                                              title:
+                                                  "${responseData['order_list']['order_payment_detail']['total_distance'].toStringAsFixed(2)} KM",
+                                            )
+                                          ],
+                                          // ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              // SizedBox(
-                              //     height: getProportionateScreenHeight(
-                              //         kDefaultPadding)),
-                              ////Rate ZMall App section/////
+                                // SizedBox(
+                                //     height: getProportionateScreenHeight(
+                                //         kDefaultPadding)),
+                                ////Rate ZMall App section/////
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                    borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: getProportionateScreenHeight(
+                                            kDefaultPadding),
+                                        horizontal: getProportionateScreenWidth(
+                                            kDefaultPadding / 2)),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      spacing: getProportionateScreenHeight(
+                                          kDefaultPadding / 2),
+                                      children: [
+                                        Text(
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .enjoyingZmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .rateReviewBlock,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge,
+                                          textAlign: TextAlign.justify,
+                                        ),
+                                        CustomButton(
+                                          title: Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .rateUs,
+                                          press: () {
+                                            _rateMyApp.showStarRateDialog(
+                                              context,
+                                              title: "Enjoying ZMall?",
+                                              message: "Please leave a rating!",
+                                              dialogStyle: DialogStyle(
+                                                titleAlign: TextAlign.center,
+                                                messageAlign: TextAlign.center,
+                                                messagePadding: EdgeInsets.only(
+                                                    bottom: 20.0),
+                                              ),
+                                              starRatingOptions:
+                                                  StarRatingOptions(
+                                                initialRating: 5,
+                                              ),
+                                              actionsBuilder: actionsBuilder,
+                                            );
+                                          },
+                                          color: kSecondaryColor,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                        : Container(),
+                    ////////////////Invoice Tab section/////////////////
+                    responseData != null
+                        ? Column(
+                            children: [
                               Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(
+                                        kDefaultPadding),
+                                    horizontal: getProportionateScreenWidth(
+                                        kDefaultPadding)),
                                 decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding)),
+                                    color: kPrimaryColor,
+                                    borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 1.5))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        SizedBox(width: kDefaultPadding / 4),
+                                        Text(
+                                            "${responseData['order_list']['order_payment_detail']['total_time'].toStringAsFixed(2)} mins")
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delivery_dining,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        SizedBox(width: kDefaultPadding / 4),
+                                        Text(
+                                            "${responseData['order_list']['order_payment_detail']['total_distance'].toStringAsFixed(2)} KM")
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.payment,
+                                          size: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                        SizedBox(width: kDefaultPadding / 4),
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .cash)
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: getProportionateScreenHeight(
-                                          kDefaultPadding),
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding / 2)),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    spacing: getProportionateScreenHeight(
-                                        kDefaultPadding / 2),
-                                    children: [
-                                      Text(
-                                        Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .enjoyingZmall,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .rateReviewBlock,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelLarge,
-                                        textAlign: TextAlign.justify,
-                                      ),
-                                      CustomButton(
-                                        title: Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .rateUs,
-                                        press: () {
-                                          _rateMyApp.showStarRateDialog(
-                                            context,
-                                            title: "Enjoying ZMall?",
-                                            message: "Please leave a rating!",
-                                            dialogStyle: DialogStyle(
-                                              titleAlign: TextAlign.center,
-                                              messageAlign: TextAlign.center,
-                                              messagePadding:
-                                                  EdgeInsets.only(bottom: 20.0),
-                                            ),
-                                            starRatingOptions:
-                                                StarRatingOptions(
-                                              initialRating: 5,
-                                            ),
-                                            actionsBuilder: actionsBuilder,
-                                          );
-                                        },
-                                        color: kSecondaryColor,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      : Container(),
-                  ////////////////Invoice Tab section/////////////////
-                  responseData != null
-                      ? Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                  horizontal: getProportionateScreenWidth(
+                              ),
+                              // SizedBox(
+                              //     height: getProportionateScreenWidth(
+                              //         kDefaultPadding)),
+                              // // Container(
+                              //   width: double.infinity,
+                              //   height: .1,
+                              //   color: kBlackColor,
+                              // ),
+                              SizedBox(
+                                  height: getProportionateScreenWidth(
                                       kDefaultPadding)),
-                              decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 1.5))),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        size: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                      SizedBox(width: kDefaultPadding / 4),
-                                      Text(
-                                          "${responseData['order_list']['order_payment_detail']['total_time'].toStringAsFixed(2)} mins")
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.delivery_dining,
-                                        size: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                      SizedBox(width: kDefaultPadding / 4),
-                                      Text(
-                                          "${responseData['order_list']['order_payment_detail']['total_distance'].toStringAsFixed(2)} KM")
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.payment,
-                                        size: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                      SizedBox(width: kDefaultPadding / 4),
-                                      Text(Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .cash)
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // SizedBox(
-                            //     height: getProportionateScreenWidth(
-                            //         kDefaultPadding)),
-                            // // Container(
-                            //   width: double.infinity,
-                            //   height: .1,
-                            //   color: kBlackColor,
-                            // ),
-                            SizedBox(
-                                height: getProportionateScreenWidth(
-                                    kDefaultPadding)),
 
-                            ///total prices///
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding))),
-                              padding: EdgeInsets.symmetric(
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .servicePrice),
-                                      Text(
-                                          "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}"),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 4)),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .totalServicePrive,
-                                        style:
-                                            TextStyle(color: kSecondaryColor),
-                                      ),
-                                      Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}",
-                                        style:
-                                            TextStyle(color: kSecondaryColor),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 4)),
-                                  responseData['order_list']
-                                                  ['order_payment_detail']
-                                              ['promo_payment'] !=
-                                          0
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(Provider.of<ZLanguage>(context,
-                                                    listen: false)
-                                                .promo),
-                                            Text(
-                                                "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
-                                          ],
-                                        )
-                                      : Container(),
-                                  responseData['order_list']
-                                                  ['order_payment_detail']
-                                              ['promo_payment'] !=
-                                          0
-                                      ? SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 4))
-                                      : Container(),
-                                  responseData['order_list']
-                                                  ['order_payment_detail']
-                                              ['promo_payment'] !=
-                                          0
-                                      ? Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              Provider.of<ZLanguage>(context,
-                                                      listen: false)
-                                                  .totalPromo,
-                                              style: TextStyle(
-                                                  color: kSecondaryColor),
-                                            ),
-                                            Text(
-                                              "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}",
-                                              style: TextStyle(
-                                                  color: kSecondaryColor),
-                                            ),
-                                          ],
-                                        )
-                                      : Container(),
-                                  responseData['order_list']
-                                                  ['order_payment_detail']
-                                              ['promo_payment'] !=
-                                          0
-                                      ? SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 4))
-                                      : Container(),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .cartPrice),
-                                      Text(
-                                          "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}"),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 4)),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .totalCartPrice,
-                                        style:
-                                            TextStyle(color: kSecondaryColor),
-                                      ),
-                                      Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}",
-                                        style:
-                                            TextStyle(color: kSecondaryColor),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Spacer(),
-
-                            ///////payments and total price////
-                            // Container(
-                            //   width: double.infinity,
-                            //   height: .1,
-                            //   color: kBlackColor,
-                            // ),
-                            SizedBox(
-                                height: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-
-                            Container(
+                              ///total prices///
+                              Container(
                                 decoration: BoxDecoration(
                                     color: kPrimaryColor,
                                     borderRadius: BorderRadius.circular(
@@ -946,390 +804,556 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                   vertical: getProportionateScreenHeight(
                                       kDefaultPadding),
                                   horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                      kDefaultPadding),
                                 ),
-                                child: Column(children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        responseData['order_list']
-                                                        ['order_payment_detail']
-                                                    ['promo_payment'] !=
-                                                0
-                                            ? MainAxisAlignment.spaceBetween
-                                            : MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ////degital payment section
-                                      Row(
-                                        children: [
-                                          responseData['order_list']
-                                                      ['order_payment_detail']
-                                                  ['is_paid_from_wallet']
-                                              ? Icon(
-                                                  Icons
-                                                      .account_balance_wallet_outlined,
-                                                  size:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                )
-                                              : Icon(
-                                                  Icons.mobile_friendly,
-                                                  size:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                          SizedBox(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 2)),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              responseData['order_list'][
-                                                          'order_payment_detail']
-                                                      ['is_paid_from_wallet']
-                                                  ? Text(Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .wallet)
-                                                  : Text(Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .online),
-                                              responseData['order_list'][
-                                                          'order_payment_detail']
-                                                      ['is_paid_from_wallet']
-                                                  ? Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['wallet_payment'].toStringAsFixed(2)}")
-                                                  : Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['card_payment'].toStringAsFixed(2)}"),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-
-                                      /////Promo payment section
-                                      responseData['order_list']
-                                                      ['order_payment_detail']
-                                                  ['promo_payment'] !=
-                                              0
-                                          ? Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.card_giftcard_outlined,
-                                                  size:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                SizedBox(
-                                                    width:
-                                                        getProportionateScreenWidth(
-                                                            kDefaultPadding /
-                                                                2)),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(Provider.of<ZLanguage>(
-                                                            context,
-                                                            listen: false)
-                                                        .promo),
-                                                    Text(
-                                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
-                                                  ],
-                                                )
-                                              ],
-                                            )
-                                          : Container(),
-                                      ////cash payment section
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.money_outlined,
-                                            size: getProportionateScreenHeight(
-                                                kDefaultPadding),
-                                          ),
-                                          SizedBox(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 2)),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .servicePrice),
+                                        Text(
+                                            "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}"),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 4)),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .totalServicePrive,
+                                          style:
+                                              TextStyle(color: kSecondaryColor),
+                                        ),
+                                        Text(
+                                          "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}",
+                                          style:
+                                              TextStyle(color: kSecondaryColor),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 4)),
+                                    responseData['order_list']
+                                                    ['order_payment_detail']
+                                                ['promo_payment'] !=
+                                            0
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(Provider.of<ZLanguage>(
                                                       context,
                                                       listen: false)
-                                                  .cash),
+                                                  .promo),
                                               Text(
-                                                  "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['cash_payment'].toStringAsFixed(2)}"),
+                                                  "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
                                             ],
                                           )
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                      height: getProportionateScreenWidth(
-                                          kDefaultPadding / 2)),
-                                  Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total'].toStringAsFixed(2)}",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall
-                                                ?.copyWith(
-                                                    fontWeight:
-                                                        FontWeight.w700),
-                                          ),
-                                          SizedBox(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 2)),
-                                          Text(responseData[
-                                                  'payment_gateway_name']
-                                              .toString()
-                                              .toUpperCase()),
-                                        ],
-                                      ),
-                                      Text(Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .total),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                      height: getProportionateScreenWidth(
-                                          kDefaultPadding / 2)),
-                                  responseData['order_list']
-                                              ['is_user_show_invoice'] ||
-                                          responseData['order_list']
-                                                  ['order_status'] !=
-                                              25
-                                      ? Container()
-                                      : CustomButton(
-                                          title: Provider.of<ZLanguage>(context,
+                                        : Container(),
+                                    responseData['order_list']
+                                                    ['order_payment_detail']
+                                                ['promo_payment'] !=
+                                            0
+                                        ? SizedBox(
+                                            height:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding / 4))
+                                        : Container(),
+                                    responseData['order_list']
+                                                    ['order_payment_detail']
+                                                ['promo_payment'] !=
+                                            0
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                Provider.of<ZLanguage>(context,
+                                                        listen: false)
+                                                    .totalPromo,
+                                                style: TextStyle(
+                                                    color: kSecondaryColor),
+                                              ),
+                                              Text(
+                                                "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}",
+                                                style: TextStyle(
+                                                    color: kSecondaryColor),
+                                              ),
+                                            ],
+                                          )
+                                        : Container(),
+                                    responseData['order_list']
+                                                    ['order_payment_detail']
+                                                ['promo_payment'] !=
+                                            0
+                                        ? SizedBox(
+                                            height:
+                                                getProportionateScreenHeight(
+                                                    kDefaultPadding / 4))
+                                        : Container(),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .cartPrice),
+                                        Text(
+                                            "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}"),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 4)),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          Provider.of<ZLanguage>(context,
                                                   listen: false)
-                                              .submit,
-                                          press: () {},
-                                          color: kBlackColor,
+                                              .totalCartPrice,
+                                          style:
+                                              TextStyle(color: kSecondaryColor),
                                         ),
-                                  responseData['order_list']
-                                              ['is_user_show_invoice'] ||
-                                          responseData['order_list']
-                                                  ['order_status'] !=
-                                              25
-                                      ? Container()
-                                      : SizedBox(
-                                          height: getProportionateScreenWidth(
-                                              kDefaultPadding / 2)),
-                                ])),
-                          ],
-                        )
-                      : Container(),
+                                        Text(
+                                          "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}",
+                                          style:
+                                              TextStyle(color: kSecondaryColor),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Spacer(),
 
-                  ////////////////Cart Tab section/////////////////
-                  responseData != null
-                      ? Column(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                itemCount: responseData['order_list']
-                                        ['cart_detail']['order_details']
-                                    .length,
-                                separatorBuilder: (context, index) => SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 2)),
-                                itemBuilder: (context, index) {
-                                  String extractProductName(
-                                      String? noteForItem) {
-                                    if (noteForItem == null ||
-                                        noteForItem.isEmpty) return '';
-                                    return noteForItem.split(': ').first;
-                                  }
+                              ///////payments and total price////
+                              // Container(
+                              //   width: double.infinity,
+                              //   height: .1,
+                              //   color: kBlackColor,
+                              // ),
+                              SizedBox(
+                                  height: getProportionateScreenWidth(
+                                      kDefaultPadding)),
 
-                                  return Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: getProportionateScreenHeight(
-                                            kDefaultPadding),
-                                        horizontal: getProportionateScreenWidth(
-                                            kDefaultPadding / 2)),
-                                    decoration: BoxDecoration(
+                              Container(
+                                  decoration: BoxDecoration(
                                       color: kPrimaryColor,
                                       borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      spacing: getProportionateScreenHeight(
-                                          kDefaultPadding / 3),
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding))),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(
+                                        kDefaultPadding),
+                                    horizontal: getProportionateScreenWidth(
+                                        kDefaultPadding / 2),
+                                  ),
+                                  child: Column(children: [
+                                    Row(
+                                      mainAxisAlignment: responseData[
+                                                          'order_list']
+                                                      ['order_payment_detail']
+                                                  ['promo_payment'] !=
+                                              0
+                                          ? MainAxisAlignment.spaceBetween
+                                          : MainAxisAlignment.spaceEvenly,
                                       children: [
-                                        CategoryContainer(
-                                            title: responseData['order_list']['cart_detail']
-                                                                ['order_details'][index]
-                                                            ['product_name']
-                                                        .toString()
-                                                        .toLowerCase() ==
-                                                    "aliexpress"
-                                                ? "${Service.capitalizeFirstLetters(extractProductName(responseData['order_list']['cart_detail']['order_details'][index]['items'][0]['note_for_item']))}"
-                                                : responseData['order_list']['cart_detail']
-                                                                ['order_details'][index]
-                                                            ['product_name'] !=
-                                                        null
-                                                    ? Service.capitalizeFirstLetters(
-                                                        responseData['order_list']
-                                                                    ['cart_detail']
-                                                                ['order_details']
-                                                            [index]['product_name'])
-                                                    : Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['order_details'][index]['product_detail']['name'])),
-                                        // title: responseData['order_list']
-                                        //                     ['cart_detail']
-                                        //                 ['order_details']
-                                        //             [index]['product_name'] !=
-                                        //         null
-                                        //     ? responseData['order_list']
-                                        //                 ['cart_detail']
-                                        //             ['order_details'][index]
-                                        //         ['product_name']
-                                        //     : responseData['order_list']
-                                        //                 ['cart_detail']
-                                        //             ['order_details'][index]
-                                        //         ['product_detail']['name']),
-                                        // SizedBox(
-                                        //     height:
-                                        //         getProportionateScreenHeight(
-                                        //             kDefaultPadding / 3)),
-                                        Container(
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: kPrimaryColor,
-                                            borderRadius: BorderRadius.circular(
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding),
-                                            ),
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 2),
-                                              vertical:
+                                        ////degital payment section
+                                        Row(
+                                          children: [
+                                            responseData['order_list']
+                                                        ['order_payment_detail']
+                                                    ['is_paid_from_wallet']
+                                                ? Icon(
+                                                    Icons
+                                                        .account_balance_wallet_outlined,
+                                                    size:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  )
+                                                : Icon(
+                                                    Icons.mobile_friendly,
+                                                    size:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                            SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding / 2)),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                responseData['order_list'][
+                                                            'order_payment_detail']
+                                                        ['is_paid_from_wallet']
+                                                    ? Text(
+                                                        Provider.of<ZLanguage>(
+                                                                context,
+                                                                listen: false)
+                                                            .wallet)
+                                                    : Text(
+                                                        Provider.of<ZLanguage>(
+                                                                context,
+                                                                listen: false)
+                                                            .online),
+                                                responseData['order_list'][
+                                                            'order_payment_detail']
+                                                        ['is_paid_from_wallet']
+                                                    ? Text(
+                                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['wallet_payment'].toStringAsFixed(2)}")
+                                                    : Text(
+                                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['card_payment'].toStringAsFixed(2)}"),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+
+                                        /////Promo payment section
+                                        responseData['order_list']
+                                                        ['order_payment_detail']
+                                                    ['promo_payment'] !=
+                                                0
+                                            ? Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons
+                                                        .card_giftcard_outlined,
+                                                    size:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  SizedBox(
+                                                      width:
+                                                          getProportionateScreenWidth(
+                                                              kDefaultPadding /
+                                                                  2)),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(Provider.of<
+                                                                  ZLanguage>(
+                                                              context,
+                                                              listen: false)
+                                                          .promo),
+                                                      Text(
+                                                          "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
+                                                    ],
+                                                  )
+                                                ],
+                                              )
+                                            : Container(),
+                                        ////cash payment section
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.money_outlined,
+                                              size:
                                                   getProportionateScreenHeight(
                                                       kDefaultPadding),
                                             ),
-                                            child: ListView.builder(
-                                              physics: ClampingScrollPhysics(),
-                                              shrinkWrap: true,
-                                              itemCount: responseData[
-                                                                  'order_list']
-                                                              ['cart_detail']
-                                                          ['order_details']
-                                                      [index]['items']
-                                                  .length,
-                                              itemBuilder: (context, idx) {
-                                                String extractItemName(
-                                                    String? noteForItem) {
-                                                  if (noteForItem == null ||
-                                                      noteForItem.isEmpty)
-                                                    return '';
-                                                  var parts =
-                                                      noteForItem.split(': ');
-                                                  return parts.length >= 3
-                                                      ? "${parts[2]}:\n${parts[1]}"
-                                                      : parts.length >= 2
-                                                          ? "${parts[1]}"
-                                                          : '';
-                                                }
-
-                                                return Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            responseData['order_list']['cart_detail']['order_details'][index]
-                                                                            [
-                                                                            'product_name']
-                                                                        .toString()
-                                                                        .toLowerCase() ==
-                                                                    "aliexpress"
-                                                                ? "${extractItemName(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['note_for_item'])}"
-                                                                : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['item_name'])}",
-                                                            softWrap: true,
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .titleMedium
-                                                                ?.copyWith(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
-                                                          ),
-                                                          Text(
-                                                            "${Provider.of<ZLanguage>(context, listen: false).quantity}: ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['quantity']}",
-                                                            style: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .bodySmall,
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w700),
-                                                    )
-                                                  ],
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                        // SizedBox(
-                                        //     height:
-                                        //         getProportionateScreenHeight(
-                                        //             kDefaultPadding / 2)),
+                                            SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding / 2)),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(Provider.of<ZLanguage>(
+                                                        context,
+                                                        listen: false)
+                                                    .cash),
+                                                Text(
+                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['cash_payment'].toStringAsFixed(2)}"),
+                                              ],
+                                            )
+                                          ],
+                                        )
                                       ],
                                     ),
-                                  );
-                                },
+                                    SizedBox(
+                                        height: getProportionateScreenWidth(
+                                            kDefaultPadding / 2)),
+                                    Column(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total'].toStringAsFixed(2)}",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineSmall
+                                                  ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700),
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding / 2)),
+                                            Text(responseData[
+                                                    'payment_gateway_name']
+                                                .toString()
+                                                .toUpperCase()),
+                                          ],
+                                        ),
+                                        Text(Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .total),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                        height: getProportionateScreenWidth(
+                                            kDefaultPadding / 2)),
+                                    responseData['order_list']
+                                                ['is_user_show_invoice'] ||
+                                            responseData['order_list']
+                                                    ['order_status'] !=
+                                                25
+                                        ? Container()
+                                        : CustomButton(
+                                            title: Provider.of<ZLanguage>(
+                                                    context,
+                                                    listen: false)
+                                                .submit,
+                                            press: () {},
+                                            color: kBlackColor,
+                                          ),
+                                    responseData['order_list']
+                                                ['is_user_show_invoice'] ||
+                                            responseData['order_list']
+                                                    ['order_status'] !=
+                                                25
+                                        ? Container()
+                                        : SizedBox(
+                                            height: getProportionateScreenWidth(
+                                                kDefaultPadding / 2)),
+                                  ])),
+                            ],
+                          )
+                        : Container(),
+
+                    ////////////////Cart Tab section/////////////////
+                    responseData != null
+                        ? Column(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: ListView.separated(
+                                  shrinkWrap: true,
+                                  itemCount: responseData['order_list']
+                                          ['cart_detail']['order_details']
+                                      .length,
+                                  separatorBuilder: (context, index) =>
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 2)),
+                                  itemBuilder: (context, index) {
+                                    String extractProductName(
+                                        String? noteForItem) {
+                                      if (noteForItem == null ||
+                                          noteForItem.isEmpty) return '';
+                                      return noteForItem.split(': ').first;
+                                    }
+
+                                    return Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.symmetric(
+                                          vertical:
+                                              getProportionateScreenHeight(
+                                                  kDefaultPadding),
+                                          horizontal:
+                                              getProportionateScreenWidth(
+                                                  kDefaultPadding / 2)),
+                                      decoration: BoxDecoration(
+                                        color: kPrimaryColor,
+                                        borderRadius: BorderRadius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        spacing: getProportionateScreenHeight(
+                                            kDefaultPadding / 3),
+                                        children: [
+                                          CategoryContainer(
+                                              title: responseData['order_list']['cart_detail']
+                                                                  ['order_details'][index]
+                                                              ['product_name']
+                                                          .toString()
+                                                          .toLowerCase() ==
+                                                      "aliexpress"
+                                                  ? "${Service.capitalizeFirstLetters(extractProductName(responseData['order_list']['cart_detail']['order_details'][index]['items'][0]['note_for_item']))}"
+                                                  : responseData['order_list']['cart_detail']['order_details'][index]['product_name'] !=
+                                                          null
+                                                      ? Service.capitalizeFirstLetters(
+                                                          responseData['order_list']
+                                                                  ['cart_detail']['order_details'][index]
+                                                              ['product_name'])
+                                                      : Service.capitalizeFirstLetters(
+                                                          responseData['order_list']['cart_detail']['order_details'][index]['product_detail']['name'])),
+                                          // title: responseData['order_list']
+                                          //                     ['cart_detail']
+                                          //                 ['order_details']
+                                          //             [index]['product_name'] !=
+                                          //         null
+                                          //     ? responseData['order_list']
+                                          //                 ['cart_detail']
+                                          //             ['order_details'][index]
+                                          //         ['product_name']
+                                          //     : responseData['order_list']
+                                          //                 ['cart_detail']
+                                          //             ['order_details'][index]
+                                          //         ['product_detail']['name']),
+                                          // SizedBox(
+                                          //     height:
+                                          //         getProportionateScreenHeight(
+                                          //             kDefaultPadding / 3)),
+                                          Container(
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color: kPrimaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding),
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding / 2),
+                                                vertical:
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding),
+                                              ),
+                                              child: ListView.builder(
+                                                physics:
+                                                    ClampingScrollPhysics(),
+                                                shrinkWrap: true,
+                                                itemCount: responseData[
+                                                                    'order_list']
+                                                                ['cart_detail']
+                                                            ['order_details']
+                                                        [index]['items']
+                                                    .length,
+                                                itemBuilder: (context, idx) {
+                                                  String extractItemName(
+                                                      String? noteForItem) {
+                                                    if (noteForItem == null ||
+                                                        noteForItem.isEmpty)
+                                                      return '';
+                                                    var parts =
+                                                        noteForItem.split(': ');
+                                                    return parts.length >= 3
+                                                        ? "${parts[2]}:\n${parts[1]}"
+                                                        : parts.length >= 2
+                                                            ? "${parts[1]}"
+                                                            : '';
+                                                  }
+
+                                                  return Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              responseData['order_list']['cart_detail']['order_details'][index]
+                                                                              [
+                                                                              'product_name']
+                                                                          .toString()
+                                                                          .toLowerCase() ==
+                                                                      "aliexpress"
+                                                                  ? "${extractItemName(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['note_for_item'])}"
+                                                                  : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['item_name'])}",
+                                                              softWrap: true,
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .titleMedium
+                                                                  ?.copyWith(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                            ),
+                                                            Text(
+                                                              "${Provider.of<ZLanguage>(context, listen: false).quantity}: ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['quantity']}",
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .bodySmall,
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700),
+                                                      )
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          // SizedBox(
+                                          //     height:
+                                          //         getProportionateScreenHeight(
+                                          //             kDefaultPadding / 2)),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: 0.1,
-                              color: kSecondaryColor,
-                            ),
-//                            Spacer(flex: 1),
-//                            CustomButton(
-//                              title: "REORDER",
-//                              press: () {},
-//                              color: kSecondaryColor,
-//                            )
-                          ],
-                        )
-                      : Container(),
-                ],
+                              Container(
+                                width: double.infinity,
+                                height: 0.1,
+                                color: kSecondaryColor,
+                              ),
+                              //                            Spacer(flex: 1),
+                              //                            CustomButton(
+                              //                              title: "REORDER",
+                              //                              press: () {},
+                              //                              color: kSecondaryColor,
+                              //                            )
+                            ],
+                          )
+                        : Container(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1386,7 +1410,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

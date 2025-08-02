@@ -38,7 +38,7 @@ class SkipButton extends StatelessWidget {
                   : Navigator.pushReplacementNamed(context,
                       logged ? TabScreen.routeName : LoginScreen.routeName);
             } catch (e) {
-              print("Ad skipped...");
+              debugPrint("Ad skipped...");
             }
           },
         ),

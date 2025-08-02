@@ -38,15 +38,15 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
   }
 
   void _getTicketInvoice() async {
-    print("Getting event invoice");
+    debugPrint("Getting event invoice");
     setState(() {
       _loading = true;
     });
     await getTicketOrderPayment();
 
     if (orderPayment != null && orderPayment['success']) {
-      print("Successful...");
-      // print(orderPayment);
+      debugPrint("Successful...");
+      // debugPrint(orderPayment);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -226,7 +226,7 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

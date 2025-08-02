@@ -61,7 +61,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
   }
 
   Future<bool?> loginUser(String phone, BuildContext context) async {
-    // print(phone);
+    // debugPrint(phone);
     FirebaseAuth _auth = FirebaseAuth.instance;
 
     _auth.verifyPhoneNumber(
@@ -69,14 +69,14 @@ class _GlobalScreenState extends State<GlobalScreen> {
         timeout: Duration(seconds: 60),
         verificationCompleted: (AuthCredential credential) async {
           Navigator.of(context).pop();
-          print("Verification completed...");
+          debugPrint("Verification completed...");
           UserCredential result = await _auth.signInWithCredential(credential);
           User user = result.user!;
           setState(() {
             _loading = false;
           });
           if (user != null) {
-            // print(user);
+            // debugPrint(user);
             Service.saveBool('is_global', true);
             Service.save('global_user_id', user.uid);
             Navigator.pushReplacement(
@@ -84,13 +84,13 @@ class _GlobalScreenState extends State<GlobalScreen> {
           } else {
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => LoginScreen()));
-            // print("Error");
+            // debugPrint("Error");
           }
 
           //This callback would gets called when verification is done automatically
         },
         verificationFailed: (FirebaseAuthException exception) {
-          // print(exception.message);
+          // debugPrint(exception.message);
           ScaffoldMessenger.of(context)
               .showSnackBar(Service.showMessage(exception.message, true));
           setState(() {
@@ -157,7 +157,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
                               MaterialPageRoute(
                                   builder: (context) => GlobalHome()));
                         } else {
-                          print("Error while signing user");
+                          debugPrint("Error while signing user");
                         }
                       },
                     )
@@ -178,7 +178,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
   Future<bool> verifyAndLoginUser(phone, email, firstName, lastName) async {
     var response = await verificationEmail(email);
     if (response != null && response['success']) {
-      // print("<<<<OTP>>>> $response");
+      // debugPrint("<<<<OTP>>>> $response");
       setState(() {
         success = true;
         smsCode = response['otp'];
@@ -418,8 +418,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                                 firstName.isNotEmpty &&
                                 lastName.isNotEmpty) {
                               phoneWithCountryCode = "$countryCode$phone";
-                              // print(phoneWithCountryCode);
-                              // print("$email $firstName $lastName");
+                              // debugPrint(phoneWithCountryCode);
+                              // debugPrint("$email $firstName $lastName");
                               verifyAndLoginUser(phoneWithCountryCode, email,
                                       firstName, lastName)
                                   .then(
@@ -565,7 +565,7 @@ class _GlobalScreenState extends State<GlobalScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

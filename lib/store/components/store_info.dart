@@ -6,6 +6,7 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/open_close_status_card.dart';
 
 class StoreInfo extends StatelessWidget {
   const StoreInfo({
@@ -86,21 +87,38 @@ class StoreInfo extends StatelessWidget {
 //             color: kSecondaryColor,
 //             borderColor: kSecondaryColor,
 //           ),
-
-          Text(
-            store['is_store_busy']
+          SizedBox(
+            height: kDefaultPadding / 4,
+          ),
+          OpenCloseStatusCard(
+            isOpen: isOpen ?? false,
+            statusText: store['is_store_busy']
                 ? Provider.of<ZLanguage>(context).busy
                 : isOpen!
                     ? Provider.of<ZLanguage>(context).open
                     : Provider.of<ZLanguage>(context).closed,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: store['is_store_busy']
-                    ? kYellowColor
-                    : isOpen!
-                        ? Colors.green
-                        : kSecondaryColor),
-          )
+            color: store['is_store_busy']
+                ? kYellowColor
+                : isOpen!
+                    ? Colors.green
+                    : kSecondaryColor,
+            padding: EdgeInsets.symmetric(
+                horizontal: kDefaultPadding / 2, vertical: kDefaultPadding / 8),
+          ),
+          // Text(
+          //   store['is_store_busy']
+          //       ? Provider.of<ZLanguage>(context).busy
+          //       : isOpen!
+          //           ? Provider.of<ZLanguage>(context).open
+          //           : Provider.of<ZLanguage>(context).closed,
+          //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          //       fontWeight: FontWeight.w500,
+          //       color: store['is_store_busy']
+          //           ? kYellowColor
+          //           : isOpen!
+          //               ? Colors.green
+          //               : kSecondaryColor),
+          // )
         ],
       ),
     );

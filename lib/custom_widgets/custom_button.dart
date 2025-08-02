@@ -3,11 +3,13 @@ import 'package:zmall/constants.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({
-    key,
+    super.key,
     required this.title,
     required this.press,
     this.color = kPrimaryColor,
-  }) : super(key: key);
+    this.child,
+  });
+  final Widget? child;
   final String title;
   final GestureTapCallback press;
   final Color color;
@@ -28,13 +30,14 @@ class CustomButton extends StatelessWidget {
           ),
           // boxShadow: [boxShadow],
         ),
-        child: Text(
-          title.toUpperCase(),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: kPrimaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
+        child: child ??
+            Text(
+              title.toUpperCase(),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: kPrimaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
       ),
     );
   }

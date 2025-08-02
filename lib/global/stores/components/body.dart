@@ -99,7 +99,7 @@ class _BodyState extends State<Body> {
     DateFormat dateFormat = new DateFormat.Hm();
     DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
     if (appOpen == null || appClose == null) {
-      print("Couldn't find app open-close time...fetching is locally");
+      debugPrint("Couldn't find app open-close time...fetching is locally");
       appOpen = await Service.read('app_open');
       appClose = await Service.read('app_close');
     }
@@ -149,7 +149,7 @@ class _BodyState extends State<Body> {
         }
       } else {
         DateFormat dateFormat = DateFormat.Hm();
-        // print(store['store_time']);
+        // debugPrint(store['store_time']);
         DateTime zmallOpen = dateFormat.parse("09:00");
         DateTime zmallClose = dateFormat.parse("21:00");
         // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
@@ -162,7 +162,7 @@ class _BodyState extends State<Body> {
             ? isStoreOpen = false
             : isStoreOpen = true;
       }
-      // print("Is store open: $isStoreOpen");
+      // debugPrint("Is store open: $isStoreOpen");
       isOpen.add(isStoreOpen);
     });
   }
@@ -170,13 +170,13 @@ class _BodyState extends State<Body> {
   void isLogged() async {
     var data = await Service.readBool('logged');
     if (data != null) {
-      // print("Logged in: $data");
+      // debugPrint("Logged in: $data");
       setState(() {
         isLoggedIn = data;
       });
       getUser();
     } else {
-      print("No logged user found");
+      debugPrint("No logged user found");
     }
   }
 
@@ -260,7 +260,7 @@ class _BodyState extends State<Body> {
                                       );
                                     } else {
                                       storeClicked(_searchResult[index]);
-                                      print(
+                                      debugPrint(
                                           "=======================PRODUCTS=======================");
                                       Navigator.push(
                                         context,
@@ -280,7 +280,7 @@ class _BodyState extends State<Body> {
                                     }
                                   } catch (e) {
                                     storeClicked(_searchResult[index]);
-                                    print(
+                                    debugPrint(
                                         "=======================PRODUCTS=======================");
                                     Navigator.push(
                                       context,
@@ -338,7 +338,7 @@ class _BodyState extends State<Body> {
                                       );
                                     } else {
                                       storeClicked(stores[index]);
-                                      print(
+                                      debugPrint(
                                           "=======================PRODUCTS=======================");
                                       Navigator.push(
                                         context,
@@ -358,7 +358,7 @@ class _BodyState extends State<Body> {
                                     }
                                   } catch (e) {
                                     storeClicked(stores[index]);
-                                    print(
+                                    debugPrint(
                                         "=======================PRODUCTS=======================");
                                     Navigator.push(
                                       context,
@@ -448,7 +448,7 @@ class _BodyState extends State<Body> {
       "company_id": companyId
     };
     var body = json.encode(data);
-    // print(body);
+    // debugPrint(body);
 
     try {
       http.Response response = await http
@@ -481,7 +481,7 @@ class _BodyState extends State<Body> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -540,7 +540,7 @@ class _BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -575,9 +575,9 @@ class _BodyState extends State<Body> {
         },
         body: body,
       );
-      print("Store clicked");
+      debugPrint("Store clicked");
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
     }
   }
 }

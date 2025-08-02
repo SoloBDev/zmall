@@ -71,7 +71,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // print(widget.price);
+    // debugPrint(widget.price);
     getUser();
     getCart();
     if (widget.onlyCashless) {
@@ -95,12 +95,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
             if (aliAcct != null && aliAcct.isNotEmpty) {
               aliExpressAccessToken = aliAcct;
             } else {
-              print("aliExpress Access Token not found>>>");
+              debugPrint("aliExpress Access Token not found>>>");
             }
           });
         }
       } catch (e) {
-        // print(e);
+        // debugPrint(e);
       }
     } else {
       //
@@ -108,7 +108,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   void getCart() async {
-    print("Fetching cart");
+    debugPrint("Fetching cart");
     var data = await Service.read('abroad_cart');
     var aliCart = await Service.read('abroad_aliexpressCart');
     if (data != null) {
@@ -120,7 +120,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           itemIds = aliexpressCart!.itemIds!;
           productIds = aliexpressCart!.productIds!;
         }
-        // print("ALI CART>>> ${aliexpressCart!.toJson()}");
+        // debugPrint("ALI CART>>> ${aliexpressCart!.toJson()}");
         _getPaymentGateway();
       });
       await useBorsa();
@@ -138,8 +138,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     await getPaymentGateway();
     if (paymentResponse != null && paymentResponse['success']) {
       for (var i = 0; i < paymentResponse['payment_gateway'].length; i++) {
-        print(paymentResponse['payment_gateway'][i]['name']);
-        print("\t${paymentResponse['payment_gateway'][i]['description']}");
+        debugPrint(paymentResponse['payment_gateway'][i]['name']);
+        debugPrint("\t${paymentResponse['payment_gateway'][i]['description']}");
       }
       setState(() {
         _loading = false;
@@ -150,9 +150,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      print("Payment response error");
+      debugPrint("Payment response error");
       await Future.delayed(Duration(seconds: 2));
-      print("Payment Gateway : Server token error...");
+      debugPrint("Payment Gateway : Server token error...");
     }
   }
 
@@ -188,7 +188,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     });
     var data = await createOrder(orderIds: orderIds);
     if (data != null && data['success']) {
-      print("Order created successfully");
+      debugPrint("Order created successfully");
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage(("Order successfully created"), true));
       await Service.remove('abroad_cart');
@@ -204,8 +204,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         );
       }));
     } else {
-      print("\t\t- Create Order Response");
-      // print(data);
+      debugPrint("\t\t- Create Order Response");
+      // debugPrint(data);
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
       setState(() {
@@ -231,7 +231,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     });
     var data = await payOrderPayment(otp, paymentGatewayId);
     if (data != null && data['success']) {
-      print("Order payment successfull! Creating order");
+      debugPrint("Order payment successfull! Creating order");
       // widget.isCourier ? _createCourierOrder() : _createOrder();
       // _createOrder();//this was before aliexpress
       aliexpressCart != null && aliexpressCart!.cart.storeId == cart!.storeId
@@ -245,7 +245,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 1));
-      // print("Pay Order Payment : Server token error....");
+      // debugPrint("Pay Order Payment : Server token error....");
       // if (data['error_code'] == 999) {
       //   await Service.saveBool('logged', false);
       //   await Service.remove('user');
@@ -447,7 +447,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 //                                                         abroadData.abroadName =
 //                                                             senderName;
 //                                                       });
-//                                                       // print(abroadData.toJson());
+//                                                       // debugPrint(abroadData.toJson());
 //                                                       Service.save(
 //                                                           "abroad_user",
 //                                                           abroadData.toJson());
@@ -524,7 +524,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       .toString()
                                       .toLowerCase() ==
                                   'boa') {
-                                // print(paymentResponse['payment_gateway'][index]['name']);
+                                // debugPrint(paymentResponse['payment_gateway'][index]['name']);
                                 return KifiyaMethodContainer(
                                     selected: kifiyaMethod == index + 4,
                                     title: paymentResponse['payment_gateway']
@@ -542,16 +542,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Payment Gateway ID : $paymentGatewayId");
-                                      // print("User ID : ${cart!.userId}");
-                                      // print(
+                                      // debugPrint("User ID : ${cart!.userId}");
+                                      // debugPrint(
                                       //     "Server Token : ${cart!.serverToken}");
-                                      // print("Cart ID : $cartId");
+                                      // debugPrint("Cart ID : $cartId");
                                       var data = await useBorsa();
                                       if (data['success']) {
                                         showDialog(
@@ -716,16 +716,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Payment Gateway ID : $paymentGatewayId");
-                                      // print("User ID : ${cart!.userId}");
-                                      // print(
+                                      // debugPrint("User ID : ${cart!.userId}");
+                                      // debugPrint(
                                       //     "Server Token : ${cart!.serverToken}");
-                                      // print("Cart ID : $cartId");
+                                      // debugPrint("Cart ID : $cartId");
                                       var data = await useBorsa();
                                       if (data['success']) {
                                         showDialog(
@@ -828,16 +828,16 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                       });
                                       var cartId =
                                           await Service.read("cart_id");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // print(
+                                      // debugPrint(
                                       //     "Payment Gateway ID : $paymentGatewayId");
-                                      // print("User ID : ${cart!.userId}");
-                                      // print(
+                                      // debugPrint("User ID : ${cart!.userId}");
+                                      // debugPrint(
                                       //     "Server Token : ${cart!.serverToken}");
-                                      // print("Cart ID : $cartId");
+                                      // debugPrint("Cart ID : $cartId");
 
                                       var data = await useBorsa();
                                       if (data['success']) {
@@ -935,7 +935,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                 title: "Place Order",
                                 press: () async {
                                   // var data = await Service.read("cart_id");
-                                  // print(data);
+                                  // debugPrint(data);
                                   if (paymentGatewayId != null) {
                                     _payOrderPayment(
                                         otp: "",
@@ -957,8 +957,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   Future<dynamic> getPaymentGateway() async {
-    print("- Fetching payment gatway");
-    // print("\t-> server_token ${cart!.serverToken}");
+    debugPrint("- Fetching payment gatway");
+    // debugPrint("\t-> server_token ${cart!.serverToken}");
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_payment_gateway";
     Map data = {
@@ -967,8 +967,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       "server_token": cart!.serverToken,
     };
     var body = json.encode(data);
-    // print(body);
-    print("Fetching payment gateway...");
+    // debugPrint(body);
+    debugPrint("Fetching payment gateway...");
     try {
       http.Response response = await http
           .post(
@@ -993,10 +993,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         this.paymentResponse = json.decode(response.body);
         this._loading = false;
       });
-      // print(paymentResponse);
+      // debugPrint(paymentResponse);
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1012,8 +1012,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   Future<dynamic> payOrderPayment(otp, paymentId) async {
-    // print(cart!.userId);
-    // print(cart!.serverToken);
+    // debugPrint(cart!.userId);
+    // debugPrint(cart!.serverToken);
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/pay_order_payment";
     Map data = {
@@ -1026,7 +1026,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     };
 
     var body = json.encode(data);
-    // print(body);
+    // debugPrint(body);
     try {
       http.Response response = await http
           .post(
@@ -1046,15 +1046,15 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      print("=========Pay Order Payment Done=========");
-      // print(json.decode(response.body));
+      debugPrint("=========Pay Order Payment Done=========");
+      // debugPrint(json.decode(response.body));
       setState(() {
         this._loading = false;
       });
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1070,7 +1070,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   Future<dynamic> useBorsa() async {
-    print("Changing wallet status");
+    debugPrint("Changing wallet status");
     setState(() {
       _loading = true;
     });
@@ -1108,7 +1108,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1126,10 +1126,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   Future<dynamic> createOrder({List<dynamic>? orderIds}) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/create_order";
-    print("Getting ready to create order");
+    debugPrint("Getting ready to create order");
     var cart_id = await Service.read('cart_id');
-    print("\t Cart Id : ");
-    // print("\t\t$cart_id");
+    debugPrint("\t Cart Id : ");
+    // debugPrint("\t\t$cart_id");
     try {
       List<dynamic>? filteredOrderIds;
       if (aliexpressCart != null &&
@@ -1149,7 +1149,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         "server_token": cart!.serverToken,
         if (filteredOrderIds != null) "aliexpress_order_ids": filteredOrderIds,
       };
-      // print(data);
+      // debugPrint(data);
       var body = json.encode(data);
       http.Response response;
       response = await http
@@ -1170,8 +1170,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      print("==========Create Order Done==========");
-      // print(json.decode(response.body));
+      debugPrint("==========Create Order Done==========");
+      // debugPrint(json.decode(response.body));
       setState(() {
         orderResponse = json.decode(response.body);
         this._loading = false;
@@ -1179,7 +1179,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print("\t- $e");
+      // debugPrint("\t- $e");
       setState(() {
         this._loading = false;
       });
@@ -1195,7 +1195,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   }
 
   Future<dynamic> createAliexpressOrder() async {
-    // print("in createAliexpressOrder>>>");
+    // debugPrint("in createAliexpressOrder>>>");
     var aliOrderResponse;
     var mobile_no =
         cart!.phone.isNotEmpty ? cart!.phone : "${userData['user']['phone']}";
@@ -1206,10 +1206,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     AbroadCart alicart = aliexpressCart!.cart;
     List<String>? itemIds = aliexpressCart!.itemIds;
     List<int>? productIds = aliexpressCart!.productIds;
-    // print("alicart.items: ${alicart.items!.map((item) => item.toJson()).toList()}");
-    // print("alicart.items length: ${alicart.items!.length}");
-    // print("productIds:${productIds!} length: ${productIds.length}");
-    // print("itemIds: ${itemIds} length: ${itemIds!.length}");
+    // debugPrint("alicart.items: ${alicart.items!.map((item) => item.toJson()).toList()}");
+    // debugPrint("alicart.items length: ${alicart.items!.length}");
+    // debugPrint("productIds:${productIds!} length: ${productIds.length}");
+    // debugPrint("itemIds: ${itemIds} length: ${itemIds!.length}");
 
     List<Map<String, dynamic>> productItems = [];
     alicart.items!.asMap().forEach((index, item) {
@@ -1224,10 +1224,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           }
         });
       }
-      // else {print("Index $index out of range for productIds or itemIds");}
+      // else {debugPrint("Index $index out of range for productIds or itemIds");}
     });
-    // print("productItems>>> $productItems");
-    // print('Cart items: ${aliexpressCart!.cart.items}');
+    // debugPrint("productItems>>> $productItems");
+    // debugPrint('Cart items: ${aliexpressCart!.cart.items}');
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/aliexpress_creat_order";
     if (productItems.isNotEmpty) {
@@ -1239,7 +1239,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           "product_items": productItems,
         };
         var body = json.encode(data);
-        // print("body $body");
+        // debugPrint("body $body");
         http.Response response = await http
             .post(
           Uri.parse(url),
@@ -1261,10 +1261,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         setState(() {
           aliOrderResponse = json.decode(response.body);
         });
-        // print("ALi orderResponse $aliOrderResponse");
+        // debugPrint("ALi orderResponse $aliOrderResponse");
         return aliOrderResponse;
       } catch (e) {
-        // print("ALi orderResponse error $e");
+        // debugPrint("ALi orderResponse error $e");
         setState(() {
           this._loading = false;
         });
@@ -1314,7 +1314,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

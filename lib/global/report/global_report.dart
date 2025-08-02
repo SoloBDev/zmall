@@ -19,21 +19,19 @@ class GlobalReport extends StatefulWidget {
 }
 
 class _GlobalReportState extends State<GlobalReport> {
-
   var abroadData;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("Logging ecommerce purchase");
+    debugPrint("Logging ecommerce purchase");
     MyApp.analytics
         .logPurchase(
             currency: 'ETB',
             value: widget.price,
             transactionId: widget.orderPaymentUniqueId)
-        .whenComplete(() => print("purchase logged"));
+        .whenComplete(() => debugPrint("purchase logged"));
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +66,11 @@ class _GlobalReportState extends State<GlobalReport> {
             CustomButton(
               title: "Done",
               press: () {
-                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context){
+                Navigator.pushAndRemoveUntil(context,
+                    MaterialPageRoute(builder: (context) {
                   // return GlobalHome(user: FirebaseAuth.instance.currentUser!);
                   return GlobalHome();
                 }), (route) => false);
-
               },
               color: kSecondaryColor,
             ),

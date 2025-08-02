@@ -113,7 +113,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     MyApp.messaging.triggerEvent("at_home");
     FirebaseMessaging.instance.subscribeToTopic("abroad");
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Opened by notification");
+      debugPrint("Opened by notification");
       MyApp.analytics.logEvent(name: "notification_open");
     });
     getAbroadUser();
@@ -150,7 +150,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      // print("RES ${json.decode(response.body)}");
+      // debugPrint("RES ${json.decode(response.body)}");
       await Service.save('categories', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
@@ -178,7 +178,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
         responseData = data;
         Service.save('categories', categories);
       });
-      // print("categories $categories");
+      // debugPrint("categories $categories");
     }
     setState(() {
       _loading = false;
@@ -201,9 +201,9 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     );
 
     if (data != null && data['success']) {
-      // print("Fetched promotional Items....");
+      // debugPrint("Fetched promotional Items....");
       if (mounted) {
-        // print(data);
+        // debugPrint(data);
         Service.save('p_items', data);
         setState(() {
           promotionalItems = data;
@@ -412,7 +412,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     MyApp.messaging.triggerEvent("at_home");
     FirebaseMessaging.instance.subscribeToTopic("abroad");
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Opened by notification");
+      debugPrint("Opened by notification");
       MyApp.analytics.logEvent(name: "notification_open");
     });
     getAbroadUser();
@@ -904,7 +904,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                           CustomButton(
                             title: "Retry",
                             press: () {
-                              print("retry....");
+                              debugPrint("retry....");
                               checkAbroad();
                             },
                             color: kSecondaryColor,

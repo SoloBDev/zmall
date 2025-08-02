@@ -160,9 +160,9 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     if (data != null) {
       setState(() {
         deliveryLocation = DeliveryLocation.fromJson(data);
-        print("Found ${deliveryLocation!.list!.length} locations");
+        // debugPrint("Found ${deliveryLocation!.list!.length} locations");
 //        for (var i = 0; i < deliveryLocation.list.length; i++) {
-//          print(deliveryLocation.list[i].name);
+//          debugPrint(deliveryLocation.list[i].name);
 //        }
       });
     }
@@ -197,7 +197,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
   //
   //   var data = await clearCart(cartId);
   //   if (data != null && data['success']) {
-  //     print("Cart cleared");
+  //     debugPrint("Cart cleared");
   //   } else {
   //     ScaffoldMessenger.of(context).showSnackBar(
   //         Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
@@ -214,19 +214,19 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     setState(() {
       _loading = true;
     });
-    print("Adding to cart....");
+    debugPrint("Adding to cart....");
     var data = await addToCart();
-    // print(data);
-    print("++++++++++++++++++++++++++++++++++");
+    // debugPrint(data);
+    debugPrint("++++++++++++++++++++++++++++++++++");
     if (responseData != null && responseData['success']) {
       setState(() {
         cart.userId = responseData['order_payment']['user_id'];
         cart.serverToken = responseData['server_token'];
       });
-      // print("Cart ID : ${responseData['order_payment']['cart_id']}");
-      // print("Server Token : ${responseData['server_token']}");
-      // print("User ID : \t ${cart.userId}");
-      print("++++++++++++++++++++++++++++++++++");
+      // debugPrint("Cart ID : ${responseData['order_payment']['cart_id']}");
+      // debugPrint("Server Token : ${responseData['server_token']}");
+      // debugPrint("User ID : \t ${cart.userId}");
+      debugPrint("++++++++++++++++++++++++++++++++++");
       await Service.save('abroad_cart', cart);
       await Service.save('abroad_aliexpressCart', aliexpressCart);
       await Service.save('cart_id', responseData['order_payment']['cart_id']);
@@ -377,7 +377,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                                   abroadData.abroadName =
                                                       senderName;
                                                 });
-                                                // print(abroadData.toJson());
+                                                // debugPrint(abroadData.toJson());
                                                 Service.save("abroad_user",
                                                     abroadData.toJson());
                                                 Navigator.of(context).pop();
@@ -507,7 +507,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                             maxLength: 9,
                                             onChanged: (val) {
                                               tempPhone = val;
-                                              // print(tempPhone.length);
+                                              // debugPrint(tempPhone.length);
                                             },
                                             decoration: textFieldInputDecorator
                                                 .copyWith(
@@ -718,8 +718,8 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                           Service.save('abroad_cart', cart);
                           Service.save('abroad_aliexpressCart', aliexpressCart);
                         });
-                        // print(cart.destinationAddress!.toJson());
-                        print("Checking if location is in Addis");
+                        // debugPrint(cart.destinationAddress!.toJson());
+                        debugPrint("Checking if location is in Addis");
                         var categoriesResponse =
                             await await CoreServices.getCategoryList(
                                 longitude: destinationAddress!.long!,
@@ -747,7 +747,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                                     true,
                                     duration: 4));
                           } else {
-                            // print(categoriesResponse['error_code']);
+                            // debugPrint(categoriesResponse['error_code']);
                             ScaffoldMessenger.of(context).showSnackBar(
                                 Service.showMessage(
                                     "${errorCodes['${categoriesResponse['error_code']}']}",
@@ -828,7 +828,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -855,7 +855,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     cart.userId = "";
     // var body = json.encode(cart.toJson());
     var body = json.encode(jsonBody);
-    // print("body>===========>>\n $body");
+    // debugPrint("body>===========>>\n $body");
     try {
       http.Response response = await http
           .post(
@@ -884,10 +884,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       setState(() {
         this.responseData = json.decode(response.body);
       });
-      // print("Respp>>>>. ${json.decode(response.body)}");
+      // debugPrint("Respp>>>>. ${json.decode(response.body)}");
       return json.decode(response.body);
     } catch (e) {
-      // print("Erorrr>>>>. $e");
+      // debugPrint("Erorrr>>>>. $e");
       setState(() {
         this._loading = false;
       });

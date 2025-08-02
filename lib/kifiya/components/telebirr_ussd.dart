@@ -147,7 +147,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     }; */
 
     var body = json.encode(data);
-    print("body $body");
+    debugPrint("body $body");
     try {
       http.Response response = await http
           .post(
@@ -164,10 +164,10 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      // print(json.decode(response.body));
+      // debugPrint(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       ScaffoldMessenger.of(context).showSnackBar(
         Service.showMessage(
             "Something went wrong. Please check your internet connection!",
@@ -214,7 +214,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

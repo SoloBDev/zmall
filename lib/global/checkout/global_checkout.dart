@@ -61,7 +61,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("Checkout init....");
+    debugPrint("Checkout init....");
     getCartId();
   }
 
@@ -167,7 +167,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
     });
     await getCartInvoice();
     if (responseData != null && responseData['success']) {
-      print("Cart invoice generated");
+      debugPrint("Cart invoice generated");
     } else {
       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
           "${errorCodes['${responseData['error_code']}']}!", true));
@@ -1127,7 +1127,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1187,11 +1187,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
         this.responseData = json.decode(response.body);
         this._loading = false;
       });
-      print("Invoice Generated");
+      debugPrint("Invoice Generated");
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1247,7 +1247,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1299,7 +1299,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

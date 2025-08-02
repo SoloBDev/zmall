@@ -1,17 +1,10 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
-import 'package:zmall/main.dart';
 import 'package:zmall/register/components/complete_profile_screen.dart';
 import 'package:zmall/register/components/custom_suffix_icon.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
-import 'package:http/http.dart' as http;
-import 'package:zmall/tab_screen.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'components/form_error.dart';
 
@@ -149,9 +142,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //           _loading = false;
   //         });
   //         if (user != null) {
-  //           print("User");
+  //           debugPrint("User");
   //         } else {
-  //           print("Error");
+  //           debugPrint("Error");
   //           ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
   //               "Something went wrong. Please try to login if you have already registered.",
   //               true));
@@ -212,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //                                 false));
   //                         await _register();
   //                       } else {
-  //                         print("Error while signing user");
+  //                         debugPrint("Error while signing user");
   //                         ScaffoldMessenger.of(context).showSnackBar(
   //                             Service.showMessage(
   //                                 ("Error while verifying phone number. Please try again"),
@@ -236,7 +229,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (data != null) {
       setState(() {
         appVersion = data;
-        print("App Version: $appVersion");
+        debugPrint("App Version: $appVersion");
       });
     }
   }
@@ -620,7 +613,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           //                                 email.isNotEmpty &&
           //                                 city.isNotEmpty &&
           //                                 country.isNotEmpty) {
-          //                               print(
+          //                               debugPrint(
           //                                   "Ready to verify and register $areaCode $phoneNumber");
           //                               registerUser("$areaCode$phoneNumber", context);
           //                             } else {
@@ -717,7 +710,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   // Future<bool> sendOTP(phone, otp) async {
-  //   print("Sending code: $otp to $phone");
+  //   debugPrint("Sending code: $otp to $phone");
   //   http.Response response = await verificationSms(phone, otp);
   //   if (response != null && response.statusCode == 200) {
   //     setState(() {
@@ -755,10 +748,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //     setState(() {
   //       _loading = false;
   //     });
-  //     print(json.decode(response.body));
+  //     debugPrint(json.decode(response.body));
   //     return response;
   //   } catch (e) {
-  //     // print(e);
+  //     // debugPrint(e);
   //     return null;
   //   }
   // }
@@ -800,13 +793,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //     });
   //     return json.decode(response.body);
   //   } catch (e) {
-  //     // print(e);
+  //     // debugPrint(e);
   //     return null;
   //   }
   // }
 
   // Future<dynamic> login(String phoneNumber, String password) async {
-  //   print("User login started...");
+  //   debugPrint("User login started...");
   //   var url = "$setUrl/api/user/login";
   //   Map data = {
   //     "email": phoneNumber,
@@ -831,10 +824,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   //         throw TimeoutException("The connection has timed out!");
   //       },
   //     );
-  //     // print(json.decode(response.body));
+  //     // debugPrint(json.decode(response.body));
   //     return json.decode(response.body);
   //   } catch (e) {
-  //     // print(e);
+  //     // debugPrint(e);
   //     return null;
   //   }
   // }

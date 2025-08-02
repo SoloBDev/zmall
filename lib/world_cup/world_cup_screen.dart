@@ -921,7 +921,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;
@@ -970,7 +970,7 @@ class _WorldCupScreenState extends State<WorldCupScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted) {
         setState(() {
           this._isLoading = false;

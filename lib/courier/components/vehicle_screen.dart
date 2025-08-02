@@ -63,7 +63,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       _loading = true;
     });
     var data = await getVehicleList();
-    print("fetched vehicle list");
+    debugPrint("fetched vehicle list");
     if (data != null && data['success']) {
       setState(() {
         _loading = false;
@@ -73,7 +73,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       setState(() {
         _loading = false;
       });
-      // print(data);
+      // debugPrint(data);
       ScaffoldMessenger.of(context).showSnackBar(
           Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 2));
@@ -116,12 +116,12 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   void _getCourierInvoice() async {
-    print("Fetching invoice.....");
+    debugPrint("Fetching invoice.....");
     setState(() {
       _loading = true;
     });
     var data = await getCourierInvoice();
-    // print(data);
+    // debugPrint(data);
     if (data != null && data['success']) {
 //      setState(() {
 //        _loading = false;
@@ -162,497 +162,511 @@ class _VehicleScreenState extends State<VehicleScreen> {
         ),
         elevation: 1.0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: getProportionateScreenHeight(kDefaultPadding),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SectionTitle(
-                sectionTitle: "Please Choose Vehicle",
-                subTitle: " ",
-              ),
-              vehicleList != null && vehicleList['vehicles'].length > 0
-                  ? Container(
-                      height: getProportionateScreenHeight(kDefaultPadding * 9),
-                      child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => CategoryCard(
-                                selected: selected == index,
-                                imageUrl: vehicleList['vehicles'][index]
-                                            ['image_url'] !=
-                                        null
-                                    ? "https://app.zmallapp.com/${vehicleList['vehicles'][index]['image_url']}"
-                                    // ? "http://159.65.147.111:8000/${vehicleList['vehicles'][index]['image_url']}"
-                                    : "https://google.com",
-                                category: vehicleList['vehicles'][index]
-                                    ['vehicle_name'],
-                                press: () {
-                                  setState(() {
-                                    selected = index;
-                                  });
-                                },
-                              ),
-                          separatorBuilder: (BuildContext context, int index) =>
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                          itemCount: vehicleList['vehicles'] != null
-                              ? vehicleList['vehicles'].length
-                              : 0),
-                    )
-                  : _loading!
-                      ? Center(
-                          child: SpinKitWave(
-                            color: kSecondaryColor,
-                            size: getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                        )
-                      : Center(
-                          child: Text(
-                            "All our vehicles are busy to complete this order.\nPlease try again later...",
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(),
-                          ),
-                        ),
-              SectionTitle(
-                sectionTitle: "Item Quantity",
-                subTitle: " ",
-              ),
-              TextField(
-                cursorColor: kSecondaryColor,
-                style: TextStyle(color: kBlackColor),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                onChanged: (val) {
-                  quantity = int.parse(val);
-                },
-                decoration: InputDecoration(
-                  hintText: "$quantity",
-                  hintStyle: TextStyle(
-                    color: kGreyColor,
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kSecondaryColor),
-                  ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: getProportionateScreenHeight(kDefaultPadding),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionTitle(
+                  sectionTitle: "Please Choose Vehicle",
+                  subTitle: " ",
                 ),
-              ),
-              SectionTitle(
-                sectionTitle: "Round Trip?",
-                subTitle: " ",
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      // borderRadius: BorderRadius.circular(
-                      //   getProportionateScreenWidth(kDefaultPadding / 1.2),
-                      // ),
-                      onTap: () {
-                        setState(() {
-                          isRoundTrip = false;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                          color: kPrimaryColor,
-                          border: Border.all(
-                              color:
-                                  !isRoundTrip ? kSecondaryColor : kGreyColor),
-                          boxShadow: [boxShadow],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: kDefaultPadding,
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                  color: !isRoundTrip
-                                      ? kSecondaryColor
-                                      : kPrimaryColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      width: 1,
-                                      color: !isRoundTrip
-                                          ? kGreyColor
-                                          : kBlackColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              Text(
-                                "No",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: !isRoundTrip
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      width: getProportionateScreenWidth(kDefaultPadding / 2)),
-                  Expanded(
-                    child: GestureDetector(
-                      // borderRadius: BorderRadius.circular(
-                      //   getProportionateScreenWidth(kDefaultPadding / 2),
-                      // ),
-                      onTap: () {
-                        setState(() {
-                          isRoundTrip = true;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                          color: kPrimaryColor,
-                          boxShadow: [boxShadow],
-                          border: Border.all(
-                              color:
-                                  isRoundTrip ? kSecondaryColor : kGreyColor),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: kDefaultPadding,
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                  color: isRoundTrip
-                                      ? kSecondaryColor
-                                      : kPrimaryColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      width: 1,
-                                      color: isRoundTrip
-                                          ? kGreyColor
-                                          : kBlackColor),
-                                ),
-                              ),
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              Text(
-                                "Yes",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: isRoundTrip
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SectionTitle(
-                sectionTitle: "Images",
-                subTitle: " ",
-              ),
-              imageList.length > 0
-                  ? Container(
-                      height: getProportionateScreenHeight(kDefaultPadding * 9),
-                      child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => Stack(
-                                children: [
-                                  Container(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding * 9),
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding * 7),
-                                    child: Image.file(imageList[index]),
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    child: GestureDetector(
-                                      child: Container(
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 3),
-                                          vertical: getProportionateScreenWidth(
-                                              kDefaultPadding / 4),
-                                        ),
-                                        child: Icon(
-                                          Icons.cancel,
-                                          color: kSecondaryColor,
-                                          size: getProportionateScreenWidth(
-                                              kDefaultPadding),
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        setState(() {
-                                          imageList.removeAt(index);
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          separatorBuilder: (BuildContext context, int index) =>
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                          itemCount: imageList.length),
-                    )
-                  : GestureDetector(
-                      onTap: getImage,
-                      child: Container(
+                vehicleList != null && vehicleList['vehicles'].length > 0
+                    ? Container(
                         height:
                             getProportionateScreenHeight(kDefaultPadding * 9),
-                        width: getProportionateScreenWidth(kDefaultPadding * 7),
-                        decoration: BoxDecoration(
-                          color: kGreyColor.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) => CategoryCard(
+                                  selected: selected == index,
+                                  imageUrl: vehicleList['vehicles'][index]
+                                              ['image_url'] !=
+                                          null
+                                      ? "https://app.zmallapp.com/${vehicleList['vehicles'][index]['image_url']}"
+                                      // ? "http://159.65.147.111:8000/${vehicleList['vehicles'][index]['image_url']}"
+                                      : "https://google.com",
+                                  category: Service.capitalizeFirstLetters(
+                                    vehicleList['vehicles'][index]
+                                        ['vehicle_name'],
+                                  ),
+                                  press: () {
+                                    setState(() {
+                                      selected = index;
+                                    });
+                                  },
+                                ),
+                            separatorBuilder:
+                                (BuildContext context, int index) => SizedBox(
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding / 2),
+                                    ),
+                            itemCount: vehicleList['vehicles'] != null
+                                ? vehicleList['vehicles'].length
+                                : 0),
+                      )
+                    : _loading!
+                        ? Center(
+                            child: SpinKitWave(
+                              color: kSecondaryColor,
+                              size:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              "All our vehicles are busy to complete this order.\nPlease try again later...",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add,
-                                color: kGreyColor,
-                                size: getProportionateScreenWidth(
-                                    kDefaultPadding * 2),
-                              ),
-                              Text("Add Image")
-                            ],
+                SectionTitle(
+                  sectionTitle: "Item Quantity",
+                  subTitle: " ",
+                ),
+                TextField(
+                  cursorColor: kSecondaryColor,
+                  style: TextStyle(color: kBlackColor),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  onChanged: (val) {
+                    quantity = int.parse(val);
+                  },
+                  decoration: InputDecoration(
+                    hintText: "$quantity",
+                    hintStyle: TextStyle(
+                      color: kGreyColor,
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: kSecondaryColor),
+                    ),
+                  ),
+                ),
+                SectionTitle(
+                  sectionTitle: "Round Trip?",
+                  subTitle: " ",
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        // borderRadius: BorderRadius.circular(
+                        //   getProportionateScreenWidth(kDefaultPadding / 1.2),
+                        // ),
+                        onTap: () {
+                          setState(() {
+                            isRoundTrip = false;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding / 2),
+                            ),
+                            color: kPrimaryColor,
+                            border: Border.all(
+                                color: !isRoundTrip
+                                    ? kSecondaryColor
+                                    : kGreyColor),
+                            boxShadow: [boxShadow],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: kDefaultPadding,
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  decoration: BoxDecoration(
+                                    color: !isRoundTrip
+                                        ? kSecondaryColor
+                                        : kPrimaryColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        width: 1,
+                                        color: !isRoundTrip
+                                            ? kGreyColor
+                                            : kBlackColor),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                Text(
+                                  "No",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: !isRoundTrip
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-              // SizedBox(
-              //   height: getProportionateScreenHeight(kDefaultPadding / 2),
-              // ),
-              imageList.length > 0 && imageList.length < 2
-                  ? Center(
-                      child: TextButton(
-                          onPressed: getImage,
-                          child: Text(
-                            "Add More Images",
-                            style: TextStyle(color: kSecondaryColor),
-                          )),
-                    )
-                  : Container(),
+                    SizedBox(
+                        width:
+                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                    Expanded(
+                      child: GestureDetector(
+                        // borderRadius: BorderRadius.circular(
+                        //   getProportionateScreenWidth(kDefaultPadding / 2),
+                        // ),
+                        onTap: () {
+                          setState(() {
+                            isRoundTrip = true;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding / 2),
+                            ),
+                            color: kPrimaryColor,
+                            boxShadow: [boxShadow],
+                            border: Border.all(
+                                color:
+                                    isRoundTrip ? kSecondaryColor : kGreyColor),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: kDefaultPadding,
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  decoration: BoxDecoration(
+                                    color: isRoundTrip
+                                        ? kSecondaryColor
+                                        : kPrimaryColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        width: 1,
+                                        color: isRoundTrip
+                                            ? kGreyColor
+                                            : kBlackColor),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                Text(
+                                  "Yes",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: isRoundTrip
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SectionTitle(
+                  sectionTitle: "Images",
+                  subTitle: " ",
+                ),
+                imageList.length > 0
+                    ? Container(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 9),
+                        child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) => Stack(
+                                  children: [
+                                    Container(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding * 9),
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding * 7),
+                                      child: Image.file(imageList[index]),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      child: GestureDetector(
+                                        child: Container(
+                                          margin: EdgeInsets.symmetric(
+                                            horizontal:
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding / 3),
+                                            vertical:
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding / 4),
+                                          ),
+                                          child: Icon(
+                                            Icons.cancel,
+                                            color: kSecondaryColor,
+                                            size: getProportionateScreenWidth(
+                                                kDefaultPadding),
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          setState(() {
+                                            imageList.removeAt(index);
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            separatorBuilder:
+                                (BuildContext context, int index) => SizedBox(
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding / 2),
+                                    ),
+                            itemCount: imageList.length),
+                      )
+                    : GestureDetector(
+                        onTap: getImage,
+                        child: Container(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding * 9),
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding * 7),
+                          decoration: BoxDecoration(
+                            color: kGreyColor.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding / 2),
+                            ),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: kGreyColor,
+                                  size: getProportionateScreenWidth(
+                                      kDefaultPadding * 2),
+                                ),
+                                Text("Add Image")
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                // SizedBox(
+                //   height: getProportionateScreenHeight(kDefaultPadding / 2),
+                // ),
+                imageList.length > 0 && imageList.length < 2
+                    ? Center(
+                        child: TextButton(
+                            onPressed: getImage,
+                            child: Text(
+                              "Add More Images",
+                              style: TextStyle(color: kSecondaryColor),
+                            )),
+                      )
+                    : Container(),
 
-              SectionTitle(
-                sectionTitle: "Paid by",
-                subTitle: " ",
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(
-                        getProportionateScreenWidth(kDefaultPadding / 2),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          paidBySender = true;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                          border: Border.all(
-                              color:
-                                  paidBySender ? kSecondaryColor : kBlackColor),
-                          boxShadow: [boxShadow],
-                          color: kPrimaryColor,
+                SectionTitle(
+                  sectionTitle: "Paid by",
+                  subTitle: " ",
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2),
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
+                        onTap: () {
+                          setState(() {
+                            paidBySender = true;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding / 2),
+                            ),
+                            border: Border.all(
+                                color: paidBySender
+                                    ? kSecondaryColor
+                                    : kBlackColor),
+                            boxShadow: [boxShadow],
+                            color: kPrimaryColor,
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: kDefaultPadding,
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                  color: paidBySender
-                                      ? kSecondaryColor
-                                      : kPrimaryColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      width: 1,
-                                      color: paidBySender
-                                          ? kGreyColor
-                                          : kBlackColor),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: kDefaultPadding,
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  decoration: BoxDecoration(
+                                    color: paidBySender
+                                        ? kSecondaryColor
+                                        : kPrimaryColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        width: 1,
+                                        color: paidBySender
+                                            ? kGreyColor
+                                            : kBlackColor),
+                                  ),
                                 ),
-                              ),
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              Text(
-                                "Sender",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: paidBySender
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      width: getProportionateScreenWidth(kDefaultPadding / 2)),
-                  Expanded(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(
-                        getProportionateScreenWidth(kDefaultPadding / 2),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          paidBySender = false;
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          border: Border.all(
-                              color: paidBySender
-                                  ? kGreyColor.withValues(alpha: 0.4)
-                                  : kSecondaryColor),
-                          borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2)),
-                          boxShadow: [boxShadow],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: kDefaultPadding,
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                  color: !paidBySender
-                                      ? kSecondaryColor
-                                      : kPrimaryColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      width: 1,
-                                      color: !paidBySender
-                                          ? kGreyColor
-                                          : kBlackColor),
+                                SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
                                 ),
-                              ),
-                              SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              Text(
-                                "Receiver",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: !paidBySender
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                              ),
-                            ],
+                                Text(
+                                  "Sender",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: paidBySender
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              _loading!
-                  ? SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenWidth(kDefaultPadding),
-                    )
-                  : CustomButton(
-                      title: "Checkout",
-                      press: () async {
-                        if (imagePath.length > 0) {
-                          print("Saving images");
-                          await Service.save('images', imagePath);
-                          print("Images saved....");
-                        }
-                        await Service.saveBool(
-                            'courier_paid_by_sender', paidBySender);
-                        _getTotalDistance();
-                      },
-                      color: kSecondaryColor,
+                    SizedBox(
+                        width:
+                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            paidBySender = false;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            border: Border.all(
+                                color: paidBySender
+                                    ? kGreyColor.withValues(alpha: 0.4)
+                                    : kSecondaryColor),
+                            borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 2)),
+                            boxShadow: [boxShadow],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: kDefaultPadding,
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  decoration: BoxDecoration(
+                                    color: !paidBySender
+                                        ? kSecondaryColor
+                                        : kPrimaryColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        width: 1,
+                                        color: !paidBySender
+                                            ? kGreyColor
+                                            : kBlackColor),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                Text(
+                                  "Receiver",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: !paidBySender
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding),
-              ),
-            ],
+                  ],
+                ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
+                _loading!
+                    ? SpinKitWave(
+                        color: kSecondaryColor,
+                        size: getProportionateScreenWidth(kDefaultPadding),
+                      )
+                    : CustomButton(
+                        title: "Checkout",
+                        press: () async {
+                          if (imagePath.length > 0) {
+                            debugPrint("Saving images");
+                            await Service.save('images', imagePath);
+                            debugPrint("Images saved....");
+                          }
+                          await Service.saveBool(
+                              'courier_paid_by_sender', paidBySender);
+                          _getTotalDistance();
+                        },
+                        color: kSecondaryColor,
+                      ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -660,7 +674,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getVehicleList() async {
-    print("getting vehicle list");
+    debugPrint("getting vehicle list");
     setState(() {
       _loading = true;
     });
@@ -676,10 +690,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
       "city_id": Provider.of<ZMetaData>(context, listen: false).cityId,
     };
 
-    // print(url);
+    // debugPrint(url);
 
     var body = json.encode(data);
-    // print(body);
+    // debugPrint(body);
     try {
       http.Response response = await http
           .post(
@@ -705,7 +719,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -721,7 +735,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getTotalDistance() async {
-    print("getting total distance");
+    debugPrint("getting total distance");
     var url =
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${widget.pickupAddress!.latitude.toStringAsFixed(6)},${widget.pickupAddress!.longitude.toStringAsFixed(6)}&destinations=${widget.destinationAddress!.latitude.toStringAsFixed(6)},${widget.destinationAddress!.longitude}&key=$apiKey";
 
@@ -735,10 +749,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      // print(json.decode(response.body));
+      // debugPrint(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -754,7 +768,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getCourierInvoice() async {
-    print("getting courier invoice");
+    debugPrint("getting courier invoice");
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_courier_order_invoice";
 
@@ -772,7 +786,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       "is_round_trip": isRoundTrip,
     };
     var body = json.encode(data);
-    // print(body);
+    // debugPrint(body);
     try {
       http.Response response = await http
           .post(
@@ -798,7 +812,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

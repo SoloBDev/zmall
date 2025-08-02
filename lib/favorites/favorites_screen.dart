@@ -195,7 +195,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
                             getProportionateScreenWidth(kDefaultPadding * 10),
                         child: FavoriteCustomListTile(
                           press: () {
-                            print("FAVORITE STORE CLICKED >>>>");
+                            debugPrint("FAVORITE STORE CLICKED >>>>");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -270,7 +270,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       }
       return val;
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

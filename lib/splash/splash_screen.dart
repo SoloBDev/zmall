@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void getLang() async {
     var data = await Service.read('lang');
-    print("Checking language");
+    debugPrint("Checking language");
     if (data == null) {
       Provider.of<ZLanguage>(context, listen: false).changeLanguage('en_US');
     } else {
@@ -78,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
-    print("Checking location.....");
+    debugPrint("Checking location.....");
     Provider.of<ZMetaData>(context, listen: false)
         .setLocation(currentLocation.latitude, currentLocation.longitude);
   }
@@ -121,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _getAppKeys() async {
     var data = await getAppKeys();
     if (data != null && data['success']) {
-      print("Saving data....");
+      debugPrint("Saving data....");
       Service.saveBool("is_closed", data['message_flag']);
       Service.save("closed_message", data['message']);
       Service.save("ios_app_version", data['ios_user_app_version_code']);
@@ -186,7 +186,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
               );
       } catch (e) {
-        print("Ad skipped...");
+        debugPrint("Ad skipped...");
       }
     }
   }
@@ -198,7 +198,7 @@ class _SplashScreenState extends State<SplashScreen> {
         logged = data;
       });
     } else {
-      print("No logged user found");
+      debugPrint("No logged user found");
     }
   }
 
@@ -238,7 +238,7 @@ class _SplashScreenState extends State<SplashScreen> {
       });
       return "success";
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       loader(5);
       return "failed";
     }
@@ -276,7 +276,7 @@ class _SplashScreenState extends State<SplashScreen> {
         return data;
       }
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

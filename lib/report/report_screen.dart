@@ -26,13 +26,13 @@ class _ReportScreenState extends State<ReportScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("Logging ecommerce purchase");
+    debugPrint("Logging ecommerce purchase");
     MyApp.analytics
         .logPurchase(
             currency: Provider.of<ZMetaData>(context, listen: false).country,
             value: widget.price,
             transactionId: widget.orderPaymentUniqueId)
-        .whenComplete(() => print("purchase logged"));
+        .whenComplete(() => debugPrint("purchase logged"));
     _fcm.subscribeToTopic(
         Provider.of<ZMetaData>(context, listen: false).country);
   }

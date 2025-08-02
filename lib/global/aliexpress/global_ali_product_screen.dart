@@ -98,7 +98,7 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
   }
 
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('abroad_cart');
     if (data != null) {
       setState(() {
@@ -513,8 +513,8 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
     Map data = {
       if (selectedCategory!.isNotEmpty) "feed_name": "$selectedCategory"
     };
-    // print("isCategorySelected: ${selectedCategory!.isNotEmpty}");
-    // print("data: $data");
+    // debugPrint("isCategorySelected: ${selectedCategory!.isNotEmpty}");
+    // debugPrint("data: $data");
     try {
       http.Response response = await http.post(
         Uri.parse(url),
@@ -535,7 +535,7 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
         },
       );
 
-      // print("response:${json.decode(response.body)}");
+      // debugPrint("response:${json.decode(response.body)}");
       setState(() {
         this.isLoading = false;
         aliexpressResp = json.decode(response.body);
@@ -548,7 +548,7 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
           //saving access token
           await Service.save(
               "ali_access_token", aliexpressResp['access_token']);
-          // print("Firstcategories: ${aliexpressResp['category']}");
+          // debugPrint("Firstcategories: ${aliexpressResp['category']}");
           setState(() {
             isLoading = false;
             accessToken = aliexpressResp['access_token'];
@@ -558,9 +558,9 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
             defaultCategoryIndex = categories.indexWhere(
                 (category) => category == aliexpressResp['feed_name']);
           });
-          // print("index: $defaultCategoryIndex");
+          // debugPrint("index: $defaultCategoryIndex");
           products = await fetchProducts(aliexpressResp);
-          // print("Length of $selectedCategory: ${products.length}");
+          // debugPrint("Length of $selectedCategory: ${products.length}");
         } else {
           setState(() {
             isLoading = false;
@@ -574,7 +574,7 @@ class _AliProductListScreenState extends State<GlobalAliProductListScreen> {
         });
       }
     } catch (e) {
-      // print("error:$e");
+      // debugPrint("error:$e");
       setState(() {
         this.isLoading = false;
         errorMessage =

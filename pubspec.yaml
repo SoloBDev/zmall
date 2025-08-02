@@ -5,8 +5,8 @@ description: Zmall E-commerce App
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-# version: 3.1.2+317
-version: 3.1.3+324
+# version: 3.1.2+326
+version: 3.1.4+328
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -16,14 +16,16 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
+  heroicons_flutter: ^0.4.0
   http:
+  shimmer:
   flutter_spinkit:
   shared_preferences:
   url_launcher: ^6.0.3
   # mobile_scanner:
   # qr_code_scanner:
   modal_progress_hud_nsn: ^0.5.1
-  geolocator: ^13.0.2
+  geolocator: ^14.0.2
   fl_location: ^5.0.0
   cached_network_image: ^3.2.0
   flutter_map:
@@ -35,11 +37,14 @@ dependencies:
   path_provider:
   image_picker:
   overlay_support: ^2.1.0
-  firebase_core: ^3.12.0
-  firebase_auth: ^5.5.0
-  firebase_analytics: ^11.4.3
-  firebase_messaging: ^15.2.3
-  firebase_in_app_messaging: ^0.8.1+3
+  # firebase
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.0
+  # firebase_analytics: ^11.4.3
+  firebase_analytics: ^12.0.0
+  firebase_messaging: ^16.0.0
+  firebase_in_app_messaging: ^0.9.0
+  #
   photo_view: ^0.15.0
   flutter_inappwebview: ^6.1.5
   timezone:

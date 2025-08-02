@@ -245,7 +245,7 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

@@ -196,703 +196,790 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            "Home Lunch",
-            style: TextStyle(color: kPrimaryColor),
-          ),
-          elevation: 0.0,
-          foregroundColor: kPrimaryColor,
-          backgroundColor: kSecondaryColor,
-          iconTheme: IconThemeData(color: kPrimaryColor)),
-      body: ModalProgressHUD(
-        color: kPrimaryColor.withValues(alpha: 0.1),
-        inAsyncCall: _isLoading,
-        progressIndicator: CustomLinearProgressIndicator(
-          message: loadingMessage,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                height: size.height * 0.22,
-                child: Stack(
-                  children: [
-                    Container(
-                      height: size.height * 0.22 -
-                          getProportionateScreenHeight(kDefaultPadding),
-                      padding: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding),
-                      ),
-                      decoration: BoxDecoration(
-                        color: kSecondaryColor,
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                          bottomLeft: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+            title: Text(
+              "Home Lunch",
+              style: TextStyle(color: kPrimaryColor),
+            ),
+            elevation: 0.0,
+            foregroundColor: kPrimaryColor,
+            backgroundColor: kSecondaryColor,
+            iconTheme: IconThemeData(color: kPrimaryColor)),
+        body: SafeArea(
+          top: false,
+          child: ModalProgressHUD(
+            color: kPrimaryColor.withValues(alpha: 0.1),
+            inAsyncCall: _isLoading,
+            progressIndicator: CustomLinearProgressIndicator(
+              message: loadingMessage,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  height: size.height * 0.22,
+                  child: Stack(
+                    children: [
+                      Container(
+                        height: size.height * 0.22 -
+                            getProportionateScreenHeight(kDefaultPadding),
+                        padding: EdgeInsets.symmetric(
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                        decoration: BoxDecoration(
+                          color: kSecondaryColor,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            bottomLeft: Radius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
                           ),
                         ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Home Food = Soul Food",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(
+                                        color: kPrimaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.delivery_dining,
+                                  color: kPrimaryColor,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "Home Food = Soul Food",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium!
-                                    .copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              Spacer(),
-                              Icon(
-                                Icons.delivery_dining,
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 4),
+                              decoration: BoxDecoration(
                                 color: kPrimaryColor,
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
+                                ),
+                                boxShadow: [kDefaultShadow],
+                              ),
+                              child: Center(
+                                child: TextField(
+                                  controller: _controller,
+                                  keyboardType: TextInputType.text,
+                                  style: TextStyle(color: kBlackColor),
+                                  readOnly: true,
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LocationsList(
+                                          title: "Home Address",
+                                        ),
+                                      ),
+                                    ).then((dynamic value) {
+                                      if (value != null) {
+                                        DestinationAddress address = value;
+                                        setState(() {
+                                          _controller.text = address!.name!;
+                                          longitude = double.parse(
+                                              address.long!.toStringAsFixed(6));
+                                          latitude = double.parse(
+                                              address.lat!.toStringAsFixed(6));
+                                        });
+                                      }
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.home,
+                                      color: kSecondaryColor,
+                                    ),
+                                    hintText: "Home Address",
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.only(left: 8.0, top: 16.0),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 4),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
+                                ),
+                                boxShadow: [kDefaultShadow],
+                              ),
+                              child: Center(
+                                child: TextField(
+                                  controller: _dropOffController,
+                                  keyboardType: TextInputType.text,
+                                  style: TextStyle(color: kBlackColor),
+                                  readOnly: true,
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LocationsList(
+                                          title: "Delivery Address",
+                                        ),
+                                      ),
+                                    ).then((dynamic value) {
+                                      if (value != null) {
+                                        DestinationAddress address = value;
+                                        setState(() {
+                                          _dropOffController.text =
+                                              address.name!;
+                                          destLatitude = double.parse(
+                                              address.lat!.toStringAsFixed(6));
+                                          destLongitude = double.parse(
+                                              address.long!.toStringAsFixed(6));
+                                        });
+                                      }
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.pin_drop_outlined,
+                                      color: kSecondaryColor,
+                                    ),
+                                    hintText: "Delivery Address",
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.only(left: 8.0, top: 16.0),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenWidth(
+                                  kDefaultPadding / 2)),
+                          child: SectionTitle(
+                            sectionTitle: "Receiver Contact",
+                            subTitle: " ",
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                          padding: EdgeInsets.all(
+                            getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            boxShadow: [kDefaultShadow],
+                          ),
+                          child: Column(
+                            children: [
+                              TextField(
+                                cursorColor: kSecondaryColor,
+                                style: TextStyle(color: kBlackColor),
+                                keyboardType: TextInputType.number,
+                                maxLength: 9,
+                                onChanged: (val) {
+                                  receiverPhone = val;
+                                },
+                                decoration: InputDecoration(
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kSecondaryColor),
+                                  ),
+                                  labelText:
+                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode}$receiverPhone",
+                                  labelStyle: TextStyle(
+                                    color: kGreyColor,
+                                  ),
+                                  prefix: Text(
+                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
+                                ),
+                              ),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
+                              ),
+                              TextField(
+                                cursorColor: kSecondaryColor,
+                                style: TextStyle(color: kBlackColor),
+                                keyboardType: TextInputType.text,
+                                onChanged: (val) {
+                                  receiverName = val;
+                                },
+                                decoration: InputDecoration(
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kSecondaryColor),
+                                  ),
+                                  hintText: "$receiverName",
+                                ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 2.5),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              boxShadow: [kDefaultShadow],
+                        ),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                          child: SectionTitle(
+                            sectionTitle: "Home Contact",
+                            subTitle: " ",
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                          padding: EdgeInsets.all(
+                            getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
                             ),
-                            child: Center(
-                              child: TextField(
-                                controller: _controller,
-                                keyboardType: TextInputType.text,
+                            boxShadow: [kDefaultShadow],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Container(
+                              //   padding: EdgeInsets.symmetric(
+                              //       horizontal: kDefaultPadding / 2,
+                              //       vertical: kDefaultPadding / 4),
+                              //   decoration: BoxDecoration(
+                              //       borderRadius: BorderRadius.circular(
+                              //           kDefaultPadding / 2),
+                              //       color:
+                              //           kSecondaryColor.withValues(alpha: 0.2)),
+                              //   child: Text(
+                              //     "Home Contact",
+                              //     style: Theme.of(context)
+                              //         .textTheme
+                              //         .labelLarge!
+                              //         .copyWith(
+                              //             fontWeight: FontWeight.bold,
+                              //             color: kSecondaryColor),
+                              //   ),
+                              // ),
+                              TextField(
+                                controller: _senderUser,
+                                cursorColor: kSecondaryColor,
                                 style: TextStyle(color: kBlackColor),
-                                readOnly: true,
-                                onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LocationsList(
-                                        title: "Home Address",
-                                      ),
-                                    ),
-                                  ).then((dynamic value) {
-                                    if (value != null) {
-                                      DestinationAddress address = value;
-                                      setState(() {
-                                        _controller.text = address!.name!;
-                                        longitude = double.parse(
-                                            address.long!.toStringAsFixed(6));
-                                        latitude = double.parse(
-                                            address.lat!.toStringAsFixed(6));
-                                      });
-                                    }
-                                  });
+                                keyboardType: TextInputType.text,
+                                onChanged: (val) {
+                                  senderUser = val;
+                                  setState(() {});
                                 },
                                 decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.home,
-                                    color: kSecondaryColor,
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kSecondaryColor),
                                   ),
-                                  hintText: "Home Address",
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
+                                  labelText: "Sender Name",
+                                  labelStyle: TextStyle(
+                                    color: kGreyColor,
                                   ),
-                                  contentPadding:
-                                      EdgeInsets.only(left: 8.0, top: 16.0),
                                 ),
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 2.5),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
                               ),
-                              boxShadow: [kDefaultShadow],
-                            ),
-                            child: Center(
-                              child: TextField(
-                                controller: _dropOffController,
-                                keyboardType: TextInputType.text,
+                              TextField(
+                                controller: _senderPhone,
+                                cursorColor: kSecondaryColor,
                                 style: TextStyle(color: kBlackColor),
-                                readOnly: true,
-                                onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LocationsList(
-                                        title: "Delivery Address",
-                                      ),
-                                    ),
-                                  ).then((dynamic value) {
-                                    if (value != null) {
-                                      DestinationAddress address = value;
-                                      setState(() {
-                                        _dropOffController.text = address.name!;
-                                        destLatitude = double.parse(
-                                            address.lat!.toStringAsFixed(6));
-                                        destLongitude = double.parse(
-                                            address.long!.toStringAsFixed(6));
-                                      });
-                                    }
-                                  });
+                                keyboardType: TextInputType.number,
+                                maxLength: 9,
+                                onChanged: (val) {
+                                  senderPhone = val;
+                                  setState(() {});
                                 },
                                 decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.pin_drop_outlined,
-                                    color: kSecondaryColor,
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kSecondaryColor),
                                   ),
-                                  hintText: "Delivery Address",
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
+                                  labelText: "Sender Phone",
+                                  labelStyle: TextStyle(
+                                    color: kGreyColor,
                                   ),
-                                  contentPadding:
-                                      EdgeInsets.only(left: 8.0, top: 16.0),
+                                  prefix: Text(
+                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode}",
+                                    style: TextStyle(color: kGreyColor),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                child: SectionTitle(
-                  sectionTitle: "Receiver Contact",
-                  subTitle: " ",
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                padding: EdgeInsets.all(
-                  getProportionateScreenWidth(kDefaultPadding),
-                ),
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  boxShadow: [kDefaultShadow],
-                ),
-                child: Column(
-                  children: [
-                    TextField(
-                      cursorColor: kSecondaryColor,
-                      style: TextStyle(color: kBlackColor),
-                      keyboardType: TextInputType.number,
-                      maxLength: 9,
-                      onChanged: (val) {
-                        receiverPhone = val;
-                      },
-                      decoration: InputDecoration(
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        labelText:
-                            "${Provider.of<ZMetaData>(context, listen: false).areaCode}$receiverPhone",
-                        labelStyle: TextStyle(
-                          color: kGreyColor,
-                        ),
-                        prefix: Text(
-                            "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
-                      ),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
-                    ),
-                    TextField(
-                      cursorColor: kSecondaryColor,
-                      style: TextStyle(color: kBlackColor),
-                      keyboardType: TextInputType.text,
-                      onChanged: (val) {
-                        receiverName = val;
-                      },
-                      decoration: InputDecoration(
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        hintText: "$receiverName",
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                child: SectionTitle(
-                  sectionTitle: "Home Contact",
-                  subTitle: " ",
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                padding: EdgeInsets.all(
-                  getProportionateScreenWidth(kDefaultPadding),
-                ),
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  boxShadow: [kDefaultShadow],
-                ),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _senderUser,
-                      cursorColor: kSecondaryColor,
-                      style: TextStyle(color: kBlackColor),
-                      keyboardType: TextInputType.text,
-                      onChanged: (val) {
-                        senderUser = val;
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        labelText: "Sender Name",
-                        labelStyle: TextStyle(
-                          color: kGreyColor,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
-                    ),
-                    TextField(
-                      controller: _senderPhone,
-                      cursorColor: kSecondaryColor,
-                      style: TextStyle(color: kBlackColor),
-                      keyboardType: TextInputType.number,
-                      maxLength: 9,
-                      onChanged: (val) {
-                        senderPhone = val;
-                        setState(() {});
-                      },
-                      decoration: InputDecoration(
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        labelText: "Sender Phone",
-                        labelStyle: TextStyle(
-                          color: kGreyColor,
-                        ),
-                        prefix: Text(
-                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}",
-                          style: TextStyle(color: kGreyColor),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Select from existing contacts",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall!
-                              .copyWith(color: kBlackColor),
-                        ),
-                        if (senderUser.isNotEmpty && senderPhone.isNotEmpty ||
-                            (_homeContact != null &&
-                                _homeContact!.list!
-                                        .where((element) =>
-                                            element.phone == senderPhone)
-                                        .length >
-                                    0))
-                          TextButton(
-                            onPressed: () {
-                              _contact =
-                                  Contact(name: senderUser, phone: senderPhone);
-
-                              if (_homeContact != null) {
-                                if (_homeContact!.list!
-                                        .where((element) =>
-                                            element.phone == senderPhone)
-                                        .length >
-                                    0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        ("Contact already exists"), true),
-                                  );
-                                } else {
-                                  _homeContact!.list!.add(_contact!);
-                                  Service.save(
-                                      'home_contact', _homeContact!.toJson());
-
-                                  getHomeContact();
-                                }
-                              } else {
-                                _homeContact = HomeContact(
-                                  list: [_contact!],
-                                );
-
-                                Service.save(
-                                    'home_contact', _homeContact!.toJson());
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Home contact added...", false),
-                                );
-                                getHomeContact();
-                              }
-                            },
-                            child: Text(
-                              "Save Contact",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall!
-                                  .copyWith(
-                                    color: kSecondaryColor,
-                                  ),
-                            ),
-                          )
-                      ],
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
-                    ),
-                    if (_homeContact != null && _homeContact!.list!.length > 0)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3.5),
-                            width: double.infinity,
-                            // decoration: BoxDecoration(
-                            //   border:
-                            //       Border.all(color: kBlackColor.withValues(alpha: 0.2)),
-                            // ),
-                            padding: EdgeInsets.only(
-                              right: getProportionateScreenWidth(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _homeContact != null &&
-                                      _homeContact!.list!.length > 0
-                                  ? _homeContact!.list!.length
-                                  : 0,
-                              itemBuilder: (context, index) => Row(
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // index == 0
-                                  //     ? SizedBox(
-                                  //         width: getProportionateScreenWidth(
-                                  //             kDefaultPadding),
-                                  //       )
-                                  //     : Container(),
+                                  Text(
+                                    "Select from existing contacts",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(color: kBlackColor),
+                                  ),
+                                  if (senderUser.isNotEmpty &&
+                                          senderPhone.isNotEmpty ||
+                                      (_homeContact != null &&
+                                          _homeContact!.list!
+                                                  .where((element) =>
+                                                      element.phone ==
+                                                      senderPhone)
+                                                  .length >
+                                              0))
+                                    TextButton(
+                                      onPressed: () {
+                                        _contact = Contact(
+                                            name: senderUser,
+                                            phone: senderPhone);
+
+                                        if (_homeContact != null) {
+                                          if (_homeContact!.list!
+                                                  .where((element) =>
+                                                      element.phone ==
+                                                      senderPhone)
+                                                  .length >
+                                              0) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              Service.showMessage(
+                                                  ("Contact already exists"),
+                                                  true),
+                                            );
+                                          } else {
+                                            _homeContact!.list!.add(_contact!);
+                                            Service.save('home_contact',
+                                                _homeContact!.toJson());
+
+                                            getHomeContact();
+                                          }
+                                        } else {
+                                          _homeContact = HomeContact(
+                                            list: [_contact!],
+                                          );
+
+                                          Service.save('home_contact',
+                                              _homeContact!.toJson());
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            Service.showMessage(
+                                                "Home contact added...", false),
+                                          );
+                                          getHomeContact();
+                                        }
+                                      },
+                                      child: Text(
+                                        "Save Contact",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .copyWith(
+                                              color: kSecondaryColor,
+                                            ),
+                                      ),
+                                    )
+                                ],
+                              ),
+                              SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
+                              ),
+                              if (_homeContact != null &&
+                                  _homeContact!.list!.length > 0)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding * 3.5),
+                                      width: double.infinity,
+                                      // decoration: BoxDecoration(
+                                      //   border:
+                                      //       Border.all(color: kBlackColor.withValues(alpha: 0.2)),
+                                      // ),
+                                      padding: EdgeInsets.only(
+                                        right: getProportionateScreenWidth(
+                                            kDefaultPadding / 2),
+                                      ),
+                                      child: ListView.separated(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount: _homeContact != null &&
+                                                _homeContact!.list!.length > 0
+                                            ? _homeContact!.list!.length
+                                            : 0,
+                                        itemBuilder: (context, index) => Row(
+                                          children: [
+                                            // index == 0
+                                            //     ? SizedBox(
+                                            //         width: getProportionateScreenWidth(
+                                            //             kDefaultPadding),
+                                            //       )
+                                            //     : Container(),
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  senderUser = _homeContact!
+                                                      .list![index].name!;
+                                                  senderPhone = _homeContact!
+                                                      .list![index].phone!;
+                                                  _senderPhone.text =
+                                                      _homeContact!
+                                                          .list![index].phone!;
+                                                  _senderUser.text =
+                                                      _homeContact!
+                                                          .list![index].name!;
+                                                });
+                                              },
+                                              onDoubleTap: () {
+                                                _homeContact!.list!
+                                                    .removeAt(index);
+                                                Service.save("home_contact",
+                                                    _homeContact);
+                                                getHomeContact();
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding / 3),
+                                                  vertical:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding / 2),
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  boxShadow: [boxShadow],
+                                                  color: kPrimaryColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          getProportionateScreenWidth(
+                                                              kDefaultPadding /
+                                                                  2)),
+                                                  border: Border.all(
+                                                      color: kBlackColor
+                                                          .withValues(
+                                                              alpha: 0.2)),
+                                                ),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${_homeContact!.list![index].phone}"
+                                                          .toUpperCase(),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall!
+                                                          .copyWith(
+                                                            color: kBlackColor,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                    Text(
+                                                      _homeContact!
+                                                          .list![index].name!,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .labelLarge!
+                                                          .copyWith(
+                                                            color: kBlackColor,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        separatorBuilder:
+                                            (BuildContext context, int index) =>
+                                                SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 2),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    Text(
+                                      "Double tap to remove...",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall,
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                          padding: EdgeInsets.all(
+                            getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            boxShadow: [kDefaultShadow],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Schedule Order?",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge!
+                                        .copyWith(fontWeight: FontWeight.bold),
+                                  ),
                                   GestureDetector(
                                     onTap: () {
                                       setState(() {
-                                        senderUser =
-                                            _homeContact!.list![index].name!;
-                                        senderPhone =
-                                            _homeContact!.list![index].phone!;
-                                        _senderPhone.text =
-                                            _homeContact!.list![index].phone!;
-                                        _senderUser.text =
-                                            _homeContact!.list![index].name!;
+                                        isSchedule = !isSchedule;
                                       });
                                     },
-                                    onDoubleTap: () {
-                                      _homeContact!.list!.removeAt(index);
-                                      Service.save(
-                                          "home_contact", _homeContact);
-                                      getHomeContact();
-                                    },
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: getProportionateScreenWidth(
-                                            kDefaultPadding / 3),
-                                        vertical: getProportionateScreenHeight(
-                                            kDefaultPadding / 2),
-                                      ),
+                                      height: kDefaultPadding,
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding),
                                       decoration: BoxDecoration(
-                                        boxShadow: [boxShadow],
-                                        borderRadius: BorderRadius.circular(
-                                            getProportionateScreenWidth(
-                                                kDefaultPadding / 2)),
+                                        color: isSchedule
+                                            ? kSecondaryColor
+                                            : kPrimaryColor,
+                                        shape: BoxShape.circle,
                                         border: Border.all(
-                                            color: kBlackColor.withValues(
-                                                alpha: 0.2)),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${_homeContact!.list![index].phone}"
-                                                .toUpperCase(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall!
-                                                .copyWith(
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                          Text(
-                                            _homeContact!.list![index].name!,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelLarge!
-                                                .copyWith(
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                        ],
+                                            width: 1,
+                                            color: isSchedule
+                                                ? kGreyColor
+                                                : kBlackColor),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              separatorBuilder:
-                                  (BuildContext context, int index) => SizedBox(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                            ),
+                              isSchedule
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        TextButton(
+                                          child: Text(
+                                            _scheduledDate != null
+                                                ? _scheduledDate
+                                                    .toString()
+                                                    .split('.')[0]
+                                                : " Add Date & Time ",
+                                            style: TextStyle(
+                                              color: kSecondaryColor,
+                                            ),
+                                          ),
+                                          style: ButtonStyle(
+                                            elevation:
+                                                WidgetStateProperty.all(1.0),
+                                            backgroundColor:
+                                                WidgetStateProperty.all(
+                                                    kPrimaryColor),
+                                          ),
+                                          onPressed: () async {
+                                            DateTime _now = DateTime.now();
+                                            DateTime? pickedDate =
+                                                await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: _now,
+                                              lastDate: _now.add(
+                                                Duration(days: 7),
+                                              ),
+                                            );
+                                            TimeOfDay? time =
+                                                await showTimePicker(
+                                                    context: context,
+                                                    initialTime:
+                                                        TimeOfDay.fromDateTime(
+                                                            DateTime.now()));
+                                            setState(() {
+                                              _scheduledDate = pickedDate!.add(
+                                                  Duration(
+                                                      hours: time!.hour,
+                                                      minutes: time!.minute));
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    )
+                                  : Container(),
+                            ],
                           ),
-                          SizedBox(
-                            height:
-                                getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                          Text(
-                            "Double tap to remove...",
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                padding: EdgeInsets.all(
-                  getProportionateScreenWidth(kDefaultPadding),
-                ),
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  boxShadow: [kDefaultShadow],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Schedule Order?",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge!
-                              .copyWith(fontWeight: FontWeight.bold),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isSchedule = !isSchedule;
-                            });
-                          },
-                          child: Container(
-                            height: kDefaultPadding,
-                            width: getProportionateScreenWidth(kDefaultPadding),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSchedule ? kSecondaryColor : kPrimaryColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  width: 1,
-                                  color: isSchedule ? kGreyColor : kBlackColor),
-                            ),
-                          ),
+                        SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 4),
                         ),
                       ],
                     ),
-                    isSchedule
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TextButton(
-                                child: Text(
-                                  _scheduledDate != null
-                                      ? _scheduledDate.toString().split('.')[0]
-                                      : " Add Date & Time ",
-                                  style: TextStyle(
-                                    color: kSecondaryColor,
-                                  ),
-                                ),
-                                style: ButtonStyle(
-                                  elevation: WidgetStateProperty.all(1.0),
-                                  backgroundColor:
-                                      WidgetStateProperty.all(kPrimaryColor),
-                                ),
-                                onPressed: () async {
-                                  DateTime _now = DateTime.now();
-                                  DateTime? pickedDate = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: _now,
-                                    lastDate: _now.add(
-                                      Duration(days: 7),
-                                    ),
-                                  );
-                                  TimeOfDay? time = await showTimePicker(
-                                      context: context,
-                                      initialTime: TimeOfDay.fromDateTime(
-                                          DateTime.now()));
-                                  setState(() {
-                                    _scheduledDate = pickedDate!.add(Duration(
-                                        hours: time!.hour,
-                                        minutes: time!.minute));
-                                  });
-                                },
-                              ),
-                            ],
-                          )
-                        : Container(),
-                  ],
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                child: CustomButton(
-                    title: "Continue",
-                    press: () {
-                      if (isSchedule && _scheduledDate == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            Service.showMessage(
-                                "Please enter date and time for your schedule!",
-                                true));
-                      } else if (_controller.text != null &&
-                          _controller.text.isNotEmpty &&
-                          _dropOffController.text != null &&
-                          _dropOffController.text.isNotEmpty &&
-                          senderUser.isNotEmpty &&
-                          senderPhone.isNotEmpty &&
-                          senderPhone.length == 9 &&
-                          receiverName.isNotEmpty &&
-                          receiverPhone.isNotEmpty &&
-                          receiverPhone.length == 9 &&
-                          latitude != null &&
-                          longitude != null &&
-                          destLatitude != null &&
-                          destLongitude != null) {
-                        setState(() {
-                          loadingMessage = "Making sure there are no dogs...";
-                        });
-                        _addLunchToCart();
-                      } else {
-                        if (_controller.text == null ||
-                            _controller.text.isEmpty) {
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: getProportionateScreenWidth(kDefaultPadding),
+                    right: getProportionateScreenWidth(kDefaultPadding),
+                  ),
+                  child: CustomButton(
+                      title: "Continue",
+                      press: () {
+                        if (isSchedule && _scheduledDate == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               Service.showMessage(
-                                  "Please enter pickup address!", true));
-                        } else if (_dropOffController.text == null ||
-                            _dropOffController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter destination address!", true));
-                        } else if (senderPhone.isEmpty || senderUser.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter sender information!", true));
-                        } else if (receiverPhone.isEmpty ||
-                            receiverName.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter receiver information!", true));
-                        } else if (senderPhone.substring(0, 1) !=
-                                9.toString() ||
-                            senderPhone.length != 9) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter a valid sender phone number",
+                                  "Please enter date and time for your schedule!",
                                   true));
-                        } else if (receiverPhone.substring(0, 1) !=
-                                9.toString() ||
-                            receiverPhone.length != 9) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please enter a valid receiver phone number",
-                                  true));
+                        } else if (_controller.text != null &&
+                            _controller.text.isNotEmpty &&
+                            _dropOffController.text != null &&
+                            _dropOffController.text.isNotEmpty &&
+                            senderUser.isNotEmpty &&
+                            senderPhone.isNotEmpty &&
+                            senderPhone.length == 9 &&
+                            receiverName.isNotEmpty &&
+                            receiverPhone.isNotEmpty &&
+                            receiverPhone.length == 9 &&
+                            latitude != null &&
+                            longitude != null &&
+                            destLatitude != null &&
+                            destLongitude != null) {
+                          setState(() {
+                            loadingMessage = "Making sure there are no dogs...";
+                          });
+                          _addLunchToCart();
+                        } else {
+                          if (_controller.text == null ||
+                              _controller.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter pickup address!", true));
+                          } else if (_dropOffController.text == null ||
+                              _dropOffController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter destination address!", true));
+                          } else if (senderPhone.isEmpty ||
+                              senderUser.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter sender information!", true));
+                          } else if (receiverPhone.isEmpty ||
+                              receiverName.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter receiver information!",
+                                    true));
+                          } else if (senderPhone.substring(0, 1) !=
+                                  9.toString() ||
+                              senderPhone.length != 9) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter a valid sender phone number",
+                                    true));
+                          } else if (receiverPhone.substring(0, 1) !=
+                                  9.toString() ||
+                              receiverPhone.length != 9) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage(
+                                    "Please enter a valid receiver phone number",
+                                    true));
+                          }
                         }
-                      }
-                    },
-                    color: kSecondaryColor),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding * 2),
-              ),
-            ],
+                      },
+                      color: kSecondaryColor),
+                ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding * 2),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -988,7 +1075,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._isLoading = false;
       });
@@ -1003,7 +1090,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
   }
 
   Future<dynamic> getVehicleList() async {
-    print("getting vehicle list");
+    debugPrint("getting vehicle list");
     setState(() {
       _isLoading = true;
     });
@@ -1044,7 +1131,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         _isLoading = false;
       });
@@ -1075,7 +1162,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         _isLoading = false;
       });
@@ -1133,7 +1220,7 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         _isLoading = false;
       });

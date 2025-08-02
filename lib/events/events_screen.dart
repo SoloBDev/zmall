@@ -184,7 +184,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   Icon(Icons.arrow_back_rounded),
                   GestureDetector(
                     onTap: () {
-                      print("Purchase history...");
+                      debugPrint("Purchase history...");
                     },
                     child: Text(
                       "EVENTS",
@@ -237,7 +237,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   return GestureDetector(
                     onTap: () {
                       //:TODO Pop up to share to social media
-                      // print(
+                      // debugPrint(
                       //     "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${events[index]['image_url'][0]}");
                     },
                     child: Container(
@@ -561,17 +561,17 @@ class _EventsScreenState extends State<EventsScreen> {
                                   //                                 null) {
                                   //                               if (selectedTicketId
                                   //                                   .isNotEmpty) {
-                                  //                                 print(userData[
+                                  //                                 debugPrint(userData[
                                   //                                         'user']
                                   //                                     [
                                   //                                     '_id']);
-                                  //                                 print(userData[
+                                  //                                 debugPrint(userData[
                                   //                                         'user']
                                   //                                     [
                                   //                                     'server_token']);
-                                  //                                 print(
+                                  //                                 debugPrint(
                                   //                                     quantity);
-                                  //                                 print(
+                                  //                                 debugPrint(
                                   //                                     selectedTicketId);
                                   //                                 Navigator.of(
                                   //                                         context)
@@ -848,7 +848,7 @@ class _EventsScreenState extends State<EventsScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

@@ -39,6 +39,7 @@ import 'package:zmall/search/search_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/store_screen.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
 import 'package:zmall/world_cup/world_cup_screen.dart';
 
@@ -1088,6 +1089,14 @@ class _HomeBodyState extends State<HomeBody> {
           ),
         ),
         actions: [
+          // IconButton(
+          //   icon: Icon(Icons.payment),
+          //   onPressed: () {
+          //     Navigator.of(context)
+          //         .push(MaterialPageRoute(builder: (context) => YagoutPay()));
+          //   },
+          // ),
+
           IconButton(
             onPressed: () {
               Navigator.pushNamed(context, CartScreen.routeName)
@@ -1156,7 +1165,8 @@ class _HomeBodyState extends State<HomeBody> {
         onRefresh: _onRefresh,
         child: ModalProgressHUD(
           color: kPrimaryColor,
-          progressIndicator: linearProgressIndicator,
+          progressIndicator: LinearLoadingIndicator(),
+          //  linearProgressIndicator,
           inAsyncCall: _loading,
           child: categories != null
               ? SingleChildScrollView(

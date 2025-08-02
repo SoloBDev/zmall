@@ -56,7 +56,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
     setState(() {
       _loading = true;
     });
-    print("Fetching payment gateway");
+    debugPrint("Fetching payment gateway");
     var data = await getKifiyaGateway();
     if (data != null && data['success']) {
       setState(() {
@@ -222,7 +222,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -268,7 +268,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -323,7 +323,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

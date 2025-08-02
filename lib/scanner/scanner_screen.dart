@@ -86,7 +86,7 @@
 //                         getProportionateScreenWidth(kDefaultPadding * 1.5)),
 //                 child: GestureDetector(
 //                   onTap: () async {
-//                     print("pressed");
+//                     debugPrint("pressed");
 //                     await controller?.toggleFlash();
 //                     setState(() {});
 //                   },
@@ -142,7 +142,7 @@
 //       setState(() {
 //         this.controller.stopCamera();
 //         result = scanData;
-//         print(result.code);
+//         debugPrint(result.code);
 //       });
 //       Navigator.pushReplacement(
 //         context,

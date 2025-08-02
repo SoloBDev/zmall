@@ -176,7 +176,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           });
         }
 //        for (var i = 0; i < deliveryLocation.list.length; i++) {
-//          print(deliveryLocation.list[i].name);
+//          debugPrint(deliveryLocation.list[i].name);
 //        }
       });
     }
@@ -270,6 +270,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       setState(() {
         cart = Cart.fromJson(data);
       });
+      // debugPrint("cart ${Cart.fromJson(data)}");
     }
     if (aliCart != null) {
       setState(() {
@@ -307,6 +308,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     });
     var data = await addToCart();
     if (data != null && data['success']) {
+      // debugPrint("add cart data $data");
       setState(() {
         userData['user']['cart_id'] = data['cart_id'];
       });
@@ -343,576 +345,594 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         ),
         elevation: 1.0,
       ),
-      body: ModalProgressHUD(
-        color: kPrimaryColor,
-        progressIndicator: linearProgressIndicator,
-        inAsyncCall: _loading,
-        child: SingleChildScrollView(
-          child: userData != null
-              ? Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding),
-                      vertical:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  child: Column(
-                    children: [
-                      SectionTitle(
-                        sectionTitle:
-                            Provider.of<ZLanguage>(context, listen: false)
-                                .deliveryDetails,
-                        subTitle: " ",
-                        press: () {},
-                      ),
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                          boxShadow: [boxShadow],
+      body: SafeArea(
+        child: ModalProgressHUD(
+          color: kPrimaryColor,
+          progressIndicator: linearProgressIndicator,
+          inAsyncCall: _loading,
+          child: SingleChildScrollView(
+            child: userData != null
+                ? Padding(
+                    padding: EdgeInsets.only(
+                        left: getProportionateScreenWidth(kDefaultPadding),
+                        right: getProportionateScreenWidth(kDefaultPadding),
+                        top: getProportionateScreenHeight(kDefaultPadding / 2),
+                        bottom: getProportionateScreenHeight(kDefaultPadding)),
+                    child: Column(
+                      children: [
+                        SectionTitle(
+                          sectionTitle:
+                              Provider.of<ZLanguage>(context, listen: false)
+                                  .deliveryDetails,
+                          subTitle: " ",
+                          press: () {},
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: getProportionateScreenWidth(kDefaultPadding),
-                            right: getProportionateScreenWidth(kDefaultPadding),
-                            top: getProportionateScreenHeight(kDefaultPadding),
-                            bottom: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Column(
-                            children: [
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context,
-                                        listen: false)
-                                    .name,
-                                subtitle: receiverName.isNotEmpty && isForOthers
-                                    ? receiverName
-                                    : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
-                              ),
-                              Container(
-                                width: double.infinity,
-                                height: 0.5,
-                                color: kGreyColor.withValues(alpha: 0.4),
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              DetailsRow(
-                                title: Provider.of<ZLanguage>(context,
-                                        listen: false)
-                                    .phone,
-                                subtitle: receiverPhone.isNotEmpty &&
-                                        isForOthers
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} $receiverPhone"
-                                    : "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                              ),
-                              Container(
-                                width: double.infinity,
-                                height: 0.5,
-                                color: kGreyColor.withValues(alpha: 0.4),
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
-                              TextButton(
-                                // style: ButtonStyle(
-                                //   backgroundColor:
-                                //       MaterialStateProperty.all(kSecondaryColor),
-                                // ),
-                                onPressed: () {
-                                  showModalBottomSheet<void>(
-                                    isScrollControlled: true,
-                                    context: context,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(30.0),
-                                          topRight: Radius.circular(30.0)),
-                                    ),
-                                    builder: (BuildContext context) {
-                                      return Padding(
-                                        padding:
-                                            MediaQuery.of(context).viewInsets,
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding),
-                                              vertical:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding * 2)),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            spacing:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding * 1.5),
-                                            children: <Widget>[
-                                              Text(
-                                                Provider.of<ZLanguage>(context,
-                                                        listen: false)
-                                                    .orderForOthers,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleLarge
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                              ),
-                                              CustomTextField(
-                                                  style: TextStyle(
-                                                      color: kBlackColor),
-                                                  keyboardType:
-                                                      TextInputType.text,
-                                                  onChanged: (val) {
-                                                    receiverName = val;
-                                                  },
-                                                  labelText:
-                                                      Provider.of<ZLanguage>(
-                                                              context)
-                                                          .name,
-                                                  hintText:
-                                                      Provider.of<ZLanguage>(
-                                                              context)
-                                                          .name
-                                                  // decoration: textFieldInputDecorator
-                                                  //     .copyWith(
-                                                  //         labelText: Provider.of<
-                                                  //                     ZLanguage>(
-                                                  //                 context)
-                                                  //             .name),
-                                                  ),
-                                              CustomTextField(
-                                                style: TextStyle(
-                                                    color: kBlackColor),
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                maxLength: 9,
-                                                onChanged: (val) {
-                                                  receiverPhone = val;
-                                                },
-                                                // decoration:
-                                                //     textFieldInputDecorator
-                                                //         .copyWith(
-                                                //   labelText:
-                                                //       Provider.of<ZLanguage>(
-                                                //               context,
-                                                //               listen: false)
-                                                //           .receiverPhone,
-                                                //   helperText:
-                                                //       Provider.of<ZLanguage>(
-                                                //               context,
-                                                //               listen: false)
-                                                //           .startPhone,)
-                                                labelText:
-                                                    Provider.of<ZLanguage>(
-                                                            context,
-                                                            listen: false)
-                                                        .receiverPhone,
-                                                hintText:
-                                                    Provider.of<ZLanguage>(
-                                                            context,
-                                                            listen: false)
-                                                        .startPhone,
-                                                prefix: Text(
-                                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
-                                              ),
-                                              SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding)),
-                                              CustomButton(
-                                                title: Provider.of<ZLanguage>(
-                                                        context,
-                                                        listen: false)
-                                                    .submit,
-                                                color: kSecondaryColor,
-                                                press: () async {
-                                                  if (receiverPhone
-                                                              .isNotEmpty &&
-                                                          receiverName
-                                                              .isNotEmpty &&
-                                                          receiverPhone
-                                                                  .substring(
-                                                                      0, 1) ==
-                                                              9.toString() ||
-                                                      receiverPhone.length ==
-                                                          9) {
-                                                    setState(() {
-                                                      isForOthers = true;
-                                                      cart!.userName =
-                                                          receiverName;
-                                                      cart!.phone =
-                                                          receiverPhone;
-                                                      cart!.isForOthers =
-                                                          isForOthers;
-                                                    });
-
-                                                    Navigator.of(context).pop();
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ).whenComplete(() {
-                                    setState(() {});
-                                  });
-                                },
-                                child: Text(
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .changeDetails,
-                                  style: TextStyle(
-                                    color: kBlackColor,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding)),
-                      SectionTitle(
-                        sectionTitle:
-                            Provider.of<ZLanguage>(context, listen: false)
-                                .deliveryOptions,
-                        subTitle: " ",
-                        press: () {},
-                      ),
-                      Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 9),
-                        child: vehicleList != null
-                            ? ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) =>
-                                    VehicleContainer(
-                                      selected: selectedVehicle == index,
-                                      imageUrl: selectedVehicle == index
-                                          ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
-                                          : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
-                                      category: vehicleList['vehicles'][index]
-                                          ['vehicle_name'],
-                                      press: () {
-                                        setState(() {
-                                          if (selectedVehicle != index) {
-                                            selectedVehicle = index;
-                                            vehicleId = vehicleList['vehicles']
-                                                [index]['_id'];
-                                          } else {
-                                            selectedVehicle = -1;
-                                          }
-                                        });
-                                      },
-                                    ),
-                                separatorBuilder:
-                                    (BuildContext context, int index) =>
-                                        SizedBox(
-                                          width: getProportionateScreenWidth(
-                                              kDefaultPadding / 2),
-                                        ),
-                                itemCount: vehicleList['vehicles'] != null
-                                    ? vehicleList['vehicles'].length
-                                    : 0)
-                            : SpinKitPianoWave(
-                                color: kSecondaryColor,
-                              ),
-                      ),
-                      SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding)),
-                      SectionTitle(
-                        sectionTitle:
-                            Provider.of<ZLanguage>(context, listen: false)
-                                .locations,
-                        subTitle: Provider.of<ZLanguage>(context, listen: false)
-                            .addLocation,
-                        press: () {
-                          addLocation();
-                        },
-                      ),
-                      LocationContainer(
-                        title: Provider.of<ZLanguage>(context, listen: false)
-                            .currentLocation,
-                        note: Provider.of<ZLanguage>(context, listen: false)
-                            .useCurrentLocation,
-                        isSelected: currSelected,
-                        press: () async {
-                          setState(() {
-                            currSelected = true;
-                            selfPickup = false;
-                            selected = -1;
-                          });
-                          _doLocationTask();
-
-                          // getLocation();
-                        },
-                      ),
-                      cart!.isLaundryService
-                          ? Container()
-                          : SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
-                      cart!.isLaundryService
-                          ? Container()
-                          : LocationContainer(
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .selfPickup,
-                              note:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .userPickup,
-                              isSelected: selfPickup,
-                              press: () async {
-                                setState(() {
-                                  currSelected = false;
-                                  selfPickup = true;
-                                  selected = -1;
-                                  selectedVehicle = 0;
-                                  destinationAddress = DestinationAddress(
-                                      name: Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .userPickup,
-                                      long: Provider.of<ZMetaData>(context,
-                                              listen: false)
-                                          .longitude,
-                                      lat: Provider.of<ZMetaData>(context,
-                                              listen: false)
-                                          .latitude);
-                                });
-
-                                // getLocation();
-                              },
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(kDefaultPadding / 2),
                             ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: deliveryLocation != null &&
-                                deliveryLocation!.list!.length > 0
-                            ? deliveryLocation!.list!.length
-                            : 0,
-                        itemBuilder: (context, index) {
-                          return Padding(
+                            boxShadow: [boxShadow],
+                          ),
+                          child: Padding(
                             padding: EdgeInsets.only(
+                              left:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              right:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              top:
+                                  getProportionateScreenHeight(kDefaultPadding),
                               bottom: getProportionateScreenHeight(
                                   kDefaultPadding / 2),
                             ),
-                            child: Dismissible(
-                              background: Container(
-                                color: kSecondaryColor,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(
-                                      Icons.delete,
-                                      color: kPrimaryColor,
-                                      size: getProportionateScreenWidth(
-                                        kDefaultPadding,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                                  ],
+                            child: Column(
+                              children: [
+                                DetailsRow(
+                                  title: Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .name,
+                                  subtitle: receiverName.isNotEmpty &&
+                                          isForOthers
+                                      ? receiverName
+                                      : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
                                 ),
-                              ),
-                              key: Key(deliveryLocation!.list![index].lat
-                                  .toString()),
-                              onDismissed: (direction) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(
-                                        '${deliveryLocation!.list![index].name} dismissed')));
-                                setState(() {
-                                  deliveryLocation!.list!.removeAt(index);
-                                  Service.save(
-                                      'delivery', deliveryLocation!.toJson());
-                                });
-                              },
-                              child: LocationContainer(
-                                title: deliveryLocation!.list![index].name!
-                                    .split(",")[0],
-                                note: deliveryLocation!.list![index].note,
-                                press: () {
+                                Container(
+                                  width: double.infinity,
+                                  height: 0.5,
+                                  color: kGreyColor.withValues(alpha: 0.4),
+                                ),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3)),
+                                DetailsRow(
+                                  title: Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .phone,
+                                  subtitle: receiverPhone.isNotEmpty &&
+                                          isForOthers
+                                      ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} $receiverPhone"
+                                      : "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  height: 0.5,
+                                  color: kGreyColor.withValues(alpha: 0.4),
+                                ),
+                                SizedBox(
+                                    height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3)),
+                                TextButton(
+                                  // style: ButtonStyle(
+                                  //   backgroundColor:
+                                  //       MaterialStateProperty.all(kSecondaryColor),
+                                  // ),
+                                  onPressed: () {
+                                    showModalBottomSheet<void>(
+                                      isScrollControlled: true,
+                                      context: context,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(30.0),
+                                            topRight: Radius.circular(30.0)),
+                                      ),
+                                      builder: (BuildContext context) {
+                                        return Padding(
+                                          padding:
+                                              MediaQuery.of(context).viewInsets,
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal:
+                                                    getProportionateScreenWidth(
+                                                        kDefaultPadding),
+                                                vertical:
+                                                    getProportionateScreenHeight(
+                                                        kDefaultPadding * 2)),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              spacing:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 1.5),
+                                              children: <Widget>[
+                                                Text(
+                                                  Provider.of<ZLanguage>(
+                                                          context,
+                                                          listen: false)
+                                                      .orderForOthers,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleLarge
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                ),
+                                                CustomTextField(
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                    keyboardType:
+                                                        TextInputType.text,
+                                                    onChanged: (val) {
+                                                      receiverName = val;
+                                                    },
+                                                    labelText:
+                                                        Provider.of<ZLanguage>(
+                                                                context)
+                                                            .name,
+                                                    hintText:
+                                                        Provider.of<ZLanguage>(
+                                                                context)
+                                                            .name
+                                                    // decoration: textFieldInputDecorator
+                                                    //     .copyWith(
+                                                    //         labelText: Provider.of<
+                                                    //                     ZLanguage>(
+                                                    //                 context)
+                                                    //             .name),
+                                                    ),
+                                                CustomTextField(
+                                                  style: TextStyle(
+                                                      color: kBlackColor),
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  maxLength: 9,
+                                                  onChanged: (val) {
+                                                    receiverPhone = val;
+                                                  },
+                                                  // decoration:
+                                                  //     textFieldInputDecorator
+                                                  //         .copyWith(
+                                                  //   labelText:
+                                                  //       Provider.of<ZLanguage>(
+                                                  //               context,
+                                                  //               listen: false)
+                                                  //           .receiverPhone,
+                                                  //   helperText:
+                                                  //       Provider.of<ZLanguage>(
+                                                  //               context,
+                                                  //               listen: false)
+                                                  //           .startPhone,)
+                                                  labelText:
+                                                      Provider.of<ZLanguage>(
+                                                              context,
+                                                              listen: false)
+                                                          .receiverPhone,
+                                                  hintText:
+                                                      Provider.of<ZLanguage>(
+                                                              context,
+                                                              listen: false)
+                                                          .startPhone,
+                                                  prefix: Text(
+                                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
+                                                ),
+                                                SizedBox(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding)),
+                                                CustomButton(
+                                                  title: Provider.of<ZLanguage>(
+                                                          context,
+                                                          listen: false)
+                                                      .submit,
+                                                  color: kSecondaryColor,
+                                                  press: () async {
+                                                    if (receiverPhone
+                                                                .isNotEmpty &&
+                                                            receiverName
+                                                                .isNotEmpty &&
+                                                            receiverPhone
+                                                                    .substring(
+                                                                        0, 1) ==
+                                                                9.toString() ||
+                                                        receiverPhone.length ==
+                                                            9) {
+                                                      setState(() {
+                                                        isForOthers = true;
+                                                        cart!.userName =
+                                                            receiverName;
+                                                        cart!.phone =
+                                                            receiverPhone;
+                                                        cart!.isForOthers =
+                                                            isForOthers;
+                                                      });
+
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ).whenComplete(() {
+                                      setState(() {});
+                                    });
+                                  },
+                                  child: Text(
+                                    Provider.of<ZLanguage>(context,
+                                            listen: false)
+                                        .changeDetails,
+                                    style: TextStyle(
+                                      color: kBlackColor,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                            height:
+                                getProportionateScreenHeight(kDefaultPadding)),
+                        SectionTitle(
+                          sectionTitle:
+                              Provider.of<ZLanguage>(context, listen: false)
+                                  .deliveryOptions,
+                          subTitle: " ",
+                          press: () {},
+                        ),
+                        Container(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding * 9),
+                          child: vehicleList != null
+                              ? ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) =>
+                                      VehicleContainer(
+                                        selected: selectedVehicle == index,
+                                        imageUrl: selectedVehicle == index
+                                            ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
+                                            : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
+                                        category: vehicleList['vehicles'][index]
+                                            ['vehicle_name'],
+                                        press: () {
+                                          setState(() {
+                                            if (selectedVehicle != index) {
+                                              selectedVehicle = index;
+                                              vehicleId =
+                                                  vehicleList['vehicles'][index]
+                                                      ['_id'];
+                                            } else {
+                                              selectedVehicle = -1;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                  separatorBuilder:
+                                      (BuildContext context, int index) =>
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                                kDefaultPadding / 2),
+                                          ),
+                                  itemCount: vehicleList['vehicles'] != null
+                                      ? vehicleList['vehicles'].length
+                                      : 0)
+                              : SpinKitPianoWave(
+                                  color: kSecondaryColor,
+                                ),
+                        ),
+                        SizedBox(
+                            height:
+                                getProportionateScreenHeight(kDefaultPadding)),
+                        SectionTitle(
+                          sectionTitle:
+                              Provider.of<ZLanguage>(context, listen: false)
+                                  .locations,
+                          subTitle:
+                              Provider.of<ZLanguage>(context, listen: false)
+                                  .addLocation,
+                          press: () {
+                            addLocation();
+                          },
+                        ),
+                        LocationContainer(
+                          title: Provider.of<ZLanguage>(context, listen: false)
+                              .currentLocation,
+                          note: Provider.of<ZLanguage>(context, listen: false)
+                              .useCurrentLocation,
+                          isSelected: currSelected,
+                          press: () async {
+                            setState(() {
+                              currSelected = true;
+                              selfPickup = false;
+                              selected = -1;
+                            });
+                            _doLocationTask();
+
+                            // getLocation();
+                          },
+                        ),
+                        cart!.isLaundryService
+                            ? Container()
+                            : SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                        cart!.isLaundryService
+                            ? Container()
+                            : LocationContainer(
+                                title: Provider.of<ZLanguage>(context,
+                                        listen: false)
+                                    .selfPickup,
+                                note: Provider.of<ZLanguage>(context,
+                                        listen: false)
+                                    .userPickup,
+                                isSelected: selfPickup,
+                                press: () async {
                                   setState(() {
                                     currSelected = false;
-                                    selfPickup = false;
-                                    selected = index;
-                                    destinationAddress =
-                                        deliveryLocation!.list![index];
+                                    selfPickup = true;
+                                    selected = -1;
+                                    selectedVehicle = 0;
+                                    destinationAddress = DestinationAddress(
+                                        name: Provider.of<ZLanguage>(context,
+                                                listen: false)
+                                            .userPickup,
+                                        long: Provider.of<ZMetaData>(context,
+                                                listen: false)
+                                            .longitude,
+                                        lat: Provider.of<ZMetaData>(context,
+                                                listen: false)
+                                            .latitude);
                                   });
-                                  _getVehicleList();
+
+                                  // getLocation();
                                 },
-                                isSelected: index == selected,
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      CustomButton(
-                        title:
-                            Provider.of<ZLanguage>(context, listen: false).cont,
-                        press: () async {
-                          if (selected != -2 && selectedVehicle != -1
-                              // deliveryLocation == null ||
-                              // deliveryLocation.list.length > selected
-                              ) {
-                            if (currSelected) {
-                              destinationAddress = DestinationAddress(
-                                  name: "Current location",
-                                  long: Provider.of<ZMetaData>(context,
-                                          listen: false)
-                                      .longitude,
-                                  lat: Provider.of<ZMetaData>(context,
-                                          listen: false)
-                                      .latitude);
-                            } else if (selfPickup) {
-                              destinationAddress = DestinationAddress(
-                                  name: "User Pickup",
-                                  long: Provider.of<ZMetaData>(context,
-                                          listen: false)
-                                      .longitude,
-                                  lat: Provider.of<ZMetaData>(context,
-                                          listen: false)
-                                      .latitude);
-                            }
-                            if (destinationAddress != null) {
-                              double storeToCustomerDistance =
-                                  calculateDistance(
-                                      cart!.storeLocation!.lat,
-                                      cart!.storeLocation!.long,
-                                      destinationAddress!.lat,
-                                      destinationAddress!.long);
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
+                        ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: deliveryLocation != null &&
+                                  deliveryLocation!.list!.length > 0
+                              ? deliveryLocation!.list!.length
+                              : 0,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                              ),
+                              child: Dismissible(
+                                background: Container(
+                                  color: kSecondaryColor,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Icon(
+                                        Icons.delete,
+                                        color: kPrimaryColor,
+                                        size: getProportionateScreenWidth(
+                                          kDefaultPadding,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                key: Key(deliveryLocation!.list![index].lat
+                                    .toString()),
+                                onDismissed: (direction) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              '${deliveryLocation!.list![index].name} dismissed')));
+                                  setState(() {
+                                    deliveryLocation!.list!.removeAt(index);
+                                    Service.save(
+                                        'delivery', deliveryLocation!.toJson());
+                                  });
+                                },
+                                child: LocationContainer(
+                                  title: deliveryLocation!.list![index].name!
+                                      .split(",")[0],
+                                  note: deliveryLocation!.list![index].note,
+                                  press: () {
+                                    setState(() {
+                                      currSelected = false;
+                                      selfPickup = false;
+                                      selected = index;
+                                      destinationAddress =
+                                          deliveryLocation!.list![index];
+                                    });
+                                    _getVehicleList();
+                                  },
+                                  isSelected: index == selected,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        CustomButton(
+                          title: Provider.of<ZLanguage>(context, listen: false)
+                              .cont,
+                          press: () async {
+                            if (selected != -2 && selectedVehicle != -1
+                                // deliveryLocation == null ||
+                                // deliveryLocation.list.length > selected
+                                ) {
+                              if (currSelected) {
+                                destinationAddress = DestinationAddress(
+                                    name: "Current location",
+                                    long: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .longitude,
+                                    lat: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .latitude);
+                              } else if (selfPickup) {
+                                destinationAddress = DestinationAddress(
+                                    name: "User Pickup",
+                                    long: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .longitude,
+                                    lat: Provider.of<ZMetaData>(context,
+                                            listen: false)
+                                        .latitude);
+                              }
+                              if (destinationAddress != null) {
+                                double storeToCustomerDistance =
+                                    calculateDistance(
+                                        cart!.storeLocation!.lat,
+                                        cart!.storeLocation!.long,
+                                        destinationAddress!.lat,
+                                        destinationAddress!.long);
 
-                              if (selectedVehicle != -1 &&
-                                  vehicleList['vehicles'][selectedVehicle]
-                                              ['vehicle_name']
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "bicycle" &&
-                                  storeToCustomerDistance > 5 &&
-                                  !selfPickup) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .farDeliveryLocation,
-                                        true,
-                                        duration: 5));
-                              } else {
-                                setState(() {
-                                  cart!.destinationAddress = destinationAddress;
-                                  Service.save('cart', cart);
-                                  _loading = true;
-                                });
-                                var categoriesResponse =
-                                    await CoreServices.getCategoryList(
-                                        longitude: destinationAddress!.long!,
-                                        latitude: destinationAddress!.lat!,
-                                        countryCode: Provider.of<ZMetaData>(
-                                                context,
-                                                listen: false)
-                                            .countryId!,
-                                        countryName: Provider.of<ZMetaData>(
-                                                context,
-                                                listen: false)
-                                            .country,
-                                        context: context);
-
-                                if (categoriesResponse != null &&
-                                    categoriesResponse['success']) {
-                                  _addToCart();
+                                if (selectedVehicle != -1 &&
+                                    vehicleList['vehicles'][selectedVehicle]
+                                                ['vehicle_name']
+                                            .toString()
+                                            .toLowerCase() ==
+                                        "bicycle" &&
+                                    storeToCustomerDistance > 5 &&
+                                    !selfPickup) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      Service.showMessage(
+                                          Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .farDeliveryLocation,
+                                          true,
+                                          duration: 5));
                                 } else {
-                                  if (categoriesResponse['error_code'] == 999) {
-                                    await Service.saveBool('logged', false);
-                                    await Service.remove('user');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        Service.showMessage(
-                                            "${errorCodes['${categoriesResponse['error_code']}']}",
-                                            true));
-                                    Navigator.pushReplacementNamed(
-                                        context, LoginScreen.routeName);
-                                  } else if (categoriesResponse['error_code'] ==
-                                      813) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        Service.showMessage(
-                                            "Destination address cannot be outside of Addis Ababa",
-                                            true,
-                                            duration: 4));
+                                  setState(() {
+                                    cart!.destinationAddress =
+                                        destinationAddress;
+                                    Service.save('cart', cart);
+                                    _loading = true;
+                                  });
+                                  var categoriesResponse =
+                                      await CoreServices.getCategoryList(
+                                          longitude: destinationAddress!.long!,
+                                          latitude: destinationAddress!.lat!,
+                                          countryCode: Provider.of<ZMetaData>(
+                                                  context,
+                                                  listen: false)
+                                              .countryId!,
+                                          countryName: Provider.of<ZMetaData>(
+                                                  context,
+                                                  listen: false)
+                                              .country,
+                                          context: context);
+
+                                  if (categoriesResponse != null &&
+                                      categoriesResponse['success']) {
+                                    _addToCart();
+                                  } else {
+                                    if (categoriesResponse['error_code'] ==
+                                        999) {
+                                      await Service.saveBool('logged', false);
+                                      await Service.remove('user');
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "${errorCodes['${categoriesResponse['error_code']}']}",
+                                              true));
+                                      Navigator.pushReplacementNamed(
+                                          context, LoginScreen.routeName);
+                                    } else if (categoriesResponse[
+                                            'error_code'] ==
+                                        813) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "Destination address cannot be outside of Addis Ababa",
+                                              true,
+                                              duration: 4));
+                                      setState(() {
+                                        _loading = false;
+                                      });
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(Service.showMessage(
+                                              "${errorCodes['${categoriesResponse['error_code']}']}",
+                                              true));
+                                    }
                                     setState(() {
                                       _loading = false;
                                     });
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        Service.showMessage(
-                                            "${errorCodes['${categoriesResponse['error_code']}']}",
-                                            true));
                                   }
-                                  setState(() {
-                                    _loading = false;
-                                  });
                                 }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                        "Please select a delivery address",
+                                        true,
+                                        duration: 4));
                               }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Please select a delivery address", true,
-                                      duration: 4));
-                            }
 
-                            // _addToCart();
-                          } else {
-                            if (selectedVehicle == -1) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Please select a delivery option", true,
-                                      duration: 4));
+                              // _addToCart();
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Please select a delivery address", true,
-                                      duration: 4));
+                              if (selectedVehicle == -1) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                        "Please select a delivery option", true,
+                                        duration: 4));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    Service.showMessage(
+                                        "Please select a delivery address",
+                                        true,
+                                        duration: 4));
+                              }
                             }
-                          }
-                        },
-                        color: kSecondaryColor,
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                    ],
-                  ),
-                )
-              : Container(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SpinKitWave(
+                          },
                           color: kSecondaryColor,
-                          size: getProportionateScreenHeight(kDefaultPadding),
                         ),
-                        // Padding(
-                        //   padding: EdgeInsets.only(
-                        //     top:
-                        //         getProportionateScreenHeight(kDefaultPadding / 2),
-                        //   ),
-                        //   child: Text("Locating your current location..."),
-                        // ),
+                        SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2)),
                       ],
                     ),
+                  )
+                : Container(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SpinKitWave(
+                            color: kSecondaryColor,
+                            size: getProportionateScreenHeight(kDefaultPadding),
+                          ),
+                          // Padding(
+                          //   padding: EdgeInsets.only(
+                          //     top:
+                          //         getProportionateScreenHeight(kDefaultPadding / 2),
+                          //   ),
+                          //   child: Text("Locating your current location..."),
+                          // ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );

@@ -270,7 +270,7 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

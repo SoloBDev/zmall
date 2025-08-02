@@ -900,7 +900,7 @@ class _CourierDetailState extends State<CourierDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1041,7 +1041,7 @@ class _CourierDetailState extends State<CourierDetail> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -1089,7 +1089,7 @@ class _CourierDetailState extends State<CourierDetail> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

@@ -10,6 +10,8 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 
 import 'order_history_detail.dart';
 
@@ -70,7 +72,10 @@ class _OrderHistoryState extends State<OrderHistory> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: _loading,
-      progressIndicator: linearProgressIndicator,
+      // progressIndicator: linearProgressIndicator,
+      progressIndicator: userData != null && responseData != null
+          ? LinearLoadingIndicator()
+          : ProductListShimmer(),
       color: kPrimaryColor,
       child: userData != null && responseData != null
           ? Padding(
@@ -276,7 +281,7 @@ class _OrderHistoryState extends State<OrderHistory> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

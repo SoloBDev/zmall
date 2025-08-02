@@ -193,7 +193,7 @@ class _AmoleScreenState extends State<AmoleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -239,7 +239,7 @@ class _AmoleScreenState extends State<AmoleScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

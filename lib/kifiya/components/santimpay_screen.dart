@@ -140,10 +140,10 @@ class _SantimPayState extends State<SantimPay> {
       setState(() {
         this._loading = false;
       });
-      // print("resp: ${json.decode(response.body)}");
+      // debugPrint("resp: ${json.decode(response.body)}");
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

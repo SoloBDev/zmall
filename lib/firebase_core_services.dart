@@ -40,9 +40,9 @@
 //     //     list = documentSnapshot.data();
 //     //     list['locations'] = getProfileCollectionData(uid, "locations");
 //     //     list['receiver'] = getProfileCollectionData(uid, "receiver");
-//     //     print("############################");
-//     //     print(list);
-//     //     print("############################");
+//     //     debugPrint("############################");
+//     //     debugPrint(list);
+//     //     debugPrint("############################");
 //     //   }
 //     // });
 //     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
@@ -53,9 +53,9 @@
 //       list = documentSnapshot.data();
 //       list['locations'] = await getProfileCollectionData(uid, "locations");
 //       list['receiver'] = await getProfileCollectionData(uid, "receiver");
-//       print("############################");
-//       print(list);
-//       print("############################");
+//       debugPrint("############################");
+//       debugPrint(list);
+//       debugPrint("############################");
 //     }
 //     return list;
 //   }
@@ -69,9 +69,9 @@
 //     //     .collection(collectionName)
 //     //     .get()
 //     //     .then((value) {
-//     //   // print("############################");
-//     //   // print(value.docs.length);
-//     //   // print("############################");
+//     //   // debugPrint("############################");
+//     //   // debugPrint(value.docs.length);
+//     //   // debugPrint("############################");
 //     //   value.docs.forEach((element) {
 //     //     list.add(element.data());
 //     //   });

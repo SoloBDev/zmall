@@ -47,7 +47,7 @@ class CoreServices {
       await Service.save('categories', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -62,8 +62,8 @@ class CoreServices {
 
   static Future _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
-    print("Got a background message");
-    print("Handling a background message: ${message.messageId}");
+    debugPrint("Got a background message");
+    debugPrint("Handling a background message: ${message.messageId}");
   }
 
   static void registerNotification(BuildContext context) async {
@@ -106,7 +106,7 @@ class CoreServices {
             );
           });
         } else {
-          print('User declined or has not accepted permission');
+          debugPrint('User declined or has not accepted permission');
         }
       }
     });
@@ -145,7 +145,7 @@ class CoreServices {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
 
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
@@ -193,7 +193,7 @@ class CoreServices {
       await Service.save('p_items', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -233,7 +233,7 @@ class CoreServices {
       await Service.save('s_items', json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -270,7 +270,7 @@ class CoreServices {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -286,7 +286,7 @@ class CoreServices {
       });
       if (json.decode(response.body) != null &&
           json.decode(response.body)['success']) {
-        // print(response.body);
+        // debugPrint(response.body);
         var data = {
           "success": json.decode(response.body)['success'],
           "message_flag": json.decode(response.body)['app_keys']
@@ -310,7 +310,7 @@ class CoreServices {
         return data;
       }
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -330,7 +330,7 @@ class CoreServices {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -362,7 +362,7 @@ class CoreServices {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }

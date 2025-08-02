@@ -50,14 +50,12 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     firstName = widget.userData['user']['first_name'];
     lastName = widget.userData['user']['last_name'];
     email = widget.userData['user']['email'];
     //address = widget.userData['user']['address'];
-    widget.userData['user']['address'] ??
-        'Addis Ababa, Ethiopia'; //new change because address cannot be null : when user register their is no address
+    address = widget.userData['user']['address'] ?? 'Addis Ababa, Ethiopia';
     phone = widget.userData['user']['phone'];
   }
 
@@ -71,21 +69,13 @@ class _EditProfileState extends State<EditProfile> {
         ),
         elevation: 1.0,
         actions: [
-          enabled
-              ? IconButton(
-                  icon: Icon(Icons.close),
-                  onPressed: () {
-                    setState(() {
-                      enabled = false;
-                    });
-                  })
-              : IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () {
-                    setState(() {
-                      enabled = true;
-                    });
-                  })
+          IconButton(
+              icon: Icon(enabled ? Icons.close : Icons.edit),
+              onPressed: () {
+                setState(() {
+                  enabled = !enabled;
+                });
+              })
         ],
       ),
       body: SingleChildScrollView(
@@ -342,6 +332,7 @@ class _EditProfileState extends State<EditProfile> {
                                             var data = await updateUser();
                                             if (data != null &&
                                                 data['success']) {
+                                              userDetails();
                                               setState(() {
                                                 enabled = false;
                                                 _loading = false;
@@ -365,6 +356,57 @@ class _EditProfileState extends State<EditProfile> {
         ),
       ),
     );
+  }
+
+  Future<void> userDetails() async {
+    var usrData;
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_detail";
+
+    setState(() {
+      _loading = true;
+    });
+    try {
+      Map data = {
+        "user_id": widget.userData['user']['_id'],
+        "server_token": widget.userData['user']['server_token'],
+      };
+      var body = json.encode(data);
+      http.Response response = await http
+          .post(
+        Uri.parse(url),
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: body,
+      )
+          .timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(Service.showMessage("Network error", true));
+
+          throw TimeoutException("The connection has timed out!");
+        },
+      );
+      setState(() {
+        usrData = json.decode(response.body);
+      });
+      // print("usrData>> $usrData}");
+      if (usrData != null && usrData['success']) {
+        Service.save('user', usrData);
+        Service.read('user');
+      }
+      // return json.decode(response.body);
+    } catch (e) {
+      // debugPrint("error $e");
+      // return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   Future<dynamic> updateUser() async {
@@ -411,6 +453,7 @@ class _EditProfileState extends State<EditProfile> {
                   "Something went wrong. Please try again!", true));
             }
           }
+          // print("update ${json.decode(value.body)}");
           return json.decode(value.body);
         });
       }).timeout(Duration(seconds: 10), onTimeout: () {

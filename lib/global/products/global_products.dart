@@ -60,11 +60,11 @@ class _GlobalProductState extends State<GlobalProduct> {
   }
 
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('abroad_cart');
 
     if (data != null) {
-      // print(data);
+      // debugPrint(data);
       setState(() {
         cart = AbroadCart.fromJson(data);
       });
@@ -74,13 +74,13 @@ class _GlobalProductState extends State<GlobalProduct> {
   // void isLogged() async {
   //   var data = await Service.readBool('logged');
   //   if (data != null) {
-  //     print("Logged in: $data");
+  //     debugPrint("Logged in: $data");
   //     setState(() {
   //       isLoggedIn = data;
   //     });
   //     getUser();
   //   } else {
-  //     print("No logged user found");
+  //     debugPrint("No logged user found");
   //   }
   // }
 
@@ -95,7 +95,7 @@ class _GlobalProductState extends State<GlobalProduct> {
 
   void _getStoreProductList() async {
     await getStoreProductList();
-    // print(responseData);
+    // debugPrint(responseData);
     if (responseData != null && responseData['success']) {
       products = responseData['products'];
     } else {
@@ -137,7 +137,8 @@ class _GlobalProductState extends State<GlobalProduct> {
         actions: [
           InkWell(
             onTap: () async {
-              print("=======================COMMENTS=======================");
+              debugPrint(
+                  "=======================COMMENTS=======================");
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -630,7 +631,7 @@ class _GlobalProductState extends State<GlobalProduct> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -665,10 +666,10 @@ class _GlobalProductState extends State<GlobalProduct> {
         },
         body: body,
       );
-      print("Product clicked");
-      // print(json.decode(response.body));
+      debugPrint("Product clicked");
+      // debugPrint(json.decode(response.body));
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
     }
   }
 }

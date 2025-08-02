@@ -48,14 +48,14 @@
 //     setState(() {
 //       price = tempPrice;
 //     });
-//     print(cart.toJson());
+//     debugPrint(cart.toJson());
 //   }
 //
 //   void storeOpen(store) async {
 //     DateFormat dateFormat = new DateFormat.Hm();
 //     DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
 //     if (appOpen == null || appClose == null) {
-//       print("Couldn't find app open-close time...fetching is locally");
+//       debugPrint("Couldn't find app open-close time...fetching is locally");
 //       appOpen = await Service.read('app_open');
 //       appClose = await Service.read('app_close');
 //     }
@@ -134,7 +134,7 @@
 //     setState(() {
 //       isOpen = isStoreOpen;
 //     });
-//     print("Is open $isOpen");
+//     debugPrint("Is open $isOpen");
 //   }
 //
 //   void getCart() async {
@@ -148,10 +148,10 @@
 //           Service.save('cart', cart);
 //         });
 //         calculatePrice();
-//         print(cart.isDineIn);
+//         debugPrint(cart.isDineIn);
 //       }
 //     } catch (e) {
-//       print(e);
+//       debugPrint(e);
 //     }
 //     setState(() {
 //       _loading = false;
@@ -409,14 +409,14 @@
 //                     child: CustomButton(
 //                       title: "Checkout",
 //                       press: () async {
-//                         print(cart.isDineIn);
+//                         debugPrint(cart.isDineIn);
 //                         DateFormat dateFormat = new DateFormat.Hm();
 //                         DateTime now =
 //                             DateTime.now().toUtc().add(Duration(hours: 3));
 //                         var appClose = await Service.read('app_close');
 //                         var appOpen = await Service.read('app_open');
-//                         print(appClose);
-//                         print(appOpen);
+//                         debugPrint(appClose);
+//                         debugPrint(appOpen);
 //                         DateTime zmallClose = dateFormat.parse(appClose);
 //                         DateTime zmallOpen = dateFormat.parse(appOpen);
 //
@@ -426,13 +426,13 @@
 //                             zmallOpen.hour, zmallOpen.minute);
 //                         zmallClose = new DateTime(now.year, now.month, now.day,
 //                             zmallClose.hour, zmallClose.minute);
-//                         print(now.isAfter(zmallOpen));
-//                         print(now);
-//                         print(now.isBefore(zmallClose));
+//                         debugPrint(now.isAfter(zmallOpen));
+//                         debugPrint(now);
+//                         debugPrint(now.isBefore(zmallClose));
 //                         if (now.isAfter(zmallOpen) &&
 //                             now.isBefore(zmallClose) &&
 //                             isOpen) {
-//                           print("Ready to route...");
+//                           debugPrint("Ready to route...");
 //                           // Navigator.of(context)
 //                           //     .push(MaterialPageRoute(builder: (context) {
 //                           //   return DeliveryScreen();

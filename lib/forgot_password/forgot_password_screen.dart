@@ -5,16 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
+import 'package:zmall/forgot_password/components/update_password.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/random_digits.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
-import 'components/verification_screen.dart';
 
 class ForgotPassword extends StatefulWidget {
   static const String routeName = '/forgot';
@@ -28,8 +26,9 @@ class ForgotPassword extends StatefulWidget {
 class _ForgotPasswordState extends State<ForgotPassword> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  String? _phone;
-  String? _smsCode;
+  bool success = false;
+  String _phone = '';
+  String code = '';
   String _areaCode = "+251";
   String _country = "Ethiopia";
   String _email = '';
@@ -41,109 +40,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     // Initialize local state from ZMetaData
     _areaCode = Provider.of<ZMetaData>(context, listen: false).areaCode;
     _country = Provider.of<ZMetaData>(context, listen: false).country;
-  }
-
-  Future<bool> _sendOTP(String phone, String email, String otp) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      Service.showMessage(
-        "OTP code sent to your phone or email...",
-        false,
-        duration: 6,
-      ),
-    );
-
-    final response = await _verificationSms(phone, email, otp);
-    return response != null && response.statusCode == 200;
-  }
-
-  Future<http.Response?> _verificationSms(
-    String phone,
-    String email,
-    String otp,
-  ) async {
-    // print("otp $otp");
-    final metaData = Provider.of<ZMetaData>(context, listen: false);
-    final url = "${metaData.baseUrl}/api/admin/send_sms_with_message";
-    final token = const Uuid().v4();
-    final data = _areaCode == "+251"
-        ? {
-            "code": "${token}_zmall",
-            "phone": phone,
-            "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp",
-          }
-        : {
-            "code": "${token}_zmall",
-            "phone": phone,
-            "email": email,
-            "message": "Verification code valid for 10 minutes/ OTP : $otp",
-          };
-
-    try {
-      final response = await http
-          .post(
-            Uri.parse(url),
-            headers: {"Content-Type": "application/json"},
-            body: json.encode(data),
-          )
-          .timeout(
-            const Duration(seconds: 10),
-            onTimeout: () =>
-                throw TimeoutException("The connection has timed out!"),
-          );
-      return response;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  void _handleSendCode() async {
-    setState(() => _isLoading = true);
-
-    final metaData = Provider.of<ZMetaData>(context, listen: false);
-    final fullPhone = "${metaData.areaCode}$_phone";
-
-    // Validate phone number
-    if (_phone == null ||
-        _phone!.length != 9 ||
-        !RegExp(r'^[97]').hasMatch(_phone!)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Please enter a valid phone number", true),
-      );
-      setState(() => _isLoading = false);
-      return;
-    }
-
-    // Validate email for South Sudan (+211)
-    if (_areaCode == "+211" &&
-        (!_email.isNotEmpty || !emailValidatorRegExp.hasMatch(_email))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Please enter a valid email address", true),
-      );
-      setState(() => _isLoading = false);
-      return;
-    }
-
-    setState(() => _smsCode = RandomDigits.getString(6));
-
-    final success = await _sendOTP(fullPhone, _email, _smsCode!);
-    setState(() => _isLoading = false);
-
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VerificationScreen(
-            phone: _phone!,
-            code: _smsCode!,
-            areaCode: _areaCode,
-          ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Incorrect phone number", true),
-      );
-    }
   }
 
   @override
@@ -230,7 +126,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         countryFilter: ['ET', 'SS'],
                         onFlagChanged: (CountryCode code) {
                           setState(() {
-                            // print("code $code");
+                            // debugPrint("code $code");
                             if (code.toString() == "+251") {
                               _areaCode = "+251";
                               _country = "Ethiopia";
@@ -238,7 +134,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               _areaCode = "+211";
                               _country = "South Sudan";
                             }
-                            // print("after _country $_country");
+                            // debugPrint("after _country $_country");
                             Provider.of<ZMetaData>(
                               context,
                               listen: false,
@@ -290,11 +186,39 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               title: "Send Code",
                               color: kSecondaryColor,
                               press: () {
-                                if (_formKey.currentState!.validate()) {
-                                  _handleSendCode();
+                                if (!_formKey.currentState!.validate()) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      Service.showMessage(
+                                          "Please enter a valid phone number",
+                                          false));
+                                } else {
+                                  sendOTP(_phone).then(
+                                    (success) {
+                                      if (success) {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                UpdatePasswordScreen(
+                                              phone: _phone,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  );
                                 }
-                              },
-                            ),
+                                // ScaffoldMessenger.of(context)
+                                //           .showSnackBar(Service.showMessage(
+                                //               "Invalid phone number. Please check and try again.",
+                                //               true));
+                              }
+                              // press: () {
+                              //   if (_formKey.currentState!.validate()) {
+                              //     _handleSendCode();
+                              //   }
+                              // },
+                              ),
                     ],
                   ),
                 ),
@@ -305,6 +229,163 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       ),
     );
   }
+
+  Future<bool> sendOTP(phone) async {
+    var response = await sendPhoneForOtp(phone);
+    // print("response $response");
+    if (response != null &&
+        response["success"] != null &&
+        response["success"]) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          Service.showMessage("OTP code sent to your phone...", false));
+      setState(() {
+        success = true;
+      });
+    }
+    return success;
+  }
+
+  Future<dynamic> sendPhoneForOtp(String phone) async {
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/forgot_password_with_otp";
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // String token = Uuid().v4();
+      Map data = {
+        "phone": phone,
+      };
+      var body = json.encode(data);
+      http.Response response = await http
+          .post(
+        Uri.parse(url),
+        headers: <String, String>{"Content-Type": "application/json"},
+        body: body,
+      )
+          .timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException("The connection has timed out!");
+        },
+      );
+      // print(json.decode(response.body)['message']);
+      return json.decode(response.body);
+    } catch (e) {
+      // print(e);
+      return null;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  ///////////////////////
+
+  // Future<bool> _sendOTP(String phone, String email, String otp) async {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     Service.showMessage(
+  //       "OTP code sent to your phone or email...",
+  //       false,
+  //       duration: 6,
+  //     ),
+  //   );
+
+  //   final response = await _verificationSms(phone, email, otp);
+  //   return response != null && response.statusCode == 200;
+  // }
+
+  // Future<http.Response?> _verificationSms(
+  //   String phone,
+  //   String email,
+  //   String otp,
+  // ) async {
+  //   // debugPrint("otp $otp");
+  //   final metaData = Provider.of<ZMetaData>(context, listen: false);
+  //   final url = "${metaData.baseUrl}/api/admin/send_sms_with_message";
+  //   final token = const Uuid().v4();
+  //   final data = _areaCode == "+251"
+  //       ? {
+  //           "code": "${token}_zmall",
+  //           "phone": phone,
+  //           "message": "ለ 10 ደቂቃ የሚያገለግል ማረጋገጫ ኮድ / OTP : $otp",
+  //         }
+  //       : {
+  //           "code": "${token}_zmall",
+  //           "phone": phone,
+  //           "email": email,
+  //           "message": "Verification code valid for 10 minutes/ OTP : $otp",
+  //         };
+
+  //   try {
+  //     final response = await http
+  //         .post(
+  //           Uri.parse(url),
+  //           headers: {"Content-Type": "application/json"},
+  //           body: json.encode(data),
+  //         )
+  //         .timeout(
+  //           const Duration(seconds: 10),
+  //           onTimeout: () =>
+  //               throw TimeoutException("The connection has timed out!"),
+  //         );
+  //     return response;
+  //   } catch (e) {
+  //     return null;
+  //   }
+  // }
+
+  // void _handleSendCode() async {
+  //   setState(() => _isLoading = true);
+
+  //   final metaData = Provider.of<ZMetaData>(context, listen: false);
+  //   final fullPhone = "${metaData.areaCode}$_phone";
+
+  //   // Validate phone number
+  //   if (_phone == null ||
+  //       _phone!.length != 9 ||
+  //       !RegExp(r'^[97]').hasMatch(_phone!)) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       Service.showMessage("Please enter a valid phone number", true),
+  //     );
+  //     setState(() => _isLoading = false);
+  //     return;
+  //   }
+
+  //   // Validate email for South Sudan (+211)
+  //   if (_areaCode == "+211" &&
+  //       (!_email.isNotEmpty || !emailValidatorRegExp.hasMatch(_email))) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       Service.showMessage("Please enter a valid email address", true),
+  //     );
+  //     setState(() => _isLoading = false);
+  //     return;
+  //   }
+
+  //   setState(() => _smsCode = RandomDigits.getString(6));
+
+  //   final success = await _sendOTP(fullPhone, _email, _smsCode!);
+  //   setState(() => _isLoading = false);
+
+  //   if (success) {
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => VerificationScreen(
+  //           phone: _phone!,
+  //           code: _smsCode!,
+  //           areaCode: _areaCode,
+  //         ),
+  //       ),
+  //     );
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       Service.showMessage("Incorrect phone number", true),
+  //     );
+  //   }
+  // }
+  // ///////////////////////
 }
 // import 'dart:async';
 // import 'dart:convert';
@@ -345,7 +426,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   String email = '';
 
 //   // Future<void> loginUser(String phone, BuildContext context) async {
-//   //   print(phone);
+//   //   debugPrint(phone);
 //   //   setState(() {
 //   //     _loading = true;
 //   //   });
@@ -377,13 +458,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   //             ),
 //   //           );
 //   //         } else {
-//   //           print("Error");
+//   //           debugPrint("Error");
 //   //         }
 //   //
 //   //         //This callback would gets called when verification is done automatically
 //   //       },
 //   //       verificationFailed: (FirebaseAuthException exception) {
-//   //         print(exception.message);
+//   //         debugPrint(exception.message);
 //   //         ScaffoldMessenger.of(context)
 //   //             .showSnackBar(Service.showMessage(exception.message, true));
 //   //         setState(() {
@@ -455,7 +536,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   //                           ),
 //   //                         );
 //   //                       } else {
-//   //                         print("Error while signing user");
+//   //                         debugPrint("Error while signing user");
 //   //                         ScaffoldMessenger.of(context).showSnackBar(
 //   //                             Service.showMessage(
 //   //                                 ("Error while verifying phone number. Please try again"),
@@ -720,10 +801,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //           throw TimeoutException("The connection has timed out!");
 //         },
 //       );
-//       // print(json.decode(response.body)['message']);
+//       // debugPrint(json.decode(response.body)['message']);
 //       return response;
 //     } catch (e) {
-//       // print(e);
+//       // debugPrint(e);
 //       return null;
 //     }
 //   }

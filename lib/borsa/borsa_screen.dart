@@ -509,7 +509,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       responseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -545,7 +545,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -584,7 +584,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       );
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       return null;
     }
   }
@@ -637,7 +637,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

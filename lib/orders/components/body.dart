@@ -12,6 +12,8 @@ import 'package:zmall/orders/components/order_detail.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -70,7 +72,10 @@ class _BodyState extends State<Body> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: _loading,
-      progressIndicator: linearProgressIndicator,
+      // progressIndicator: linearProgressIndicator,
+      progressIndicator: userData != null && responseData != null
+          ? LinearLoadingIndicator()
+          : ProductListShimmer(),
       color: kPrimaryColor,
       child: userData != null && responseData != null
           ? Padding(
@@ -309,7 +314,7 @@ class _BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       if (mounted)
         setState(() {
           this._loading = false;

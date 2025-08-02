@@ -14,8 +14,9 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/custom_progress_indicator.dart';
 import 'package:zmall/widgets/custom_search_bar.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 import '../store_screen.dart';
 import 'custom_list_tile.dart';
 
@@ -68,7 +69,6 @@ class BodyState extends State<Body> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getAppKeys();
     widget.isStore! ? _getStoreListByCompany() : _getCompanyList();
@@ -308,7 +308,7 @@ class BodyState extends State<Body> {
       });
       getUser();
     } else {
-      print("No logged user found");
+      debugPrint("No logged user found");
     }
   }
 
@@ -366,6 +366,8 @@ class BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: RefreshIndicator(
@@ -375,112 +377,129 @@ class BodyState extends State<Body> {
         child: ModalProgressHUD(
           inAsyncCall: _loading,
           color: kPrimaryColor,
-          progressIndicator: CustomLinearProgressIndicator(
-            message: "Gathering Stores...",
-          ),
+          // progressIndicator: CustomLinearProgressIndicator(
+          //   message: "Gathering Stores...",
+          // ),
+          progressIndicator: stores != null
+              ? LinearLoadingIndicator()
+              : SingleChildScrollView(
+                  child: Column(
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      SearchButtonShimmer(width: screenWidth * 0.9),
+                      Container(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 5),
+                        child: ItemTagShimmer(),
+                      ),
+                      SizedBox(
+                          width: getProportionateScreenHeight(kDefaultPadding)),
+                      Container(
+                          height: screenHeight * 0.7,
+                          child: ProductListShimmer()),
+                    ],
+                  ),
+                ),
           child: stores != null
               ? Column(
                   children: [
                     !widget.isStore!
-                        ?
-                        // Padding(
-                        //     padding: EdgeInsets.symmetric(
-                        //       horizontal: getProportionateScreenWidth(
-                        //           kDefaultPadding / 4),
-                        //     ),
-                        //     child: CustomSearchBar(
-                        //       controller: controller,
-                        //       onChanged: onSearchTextChanged,
-                        //       trailing: [
-                        //         if (controller.text.isNotEmpty)
-                        //           IconButton(
-                        //             icon: Icon(Icons.cancel),
-                        //             onPressed: () {
-                        //               controller.clear();
-                        //               onSearchTextChanged('');
-                        //               setState(
-                        //                 () {
-                        //                   storeOpen(stores);
-                        //                 },
-                        //               );
-                        //             },
-                        //           ),
-                        //       ],
-                        //     ),
-                        //   )
-                        Container(
-                            color: kPrimaryColor,
-                            child: Container(
-                              // color: kPrimaryColor,
-                              margin: EdgeInsets.all(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 4),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding),
-                              ),
-                              decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  border:
-                                      Border.all(color: kWhiteColor, width: 2),
-                                  borderRadius: BorderRadius.circular(
-                                      kDefaultPadding * 2)),
-                              // child: Card(
-                              //   elevation: 0.3,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Icon(Icons.search),
-                                  SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding)),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: controller,
-                                      decoration: InputDecoration(
-                                        hintText:
-                                            Provider.of<ZLanguage>(context)
-                                                .search,
-                                        border: InputBorder.none,
-                                        // prefixIcon: Icon(Icons.search),
-                                        // suffixIcon: controller.text.isNotEmpty
-                                        //     ? IconButton(
-                                        //         icon: Icon(Icons.cancel),
-                                        //         onPressed: () {
-                                        //           controller.clear();
-                                        //           onSearchTextChanged('');
-                                        //           setState(
-                                        //             () {
-                                        //               storeOpen(stores);
-                                        //             },
-                                        //           );
-                                        //         },
-                                        //       )
-                                        //     : null,
-                                      ),
-                                      onChanged: onSearchTextChanged,
-                                    ),
-                                  ),
-                                  if (controller.text.isNotEmpty)
-                                    IconButton(
-                                      icon: Icon(Icons.cancel),
-                                      onPressed: () {
-                                        controller.clear();
-                                        onSearchTextChanged('');
-                                        setState(
-                                          () {
-                                            storeOpen(stores);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                          )
+                        ? CustomSearchBar(
+                            controller: controller,
+                            hintText: Provider.of<ZLanguage>(context).search,
+                            onChanged: onSearchTextChanged,
+                            onSubmitted: (value) {
+                              onSearchTextChanged(value);
+                            },
+                            onClearButtonTap: () {
+                              controller.clear();
+                              onSearchTextChanged('');
+                              setState(() {
+                                storeOpen(stores);
+                              });
+                            })
                         : Container(),
+                    // Container(
+                    //     color: kPrimaryColor,
+                    //     child: Container(
+                    //       // color: kPrimaryColor,
+                    //       margin: EdgeInsets.all(
+                    //         getProportionateScreenWidth(
+                    //             kDefaultPadding / 4),
+                    //       ),
+                    //       padding: EdgeInsets.symmetric(
+                    //         horizontal: getProportionateScreenWidth(
+                    //             kDefaultPadding),
+                    //       ),
+                    //       decoration: BoxDecoration(
+                    //           color: kPrimaryColor,
+                    //           border:
+                    //               Border.all(color: kWhiteColor, width: 2),
+                    //           borderRadius: BorderRadius.circular(
+                    //               kDefaultPadding * 2)),
+                    //       // child: Card(
+                    //       //   elevation: 0.3,
+                    //       child: Row(
+                    //         mainAxisAlignment:
+                    //             MainAxisAlignment.spaceAround,
+                    //         children: [
+                    //           Icon(
+                    //             Icons.search,
+                    //             color: controller.text.isNotEmpty
+                    //                 ? kSecondaryColor.withValues(alpha: 0.6)
+                    //                 : kGreyColor,
+                    //           ),
+                    //           SizedBox(
+                    //               width: getProportionateScreenWidth(
+                    //                   kDefaultPadding)),
+                    //           Expanded(
+                    //             child: TextField(
+                    //               controller: controller,
+                    //               decoration: InputDecoration(
+                    //                 hintText:
+                    //                     Provider.of<ZLanguage>(context)
+                    //                         .search,
+                    //                 border: InputBorder.none,
+                    //                 // prefixIcon: Icon(Icons.search),
+                    //                 // suffixIcon: controller.text.isNotEmpty
+                    //                 //     ? IconButton(
+                    //                 //         icon: Icon(Icons.cancel),
+                    //                 //         onPressed: () {
+                    //                 //           controller.clear();
+                    //                 //           onSearchTextChanged('');
+                    //                 //           setState(
+                    //                 //             () {
+                    //                 //               storeOpen(stores);
+                    //                 //             },
+                    //                 //           );
+                    //                 //         },
+                    //                 //       )
+                    //                 //     : null,
+                    //               ),
+                    //               onChanged: onSearchTextChanged,
+                    //             ),
+                    //           ),
+                    //           if (controller.text.isNotEmpty)
+                    //             IconButton(
+                    //               icon: Icon(
+                    //                 Icons.cancel,
+                    //                 color: kSecondaryColor,
+                    //               ),
+                    //               onPressed: () {
+                    //                 controller.clear();
+                    //                 onSearchTextChanged('');
+                    //                 setState(
+                    //                   () {
+                    //                     storeOpen(stores);
+                    //                   },
+                    //                 );
+                    //               },
+                    //             ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   )
+                    // : Container(),
                     tagFilters.length != 0
                         ? Container(
                             color: kPrimaryColor,
@@ -502,10 +521,11 @@ class BodyState extends State<Body> {
                                   scrollDirection: Axis.horizontal,
                                   itemCount: tagFilters.length,
                                   itemBuilder: (context, index) {
-                                    return GestureDetector(
+                                    bool isSelected = selectedTagFilters
+                                        .contains(tagFilters[index]);
+                                    return InkWell(
                                       onTap: () {
-                                        if (selectedTagFilters
-                                            .contains(tagFilters[index])) {
+                                        if (isSelected) {
                                           selectedTagFilters
                                               .remove(tagFilters[index]);
                                         } else {
@@ -517,22 +537,20 @@ class BodyState extends State<Body> {
                                       child: Container(
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          color: selectedTagFilters
-                                                  .contains(tagFilters[index])
-                                              ? kSecondaryColor
+                                          color: isSelected
+                                              ? kSecondaryColor.withValues(
+                                                  alpha: 0.3)
                                               : kPrimaryColor,
                                           borderRadius: BorderRadius.circular(
                                             getProportionateScreenWidth(
                                                 kDefaultPadding / 2),
                                           ),
                                           border: Border.all(
-                                            width: 1.0,
-                                            color: selectedTagFilters
-                                                    .contains(tagFilters[index])
+                                            width: isSelected ? 1.0 : 2.0,
+                                            color: isSelected
                                                 ? kSecondaryColor.withValues(
                                                     alpha: 0.6)
-                                                : kBlackColor.withValues(
-                                                    alpha: 0.4),
+                                                : kWhiteColor,
                                           ),
                                         ),
                                         padding: EdgeInsets.symmetric(
@@ -549,18 +567,11 @@ class BodyState extends State<Body> {
                                                   .textTheme
                                                   .bodySmall
                                                   ?.copyWith(
-                                                    fontWeight:
-                                                        (selectedTagFilters
-                                                                .contains(
-                                                                    tagFilters[
-                                                                        index]))
-                                                            ? FontWeight.bold
-                                                            : FontWeight.normal,
-                                                    color: (selectedTagFilters
-                                                            .contains(
-                                                                tagFilters[
-                                                                    index]))
-                                                        ? kPrimaryColor
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal,
+                                                    color: isSelected
+                                                        ? kSecondaryColor
                                                         : kBlackColor,
                                                   ),
                                             ),
@@ -619,8 +630,8 @@ class BodyState extends State<Body> {
   Widget _buildStoreList() {
     final allClosed = isOpen.isNotEmpty && !isOpen.any((open) => open);
     return ListView.builder(
-      padding: const EdgeInsets.all(kDefaultPadding / 2),
       itemCount: stores.length,
+      padding: const EdgeInsets.all(kDefaultPadding / 2),
       itemBuilder: (context, index) {
         if (widget.filterOpenedStore == true && !allClosed) {
           return isOpen[index]
@@ -645,8 +656,12 @@ class BodyState extends State<Body> {
 
   Widget _buildSearchList() {
     return ListView.separated(
-      padding: const EdgeInsets.all(kDefaultPadding / 2),
       itemCount: _searchResult.length,
+      padding: const EdgeInsets.all(kDefaultPadding / 2),
+      separatorBuilder: (context, index) => Container(
+        height: kDefaultPadding / 4,
+        color: kWhiteColor,
+      ),
       itemBuilder: (context, index) {
         return Container(
           child: CustomListTile(
@@ -714,8 +729,6 @@ class BodyState extends State<Body> {
           ),
         );
       },
-      separatorBuilder: (context, index) =>
-          SizedBox(height: kDefaultPadding / 4),
     );
   }
 
@@ -723,7 +736,7 @@ class BodyState extends State<Body> {
     return Container(
       child: CustomListTile(
         press: () {
-          print("Navigate to store....");
+          debugPrint("Navigate to store....");
           try {
             if (stores[index]['store_count'] > 1) {
               Navigator.push(
@@ -860,7 +873,7 @@ class BodyState extends State<Body> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -881,6 +894,7 @@ class BodyState extends State<Body> {
       "longitude": longitude,
     };
     var body = json.encode(data);
+    // print("body $body");
     try {
       http.Response response = await http
           .post(
@@ -916,7 +930,7 @@ class BodyState extends State<Body> {
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });
@@ -946,9 +960,9 @@ class BodyState extends State<Body> {
         },
         body: body,
       );
-      print("Store clicked");
+      debugPrint("Store clicked");
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
     }
   }
 }

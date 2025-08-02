@@ -7,7 +7,7 @@ import 'package:encrypt/encrypt.dart' as Encrypt;
 
 //
 //const BASE_URL = "https://tele.zmallapp.com";
-const BASE_URL = "https://app.zmallapp.com";
+const BASE_URL = "https://app.zmallapp.com"; //Eth production
 const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // const BASE_URL_JUBA = "http://196.189.124.241:8000"; //Juba Production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
@@ -107,6 +107,9 @@ final RegExp emailValidatorRegExp =
     RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 final RegExp passwordRegex = RegExp(
     r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+const String kPasswordErrorMessage =
+    "Password must be at least 8 characters long, one uppercase letter, one lowercase letter, one number, and one special character (@, #, !, %, , ?, &).";
 const String kEmailNullError = "Please Enter your email";
 const String kInvalidEmailError = "Please Enter Valid Email";
 const String kPassNullError = "Please Enter your password";

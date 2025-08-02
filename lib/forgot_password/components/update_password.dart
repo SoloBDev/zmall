@@ -24,7 +24,8 @@ class UpdatePasswordScreen extends StatefulWidget {
 
 class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  late String phone;
+  String phone = '';
+  String code = '';
   String newPassword = '';
   String confirmPassword = '';
   bool _loading = false;
@@ -38,32 +39,41 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     super.initState();
   }
 
-  Future<Timer> loading() async {
-    return Timer(Duration(seconds: 5), onDoneLoading);
-  }
+  // Future<Timer> loading() async {
+  //   return Timer(Duration(seconds: 5), onDoneLoading);
+  // }
 
-  onDoneLoading() async {
-    _loading = !_loading;
-  }
+  // onDoneLoading() async {
+  //   _loading = !_loading;
+  // }
 
-  void updatePassword(phone, nPassword) async {
+  void updatePassword(code, phone, nPassword) async {
     setState(() {
-      _loading = !_loading;
+      _loading = true;
     });
-    var data = await updatePass(phone, nPassword);
-    if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Password updated", false),
-      );
+    try {
+      var data = await updatePass(code, phone, nPassword);
+      // print("data $data");
+      // if (data != null && data['success']) {
+      if (data != null && data["success"] != null && data["success"]) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          Service.showMessage("Password updated successfully", false),
+        );
 
-      Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-    } else {
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          Service.showMessage(
+              "Failed to update password, please try again later", true),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      // print("error $e");
+    } finally {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Failed, please try again later", true),
-      );
     }
   }
 
@@ -111,86 +121,31 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                 child: Form(
                   key: _formKey,
                   child: Column(
+                    spacing: kDefaultPadding * 1.5,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Reset Password",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        "Update your password by entering a new one.",
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding * 2)),
-                      CustomTextField(
-                        keyboardType: TextInputType.text,
-                        cursorColor: kSecondaryColor,
-                        obscureText: !_showPassword,
-                        style: TextStyle(color: kBlackColor),
-                        onChanged: (value) {
-                          newPassword = value;
-                        },
-                        // decoration: InputDecoration(
-                        hintText: 'Enter your password',
-                        labelText: 'New password',
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _showPassword = !_showPassword;
-                            });
-                          },
-                          icon: Icon(_showPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a password';
-                          }
-                          if (!passwordRegex.hasMatch(value)) {
-                            return "Password must be at least 8 characters, with uppercase, lowercase, number, and special character (@\$!%*?&)";
-                          }
-                          return null; // Return null if validation passes
-                        },
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Reset Password",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const Text(
+                            "Update your password by entering a new one.",
+                          ),
+                        ],
                       ),
                       SizedBox(
                           height: getProportionateScreenHeight(
-                              kDefaultPadding * 1.2)),
-                      CustomTextField(
-                        keyboardType: TextInputType.text,
-                        cursorColor: kSecondaryColor,
-                        obscureText: !_showConfirmPassword,
-                        style: TextStyle(color: kBlackColor),
-                        onChanged: (value) {
-                          confirmPassword = value;
-                        },
-                        labelText: 'Confirm password',
-                        hintText: 'Confirm your password',
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _showConfirmPassword = !_showConfirmPassword;
-                            });
-                          },
-                          icon: Icon(_showConfirmPassword
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
-                          }
-                          if (value != newPassword) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
-                      ),
+                              kDefaultPadding / 4)),
+                      buildOtpFormField(),
+                      buildPasswordFormField(),
+                      buildConformPassFormField(),
                       SizedBox(
                           height: getProportionateScreenHeight(
-                              kDefaultPadding * 2)),
+                              kDefaultPadding / 8)),
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.0),
                         child: _loading
@@ -203,9 +158,9 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                                 title: "Update Password",
                                 color: kSecondaryColor,
                                 press: () {
-                                  print("Updating password");
+                                  debugPrint("Updating password");
                                   if (_formKey.currentState!.validate()) {
-                                    updatePassword(phone, newPassword);
+                                    updatePassword(code, phone, newPassword);
                                   }
                                 }),
                       ),
@@ -220,18 +175,103 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     );
   }
 
-  Future<dynamic> updatePass(String phone, String nPassword) async {
+  buildOtpFormField() {
+    return CustomTextField(
+      // obscureText: !_showPassword,
+      onSaved: (newValue) => code = newValue!,
+      textInputAction: TextInputAction.next,
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        code = value;
+      },
+      validator: (value) {
+        if (value!.isEmpty) {
+          return "An OTP is required";
+        }
+        if (value.length < 4) {
+          return "An OTP must be at least 4 digits long";
+        }
+        return null;
+      },
+      labelText: "OTP",
+      hintText: "     Enter your OTP",
+    );
+  }
+
+  buildPasswordFormField() {
+    return CustomTextField(
+      obscureText: !_showPassword,
+      onSaved: (newValue) => newPassword = newValue!,
+      textInputAction: TextInputAction.next,
+      keyboardType: TextInputType.visiblePassword,
+      onChanged: (value) {
+        newPassword = value;
+      },
+      validator: (value) {
+        if (!passwordRegex.hasMatch(value!)) {
+          return kPasswordErrorMessage;
+        }
+        return null;
+      },
+      labelText: "New Password",
+      hintText: "     Enter your password",
+      suffixIcon: IconButton(
+        onPressed: () {
+          setState(() {
+            _showPassword = !_showPassword;
+          });
+        },
+        icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+      ),
+    );
+  }
+
+  buildConformPassFormField() {
+    return CustomTextField(
+      obscureText: !_showConfirmPassword,
+      textInputAction: TextInputAction.next,
+      keyboardType: TextInputType.visiblePassword,
+      onSaved: (newValue) => confirmPassword = newValue!,
+      onChanged: (value) {
+        confirmPassword = value;
+      },
+      validator: (value) {
+        if (newPassword != value) {
+          return kMatchPassError;
+        }
+        return null;
+      },
+      labelText: "Confirm Password",
+      hintText: "     Re-enter your password",
+      suffixIcon: IconButton(
+        onPressed: () {
+          setState(() {
+            _showConfirmPassword = !_showConfirmPassword;
+          });
+        },
+        icon: Icon(
+            _showConfirmPassword ? Icons.visibility_off : Icons.visibility),
+      ),
+    );
+  }
+
+  Future<dynamic> updatePass(
+      String code, String phone, String nPassword) async {
     var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/forgot_password";
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/reset_password";
+    // String token = Uuid().v4();
+
+    setState(() {
+      _loading = true;
+    });
+
     Map data = {
-      "phone": phone
-      // .split(
-      // "${Provider.of<ZMetaData>(context, listen: false).areaCode}")[1]
-      ,
-      "password": nPassword
+      "code": code,
+      "phone": phone,
+      "newPassword": nPassword,
     };
     var body = json.encode(data);
-
+    // print("body $body");
     try {
       http.Response response = await http
           .post(
@@ -251,16 +291,11 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      setState(() {
-        this._loading = false;
-      });
-
+      // print(json.decode(response.body)['message']);
       return json.decode(response.body);
     } catch (e) {
       // print(e);
-      setState(() {
-        this._loading = false;
-      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -269,6 +304,62 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         ),
       );
       return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
+////old
+  // Future<dynamic> updatePass(String phone, String nPassword) async {
+  //   var url =
+  //       "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/forgot_password";
+  //   Map data = {
+  //     "phone": phone
+  //     // .split(
+  //     // "${Provider.of<ZMetaData>(context, listen: false).areaCode}")[1]
+  //     ,
+  //     "password": nPassword
+  //   };
+  //   var body = json.encode(data);
+
+  //   try {
+  //     http.Response response = await http
+  //         .post(
+  //       Uri.parse(url),
+  //       headers: <String, String>{
+  //         "Content-Type": "application/json",
+  //         "Accept": "application/json"
+  //       },
+  //       body: body,
+  //     )
+  //         .timeout(
+  //       Duration(seconds: 10),
+  //       onTimeout: () {
+  //         setState(() {
+  //           this._loading = false;
+  //         });
+  //         throw TimeoutException("The connection has timed out!");
+  //       },
+  //     );
+  //     setState(() {
+  //       this._loading = false;
+  //     });
+
+  //     return json.decode(response.body);
+  //   } catch (e) {
+  //     // debugPrint(e);
+  //     setState(() {
+  //       this._loading = false;
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(
+  //             "Something went wrong! Please check your internet connection!"),
+  //         backgroundColor: kSecondaryColor,
+  //       ),
+  //     );
+  //     return null;
+  //   }
+  // }
 }

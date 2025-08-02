@@ -130,7 +130,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
           isLoading = false;
         });
       }
-      // print('Error fetching products');
+      // debugPrint('Error fetching products');
     }
   }
 
@@ -142,14 +142,14 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
       });
       getUser();
     } else {
-      print("No logged user found");
+      debugPrint("No logged user found");
     }
   }
 
   void getUser() async {
     // var data = await Service.read('user');
     var data = await Service.read('abroad_user');
-    // print("User?>>>> $data");
+    // debugPrint("User?>>>> $data");
     if (data != null) {
       setState(() {
         abroadData = AbroadData.fromJson(data);
@@ -193,7 +193,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
   }
 
   void _doLocationTask() async {
-    print("checking user location");
+    debugPrint("checking user location");
     LocationPermission _permissionStatus =
         await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
@@ -218,7 +218,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
 
   //////////////////////////////////
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('abroad_cart');
     var aliCart = await Service.read('abroad_aliexpressCart');
     if (data != null) {
@@ -408,16 +408,16 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
             }
 
             // // Debugging to check what data is being captured
-            // print('Property Name: ${property.skuPropertyName}');
-            // print('Property Value: ${property.skuPropertyValue}');
-            // print('Property SkuAttr: ${item.skuAttr}');
-            // print('Definition Name: ${property.propertyValueDefinitionName}');
-            // print('image Url : ${property.skuImage}');
-            // print('offerSalePrice : ${item.offerSalePrice}');
-            // print('offerBulkSalePrice : ${item.offerBulkSalePrice}');
-            // print('priceIncludeTax : ${item.priceIncludeTax}');
-            // print('skuPrice : ${item.skuPrice}');
-            // print('---------------------------');
+            // debugPrint('Property Name: ${property.skuPropertyName}');
+            // debugPrint('Property Value: ${property.skuPropertyValue}');
+            // debugPrint('Property SkuAttr: ${item.skuAttr}');
+            // debugPrint('Definition Name: ${property.propertyValueDefinitionName}');
+            // debugPrint('image Url : ${property.skuImage}');
+            // debugPrint('offerSalePrice : ${item.offerSalePrice}');
+            // debugPrint('offerBulkSalePrice : ${item.offerBulkSalePrice}');
+            // debugPrint('priceIncludeTax : ${item.priceIncludeTax}');
+            // debugPrint('skuPrice : ${item.skuPrice}');
+            // debugPrint('---------------------------');
           }
 
           // Build the product card using the data for the current product
@@ -548,7 +548,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
         }
 
         if (abroadData == null) {
-          print("User not logged in...");
+          debugPrint("User not logged in...");
           ScaffoldMessenger.of(context)
               .showSnackBar(Service.showMessage("Please login in...", true));
           Navigator.push(
@@ -592,10 +592,10 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
               productIds: [],
             );
           }
-          // print("ALI CART>>> ${aliexpressCart!.toJson()}");
-          // print("ALI CART ITEM>>> ${aliexpressCart!.toJson()['cart']['items']}");
-          // print("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
-          // print("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
+          // debugPrint("ALI CART>>> ${aliexpressCart!.toJson()}");
+          // debugPrint("ALI CART ITEM>>> ${aliexpressCart!.toJson()['cart']['items']}");
+          // debugPrint("ALI ItemIds ${aliexpressCart!.toJson()['item_ids']}");
+          // debugPrint("ALI ProductIds: ${aliexpressCart!.toJson()['product_ids']}");
           // Ensure itemIds and productIds are not null
           itemIds = aliexpressCart!.itemIds ?? [];
           productIds = aliexpressCart!.productIds ?? [];
@@ -608,7 +608,7 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
 
             // Handle empty cart case
             if (cart == null) {
-              print("Empty cart! Adding new item.");
+              debugPrint("Empty cart! Adding new item.");
               addToCart(item, destination, storeLocation, storeId, itemIds,
                   productIds);
               getCart();

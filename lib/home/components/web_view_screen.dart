@@ -57,7 +57,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     if (!initUrl.startsWith('http://') && !initUrl.startsWith('https://')) {
       initUrl = 'https://$initUrl';
     }
-    // debugPrint('Initial URL: $initUrl');
+    // debugdebugPrint('Initial URL: $initUrl');
   }
 
   Future<bool> _handleBackNavigation() async {
@@ -112,10 +112,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
               initialUrlRequest: URLRequest(url: WebUri(initUrl)),
               onWebViewCreated: (controller) {
                 _controller = controller;
-                // debugPrint('WebView created');
+                // debugdebugPrint('WebView created');
               },
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                // debugPrint('Navigating to: ${navigationAction.request.url}');
+                // debugdebugPrint('Navigating to: ${navigationAction.request.url}');
                 final url = navigationAction.request.url?.toString();
                 if (url != null) {
                   // Allow the WebView to load the requested URL
@@ -126,7 +126,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 // return NavigationActionPolicy.ALLOW;
               },
               onLoadStart: (controller, url) {
-                // debugPrint('Load started: $url');
+                // debugdebugPrint('Load started: $url');
                 setState(() {
                   _loading = true;
                   isError = false;
@@ -135,7 +135,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 });
               },
               // onLoadStop: (controller, url) {
-              //   debugPrint('Load stopped: $url');
+              //   debugdebugPrint('Load stopped: $url');
               //   setState(() {
               //     _loading = false;
               //     isError = false; // Clear error state on successful load
@@ -143,7 +143,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
               //   });
               // },
               onLoadStop: (controller, url) {
-                // debugPrint('Load stopped: $url');
+                // debugdebugPrint('Load stopped: $url');
                 setState(() {
                   _loading = false;
                   // Only clear error state if no error occurred
@@ -159,7 +159,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 });
               },
               onReceivedError: (controller, request, error) {
-                // debugPrint( 'Load error: ${error.description}, URL: ${request.url}');
+                // debugdebugPrint( 'Load error: ${error.description}, URL: ${request.url}');
                 if (request.url.toString() == initUrl) {
                   setState(() {
                     _loading = false;
@@ -173,7 +173,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 }
               },
               onReceivedHttpError: (controller, request, errorResponse) {
-                // debugPrint( 'HTTP error: ${errorResponse.statusCode}, ${errorResponse.reasonPhrase}, URL: ${request.url}');
+                // debugdebugPrint( 'HTTP error: ${errorResponse.statusCode}, ${errorResponse.reasonPhrase}, URL: ${request.url}');
                 if (request.url.toString() == initUrl) {
                   setState(() {
                     _loading = false;
@@ -185,10 +185,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
                 }
               },
               onConsoleMessage: (controller, consoleMessage) {
-                // debugPrint( 'Console: ${consoleMessage.message} [Level: ${consoleMessage.messageLevel}]');
+                // debugdebugPrint( 'Console: ${consoleMessage.message} [Level: ${consoleMessage.messageLevel}]');
                 if (consoleMessage.message
                     .contains('Minified React error #418')) {
-                  // debugPrint('Detected React error #418');
+                  // debugdebugPrint('Detected React error #418');
                 }
               },
             ),
@@ -221,7 +221,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                           errorMessage = null;
                           _hasLoadError = false;
                         });
-                        // debugPrint('Retrying URL: $initUrl');
+                        // debugdebugPrint('Retrying URL: $initUrl');
                         _controller?.loadUrl(
                           urlRequest: URLRequest(url: WebUri(initUrl)),
                         );

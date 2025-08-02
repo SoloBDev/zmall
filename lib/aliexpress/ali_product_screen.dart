@@ -100,7 +100,7 @@ class _AliProductListScreenState extends State<AliProductListScreen> {
   }
 
   void getCart() async {
-    print("Fetching data");
+    debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {
@@ -545,7 +545,7 @@ class _AliProductListScreenState extends State<AliProductListScreen> {
         },
       );
 
-      // print("response:${json.decode(response.body)}");
+      // debugPrint("response:${json.decode(response.body)}");
       setState(() {
         this.isLoading = false;
         aliexpressResp = json.decode(response.body);

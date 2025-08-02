@@ -154,168 +154,186 @@ class _LocationScreenState extends State<LocationScreen> {
           style: TextStyle(color: kBlackColor),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              keyboardType: TextInputType.text,
-              style: TextStyle(color: kBlackColor),
-              onChanged: (value) {
-                setState(() {
-                  selected = false;
-                });
-                placeAutocomplete(value);
-              },
-              // readOnly: true,
-              // onTap: () async {
-              //   // generate a new token here
-              //   final sessionToken = Uuid().v4();
-              //   final Suggestion? result = await showSearch(
-              //     context: context,
-              //     delegate: AddressSearch(sessionToken),
-              //   );
-              //   if (result != null) {
-              //     final placeDetails = await PlaceApiProvider(sessionToken)
-              //         .getPlaceDetailFromId(result.placeId);
-              //     setState(() {
-              //       _controller.text = result.description;
-              //       longitude = placeDetails.longitude;
-              //       latitude = placeDetails.latitude;
-              //       loc(LatLng(latitude, longitude));
-              //       cameraMoving = false;
-              //     });
-              //     _mapController.moveCamera(
-              //         CameraUpdate.newCameraPosition(cameraPosition));
-              //   }
-              // },
-              decoration: textFieldInputDecorator.copyWith(
-                hintText: "Enter your delivery address",
-                labelText: "Search or drag and pin on map",
-                contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
-              ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            TextField(
-              keyboardType: TextInputType.text,
-              style: TextStyle(color: kBlackColor),
-              onChanged: (value) {
-                locationNote = value;
-              },
-              decoration: textFieldInputDecorator.copyWith(
-                hintText: "e.g Home,Office",
-                labelText: "Note",
-                contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
-              ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            if(!selected)
-              Expanded(
-              child: ListView.builder(
-                  itemCount: placePrediction.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      onTap: ()async {
-                        setState(() {
-                          selected = true;
-                        });
-                        String sessionToken = Uuid().v4();
-                        final placeDetails = await PlaceApiProvider(sessionToken)
-                            .getPlaceDetailFromId(placePrediction[index].placeId!);
-                        setState(() {
-                          _controller.text = placePrediction[index].description!;
-                          longitude = placeDetails.longitude;
-                          latitude = placeDetails.latitude;
-                          loc(LatLng(latitude!, longitude!));
-                          cameraMoving = false;
-                        });
-                        _mapController!.moveCamera(
-                            CameraUpdate.newCameraPosition(cameraPosition!));
-                      },
-                      leading: Icon(Icons.place_outlined, color: kBlackColor, size: getProportionateScreenWidth(kDefaultPadding),),
-                      title: Text(placePrediction[index].description!, style: Theme.of(context).textTheme.titleSmall,),
-                    );
-                  }),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-            if(selected)
-              Expanded(
-              flex: 2,
-              child: GoogleMap(
-                rotateGesturesEnabled: false,
-                compassEnabled: false,
-                myLocationButtonEnabled: false,
-                initialCameraPosition: cameraPosition!,
-                markers: Set<Marker>.of(markers.values),
-                onMapCreated: (GoogleMapController controller) {
-                  _mapController = controller;
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            children: [
+              TextField(
+                controller: _controller,
+                keyboardType: TextInputType.text,
+                style: TextStyle(color: kBlackColor),
+                onChanged: (value) {
+                  setState(() {
+                    selected = false;
+                  });
+                  placeAutocomplete(value);
                 },
-                onCameraMove: ((_position) {
-                  loc(LatLng(
-                      _position.target.latitude, _position.target.longitude));
-                  setState(() {});
-                }),
+                // readOnly: true,
+                // onTap: () async {
+                //   // generate a new token here
+                //   final sessionToken = Uuid().v4();
+                //   final Suggestion? result = await showSearch(
+                //     context: context,
+                //     delegate: AddressSearch(sessionToken),
+                //   );
+                //   if (result != null) {
+                //     final placeDetails = await PlaceApiProvider(sessionToken)
+                //         .getPlaceDetailFromId(result.placeId);
+                //     setState(() {
+                //       _controller.text = result.description;
+                //       longitude = placeDetails.longitude;
+                //       latitude = placeDetails.latitude;
+                //       loc(LatLng(latitude, longitude));
+                //       cameraMoving = false;
+                //     });
+                //     _mapController.moveCamera(
+                //         CameraUpdate.newCameraPosition(cameraPosition));
+                //   }
+                // },
+                decoration: textFieldInputDecorator.copyWith(
+                  hintText: "Enter your delivery address",
+                  labelText: "Search or drag and pin on map",
+                  contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
+                ),
               ),
-            ),
-            SizedBox(
-              height: getProportionateScreenHeight(kDefaultPadding),
-            ),
-            _loading
-                ? SpinKitWave(
-                    size: getProportionateScreenWidth(kDefaultPadding),
-                    color: kSecondaryColor,
-                  )
-                : CustomButton(
-                    title: _controller.text.isEmpty || cameraMoving
-                        ? "Pin On Map"
-                        : "Add Location",
-                    press: () async {
-                      if (_controller.text.isNotEmpty) {
-                        DestinationAddress _destinationAddress =
-                            DestinationAddress(
-                          name: _controller.text,
-                          long: cameraPosition!.target.longitude,
-                          lat: cameraPosition!.target.latitude,
-                          note: locationNote,
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              TextField(
+                keyboardType: TextInputType.text,
+                style: TextStyle(color: kBlackColor),
+                onChanged: (value) {
+                  locationNote = value;
+                },
+                decoration: textFieldInputDecorator.copyWith(
+                  hintText: "e.g Home,Office",
+                  labelText: "Note",
+                  contentPadding: EdgeInsets.only(left: 8.0, top: 16.0),
+                ),
+              ),
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              if (!selected)
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: placePrediction.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          onTap: () async {
+                            setState(() {
+                              selected = true;
+                            });
+                            String sessionToken = Uuid().v4();
+                            final placeDetails =
+                                await PlaceApiProvider(sessionToken)
+                                    .getPlaceDetailFromId(
+                                        placePrediction[index].placeId!);
+                            setState(() {
+                              _controller.text =
+                                  placePrediction[index].description!;
+                              longitude = placeDetails.longitude;
+                              latitude = placeDetails.latitude;
+                              loc(LatLng(latitude!, longitude!));
+                              cameraMoving = false;
+                            });
+                            _mapController!.moveCamera(
+                                CameraUpdate.newCameraPosition(
+                                    cameraPosition!));
+                          },
+                          leading: Icon(
+                            Icons.place_outlined,
+                            color: kBlackColor,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                          title: Text(
+                            placePrediction[index].description!,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
                         );
-                        if (deliveryLocation != null) {
-                          deliveryLocation!.list!.add(_destinationAddress);
-                          Service.save('delivery', deliveryLocation!.toJson());
-                        } else {
-                          deliveryLocation = DeliveryLocation(
-                            list: [_destinationAddress],
-                          );
-
-                          Service.save('delivery', deliveryLocation!.toJson());
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage("Location added!", false));
-                        }
-                        Navigator.of(context).pop();
-                      } else {
-                        setState(() {
-                          _loading = true;
-                        });
-//
-                        if (cameraPosition!.target.longitude != null &&
-                            cameraPosition!.target.latitude != null) {
-                          final sessionToken = Uuid().v4();
-                          final location = await PlaceApiProvider(sessionToken)
-                              .getPlaceDetailFromLatLng(
-                                  cameraPosition!.target.latitude,
-                                  cameraPosition!.target.longitude);
-                          setState(() {
-                            _controller.text = location;
-                            _loading = false;
-                            longitude = cameraPosition!.target.longitude;
-                            latitude = cameraPosition!.target.latitude;
-                            loc(LatLng(latitude!, longitude!));
-                          });
-                        }
-                      }
+                      }),
+                ),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              if (selected)
+                Expanded(
+                  flex: 2,
+                  child: GoogleMap(
+                    rotateGesturesEnabled: false,
+                    compassEnabled: false,
+                    myLocationButtonEnabled: false,
+                    initialCameraPosition: cameraPosition!,
+                    markers: Set<Marker>.of(markers.values),
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller;
                     },
-                    color: kSecondaryColor)
-          ],
+                    onCameraMove: ((_position) {
+                      loc(LatLng(_position.target.latitude,
+                          _position.target.longitude));
+                      setState(() {});
+                    }),
+                  ),
+                ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding),
+              ),
+              _loading
+                  ? SpinKitWave(
+                      size: getProportionateScreenWidth(kDefaultPadding),
+                      color: kSecondaryColor,
+                    )
+                  : CustomButton(
+                      title: _controller.text.isEmpty || cameraMoving
+                          ? "Pin On Map"
+                          : "Add Location",
+                      press: () async {
+                        if (_controller.text.isNotEmpty) {
+                          DestinationAddress _destinationAddress =
+                              DestinationAddress(
+                            name: _controller.text,
+                            long: cameraPosition!.target.longitude,
+                            lat: cameraPosition!.target.latitude,
+                            note: locationNote,
+                          );
+                          if (deliveryLocation != null) {
+                            deliveryLocation!.list!.add(_destinationAddress);
+                            Service.save(
+                                'delivery', deliveryLocation!.toJson());
+                          } else {
+                            deliveryLocation = DeliveryLocation(
+                              list: [_destinationAddress],
+                            );
+
+                            Service.save(
+                                'delivery', deliveryLocation!.toJson());
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage("Location added!", false));
+                          }
+                          Navigator.of(context).pop();
+                        } else {
+                          setState(() {
+                            _loading = true;
+                          });
+                          //
+                          if (cameraPosition!.target.longitude != null &&
+                              cameraPosition!.target.latitude != null) {
+                            final sessionToken = Uuid().v4();
+                            final location =
+                                await PlaceApiProvider(sessionToken)
+                                    .getPlaceDetailFromLatLng(
+                                        cameraPosition!.target.latitude,
+                                        cameraPosition!.target.longitude);
+                            setState(() {
+                              _controller.text = location;
+                              _loading = false;
+                              longitude = cameraPosition!.target.longitude;
+                              latitude = cameraPosition!.target.latitude;
+                              loc(LatLng(latitude!, longitude!));
+                            });
+                          }
+                        }
+                      },
+                      color: kSecondaryColor)
+            ],
+          ),
         ),
       ),
     );

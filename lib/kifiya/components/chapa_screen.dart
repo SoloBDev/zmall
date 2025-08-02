@@ -139,7 +139,7 @@ class _ChapaScreenState extends State<ChapaScreen> {
       });
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
+      // debugPrint(e);
       setState(() {
         this._loading = false;
       });

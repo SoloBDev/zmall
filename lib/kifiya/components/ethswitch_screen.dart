@@ -91,17 +91,17 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
               initialSettings: settings,
               initialUrlRequest: URLRequest(url: WebUri(initUrl)),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                print("Navigating to: ${navigationAction.request.url}");
+                debugPrint("Navigating to: ${navigationAction.request.url}");
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
               onLoadStart: (controller, url) {
-                // print("Started loading: $url");
+                // debugPrint("Started loading: $url");
               },
               onLoadStop: (controller, url) {
-                // print("Finished loading: $url");
+                // debugPrint("Finished loading: $url");
               },
               onReceivedError: (controller, request, error) {
-                // print("Error loading ${request.url}: ${error.description}");
+                // debugPrint("Error loading ${request.url}: ${error.description}");
                 ScaffoldMessenger.of(context).showSnackBar(
                   Service.showMessage(
                       "Failed to load payment page: ${error.description}",

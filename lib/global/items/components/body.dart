@@ -60,7 +60,7 @@ class _BodyState extends State<Body> {
           clearedRequired = true;
         });
       }
-      print("$reqCount required specifications found");
+      // debugPrint("$reqCount required specifications found");
     } else {
       setState(() {
         clearedRequired = true;
@@ -75,7 +75,7 @@ class _BodyState extends State<Body> {
     getUser();
     requiredCount();
     getCart();
-    // print(widget.item);
+    // debugPrint(widget.item);
     initialPrice = widget.item['price'] != null ? widget.item['price'] + .0 : 0;
     price = widget.item['price'] != null ? widget.item['price'] + .0 : 0;
   }
@@ -99,7 +99,7 @@ class _BodyState extends State<Body> {
         if (requiredSpecs.contains(element.uniqueId)) {
           count += 1;
         }
-        print("$count/$reqCount required specifications added");
+        // debugPrint("$count/$reqCount required specifications added");
       });
       if (reqCount == count) {
         setState(() {
@@ -471,7 +471,7 @@ class _BodyState extends State<Body> {
                                             selected.add(specItem);
                                           });
                                         } catch (e) {
-                                          // print(e);
+                                          // debugPrint(e);
                                           setState(() {
                                             spec.list!.add(specItem);
                                             selected.add(specItem);
@@ -704,7 +704,7 @@ class _BodyState extends State<Body> {
                                   _showDialog(item, destination, storeLocation);
                                 }
                               } else {
-                                print("Empty cart! Adding new item.");
+                                debugPrint("Empty cart! Adding new item.");
                                 addToCart(item, destination, storeLocation);
                                 Navigator.of(context).pop();
                               }
@@ -839,8 +839,8 @@ class _BodyState extends State<Body> {
                     Service.remove('abroad_aliexpressCart');
                     cart = AbroadCart();
                     addToCart(item, destination, storeLocation);
-                    // print(item.id);
-                    // print(cart.toJson());
+                    // debugPrint(item.id);
+                    // debugPrint(cart.toJson());
                   });
 
                   Navigator.of(alertContext).pop();
