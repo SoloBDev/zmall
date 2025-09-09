@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -47,6 +48,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
+        backgroundColor: kPrimaryColor,
         appBar: AppBar(
           elevation: 1.0,
           automaticallyImplyLeading: false,
@@ -92,16 +94,31 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      Container(
+                        padding: EdgeInsets.all(kDefaultPadding / 1.5),
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding),
+                            color: kWhiteColor),
+                        child: Icon(
+                          _areaCode == "+211"
+                              ? HeroiconsOutline.envelope
+                              : HeroiconsOutline.devicePhoneMobile,
+                          size: 40,
+                          color: kBlackColor.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: kDefaultPadding),
                       const Text(
                         "Reset Password",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 4)),
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
                       Text(
                         _areaCode == "+211"
                             ? "Please enter your phone and email to receive a one-time password (OTP)."
@@ -110,115 +127,134 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       SizedBox(
                           height: getProportionateScreenHeight(
                               kDefaultPadding * 2)),
-                      CustomTextField(
-                        keyboardType: TextInputType.phone,
-                        maxLength: 9,
-                        cursorColor: kSecondaryColor,
-                        style: const TextStyle(color: kBlackColor),
-                        onChanged: (value) => _phone = value,
-                        isPhoneWithFlag: true,
-                        initialSelection:
-                            Provider.of<ZMetaData>(context, listen: false)
-                                        .areaCode ==
-                                    "+251"
-                                ? 'ET'
-                                : 'SS',
-                        countryFilter: ['ET', 'SS'],
-                        onFlagChanged: (CountryCode code) {
-                          setState(() {
-                            // debugPrint("code $code");
-                            if (code.toString() == "+251") {
-                              _areaCode = "+251";
-                              _country = "Ethiopia";
-                            } else {
-                              _areaCode = "+211";
-                              _country = "South Sudan";
-                            }
-                            // debugPrint("after _country $_country");
-                            Provider.of<ZMetaData>(
-                              context,
-                              listen: false,
-                            ).changeCountrySettings(_country);
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null ||
-                              value.length != 9 ||
-                              !RegExp(r'^[97]').hasMatch(value)) {
-                            return "Enter a valid phone number (9 digits, starts with 9 or 7)";
-                          }
-                          return null;
-                        },
-                        labelText: 'Phone number',
-                        hintText: "Phone start with 9 or 7...",
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Phone number',
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2)),
+                          CustomTextField(
+                            keyboardType: TextInputType.phone,
+                            maxLength: 9,
+                            cursorColor: kSecondaryColor,
+                            style: const TextStyle(color: kBlackColor),
+                            onChanged: (value) => _phone = value,
+                            isPhoneWithFlag: true,
+                            initialSelection:
+                                Provider.of<ZMetaData>(context, listen: false)
+                                            .areaCode ==
+                                        "+251"
+                                    ? 'ET'
+                                    : 'SS',
+                            countryFilter: ['ET', 'SS'],
+                            onFlagChanged: (CountryCode code) {
+                              setState(() {
+                                // debugPrint("code $code");
+                                if (code.toString() == "+251") {
+                                  _areaCode = "+251";
+                                  _country = "Ethiopia";
+                                } else {
+                                  _areaCode = "+211";
+                                  _country = "South Sudan";
+                                }
+                                // debugPrint("after _country $_country");
+                                Provider.of<ZMetaData>(
+                                  context,
+                                  listen: false,
+                                ).changeCountrySettings(_country);
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null ||
+                                  value.length != 9 ||
+                                  !RegExp(r'^[97]').hasMatch(value)) {
+                                return "Enter a valid phone number (9 digits, starts with 9)";
+                              }
+                              return null;
+                            },
+                            // labelText: 'Phone number',
+                            hintText: "Phone start with 9 ...",
+                          ),
+                          if (_areaCode == "+211") ...[
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                            Text(
+                              'Email',
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
+                            CustomTextField(
+                              keyboardType: TextInputType.emailAddress,
+                              cursorColor: kSecondaryColor,
+                              style: const TextStyle(color: kBlackColor),
+                              onChanged: (value) => _email = value,
+                              // labelText: 'Email',
+                              hintText: 'example@gmail.com',
+                              validator: (value) {
+                                if (_areaCode == "+211" &&
+                                    (value == null ||
+                                        !emailValidatorRegExp
+                                            .hasMatch(value))) {
+                                  return "Enter a valid email address";
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ],
                       ),
-                      if (_areaCode == "+211") ...[
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        CustomTextField(
-                          keyboardType: TextInputType.emailAddress,
-                          cursorColor: kSecondaryColor,
-                          style: const TextStyle(color: kBlackColor),
-                          onChanged: (value) => _email = value,
-                          labelText: 'Email',
-                          hintText: 'example@gmail.com',
-                          validator: (value) {
-                            if (_areaCode == "+211" &&
-                                (value == null ||
-                                    !emailValidatorRegExp.hasMatch(value))) {
-                              return "Enter a valid email address";
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
                       SizedBox(
                           height:
                               getProportionateScreenHeight(kDefaultPadding)),
-                      _isLoading
-                          ? SpinKitWave(
-                              color: kSecondaryColor,
-                              size:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            )
-                          : CustomButton(
-                              title: "Send Code",
-                              color: kSecondaryColor,
-                              press: () {
-                                if (!_formKey.currentState!.validate()) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please enter a valid phone number",
-                                          false));
-                                } else {
-                                  sendOTP(_phone).then(
-                                    (success) {
-                                      if (success) {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                UpdatePasswordScreen(
-                                              phone: _phone,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                }
-                                // ScaffoldMessenger.of(context)
-                                //           .showSnackBar(Service.showMessage(
-                                //               "Invalid phone number. Please check and try again.",
-                                //               true));
-                              }
-                              // press: () {
-                              //   if (_formKey.currentState!.validate()) {
-                              //     _handleSendCode();
-                              //   }
-                              // },
-                              ),
+                      CustomButton(
+                          isLoading: _isLoading,
+                          title: "Send Code",
+                          color: kSecondaryColor,
+                          press: () {
+                            if (!_formKey.currentState!.validate()) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  Service.showMessage1(
+                                      "Please enter a valid phone number",
+                                      false));
+                            } else {
+                              sendOTP(_phone).then(
+                                (success) {
+                                  if (success) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            UpdatePasswordScreen(
+                                          phone: _phone,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            }
+                            // ScaffoldMessenger.of(context)
+                            //           .showSnackBar(Service.showMessage(
+                            //               "Invalid phone number. Please check and try again.",
+                            //               true));
+                          }
+                          // press: () {
+                          //   if (_formKey.currentState!.validate()) {
+                          //     _handleSendCode();
+                          //   }
+                          // },
+                          ),
                     ],
                   ),
                 ),
@@ -237,7 +273,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         response["success"] != null &&
         response["success"]) {
       ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("OTP code sent to your phone...", false));
+          Service.showMessage1("OTP code sent to your phone...", false));
       setState(() {
         success = true;
       });
@@ -553,7 +589,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   //             });
 //   //       },
 //   //       codeAutoRetrievalTimeout: (String verificationId) {
-//   //         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+//   //         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
 //   //             ("Error while verifying phone number. Please try again"), true));
 //   //         setState(() {
 //   //           _loading = false;
@@ -565,7 +601,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   // }
 
 //   Future<bool> sendOTP(phone, email, otp) async {
-//     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+//     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
 //         "OTP code sent to your phone or email...", false,
 //         duration: 6));
 //     var response = await verificationSms(phone, email, otp);

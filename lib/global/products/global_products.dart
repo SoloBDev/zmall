@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -9,13 +10,15 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/cart/global_cart.dart';
 import 'package:zmall/global/items/global_items.dart';
-import 'package:zmall/item/item_screen.dart';
 import 'package:zmall/models/cart.dart';
+import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/custom_search_bar.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class GlobalProduct extends StatefulWidget {
   static String routeName = "/product";
@@ -52,7 +55,6 @@ class _GlobalProductState extends State<GlobalProduct> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // isLogged();
     getCart();
@@ -60,7 +62,7 @@ class _GlobalProductState extends State<GlobalProduct> {
   }
 
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('abroad_cart');
 
     if (data != null) {
@@ -129,7 +131,7 @@ class _GlobalProductState extends State<GlobalProduct> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.store['name'],
+          Service.capitalizeFirstLetters(widget.store['name']),
           style: TextStyle(color: kBlackColor),
         ),
         elevation: 0.0,
@@ -137,8 +139,7 @@ class _GlobalProductState extends State<GlobalProduct> {
         actions: [
           InkWell(
             onTap: () async {
-              debugPrint(
-                  "=======================COMMENTS=======================");
+              // debugPrint( "=======================COMMENTS=======================");
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -159,7 +160,7 @@ class _GlobalProductState extends State<GlobalProduct> {
                 vertical: getProportionateScreenWidth(kDefaultPadding * .75),
                 horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
               ),
-              child: Icon(Icons.comment_outlined),
+              child: Icon(HeroiconsOutline.chatBubbleBottomCenterText),
             ),
           ),
           InkWell(
@@ -182,7 +183,9 @@ class _GlobalProductState extends State<GlobalProduct> {
                   padding: EdgeInsets.all(
                     getProportionateScreenWidth(kDefaultPadding * .75),
                   ),
-                  child: Icon(Icons.add_shopping_cart_rounded),
+                  child: Icon(
+                    HeroiconsOutline.shoppingCart,
+                  ),
                 ),
                 Positioned(
                   left: 0,
@@ -214,164 +217,170 @@ class _GlobalProductState extends State<GlobalProduct> {
           ),
         ],
       ),
-      body: ModalProgressHUD(
-        inAsyncCall: _loading,
-        color: kPrimaryColor,
-        progressIndicator: linearProgressIndicator,
-        child: Column(
-          children: [
-            Container(
-              color: kPrimaryColor,
-              child: Card(
-                  elevation: 0.3,
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      border: InputBorder.none,
-                      prefixIcon: Icon(Icons.search),
-                      suffixIcon: controller.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.cancel),
-                              onPressed: () {
-                                controller.clear();
-                                onSearchTextChanged('');
-                              },
-                            )
-                          : null,
-                    ),
-                    onChanged: onSearchTextChanged,
-                  )),
-            ),
-            SizedBox(
-              height: getProportionateScreenHeight(kDefaultPadding / 5),
-            ),
-            _searchResult.length != 0 || controller.text.isNotEmpty
-                ? Expanded(
-                    child: ListView.separated(
-                      physics: ClampingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: _searchResult.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return TextButton(
-                          onPressed: () async {
-                            productClicked(_searchResult[index]['_id']);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return GlobalItem(
-                                    isOpen: widget.isOpen,
-                                    item: _searchResult[index],
-                                    location: widget.location,
-                                  );
-                                },
+      body: SafeArea(
+        child: ModalProgressHUD(
+          inAsyncCall: _loading,
+          color: kPrimaryColor,
+          progressIndicator: LinearLoadingIndicator(),
+          child: Column(
+            children: [
+              CustomSearchBar(
+                  controller: controller,
+                  hintText: Provider.of<ZLanguage>(context).search,
+                  onChanged: onSearchTextChanged,
+                  onSubmitted: (value) {
+                    onSearchTextChanged(value);
+                  },
+                  onClearButtonTap: () {
+                    controller.clear();
+                    onSearchTextChanged('');
+                  }),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 5),
+              ),
+              _searchResult.length != 0 || controller.text.isNotEmpty
+                  ? Expanded(
+                      child: ListView.separated(
+                        physics: ClampingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: _searchResult.length,
+                        separatorBuilder: (BuildContext context, int index) =>
+                            SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding),
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
+                        itemBuilder: (BuildContext context, int index) {
+                          return InkWell(
+                            onTap: () async {
+                              productClicked(_searchResult[index]['_id']);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return GlobalItem(
+                                      isOpen: widget.isOpen,
+                                      item: _searchResult[index],
+                                      location: widget.location,
+                                    );
+                                  },
+                                ),
+                              ).then((value) => getCart());
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                border: Border.all(color: kWhiteColor),
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding),
                               ),
-                            ).then((value) => getCart());
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius:
-                                  BorderRadius.circular(kDefaultPadding),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 10),
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding / 3),
-                            ),
-                            child: Row(
-                              children: [
-                                _searchResult[index]['image_url'].length > 0
-                                    ? ImageContainer(
-                                        url:
-                                            "https://app.zmallapp.com/${_searchResult[index]['image_url'][0]}",
-                                        // "http://159.65.147.111:8000/${_searchResult[index]['image_url'][0]}",
-                                      )
-                                    : ImageContainer(
-                                        url: "https://ibb.co/vkhzjd6"),
-                                SizedBox(
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding / 4)),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _searchResult[index]['name'],
-                                        style: TextStyle(
-                                          fontSize: getProportionateScreenWidth(
-                                              kDefaultPadding / 1.5),
-                                          fontWeight: FontWeight.bold,
-                                          color: kBlackColor,
-                                        ),
-                                        softWrap: true,
-                                      ),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 5)),
-                                      _searchResult[index]['details'] != null &&
-                                              _searchResult[index]['details']
-                                                      .length >
-                                                  0
-                                          ? Text(
-                                              _searchResult[index]['details'],
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall!
-                                                  .copyWith(
-                                                    color: kGreyColor,
-                                                  ),
-                                            )
-                                          : SizedBox(height: 0.5),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 5)),
-                                      Text(
-                                        "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} Birr",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium!
-                                            .copyWith(
-                                              color: kSecondaryColor,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) =>
-                          SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                    ),
-                  )
-                : products != null
-                    ? Expanded(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: products.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Padding(
                               padding: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding / 3),
                                 vertical: getProportionateScreenHeight(
                                     kDefaultPadding / 4),
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
                               ),
-                              child: Column(
+                              child: Row(
+                                spacing: getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
                                 children: [
-                                  CategoryContainer(
-                                    title: "${products[index]["_id"]["name"]}",
+                                  _searchResult[index]['image_url'].length > 0
+                                      ? ImageContainer(
+                                          url:
+                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${_searchResult[index]['image_url'][0]}",
+                                        )
+                                      : ImageContainer(
+                                          url: "https://ibb.co/vkhzjd6"),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      spacing: getProportionateScreenHeight(
+                                          kDefaultPadding / 5),
+                                      children: [
+                                        Text(
+                                          Service.capitalizeFirstLetters(
+                                              _searchResult[index]['name']),
+                                          style: TextStyle(
+                                            fontSize:
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding),
+                                            fontWeight: FontWeight.bold,
+                                            color: kBlackColor,
+                                          ),
+                                          softWrap: true,
+                                        ),
+                                        if (_searchResult[index]['details'] !=
+                                                null &&
+                                            _searchResult[index]['details']
+                                                    .length >
+                                                0)
+                                          Text(
+                                            _searchResult[index]['details'],
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall!
+                                                .copyWith(
+                                                  color: kGreyColor,
+                                                ),
+                                          ),
+                                        Text(
+                                          "${_getPrice(_searchResult[index]) != null ? _getPrice(_searchResult[index]) : 0} Birr",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium!
+                                              .copyWith(
+                                                color: kSecondaryColor,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : products != null
+                      ? Expanded(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: products.length,
+                            separatorBuilder:
+                                (BuildContext context, int index) => SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            itemBuilder: (BuildContext context, int index) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    Service.capitalizeFirstLetters(
+                                      "${products[index]["_id"]["name"]}",
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(
+                                            color: kBlackColor,
+                                            fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(
                                     height: getProportionateScreenHeight(
@@ -381,10 +390,22 @@ class _GlobalProductState extends State<GlobalProduct> {
                                     physics: ClampingScrollPhysics(),
                                     shrinkWrap: true,
                                     itemCount: products[index]['items'].length,
+                                    separatorBuilder:
+                                        (BuildContext context, int index) =>
+                                            SizedBox(
+                                      height: getProportionateScreenHeight(
+                                          kDefaultPadding / 2),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 2),
+                                      vertical: getProportionateScreenHeight(
+                                          kDefaultPadding / 2),
+                                    ),
                                     itemBuilder:
                                         (BuildContext context, int idx) {
-                                      return TextButton(
-                                        onPressed: () async {
+                                      return InkWell(
+                                        onTap: () async {
                                           productClicked(products[index]
                                               ['items'][idx]['_id']);
                                           Navigator.push(
@@ -405,18 +426,23 @@ class _GlobalProductState extends State<GlobalProduct> {
                                           width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: kPrimaryColor,
+                                            border:
+                                                Border.all(color: kWhiteColor),
                                             borderRadius: BorderRadius.circular(
                                                 kDefaultPadding),
                                           ),
                                           padding: EdgeInsets.symmetric(
                                             vertical:
                                                 getProportionateScreenHeight(
-                                                    kDefaultPadding / 10),
+                                                    kDefaultPadding / 4),
                                             horizontal:
                                                 getProportionateScreenWidth(
-                                                    kDefaultPadding / 3),
+                                                    kDefaultPadding / 2),
                                           ),
                                           child: Row(
+                                            spacing:
+                                                getProportionateScreenWidth(
+                                                    kDefaultPadding / 2),
                                             children: [
                                               products[index]['items'][idx]
                                                               ['image_url']
@@ -424,15 +450,11 @@ class _GlobalProductState extends State<GlobalProduct> {
                                                       0
                                                   ? ImageContainer(
                                                       url:
-                                                          "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
+                                                          "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}",
                                                     )
                                                   : ImageContainer(
                                                       url:
                                                           "https://ibb.co/vkhzjd6"),
-                                              SizedBox(
-                                                  width:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding / 4)),
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment:
@@ -505,69 +527,59 @@ class _GlobalProductState extends State<GlobalProduct> {
                                         ),
                                       );
                                     },
-                                    separatorBuilder:
-                                        (BuildContext context, int index) =>
-                                            SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 4),
-                                    ),
                                   )
                                 ],
-                              ),
-                            );
-                          },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const SizedBox(
-                            height: 2,
-                          ),
-                        ),
-                      )
-                    : !_loading
-                        ? Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding * 4),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding * 4),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                CustomButton(
-                                  title: "Retry",
-                                  press: () {
-                                    _getStoreProductList();
-                                  },
-                                  color: kSecondaryColor,
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(),
-            cart != null && cart!.items!.length > 0
-                ? Padding(
-                    padding: EdgeInsets.only(
-                      left: getProportionateScreenWidth(kDefaultPadding),
-                      right: getProportionateScreenWidth(kDefaultPadding),
-                      bottom: getProportionateScreenWidth(kDefaultPadding),
-                    ),
-                    child: CustomButton(
-                      title: "Go to Cart>>",
-                      press: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return GlobalCart();
+                              );
                             },
                           ),
-                        ).then((value) => getCart());
-                      },
-                      color: kSecondaryColor,
-                    ),
-                  )
-                : Container(),
-          ],
+                        )
+                      : !_loading
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding * 4),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding * 4),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  CustomButton(
+                                    title: "Retry",
+                                    press: () {
+                                      _getStoreProductList();
+                                    },
+                                    color: kSecondaryColor,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(),
+              cart != null && cart!.items!.length > 0
+                  ? Padding(
+                      padding: EdgeInsets.only(
+                        left: getProportionateScreenWidth(kDefaultPadding),
+                        right: getProportionateScreenWidth(kDefaultPadding),
+                        bottom: getProportionateScreenWidth(kDefaultPadding),
+                      ),
+                      child: CustomButton(
+                        title: "Go to Cart>>",
+                        press: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return GlobalCart();
+                              },
+                            ),
+                          ).then((value) => getCart());
+                        },
+                        color: kSecondaryColor,
+                      ),
+                    )
+                  : Container(),
+            ],
+          ),
         ),
       ),
     );
@@ -666,7 +678,7 @@ class _GlobalProductState extends State<GlobalProduct> {
         },
         body: body,
       );
-      debugPrint("Product clicked");
+      // debugPrint("Product clicked");
       // debugPrint(json.decode(response.body));
     } catch (e) {
       // debugPrint(e);

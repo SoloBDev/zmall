@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/models/language.dart';
@@ -140,7 +141,7 @@ class CustomSearchBar extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.search_rounded,
+            HeroiconsOutline.magnifyingGlass,
             color:
                 controller.text.isNotEmpty ? kSecondaryColor : Colors.grey[600],
             size: 18,
@@ -160,7 +161,7 @@ class CustomSearchBar extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.tune_rounded,
+                  HeroiconsOutline.adjustmentsHorizontal,
                   color: Colors.grey[600],
                   size: 18,
                 ),
@@ -181,7 +182,7 @@ class CustomSearchBar extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.close_rounded,
+                  HeroiconsOutline.xMark,
                   color: Colors.red[600],
                   size: 18,
                 ),

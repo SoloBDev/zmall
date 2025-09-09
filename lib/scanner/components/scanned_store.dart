@@ -805,7 +805,7 @@
 //                         //                           0
 //                         //                       ? ImageContainer(
 //                         //                           url:
-//                         //                               "https://app.zmallapp.com/${products[index]['items'][idx]['image_url'][0]}",
+//                         //                               "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}",
 //                         //                         )
 //                         //                       : ImageContainer(
 //                         //                           url:

@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
@@ -10,8 +11,11 @@ import 'package:zmall/size_config.dart';
 class ReportScreen extends StatefulWidget {
   static String routeName = '/report';
 
-  const ReportScreen(
-      {@required this.price, @required this.orderPaymentUniqueId});
+  const ReportScreen({
+    super.key,
+    @required this.price,
+    @required this.orderPaymentUniqueId,
+  });
 
   final double? price;
   final String? orderPaymentUniqueId;
@@ -24,15 +28,17 @@ class _ReportScreenState extends State<ReportScreen> {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    debugPrint("Logging ecommerce purchase");
+    // debugPrint("Logging ecommerce purchase");
     MyApp.analytics
         .logPurchase(
             currency: Provider.of<ZMetaData>(context, listen: false).country,
             value: widget.price,
             transactionId: widget.orderPaymentUniqueId)
-        .whenComplete(() => debugPrint("purchase logged"));
+        .whenComplete(
+          () => debugPrint(""),
+          // debugPrint("purchase logged"),
+        );
     _fcm.subscribeToTopic(
         Provider.of<ZMetaData>(context, listen: false).country);
   }
@@ -40,40 +46,85 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: kDefaultPadding, vertical: kDefaultPadding * 2),
+      backgroundColor: kPrimaryColor,
+      body: SafeArea(
+        minimum: EdgeInsets.only(
+          left: kDefaultPadding,
+          right: kDefaultPadding,
+          bottom: kDefaultPadding,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Spacer(flex: 1),
-            Icon(
-              Icons.verified_user,
-              color: kSecondaryColor,
-              size: getProportionateScreenWidth(kDefaultPadding * 7),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: kSecondaryColor.withValues(
+                            alpha: 0.1), // Subtle background for the icon
+                        border: Border.all(
+                          color: kSecondaryColor.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: kSecondaryColor.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            spreadRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        HeroiconsSolid.shieldCheck,
+                        color: kSecondaryColor,
+                        size: getProportionateScreenWidth(kDefaultPadding * 8),
+                      ),
+                    ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    Text(
+                      "Order Confirmed!", // "Completed!",
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: kSecondaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 4)),
+                    Text(
+                      "Your order has been successfully placed.\nThank you for choosing ZMall!",
+                      // "Order Created. Thank you for choosing ZMall",
+                      style: Theme.of(context).textTheme.titleSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-            Text(
-              "Completed!",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: kSecondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 4)),
-            Text(
-              "Order Created. Thank you for choosing ZMall",
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            Spacer(flex: 2),
-            CustomButton(
-              title: "Done",
-              press: () {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, "/start", (Route<dynamic> route) => false);
-              },
-              color: kSecondaryColor,
+            Padding(
+              padding: EdgeInsets.only(
+                right: getProportionateScreenHeight(kDefaultPadding),
+                left: getProportionateScreenHeight(kDefaultPadding),
+                bottom: getProportionateScreenHeight(kDefaultPadding),
+              ),
+              child: CustomButton(
+                title: "Explore More",
+
+                ///"Done",
+                press: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, "/start", (Route<dynamic> route) => false);
+                },
+                color: kSecondaryColor,
+              ),
             ),
           ],
         ),

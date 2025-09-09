@@ -2,22 +2,30 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+import 'package:zmall/borsa/components/payment_card.dart';
+import 'package:zmall/borsa/topup_kifiya/inapp_topup_payment.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
-import 'package:zmall/topup/topup_screen.dart';
-import 'package:zmall/widgets/section_title.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
+import 'package:zmall/widgets/order_status_row.dart';
+import 'package:zmall/widgets/sliver_appbar_delegate.dart';
 
 class BorsaScreen extends StatefulWidget {
   static String routeName = '/borsa';
 
-  const BorsaScreen({@required this.userData});
+  const BorsaScreen({
+    super.key,
+    @required this.userData,
+  });
 
   final userData;
 
@@ -26,23 +34,24 @@ class BorsaScreen extends StatefulWidget {
 }
 
 class _BorsaScreenState extends State<BorsaScreen> {
+  var userData;
+  late String otp;
   var responseData;
+  var kifiyaGateway;
   bool isLoading = false;
-  bool _loading = false;
-  double currentBalance = 0.0;
   String payeePhone = "";
-  String amount = "0.00";
+  double topUpAmount = 0.0;
   String payerPassword = "";
   bool transferError = false;
+  var selectedFilter = "All";
+  double currentBalance = 0.0;
+  // bool isTopupEnabled = false;
+  var isTopupEnabled;
   bool transferLoading = false;
-  var userData;
-  double topUpAmount = 0.0;
-  late String otp;
-  var kifiyaGateway;
+  String transferAmount = "0.00";
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     userData = widget.userData;
     currentBalance = double.parse(widget.userData['user']['wallet'].toString());
@@ -69,6 +78,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
     if (responseData != null && responseData['success']) {
       setState(() {
         isLoading = false;
+        isTopupEnabled =
+            responseData["wallet_history"][0]["wallet_top_up_option"];
       });
     } else {
       if (responseData['error_code'] != null &&
@@ -97,380 +108,1007 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    TextTheme textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
+        elevation: 0,
         title: Text(
           "Wallet",
-          style: TextStyle(color: kBlackColor),
+          style: TextStyle(
+            color: kBlackColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
         ),
-        elevation: 1.0,
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: getProportionateScreenHeight(kDefaultPadding / 2),
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _balanceCardUIOne(textTheme: textTheme),
+          ),
+
+          // Transactions Section
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: SliverAppBarDelegate(
+              minHeight: 90,
+              maxHeight: 90,
+              child: Container(
                 color: kPrimaryColor,
-                borderRadius: BorderRadius.circular(
-                  getProportionateScreenWidth(kDefaultPadding),
+                padding: EdgeInsets.symmetric(
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenWidth(kDefaultPadding / 2),
                 ),
-                // boxShadow: [kDefaultShadow],
+                child: Column(
+                  spacing: kDefaultPadding / 2,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section Title
+                    Text(
+                      "Transactions",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: kBlackColor,
+                          ),
+                    ),
+
+                    // Filter Chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip(
+                              "All",
+                              HeroiconsOutline.arrowPathRoundedSquare,
+                              selectedFilter == "All", () {
+                            setState(() {
+                              selectedFilter = "All";
+                            });
+                          }),
+                          SizedBox(width: 12),
+                          _buildFilterChip(
+                              "Received",
+                              HeroiconsOutline.arrowDown,
+                              selectedFilter == "Received", () {
+                            setState(() {
+                              selectedFilter = "Received";
+                            });
+                          }),
+                          SizedBox(width: 12),
+                          _buildFilterChip("Sent", HeroiconsOutline.arrowUp,
+                              selectedFilter == "Sent", () {
+                            setState(() {
+                              selectedFilter = "Sent";
+                            });
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Padding(
-                padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding)),
-                child: Center(
-                  child: Column(
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          text:
-                              "${Provider.of<ZMetaData>(context, listen: false).currency}",
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: " ${currentBalance.toStringAsFixed(2)}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+            ),
+          ),
+          if (responseData == null || !responseData['success'])
+            SliverToBoxAdapter(
+              child: isLoading
+                  ? Center(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.only(top: kDefaultPadding * 2),
+                        child: SpinKitWave(
+                          color: kSecondaryColor,
+                          size: getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.only(top: kDefaultPadding * 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              HeroiconsOutline.arrowsUpDown,
+                              size: 60,
+                              color: kGreyColor.withValues(alpha: 0.5),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              "Transaction history not found!",
+                              style: TextStyle(
+                                color: kGreyColor,
+                                fontSize: 16,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      Text(
-                        "Current Balance",
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: kGreyColor,
+                    ),
+            ),
+
+          if (responseData != null &&
+              responseData['wallet_history'].length == 0)
+            SliverToBoxAdapter(
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      HeroiconsOutline.wallet,
+                      size: 64,
+                      color: kGreyColor.withValues(alpha: 0.5),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "No wallet transactions yet!",
+                      style: TextStyle(
+                        color: kGreyColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Transactions List
+          if (responseData != null &&
+              responseData['wallet_history'].length != 0)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                childCount: 1,
+                (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: kDefaultPadding),
+                    child: _buildTransactionsList(),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  ShowPaymentOption() {
+    // bool showPayments = false;
+    GlobalKey<FormState> topupFormKey = GlobalKey<FormState>();
+    // TextEditingController amountController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: kPrimaryColor,
+      constraints: BoxConstraints(
+          minHeight: MediaQuery.sizeOf(context).height * 0.55,
+          maxHeight: MediaQuery.sizeOf(context).height * 1.0),
+      builder: (BuildContext context) {
+        // var uuid = Uuid();
+        // String uniqueId = uuid.v4().substring(0, 10);
+        var uuid = Uuid();
+        String uniqueId =
+            uuid.v4().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').substring(0, 10);
+
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SafeArea(
+              minimum: EdgeInsets.only(
+                  left: getProportionateScreenWidth(kDefaultPadding),
+                  right: getProportionateScreenWidth(kDefaultPadding),
+                  top: getProportionateScreenHeight(kDefaultPadding / 2)),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(kDefaultPadding)),
+                ),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: getProportionateScreenHeight(kDefaultPadding),
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      // crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Add to Wallet",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
                             ),
+                            // if (showPayments)
+                            Text("Add $topUpAmount to Wallet",
+                                style: Theme.of(context).textTheme.bodyMedium),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Icon(
+                              Icons.cancel_outlined,
+                              color: kBlackColor.withValues(alpha: 0.5),
+                            ),
+                            // style: IconButton.styleFrom(
+                            //     backgroundColor: kWhiteColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Form(
+                      key: topupFormKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: getProportionateScreenHeight(kDefaultPadding),
+                        children: [
+                          CustomTextField(
+                            keyboardType:
+                                TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (val) {
+                              setState(() {
+                                // Safely parse to double, default to 0.0 if empty
+                                topUpAmount =
+                                    double.tryParse(val)!.ceilToDouble();
+                              });
+                            },
+                            hintText: "Enter the amount to topup",
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter the amount";
+                              }
+
+                              // Try parsing the value
+                              final double? price = double.tryParse(value);
+
+                              if (price == null) {
+                                return "Invalid number entered.";
+                              }
+
+                              if (price < 100.0) {
+                                final currency = Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .currency;
+                                // return "The minimum amount you can add is 1 $currency.";
+                                return "The minimum amount you can add is 100 $currency.";
+                              }
+                              if (price == 0.0) {
+                                return "Amount cannot be zero.";
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
+                          // if (showPayments)
+                          Text("Continue topup",
+                              style: Theme.of(context).textTheme.bodyMedium),
+                          // if (showPayments)
+                          PaymentCard(
+                            title: "Telebirr InApp",
+                            subtitle: "Pay with mobile app",
+                            imageUrl: "images/telebirr.png",
+                            onPressed: () {
+                              if (topupFormKey.currentState!.validate()) {
+                                _getKifiyaGateway();
+
+                                if (kifiyaGateway != null &&
+                                    kifiyaGateway['success'] &&
+                                    kifiyaGateway['payment_gateway'] != null) {
+                                  final telebirrId = getPaymentMethodIdByName(
+                                      "Telebirr inapp");
+
+                                  setState(() {
+                                    paymentId = telebirrId;
+                                  });
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return TopupPaymentInApp(
+                                        amount: topUpAmount,
+                                        context: context,
+                                        traceNo: uniqueId,
+                                        phone: userData['user']['phone'],
+                                      );
+                                    }),
+                                  ).then((value) async {
+                                    if (value != null) {
+                                      if (value == false) {
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                          setState(() {
+                                            topUpAmount = 0.0;
+                                          });
+                                        });
+                                        Navigator.of(context).pop();
+                                        Service.showMessage(
+                                          error: true,
+                                          context: context,
+                                          title:
+                                              "Faild to topup wallet amount. Please try again!.",
+                                        );
+                                      } else if ((value['code'] != null &&
+                                              value['code'] == 0) ||
+                                          (value['status'] != null &&
+                                              value['status']
+                                                      .toString()
+                                                      .toLowerCase() ==
+                                                  "success")) {
+                                        _addToWallet();
+                                      }
+                                    } else {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        setState(() {
+                                          topUpAmount = 0.0;
+                                        });
+                                      });
+                                      Navigator.of(context).pop();
+
+                                      Future.delayed(
+                                          Duration(milliseconds: 100), () {
+                                        if (mounted) {
+                                          Service.showMessage(
+                                            error: true,
+                                            context: context,
+                                            title:
+                                                "Faild to topup wallet amount. Please try again!.",
+                                          );
+                                        }
+                                      });
+                                    }
+                                  });
+                                }
+                              }
+                            },
+                          ),
+                          // if (!showPayments && amountController.text.isNotEmpty)
+                          //   CustomButton(
+                          //     title: "Submit",
+                          //     isLoading: isLoading,
+                          //     press: () async {
+                          //       if (topupFormKey.currentState!.validate()) {
+                          //         setState(() {
+                          //           showPayments = true;
+                          //         });
+                          //       }
+                          //     },
+                          //   ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      _userDetails();
+      _getTransactions();
+    });
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding)),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: onTap,
+        child: OrderStatusRow(
+          icon: icon,
+          value: title,
+          title: subtitle,
+          iconColor: color,
+          textColor: kWhiteColor,
+          iconBackgroundColor: color.withValues(alpha: 0.1),
+          fontSize: getProportionateScreenWidth(kDefaultPadding),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(
+      String label, IconData icon, bool isSelected, VoidCallback onTap) {
+    Color color = label.toLowerCase() == "sent"
+        ? kSecondaryColor
+        : label.toLowerCase() == "received"
+            ? kGreenColor
+            : kGreyColor;
+    return InkWell(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.18)
+              // kSecondaryColor.withValues(alpha: 0.18)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(kDefaultPadding * 1.5),
+          border: Border.all(
+            color: isSelected ? kPrimaryColor : Colors.grey[300]!,
+            width: 1,
+          ),
+          boxShadow: !isSelected
+              ? null
+              : [
+                  BoxShadow(
+                    color: kPrimaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: Row(
+          spacing: kDefaultPadding / 2,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: color,
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                // color: isSelected ?  kSecondaryColor : kGreyColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionsList() {
+    // Filter transactions based on selected filter
+    List filteredTransactions = [];
+    filteredTransactions = responseData['wallet_history'].where((transaction) {
+      bool isDeposit =
+          transaction['wallet_amount'] < transaction['total_wallet_amount'];
+
+      if (selectedFilter == "Received") return isDeposit;
+      if (selectedFilter == "Sent") return !isDeposit;
+      return true; // "All"
+    }).toList();
+
+    return ListView.separated(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: filteredTransactions.length,
+      separatorBuilder: (context, idx) => SizedBox(height: kDefaultPadding / 2),
+      padding: EdgeInsets.symmetric(
+        vertical: getProportionateScreenWidth(kDefaultPadding),
+        horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+      ),
+      itemBuilder: (context, idx) {
+        var transaction = filteredTransactions[idx];
+        bool isDeposit =
+            transaction['wallet_amount'] < transaction['total_wallet_amount'];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: kPrimaryColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: kWhiteColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: EdgeInsets.all(kDefaultPadding),
+            leading: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isDeposit ? kGreenColor : kSecondaryColor)
+                    .withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isDeposit
+                    ? Icons.arrow_downward_rounded
+                    : Icons.arrow_upward_rounded,
+                color: isDeposit ? kGreenColor : kSecondaryColor,
+                size: 20,
+              ),
+            ),
+            title: Text(
+              transaction['wallet_description'] != "Card : undefined"
+                  ? transaction['wallet_description']
+                  : "Online Top-up",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: kBlackColor,
+              ),
+            ),
+            subtitle: Padding(
+              padding: EdgeInsets.only(top: kDefaultPadding / 4),
+              child: Text(
+                "${transaction['updated_at'].split("T")[0]} ${transaction['updated_at'].split("T")[1].split('.')[0]}",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: kGreyColor,
+                ),
+              ),
+            ),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: isDeposit ? "+ " : "- ",
+                    style: TextStyle(
+                      color: isDeposit ? kGreenColor : kSecondaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text:
+                            "${Provider.of<ZMetaData>(context, listen: false).currency} ",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                      ),
+                      TextSpan(
+                        text: transaction['from_amount'].toStringAsFixed(2),
+                        style: TextStyle(
+                          color: isDeposit ? kGreenColor : kSecondaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTransferBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        backgroundColor: kPrimaryColor,
+        constraints: BoxConstraints(
+            minHeight: MediaQuery.sizeOf(context).height * 0.55,
+            maxHeight: MediaQuery.sizeOf(context).height * 1.0),
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return SafeArea(
+              minimum: EdgeInsets.symmetric(
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding / 2)),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(kDefaultPadding)),
+                ),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: getProportionateScreenHeight(kDefaultPadding),
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Transfer",
+                          style:
+                              Theme.of(context).textTheme.titleMedium!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(HeroiconsOutline.xCircle),
+                        )
+                      ],
+                    ),
+
+                    CustomTextField(
+                      // style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        FilteringTextInputFormatter.singleLineFormatter,
+                      ],
+                      maxLength: 9,
+                      onChanged: (val) {
+                        payeePhone = val;
+                      },
+                      // decoration: textFieldInputDecorator.copyWith(
+                      hintText: "Receiver phone number",
+                      helperText: "Start phone number with 9..",
+                      // hintText: "...",
+                      prefix: Text(
+                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
+                      // ),
+                    ),
+
+                    //
+                    CustomTextField(
+                      keyboardType:
+                          TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (val) {
+                        transferAmount = val;
+                      },
+                      // labelText: "Amount",
+                      hintText: "Enter the amount to send",
+                    ),
+
+                    //
+                    CustomTextField(
+                      keyboardType: TextInputType.text,
+                      obscureText: true,
+                      onChanged: (val) {
+                        payerPassword = val;
+                      },
+                      // labelText: "Password",
+                      hintText: "Enter your password",
+                    ),
+
+                    if (transferError)
+                      Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          "Invalid! Please make sure all fields are filled.",
+                          style: TextStyle(color: kSecondaryColor),
+                        ),
+                      ),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomButton(
+                        title: "Send",
+                        isLoading: transferLoading,
+                        color: kSecondaryColor,
+                        press: () async {
+                          // Your existing transfer logic here
+                          if (payeePhone.isNotEmpty &&
+                              transferAmount.isNotEmpty &&
+                              payerPassword.isNotEmpty) {
+                            setState(() {
+                              transferLoading = true;
+                            });
+                            var data = await genzebLak();
+                            if (data != null && data['success']) {
+                              setState(() {
+                                transferLoading = false;
+                                widget.userData['user']['wallet'] -=
+                                    double.parse(transferAmount);
+                              });
+                              _userDetails();
+                              _getTransactions();
+
+                              Service.showMessage(
+                                  context: context,
+                                  title: "Transfer successful",
+                                  error: false,
+                                  duration: 5);
+                              setState(() {
+                                transferLoading = false;
+                              });
+                              Navigator.of(context).pop();
+                            } else {
+                              if (data['error_code'] == 999) {
+                                await Service.saveBool('logged', false);
+                                await Service.remove('user');
+                                Navigator.pushReplacementNamed(
+                                    context, LoginScreen.routeName);
+                              }
+                              setState(() {
+                                transferLoading = false;
+                              });
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      "${errorCodes['${data['error_code']}']}"),
+                                  backgroundColor: kSecondaryColor,
+                                ),
+                              );
+                            }
+                          } else {
+                            setState(() {
+                              transferError = true;
+                            });
+
+                            Service.showMessage(
+                              context: context,
+                              title:
+                                  "Invalid! Please make sure all fields are filled.",
+                              error: true,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        }).whenComplete(() {
+      setState(() {
+        payeePhone = '';
+        transferAmount = '0.00';
+        payerPassword = '';
+        transferError = false;
+      });
+    });
+  }
+
+  //
+  bool _isBalanceVisible = false;
+  Widget _balanceCardUIOne({
+    required TextTheme textTheme,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding)),
+      // height: getProportionateScreenHeight(215),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Main card background
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    kSecondaryColor.withValues(alpha: 1.0),
+                    kSecondaryColor.withValues(alpha: 0.7),
+                    kSecondaryColor.withValues(alpha: 0.8),
+                  ],
+                ),
               ),
             ),
-            SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 1.5)),
-            Row(
+          ),
+
+          // Card content
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: getProportionateScreenWidth(kDefaultPadding),
+                vertical: getProportionateScreenHeight(kDefaultPadding)),
+            child: Column(
+              // spacing: 4,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CustomCard(
-                    iconData: Icons.send,
-                    title: "Transfer",
-                    subtitle: "Send funds",
-                    color: kSecondaryColor.withValues(alpha: 0.8),
-                    textColor: kPrimaryColor,
-                    press: () {
-                      showModalBottomSheet<void>(
-                        isScrollControlled: true,
-                        context: context,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30.0),
-                            topRight: Radius.circular(30.0),
+                // Top section with logo and card type
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Quick Pay",
+                          style: textTheme.labelLarge!.copyWith(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
                           ),
                         ),
-                        builder: (BuildContext context) {
-                          return Padding(
-                            padding: MediaQuery.of(context).viewInsets,
-                            child: Container(
-                              padding: EdgeInsets.all(
-                                  getProportionateScreenHeight(
-                                      kDefaultPadding)),
-                              child: Wrap(
-                                children: <Widget>[
-                                  Text(
-                                    "Transfer",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                  Container(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding),
-                                  ),
-                                  TextField(
-                                    style: TextStyle(color: kBlackColor),
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                      FilteringTextInputFormatter
-                                          .singleLineFormatter,
-                                    ],
-                                    maxLength: 9,
-                                    onChanged: (val) {
-                                      payeePhone = val;
-                                    },
-                                    decoration:
-                                        textFieldInputDecorator.copyWith(
-                                      labelText: "Receiver phone number",
-                                      helperText: "Start phone number with 9..",
-                                      prefix: Text(
-                                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
-                                    ),
-                                  ),
-                                  Container(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 2),
-                                  ),
-                                  TextField(
-                                    style: TextStyle(color: kBlackColor),
-                                    keyboardType:
-                                        TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    onChanged: (val) {
-                                      amount = val;
-                                    },
-                                    decoration:
-                                        textFieldInputDecorator.copyWith(
-                                      labelText: "Amount",
-                                    ),
-                                  ),
-                                  Container(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 2)),
-                                  TextField(
-                                    style: TextStyle(color: kBlackColor),
-                                    keyboardType: TextInputType.text,
-                                    obscureText: true,
-                                    onChanged: (val) {
-                                      payerPassword = val;
-                                    },
-                                    decoration: textFieldInputDecorator
-                                        .copyWith(labelText: "Password"),
-                                  ),
-                                  transferError
-                                      ? Text(
-                                          "Invalid! Please make sure all fields are filled.",
-                                          style:
-                                              TextStyle(color: kSecondaryColor),
-                                        )
-                                      : Container(),
-                                  Container(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 2)),
-                                  transferLoading
-                                      ? SpinKitWave(
-                                          color: kSecondaryColor,
-                                          size: getProportionateScreenWidth(
-                                              kDefaultPadding),
-                                        )
-                                      : CustomButton(
-                                          title: "Send",
-                                          color: kSecondaryColor,
-                                          press: () async {
-                                            if (payeePhone.isNotEmpty &&
-                                                amount.isNotEmpty &&
-                                                payerPassword.isNotEmpty) {
-                                              setState(() {
-                                                transferLoading = true;
-                                              });
-                                              var data = await genzebLak();
-                                              if (data != null &&
-                                                  data['success']) {
-                                                setState(() {
-                                                  transferLoading = false;
-                                                  widget.userData['user']
-                                                          ['wallet'] -=
-                                                      double.parse(amount);
-                                                });
+                        Text(
+                          "Z-WALLET CARD",
+                          style: textTheme.bodyMedium!.copyWith(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
 
-                                                _userDetails();
-                                                _getTransactions();
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                        Service.showMessage(
-                                                            "Transfer successfull",
-                                                            false,
-                                                            duration: 5));
-                                                setState(() {
-                                                  transferLoading = false;
-                                                });
-                                                Navigator.of(context).pop();
-                                              } else {
-                                                if (data['error_code'] == 999) {
-                                                  await Service.saveBool(
-                                                      'logged', false);
-                                                  await Service.remove('user');
-                                                  Navigator
-                                                      .pushReplacementNamed(
-                                                          context,
-                                                          LoginScreen
-                                                              .routeName);
-                                                }
-                                                setState(() {
-                                                  transferLoading = false;
-                                                });
-                                                Navigator.of(context).pop();
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(SnackBar(
-                                                  content: Text(
-                                                      "${errorCodes['${data['error_code']}']}"),
-                                                  backgroundColor:
-                                                      kSecondaryColor,
-                                                ));
-                                              }
-                                            } else {
-                                              setState(() {
-                                                transferError = true;
-                                              });
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                Service.showMessage(
-                                                  "Invalid! Please make sure all fields are filled.",
-                                                  true,
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ).whenComplete(() {
+                    // Balance visibility toggle button
+                    InkWell(
+                      onTap: () {
                         setState(() {
-                          payeePhone = '';
-                          amount = '0.00';
-                          payerPassword = '';
-                          transferError = false;
+                          _isBalanceVisible = !_isBalanceVisible;
                         });
-                      });
-                    }),
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: kDefaultPadding / 2,
+                            vertical: kDefaultPadding / 2),
+                        decoration: BoxDecoration(
+                          color: kWhiteColor.withValues(alpha: 0.2),
+                          borderRadius:
+                              BorderRadius.circular(kDefaultPadding / 2),
+                        ),
+                        child: Row(
+                          spacing: kDefaultPadding / 4,
+                          children: [
+                            Text(
+                              _isBalanceVisible ? "Hide" : "Show",
+                              style: TextStyle(color: kPrimaryColor),
+                            ),
+                            Icon(
+                              _isBalanceVisible
+                                  ? Icons.visibility_off_rounded
+                                  : Icons.visibility_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                //
+
                 SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding / 2)),
-                CustomCard(
-                  title: "Top-up",
-                  subtitle: "Add funds",
-                  color: kYellowColor,
-                  textColor: kBlackColor,
-                  iconData: Icons.add_box,
-                  press: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return TopUpScreen(userData: userData);
-                    })).then((value) {
-                      _userDetails();
-                      _getTransactions();
-                    });
-                  },
+                  height: getProportionateScreenHeight(kDefaultPadding),
+                ),
+
+                //Middle section//balance and name
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ///balance
+                      Text(
+                        _isBalanceVisible
+                            ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${currentBalance.toStringAsFixed(2)}"
+                            : "**** **** ****",
+                        style: textTheme.labelLarge!.copyWith(
+                            color: kWhiteColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontStyle: _isBalanceVisible
+                                ? FontStyle.italic
+                                : FontStyle.normal),
+                      ),
+
+                      // name
+                      Text(
+                          "${widget.userData['user']['first_name'] ?? ''} ${widget.userData['user']['last_name'] ?? ''}"
+                              .trim()
+                              .toUpperCase(),
+                          style: textTheme.labelLarge!
+                              .copyWith(color: kWhiteColor, fontSize: 16)),
+                    ],
+                  ),
+                ),
+
+                ////////////////////////////////////////////////
+
+                // Spacer(),
+                Divider(
+                  color: kWhiteColor.withValues(alpha: 0.2),
+                ),
+
+                ////bottom section ///
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: getProportionateScreenWidth(kDefaultPadding),
+                  children: [
+                    Expanded(
+                      child: _buildActionCard(
+                        icon: HeroiconsOutline.paperAirplane,
+                        title: "Transfer",
+                        subtitle: "Send funds",
+                        color: kWhiteColor,
+                        onTap: () => _showTransferBottomSheet(context),
+                      ),
+                    ),
+                    if (isTopupEnabled != null && isTopupEnabled)
+                      Expanded(
+                        child: _buildActionCard(
+                          icon: HeroiconsOutline.plusCircle,
+                          title: "Top-up",
+                          subtitle: "Add funds",
+                          color: kWhiteColor,
+                          onTap: () {
+                            ShowPaymentOption();
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
-            SizedBox(
-              height: getProportionateScreenHeight(kDefaultPadding / 2),
+          ),
+
+          // Decorative circles
+          Positioned(
+            top: -40,
+            left: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
             ),
-            SectionTitle(
-              sectionTitle: "Transactions",
-              subTitle: " ",
+          ),
+          Positioned(
+            bottom: -25,
+            right: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
             ),
-            responseData != null && responseData['success']
-                ? responseData['wallet_history'].length > 0
-                    ? Expanded(
-                        child: ListView.separated(
-                          // physics: ScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: responseData['wallet_history'].length,
-                          separatorBuilder: (context, index) => SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 3),
-                          ),
-                          itemBuilder: (context, index) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(kDefaultPadding),
-                              ),
-                              child: Material(
-                                color: kPrimaryColor,
-                                child: ListTile(
-                                  tileColor: kPrimaryColor,
-                                  title: responseData['wallet_history'][index]
-                                              ['wallet_description'] !=
-                                          "Card : undefined"
-                                      ? Text(
-                                          "${responseData['wallet_history'][index]['wallet_description']}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500),
-                                        )
-                                      : Text(
-                                          "Online Top-up",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                  subtitle: Text(
-                                      "${responseData['wallet_history'][index]['updated_at'].split("T")[0]} ${responseData['wallet_history'][index]['updated_at'].split("T")[1].split('.')[0]}"),
-                                  trailing: RichText(
-                                    text: TextSpan(
-                                      text: responseData['wallet_history']
-                                                  [index]['wallet_amount'] <
-                                              responseData['wallet_history']
-                                                  [index]['total_wallet_amount']
-                                          ? "+ "
-                                          : "- ",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                          text:
-                                              " ${Provider.of<ZMetaData>(context, listen: false).currency} ",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleSmall,
-                                        ),
-                                        TextSpan(
-                                          text: responseData['wallet_history']
-                                                  [index]['from_amount']
-                                              .toStringAsFixed(2),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge
-                                              ?.copyWith(
-                                                  color: responseData['wallet_history']
-                                                                  [index][
-                                                              'wallet_amount'] <
-                                                          responseData[
-                                                                      'wallet_history']
-                                                                  [index][
-                                                              'total_wallet_amount']
-                                                      ? Colors.green
-                                                      : kSecondaryColor,
-                                                  fontWeight: FontWeight.bold),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Text("No wallet transactions yet!")
-                : isLoading
-                    ? SpinKitWave(
-                        color: kSecondaryColor,
-                        size: getProportionateScreenWidth(kDefaultPadding),
-                      )
-                    : Text("Transaction history not found!")
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -498,19 +1136,22 @@ class _BorsaScreenState extends State<BorsaScreen> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
-          setState(() {
-            isLoading = false;
-          });
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
+
           throw TimeoutException("The connection has timed out!");
         },
       );
+
       responseData = json.decode(response.body);
+
       return json.decode(response.body);
     } catch (e) {
-      // debugPrint(e);
       return null;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -535,18 +1176,19 @@ class _BorsaScreenState extends State<BorsaScreen> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
-          setState(() {
-            isLoading = false;
-          });
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
+
           throw TimeoutException("The connection has timed out!");
         },
       );
       return json.decode(response.body);
     } catch (e) {
-      // debugPrint(e);
       return null;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -557,7 +1199,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
       "user_id": widget.userData['user']['_id'],
       "top_up_user_phone": payeePhone,
       "password": payerPassword,
-      "wallet": amount,
+      "wallet": transferAmount,
       "server_token": widget.userData['user']['server_token'],
     };
     var body = json.encode(data);
@@ -574,32 +1216,79 @@ class _BorsaScreenState extends State<BorsaScreen> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
-          setState(() {
-            isLoading = false;
-          });
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
+
           throw TimeoutException("The connection has timed out!");
         },
       );
       return json.decode(response.body);
     } catch (e) {
-      // debugPrint(e);
       return null;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
+  }
+
+  ////Topup wallet ammount//
+  Future<void> _addToWallet() async {
+    try {
+      var data = await amoleAddToBorsa();
+
+      if (data != null && data['success']) {
+        // userData['user']['wallet'] += topUpAmount;
+        // Service.save('user', userData);
+        Navigator.of(context).pop();
+        Service.showMessage(
+          context: context,
+          title: "Wallet top-up completed successfully!",
+          error: false,
+        );
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
+      Service.showMessage(
+        context: context,
+        title:
+            "Add to wallet failed! Please check if you have sufficient fund.",
+        error: true,
+        duration: 4,
+      );
+    } finally {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          topUpAmount = 0.0;
+          isLoading = false;
+        });
+      });
+    }
+  }
+
+  String paymentId = '';
+  String getPaymentMethodIdByName(String name) {
+    final methods = kifiyaGateway['payment_gateway'] as List;
+    final method = methods.firstWhere(
+      (m) => m['name'].toString().toLowerCase() == name.toLowerCase(),
+      orElse: () => null,
+    );
+    return method != null ? method['_id'] : '';
   }
 
   Future<dynamic> amoleAddToBorsa() async {
     setState(() {
-      _loading = true;
+      isLoading = true;
     });
     var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_wallet_amount";
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_wallet_amount_new";
 
     Map data = {
       "user_id": userData['user']['_id'],
-      "payment_id": kifiyaGateway['payment_gateway'][0]['_id'],
-      "otp": otp,
+      "payment_id": paymentId,
+      // kifiyaGateway['payment_gateway'][0]['_id'],
+      // "otp": otp,
+      "is_payment_paid": true,
       "type": userData['user']['admin_type'],
       "server_token": userData['user']['server_token'],
       "wallet": topUpAmount,
@@ -620,34 +1309,109 @@ class _BorsaScreenState extends State<BorsaScreen> {
         Duration(seconds: 10),
         onTimeout: () {
           setState(() {
-            this._loading = false;
+            this.isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+          Service.showMessage(
+            error: true,
+            context: context,
+            title: "Something went wrong!",
           );
           throw TimeoutException("The connection has timed out!");
         },
       );
+      return json.decode(response.body);
+    } catch (e) {
+      Service.showMessage(
+        error: true,
+        context: context,
+        title: "Your internet connection is bad!",
+      );
+      return null;
+    } finally {
       setState(() {
-        this._loading = false;
+        this.isLoading = false;
       });
+    }
+  }
+
+  ///_getKifiyaGateway
+  ///
+  ///
+  void _getKifiyaGateway() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      var data = await getKifiyaGateway();
+      if (data != null && data['success']) {
+        setState(() {
+          kifiyaGateway = data;
+        });
+      } else {
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true,
+        );
+        await Future.delayed(Duration(seconds: 2));
+        if (data['error_code'] == 999) {
+          await Service.saveBool('logged', false);
+          await Service.remove('user');
+          Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+        }
+      }
+    } catch (e) {
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong, please try agin!",
+        error: true,
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<dynamic> getKifiyaGateway() async {
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_payment_gateway";
+    Map data = {
+      "user_id": widget.userData['user']['_id'],
+      "city_id": "5b406b46d2ddf8062d11b788",
+      "server_token": widget.userData['user']['server_token'],
+    };
+    var body = json.encode(data);
+    try {
+      http.Response response = await http
+          .post(
+        Uri.parse(url),
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: body,
+      )
+          .timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException("The connection has timed out!");
+        },
+      );
 
       return json.decode(response.body);
     } catch (e) {
-      // debugPrint(e);
-      setState(() {
-        this._loading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Your internet connection is bad!"),
-          backgroundColor: kSecondaryColor,
-        ),
+      Service.showMessage(
+        context: context,
+        title:
+            "Something went wrong, please check your connection and try again!",
+        error: true,
       );
       return null;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 }
@@ -717,3 +1481,200 @@ class CustomCard extends StatelessWidget {
     );
   }
 }
+
+
+
+// !showPayments
+//                         ? Form(
+//                             key: topupFormKey,
+//                             child: Column(
+//                               mainAxisSize: MainAxisSize.min,
+//                               crossAxisAlignment: CrossAxisAlignment.start,
+//                               spacing:
+//                                   getProportionateScreenHeight(kDefaultPadding),
+//                               children: [
+//                                 CustomTextField(
+//                                   // style: TextStyle(color: kBlackColor),
+//                                   keyboardType: TextInputType.numberWithOptions(
+//                                       decimal: true),
+//                                   onChanged: (val) {
+//                                     setState(() {
+//                                       // Safely parse to double, default to 0.0 if empty
+//                                       topUpAmount = double.tryParse(val) ?? 0.0;
+//                                     });
+//                                   },
+
+//                                   hintText: "Enter the amount to send",
+//                                   validator: (value) {
+//                                     if (value == null || value.isEmpty) {
+//                                       WidgetsBinding.instance
+//                                           .addPostFrameCallback((_) {
+//                                         // Use postFrameCallback to avoid setState during build
+//                                         if (mounted && showPayments) {
+//                                           // Check if mounted and payments were shown
+//                                           setState(() {
+//                                             showPayments = false;
+//                                           });
+//                                         }
+//                                       });
+//                                       return "Please enter the amount";
+//                                     }
+
+//                                     // Try parsing the value
+//                                     final double? price =
+//                                         double.tryParse(value);
+
+//                                     if (price == null) {
+//                                       WidgetsBinding.instance
+//                                           .addPostFrameCallback((_) {
+//                                         if (mounted && showPayments) {
+//                                           setState(() {
+//                                             showPayments = false;
+//                                           });
+//                                         }
+//                                       });
+//                                       return "Invalid number entered.";
+//                                     }
+
+//                                     if (price < 100.0) {
+//                                       // Changed to < 100.0 as per your message
+//                                       WidgetsBinding.instance
+//                                           .addPostFrameCallback((_) {
+//                                         if (mounted && showPayments) {
+//                                           setState(() {
+//                                             showPayments = false;
+//                                           });
+//                                         }
+//                                       });
+//                                       final currency = Provider.of<ZMetaData>(
+//                                               context,
+//                                               listen: false)
+//                                           .currency;
+//                                       return "The minimum amount you can add is 100 $currency.";
+//                                     }
+//                                     if (price == 0.0) {
+//                                       WidgetsBinding.instance
+//                                           .addPostFrameCallback((_) {
+//                                         if (mounted && showPayments) {
+//                                           setState(() {
+//                                             showPayments = false;
+//                                           });
+//                                         }
+//                                       });
+//                                       return "Amount cannot be zero.";
+//                                     }
+//                                     return null;
+//                                   },
+//                                 ),
+//                                 CustomButton(
+//                                   title: "Submit",
+//                                   isLoading: isLoading,
+//                                   press: () async {
+//                                     if (topupFormKey.currentState!.validate()) {
+//                                       setState(() {
+//                                         showPayments = true;
+//                                       });
+//                                     }
+//                                   },
+//                                 ),
+//                               ],
+//                             ),
+//                           )
+//                         : Column(
+//                             mainAxisSize: MainAxisSize.min,
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             spacing:
+//                                 getProportionateScreenHeight(kDefaultPadding),
+//                             children: [
+//                               PaymentCard(
+//                                 title: "Telebirr InApp",
+//                                 subtitle: "Pay with mobile app",
+//                                 imageUrl: "images/telebirr.png",
+//                                 onPressed: () {
+//                                   _getKifiyaGateway();
+
+//                                   if (kifiyaGateway != null &&
+//                                       kifiyaGateway['success'] &&
+//                                       kifiyaGateway['payment_gateway'] !=
+//                                           null) {
+//                                     final telebirrId = getPaymentMethodIdByName(
+//                                         "Telebirr inapp");
+
+//                                     setState(() {
+//                                       paymentId = telebirrId;
+//                                     });
+//                                     Navigator.push(
+//                                       context,
+//                                       MaterialPageRoute(builder: (context) {
+//                                         return TopupPaymentInApp(
+//                                           amount: topUpAmount,
+//                                           context: context,
+//                                           traceNo: uniqueId,
+//                                           phone: userData['user']['phone'],
+//                                         );
+//                                       }),
+//                                     ).then((value) async {
+//                                       if (value != null) {
+//                                         if (value == false) {
+//                                           Navigator.of(context).pop();
+//                                           Service.showMessage(
+//                                             error: true,
+//                                             context: context,
+//                                             title:
+//                                                 "Faild to topup wallet amount. Please try again!.",
+//                                           );
+//                                         } else if ((value['code'] != null &&
+//                                                 value['code'] == 0) ||
+//                                             (value['status'] != null &&
+//                                                 value['status']
+//                                                         .toString()
+//                                                         .toLowerCase() ==
+//                                                     "success")) {
+//                                           _addToWallet();
+//                                         }
+//                                       } else {
+//                                         Navigator.of(context).pop();
+
+//                                         Future.delayed(
+//                                             Duration(milliseconds: 100), () {
+//                                           if (mounted) {
+//                                             Service.showMessage(
+//                                               error: true,
+//                                               context: context,
+//                                               title:
+//                                                   "Faild to topup wallet amount. Please try again!.",
+//                                             );
+//                                           }
+//                                         });
+//                                       }
+//                                     });
+//                                   }
+//                                 },
+//                               ),
+//                               PaymentCard(
+//                                 title: "Telebirr USSD",
+//                                 subtitle: "Pay with USSD code",
+//                                 imageUrl: "images/telebirr.png",
+//                                 onPressed: () {
+//                                   Navigator.push(
+//                                     context,
+//                                     MaterialPageRoute(builder: (context) {
+//                                       return TopupPaymentUssd(
+//                                         amount: topUpAmount,
+//                                         traceNo:
+//                                             "${uniqueId}_${userData['user']['_id']}",
+//                                         phone: userData['user']['phone'],
+//                                         userId: userData['user']['_id'],
+//                                         url:
+//                                             "http://196.189.44.60:8069/telebirr/ussd/send_sms",
+//                                         // serverToken: userData['user']
+//                                         //     ['serverToken'],
+//                                         // orderPaymentId:
+//                                         //     DateTime.now().toIso8601String(),
+//                                       );
+//                                     }),
+//                                   ).then((_) => Navigator.of(context).pop());
+//                                 },
+//                               ),
+//                             ],
+//                           ),

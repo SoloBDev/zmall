@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
+import 'package:zmall/service.dart';
 
 import 'components/body.dart';
 
@@ -24,7 +25,7 @@ class GlobalStore extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(category['delivery_name'],
+        title: Text(Service.capitalizeFirstLetters(category['delivery_name']),
             style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),

@@ -8,15 +8,16 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/models/metadata.dart';
+import 'package:zmall/size_config.dart';
 
 import 'constants.dart';
 
 class Service {
   static Future<void> launchInWebViewOrVC(String url) async {
-    if (await canLaunch(url)) {
-      await launch(
-        url,
-        forceSafariVC: true,
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(
+        Uri.parse(url),
+        // forceSafariVC: true,
         // forceWebView: true,
       );
     } else {
@@ -24,7 +25,7 @@ class Service {
     }
   }
 
-  static SnackBar showMessage(String? title, bool error, {int duration = 2}) {
+  static SnackBar showMessage1(String? title, bool error, {int duration = 2}) {
     final snackbar = SnackBar(
       backgroundColor: error ? kSecondaryColor : kGreyColor,
       content: Text(
@@ -40,6 +41,36 @@ class Service {
     return snackbar;
   }
 
+  static void showMessage({
+    required BuildContext context,
+    String? title,
+    bool? error,
+    int duration = 2,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: error == null
+          ? kGreyColor
+          : error
+              ? kSecondaryColor
+              : kGreenColor,
+      content: Text(
+        title!,
+        style: TextStyle(
+          fontSize: 15,
+          color: kPrimaryColor,
+        ),
+      ),
+      duration: Duration(seconds: duration),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kDefaultPadding),
+      ),
+      padding: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding)),
+    ));
+  }
+
   static Future<bool> isConnected(context) async {
     try {
       final result = await InternetAddress.lookup('google.com');
@@ -47,12 +78,14 @@ class Service {
         return true;
       }
     } on SocketException catch (_) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(showMessage("Check your internet connection", true));
+      showMessage(
+          context: context,
+          title: "Check your internet connection",
+          error: true);
       return false;
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(showMessage("Check your internet connection", true));
+    showMessage(
+        context: context, title: "Check your internet connection", error: true);
     return false;
   }
 

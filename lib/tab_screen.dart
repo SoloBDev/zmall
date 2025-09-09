@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/home/home_screen.dart';
 import 'package:zmall/models/language.dart';
@@ -53,15 +54,18 @@ class _TabScreenState extends State<TabScreen> {
         backgroundColor: kWhiteColor,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
+            icon: Icon(HeroiconsMini.home),
+            // Icons.home_rounded),
             label: Provider.of<ZLanguage>(context).home,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.view_list),
+            // icon: Icon(HeroiconsMini.shoppingBag),
             label: Provider.of<ZLanguage>(context).orders,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_rounded),
+            icon: Icon(HeroiconsMini.user),
+            // icon: Icon(Icons.account_circle_rounded),
             label: Provider.of<ZLanguage>(context).profile,
           ),
         ],

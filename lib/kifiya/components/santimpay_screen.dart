@@ -15,7 +15,7 @@ class SantimPay extends StatefulWidget {
     required this.phone,
     required this.traceNo,
     required this.orderPaymentId,
-    this.title = "SantimPay Payment Gateway",
+    this.title = "SantimPay Payment",
     this.isAbroad = false,
   });
   final String url;
@@ -54,44 +54,56 @@ class _SantimPayState extends State<SantimPay> {
   void _initiateUrl() async {
     var data = await initiateUrl();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Invoice initiated successfully. Loading...", false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "Invoice initiated successfully. Loading...",
+        error: false,
+        duration: 3,
+      );
       setState(() {
         initUrl = data['url'];
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Error while initiating payment. Please try again.", true,
-          duration: 4));
+      Service.showMessage(
+        context: context,
+        title: "Error while initiating payment. Please try again.",
+        error: true,
+        duration: 4,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _loading
-        ? Scaffold(
-            appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: TextStyle(color: kBlackColor),
+        ),
+      ),
+      body: _loading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitWave(
+                    color: kSecondaryColor,
+                    size: getProportionateScreenWidth(kDefaultPadding * 2),
+                  ),
+                  SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding)),
+                  Text(
+                    "Connecting to SantimPay...",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: kBlackColor.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
               ),
-            ),
-            body: Center(
-              child: SpinKitWave(
-                color: kSecondaryColor,
-                size: getProportionateScreenWidth(kDefaultPadding),
-              ),
-            ),
-          )
-        : Scaffold(
-            appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
-            ),
-            body: InAppWebView(
+            )
+          : InAppWebView(
               initialSettings: settings,
               initialUrlRequest: URLRequest(
                 url: WebUri(initUrl),
@@ -100,7 +112,7 @@ class _SantimPayState extends State<SantimPay> {
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
             ),
-          );
+    );
   }
 
   Future<dynamic> initiateUrl() async {
@@ -147,10 +159,11 @@ class _SantimPayState extends State<SantimPay> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
+import 'package:zmall/register/components/custom_suffix_icon.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
@@ -56,16 +57,17 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       // print("data $data");
       // if (data != null && data['success']) {
       if (data != null && data["success"] != null && data["success"]) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("Password updated successfully", false),
-        );
+        Service.showMessage(
+            context: context,
+            title: "Password updated successfully",
+            error: false);
 
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
-              "Failed to update password, please try again later", true),
-        );
+        Service.showMessage(
+            context: context,
+            title: "Failed to update password, please try again later",
+            error: true);
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -88,6 +90,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         key: _scaffoldKey,
+        backgroundColor: kPrimaryColor,
         appBar: AppBar(
           title: Text(
             "Update Password",
@@ -122,11 +125,25 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                   key: _formKey,
                   child: Column(
                     spacing: kDefaultPadding * 1.5,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          Container(
+                            padding: EdgeInsets.all(kDefaultPadding / 1.5),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding),
+                                color: kWhiteColor),
+                            child: Icon(
+                              HeroiconsOutline.lockClosed,
+                              size: 40,
+                              color: kBlackColor.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(height: kDefaultPadding / 2),
                           const Text(
                             "Reset Password",
                             style: TextStyle(
@@ -148,21 +165,16 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                               kDefaultPadding / 8)),
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.0),
-                        child: _loading
-                            ? SpinKitWave(
-                                color: kSecondaryColor,
-                                size: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                              )
-                            : CustomButton(
-                                title: "Update Password",
-                                color: kSecondaryColor,
-                                press: () {
-                                  debugPrint("Updating password");
-                                  if (_formKey.currentState!.validate()) {
-                                    updatePassword(code, phone, newPassword);
-                                  }
-                                }),
+                        child: CustomButton(
+                            isLoading: _loading,
+                            title: "Update Password",
+                            color: kSecondaryColor,
+                            press: () {
+                              // debugPrint("Updating password");
+                              if (_formKey.currentState!.validate()) {
+                                updatePassword(code, phone, newPassword);
+                              }
+                            }),
                       ),
                     ],
                   ),
@@ -193,8 +205,11 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         }
         return null;
       },
-      labelText: "OTP",
-      hintText: "     Enter your OTP",
+      // labelText: "OTP",
+      hintText: " Enter your OTP",
+      prefix: CustomSuffixIcon(
+        iconData: HeroiconsOutline.key,
+      ),
     );
   }
 
@@ -213,15 +228,19 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         }
         return null;
       },
-      labelText: "New Password",
-      hintText: "     Enter your password",
+      // labelText: "New Password",
+      hintText: " Enter new password",
       suffixIcon: IconButton(
         onPressed: () {
           setState(() {
             _showPassword = !_showPassword;
           });
         },
-        icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+        icon: Icon(
+            _showPassword ? HeroiconsOutline.eyeSlash : HeroiconsOutline.eye),
+      ),
+      prefix: CustomSuffixIcon(
+        iconData: HeroiconsOutline.lockClosed,
       ),
     );
   }
@@ -241,16 +260,20 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         }
         return null;
       },
-      labelText: "Confirm Password",
-      hintText: "     Re-enter your password",
+      // labelText: "Confirm Password",
+      hintText: " Confirm your password", //Re-enter
       suffixIcon: IconButton(
         onPressed: () {
           setState(() {
             _showConfirmPassword = !_showConfirmPassword;
           });
         },
-        icon: Icon(
-            _showConfirmPassword ? Icons.visibility_off : Icons.visibility),
+        icon: Icon(_showConfirmPassword
+            ? HeroiconsOutline.eyeSlash
+            : HeroiconsOutline.eye),
+      ),
+      prefix: CustomSuffixIcon(
+        iconData: HeroiconsOutline.lockClosed,
       ),
     );
   }

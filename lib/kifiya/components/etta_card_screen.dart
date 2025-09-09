@@ -13,13 +13,13 @@ import 'package:zmall/size_config.dart';
 
 class EttaCardScreen extends StatefulWidget {
   const EttaCardScreen({
-    Key? key,
+    super.key,
     required this.phone,
     required this.amount,
     required this.traceNo,
     required this.orderPaymentId,
     required this.url,
-  }) : super(key: key);
+  });
 
   final String url;
   final double amount;
@@ -47,14 +47,20 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
     });
     var data = await payPayment();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Payment completed successfully.", false,
-          duration: 5));
+      Service.showMessage(
+        context: context,
+        title: "Payment completed successfully.",
+        error: false,
+        duration: 5,
+      );
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Payment failed. Please try other payment methods", true,
-          duration: 4));
+      Service.showMessage(
+        context: context,
+        title: "Payment failed. Please try other payment methods",
+        error: true,
+        duration: 4,
+      );
       await Future.delayed(Duration(seconds: 4))
           .then((value) => Navigator.pop(context));
     }
@@ -249,10 +255,11 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

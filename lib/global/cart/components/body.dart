@@ -21,7 +21,6 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getCart();
   }
@@ -73,310 +72,323 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      color: kPrimaryColor,
-      progressIndicator: linearProgressIndicator,
-      inAsyncCall: _loading,
-      child: cart != null && cart!.items!.length > 0
-          ? Column(
-              children: [
-                SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
-                Expanded(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: cart!.toJson()['items'].length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 2)),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                            borderRadius:
-                                BorderRadius.circular(kDefaultPadding),
-                          ),
+    return SafeArea(
+      child: ModalProgressHUD(
+        color: kPrimaryColor,
+        progressIndicator: linearProgressIndicator,
+        inAsyncCall: _loading,
+        child: cart != null && cart!.items!.length > 0
+            ? Column(
+                children: [
+                  SizedBox(
+                      height:
+                          getProportionateScreenHeight(kDefaultPadding / 2)),
+                  Expanded(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: cart!.toJson()['items'].length,
+                      separatorBuilder: (BuildContext context, int index) =>
+                          SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 4),
+                      ),
+                      itemBuilder: (context, index) {
+                        return Padding(
                           padding: EdgeInsets.symmetric(
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Row(
-                            children: [
-                              ImageContainer(url: cart!.items![index].imageURL),
-                              SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 4)),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      cart!.items![index].itemName!,
-                                      style: TextStyle(
-                                        fontSize: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                        fontWeight: FontWeight.bold,
-                                        color: kBlackColor,
-                                      ),
-                                      softWrap: true,
-                                    ),
-                                    SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 5)),
-                                    Text(
-                                      "ብር ${cart!.items![index].price!.toStringAsFixed(2)}",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: kGreyColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding / 5),
-                                    ),
-                                    Text(cart!.items![index].noteForItem),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                children: [
-                                  Row(
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 2)),
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding),
+                                border: Border.all(color: kWhiteColor)),
+                            padding: EdgeInsets.symmetric(
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Row(
+                              children: [
+                                ImageContainer(
+                                    url: cart!.items![index].imageURL),
+                                SizedBox(
+                                    width: getProportionateScreenWidth(
+                                        kDefaultPadding / 4)),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      IconButton(
-                                          icon: Icon(
-                                            Icons.remove_circle_outline,
-                                            color:
-                                                cart!.items![index].quantity !=
-                                                        1
-                                                    ? kSecondaryColor
-                                                    : kGreyColor,
-                                          ),
-                                          onPressed: cart!
-                                                      .items![index].quantity ==
-                                                  1
-                                              ? () {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                          Service.showMessage(
-                                                              "Minimum order quantity is 1!",
-                                                              true));
-                                                }
-                                              : () {
-                                                  int currQty = cart!
-                                                      .items![index].quantity!;
-                                                  double unitPrice = cart!
-                                                          .items![index]
-                                                          .price! /
-                                                      currQty;
-                                                  setState(() {
-                                                    cart!.items![index]
-                                                        .quantity = currQty - 1;
-                                                    cart!.items![index].price =
-                                                        unitPrice *
-                                                            (currQty - 1);
-                                                    Service.save(
-                                                        'abroad_cart', cart);
-                                                    // Update aliexpressCart if applicable
-                                                    if (aliexpressCart !=
-                                                            null &&
-                                                        aliexpressCart!
-                                                                .cart.storeId ==
-                                                            cart!.storeId) {
-                                                      // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
-                                                      aliexpressCart!
-                                                              .cart
-                                                              .items![index]
-                                                              .quantity =
-                                                          currQty - 1;
-                                                      aliexpressCart!
-                                                              .cart
-                                                              .items![index]
-                                                              .price =
-                                                          unitPrice *
-                                                              (currQty - 1);
-                                                      Service.save(
-                                                          'abroad_aliexpressCart',
-                                                          aliexpressCart); // Save updated aliexpressCart
-                                                    }
-                                                  });
-                                                  // debugPrint(
-                                                  //     "cart ${cart!.toJson()}");
-                                                  // debugPrint(
-                                                  //     "Alicart ${aliexpressCart!.toJson()}");
-                                                  calculatePrice();
-                                                }),
                                       Text(
-                                        "${cart!.items![index].quantity}",
+                                        cart!.items![index].itemName!,
+                                        style: TextStyle(
+                                          fontSize: getProportionateScreenWidth(
+                                              kDefaultPadding),
+                                          fontWeight: FontWeight.bold,
+                                          color: kBlackColor,
+                                        ),
+                                        softWrap: true,
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 5)),
+                                      Text(
+                                        "ብር ${cart!.items![index].price!.toStringAsFixed(2)}",
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleMedium
                                             ?.copyWith(
-                                              color: kBlackColor,
+                                              color: kGreyColor,
                                               fontWeight: FontWeight.bold,
                                             ),
                                       ),
-                                      IconButton(
-                                          icon: Icon(
-                                            Icons.add_circle,
-                                            color: kSecondaryColor,
-                                          ),
-                                          onPressed: () {
-                                            int? currQty =
-                                                cart!.items![index].quantity;
-                                            double unitPrice =
-                                                cart!.items![index].price! /
-                                                    currQty!;
-                                            setState(() {
-                                              cart!.items![index].quantity =
-                                                  currQty + 1;
-                                              cart!.items![index].price =
-                                                  unitPrice * (currQty + 1);
-                                              Service.save('abroad_cart', cart);
-                                              // Update aliexpressCart if applicable
-                                              if (aliexpressCart != null &&
-                                                  aliexpressCart!
-                                                          .cart.storeId ==
-                                                      cart!.storeId) {
-                                                // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
-                                                aliexpressCart!
-                                                    .cart
-                                                    .items![index]
-                                                    .quantity = currQty + 1;
-                                                aliexpressCart!.cart
-                                                        .items![index].price =
-                                                    unitPrice * (currQty + 1);
-                                                Service.save(
-                                                    'abroad_aliexpressCart',
-                                                    aliexpressCart); // Save updated aliexpressCart
-                                              }
-                                            });
-                                            // debugPrint("cart ${cart!.toJson()}");
-                                            // debugPrint(
-                                            //     "Alicart ${aliexpressCart!.toJson()}");
-                                            calculatePrice();
-                                          }),
+                                      SizedBox(
+                                        height: getProportionateScreenHeight(
+                                            kDefaultPadding / 5),
+                                      ),
+                                      Text(cart!.items![index].noteForItem),
                                     ],
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        cart!.items!.removeAt(index);
-                                        Service.save('abroad_cart', cart);
-                                        if (aliexpressCart != null &&
-                                            aliexpressCart!.cart.storeId ==
-                                                cart!.storeId) {
-                                          aliexpressCart!.cart.items!
-                                              .removeAt(index);
-                                          aliexpressCart!.itemIds!
-                                              .removeAt(index);
-                                          aliexpressCart!.productIds!
-                                              .removeAt(index);
-                                          Service.save('abroad_aliexpressCart',
-                                              aliexpressCart); //NEW
-                                        }
-                                      });
-                                      // debugPrint("cart ${cart!.toJson()}");
-                                      // debugPrint(
-                                      //     "Alicart ${aliexpressCart!.toJson()}");
-                                      calculatePrice();
-                                    },
-                                    child: Text(
-                                      "Remove",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(color: kSecondaryColor),
+                                ),
+                                Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                            icon: Icon(
+                                              Icons.remove_circle_outline,
+                                              color: cart!.items![index]
+                                                          .quantity !=
+                                                      1
+                                                  ? kSecondaryColor
+                                                  : kGreyColor,
+                                            ),
+                                            onPressed: cart!.items![index]
+                                                        .quantity ==
+                                                    1
+                                                ? () {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(Service
+                                                            .showMessage1(
+                                                                "Minimum order quantity is 1!",
+                                                                true));
+                                                  }
+                                                : () {
+                                                    int currQty = cart!
+                                                        .items![index]
+                                                        .quantity!;
+                                                    double unitPrice = cart!
+                                                            .items![index]
+                                                            .price! /
+                                                        currQty;
+                                                    setState(() {
+                                                      cart!.items![index]
+                                                              .quantity =
+                                                          currQty - 1;
+                                                      cart!.items![index]
+                                                              .price =
+                                                          unitPrice *
+                                                              (currQty - 1);
+                                                      Service.save(
+                                                          'abroad_cart', cart);
+                                                      // Update aliexpressCart if applicable
+                                                      if (aliexpressCart !=
+                                                              null &&
+                                                          aliexpressCart!.cart
+                                                                  .storeId ==
+                                                              cart!.storeId) {
+                                                        // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
+                                                        aliexpressCart!
+                                                                .cart
+                                                                .items![index]
+                                                                .quantity =
+                                                            currQty - 1;
+                                                        aliexpressCart!
+                                                                .cart
+                                                                .items![index]
+                                                                .price =
+                                                            unitPrice *
+                                                                (currQty - 1);
+                                                        Service.save(
+                                                            'abroad_aliexpressCart',
+                                                            aliexpressCart); // Save updated aliexpressCart
+                                                      }
+                                                    });
+                                                    // debugPrint(
+                                                    //     "cart ${cart!.toJson()}");
+                                                    // debugPrint(
+                                                    //     "Alicart ${aliexpressCart!.toJson()}");
+                                                    calculatePrice();
+                                                  }),
+                                        Text(
+                                          "${cart!.items![index].quantity}",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                color: kBlackColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        IconButton(
+                                            icon: Icon(
+                                              Icons.add_circle,
+                                              color: kSecondaryColor,
+                                            ),
+                                            onPressed: () {
+                                              int? currQty =
+                                                  cart!.items![index].quantity;
+                                              double unitPrice =
+                                                  cart!.items![index].price! /
+                                                      currQty!;
+                                              setState(() {
+                                                cart!.items![index].quantity =
+                                                    currQty + 1;
+                                                cart!.items![index].price =
+                                                    unitPrice * (currQty + 1);
+                                                Service.save(
+                                                    'abroad_cart', cart);
+                                                // Update aliexpressCart if applicable
+                                                if (aliexpressCart != null &&
+                                                    aliexpressCart!
+                                                            .cart.storeId ==
+                                                        cart!.storeId) {
+                                                  // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
+                                                  aliexpressCart!
+                                                      .cart
+                                                      .items![index]
+                                                      .quantity = currQty + 1;
+                                                  aliexpressCart!.cart
+                                                          .items![index].price =
+                                                      unitPrice * (currQty + 1);
+                                                  Service.save(
+                                                      'abroad_aliexpressCart',
+                                                      aliexpressCart); // Save updated aliexpressCart
+                                                }
+                                              });
+                                              // debugPrint("cart ${cart!.toJson()}");
+                                              // debugPrint(
+                                              //     "Alicart ${aliexpressCart!.toJson()}");
+                                              calculatePrice();
+                                            }),
+                                      ],
                                     ),
-                                  )
-                                ],
-                              ),
-                            ],
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          cart!.items!.removeAt(index);
+                                          Service.save('abroad_cart', cart);
+                                          if (aliexpressCart != null &&
+                                              aliexpressCart!.cart.storeId ==
+                                                  cart!.storeId) {
+                                            aliexpressCart!.cart.items!
+                                                .removeAt(index);
+                                            aliexpressCart!.itemIds!
+                                                .removeAt(index);
+                                            aliexpressCart!.productIds!
+                                                .removeAt(index);
+                                            Service.save(
+                                                'abroad_aliexpressCart',
+                                                aliexpressCart); //NEW
+                                          }
+                                        });
+                                        // debugPrint("cart ${cart!.toJson()}");
+                                        // debugPrint(
+                                        //     "Alicart ${aliexpressCart!.toJson()}");
+                                        calculatePrice();
+                                      },
+                                      child: Text(
+                                        "Remove",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(color: kSecondaryColor),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    separatorBuilder: (BuildContext context, int index) =>
-                        SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 4),
+                        );
+                      },
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                  child: Padding(
+                  Container(
                     padding: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 3)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Cart Total: ",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(color: kBlackColor),
-                        ),
-                        Text(
-                          "ብር ${price.toStringAsFixed(2)}",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                  color: kBlackColor,
-                                  fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding)),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: getProportionateScreenHeight(
+                              kDefaultPadding / 3)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Cart Total: ",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(color: kBlackColor),
+                          ),
+                          Text(
+                            "ብር ${price.toStringAsFixed(2)}",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                    color: kBlackColor,
+                                    fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        getProportionateScreenWidth(kDefaultPadding * 2),
-                    vertical: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  child: CustomButton(
-                    title: "Checkout",
-                    press: () {
-                      Navigator.pushNamed(context, GlobalDelivery.routeName);
-                    },
-                    color: kSecondaryColor,
-                  ),
-                ),
-              ],
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_shopping_cart_outlined,
-                    size: getProportionateScreenHeight(kDefaultPadding * 3),
-                    color: kSecondaryColor,
                   ),
                   SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 3)),
-                  Text(
-                    "Empty Basket",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  )
+                    height: getProportionateScreenHeight(kDefaultPadding / 4),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal:
+                          getProportionateScreenWidth(kDefaultPadding * 2),
+                      vertical: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    child: CustomButton(
+                      title: "Checkout",
+                      press: () {
+                        Navigator.pushNamed(context, GlobalDelivery.routeName);
+                      },
+                      color: kSecondaryColor,
+                    ),
+                  ),
                 ],
+              )
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_shopping_cart_outlined,
+                      size: getProportionateScreenHeight(kDefaultPadding * 3),
+                      color: kSecondaryColor,
+                    ),
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 3)),
+                    Text(
+                      "Empty Basket",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    )
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

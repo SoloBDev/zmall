@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -45,8 +46,12 @@ class _OrderHistoryState extends State<OrderHistory> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      if (data['error_code'] != null && data['error_code'] != 652) {
+        Service.showMessage(
+            context: context,
+            title: "${errorCodes['${data['error_code']}']}!",
+            error: true);
+      }
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
@@ -71,172 +76,252 @@ class _OrderHistoryState extends State<OrderHistory> {
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
-      inAsyncCall: _loading,
-      // progressIndicator: linearProgressIndicator,
+      inAsyncCall: _loading && userData != null,
       progressIndicator: userData != null && responseData != null
           ? LinearLoadingIndicator()
           : ProductListShimmer(),
       color: kPrimaryColor,
-      child: userData != null && responseData != null
-          ? Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: getProportionateScreenHeight(kDefaultPadding) / 2,
-                horizontal: getProportionateScreenWidth(kDefaultPadding) / 1.5,
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: responseData['order_list'].length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return OrderHistoryDetail(
-                                orderId: responseData['order_list'][index]
-                                    ['_id'],
-                                userId: userData['user']['_id'],
-                                serverToken: userData['user']['server_token']);
-                          },
+      child: userData == null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    HeroiconsOutline
+                        .lockClosed, // A lock icon to signify login is required
+                    size: getProportionateScreenHeight(kDefaultPadding * 4),
+                    color: kSecondaryColor.withValues(
+                        alpha: 0.7), // Subtle but noticeable secondary color
+                  ),
+                  SizedBox(
+                    height: getProportionateScreenHeight(
+                        kDefaultPadding), // Increased spacing
+                  ),
+                  Text(
+                    "Access Denied", // A more direct and attention-grabbing headline
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: kGreyColor, // Main text color
                         ),
-                      ).then((value) => getUser());
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(kDefaultPadding),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                      ),
-                      child: Row(
-                        children: [
-                          ImageContainer(
-                              url:
-                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['order_list'][index]['store_detail']['image_url']}"),
-                          SizedBox(
-                              width: getProportionateScreenWidth(
-                                  kDefaultPadding / 1.5)),
-                          Expanded(
-                            flex: 10,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              spacing: getProportionateScreenHeight(
-                                  kDefaultPadding / 5),
-                              children: [
-                                Text(
-                                  Service.capitalizeFirstLetters(
-                                      responseData['order_list'][index]
-                                          ['store_detail']['name']),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: responseData['order_list'][index]
-                                                    ['total'] ==
-                                                0
-                                            ? kSecondaryColor
-                                            : kBlackColor,
-                                      ),
-                                  softWrap: true,
-                                ),
-                                Text(
-                                  "Order No. #${responseData['order_list'][index]['unique_id']}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: kGreyColor,
-                                      ),
-                                ),
-                                Text(
-                                  "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0]}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: kGreyColor,
-                                      ),
-                                ),
-                                Text(
-                                  responseData['order_list'][index]
-                                              ['order_status'] ==
-                                          7
-                                      ? "${order_status['${responseData['order_list'][index]['delivery_status']}']}"
-                                      : "${order_status['${responseData['order_list'][index]['order_status']}']}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: responseData['order_list'][index]
-                                                    ['order_status'] ==
-                                                25
-                                            ? Colors.green
-                                            : kSecondaryColor,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Spacer(),
-                          Column(
-                            children: [
-                              Text(
-                                "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list'][index]['total'].toStringAsFixed(2)}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      color: responseData['order_list'][index]
-                                                  ['total'] ==
-                                              0
-                                          ? kSecondaryColor
-                                          : kBlackColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) => SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(
+                    height: getProportionateScreenHeight(
+                        kDefaultPadding / 4), // Spacing
+                  ),
+                  Text(
+                    "Please log in to view your order history.", // Clear instruction
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: kGreyColor, // Softer color for supporting text
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             )
-          : _loading
-              ? Container()
-              : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.reorder_rounded,
-                        size: getProportionateScreenHeight(kDefaultPadding * 3),
-                        color: kSecondaryColor,
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 3)),
-                      Text(
-                        "Orders not found",
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      )
-                    ],
+          : userData != null && responseData != null
+              ? Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal:
+                        getProportionateScreenWidth(kDefaultPadding / 1.5),
+                  ).copyWith(
+                    top: getProportionateScreenHeight(kDefaultPadding) / 2,
                   ),
-                ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: responseData['order_list'].length,
+                    padding: EdgeInsets.only(
+                      bottom: getProportionateScreenHeight(kDefaultPadding) / 2,
+                    ),
+                    separatorBuilder: (BuildContext context, int index) =>
+                        SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return OrderHistoryDetail(
+                                    orderId: responseData['order_list'][index]
+                                        ['_id'],
+                                    userId: userData['user']['_id'],
+                                    serverToken: userData['user']
+                                        ['server_token']);
+                              },
+                            ),
+                          ).then((value) => getUser());
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            border: Border.all(color: kWhiteColor),
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                            horizontal: getProportionateScreenWidth(
+                                kDefaultPadding / 2),
+                          ),
+                          child: Row(
+                            children: [
+                              ImageContainer(
+                                  url:
+                                      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['order_list'][index]['store_detail']['image_url']}"),
+                              SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 1.5)),
+                              Expanded(
+                                flex: 10,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  spacing: getProportionateScreenHeight(
+                                      kDefaultPadding / 5),
+                                  children: [
+                                    Text(
+                                      Service.capitalizeFirstLetters(
+                                          responseData['order_list'][index]
+                                              ['store_detail']['name']),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: responseData['order_list']
+                                                        [index]['total'] ==
+                                                    0
+                                                ? kSecondaryColor
+                                                : kBlackColor,
+                                          ),
+                                      softWrap: true,
+                                    ),
+                                    Text(
+                                      "Order No. #${responseData['order_list'][index]['unique_id']}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: kGreyColor,
+                                          ),
+                                    ),
+                                    Text(
+                                      "${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[1]}/${responseData['order_list'][index]['created_at'].split('T')[0].split('-')[2]} ${responseData['order_list'][index]['created_at'].split('T')[1].split('.')[0]}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: kGreyColor,
+                                          ),
+                                    ),
+                                    Text(
+                                      responseData['order_list'][index]
+                                                  ['order_status'] ==
+                                              7
+                                          ? "${order_status['${responseData['order_list'][index]['delivery_status']}']}"
+                                          : "${order_status['${responseData['order_list'][index]['order_status']}']}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: responseData['order_list']
+                                                            [index]
+                                                        ['order_status'] ==
+                                                    25
+                                                ? Colors.green
+                                                : kSecondaryColor,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Spacer(),
+                              Column(
+                                children: [
+                                  Text(
+                                    "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list'][index]['total'].toStringAsFixed(2)}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          color: responseData['order_list']
+                                                      [index]['total'] ==
+                                                  0
+                                              ? kSecondaryColor
+                                              : kBlackColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : _loading
+                  ? Container()
+                  : Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              HeroiconsOutline
+                                  .clock, // A more thematic icon for order lists
+                              size: getProportionateScreenHeight(
+                                  kDefaultPadding * 4), // Slightly larger icon
+                              color: kSecondaryColor.withValues(
+                                  alpha:
+                                      0.8), // A slightly muted secondary color
+                            ),
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding), // Increased spacing
+                            ),
+                            Text(
+                              "No Orders Found", // Clearer and more direct message
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700, // Bolder
+                                    color: kGreyColor, // Main text color
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding /
+                                      4), // Spacing between messages
+                            ),
+                            Text(
+                              "Your order list appears empty. Explore products and place your first order!", // Guiding message
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color:
+                                        kGreyColor, // Softer color for supporting text
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
     );
   }
 

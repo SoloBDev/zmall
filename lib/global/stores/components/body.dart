@@ -11,10 +11,13 @@ import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/products/global_products.dart';
 import 'package:zmall/global/stores/global_stores.dart';
 import 'package:timezone/timezone.dart';
+import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/custom_list_tile.dart';
+import 'package:zmall/widgets/custom_search_bar.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class Body extends StatefulWidget {
   Body({
@@ -97,9 +100,10 @@ class _BodyState extends State<Body> {
   void storeOpen(List stores) async {
     isOpen.clear();
     DateFormat dateFormat = new DateFormat.Hm();
-    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    DateTime now = DateTime.now().toUtc();
     if (appOpen == null || appClose == null) {
-      debugPrint("Couldn't find app open-close time...fetching is locally");
+      // debugPrint("Couldn't find app open-close time...fetching is locally");
       appOpen = await Service.read('app_open');
       appClose = await Service.read('app_close');
     }
@@ -176,7 +180,7 @@ class _BodyState extends State<Body> {
       });
       getUser();
     } else {
-      debugPrint("No logged user found");
+      // debugPrint("No logged user found");
     }
   }
 
@@ -194,45 +198,68 @@ class _BodyState extends State<Body> {
     return ModalProgressHUD(
       inAsyncCall: _loading,
       color: kPrimaryColor,
-      progressIndicator: linearProgressIndicator,
+      progressIndicator: LinearLoadingIndicator(),
       child: stores != null
           ? Column(
               children: [
                 !widget.isStore
-                    ? Container(
-                        color: kPrimaryColor,
-                        child: Card(
-                          elevation: 0.3,
-                          child: TextField(
-                            controller: controller,
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              border: InputBorder.none,
-                              prefixIcon: Icon(Icons.search),
-                              suffixIcon: controller.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: Icon(Icons.cancel),
-                                      onPressed: () {
-                                        controller.clear();
-                                        onSearchTextChanged('');
-                                        setState(
-                                          () {
-                                            storeOpen(stores);
-                                          },
-                                        );
-                                      },
-                                    )
-                                  : null,
-                            ),
-                            onChanged: onSearchTextChanged,
-                          ),
-                        ),
-                      )
+                    ? CustomSearchBar(
+                        controller: controller,
+                        hintText: Provider.of<ZLanguage>(context).search,
+                        onChanged: onSearchTextChanged,
+                        onSubmitted: (value) {
+                          onSearchTextChanged(value);
+                        },
+                        onClearButtonTap: () {
+                          controller.clear();
+                          onSearchTextChanged('');
+                          setState(() {
+                            storeOpen(stores);
+                          });
+                        })
+                    // ? Container(
+                    //     color: kPrimaryColor,
+                    //     child: Card(
+                    //       elevation: 0.3,
+                    //       child: TextField(
+                    //         controller: controller,
+                    //         decoration: InputDecoration(
+                    //           hintText: 'Search',
+                    //           border: InputBorder.none,
+                    //           prefixIcon: Icon(Icons.search),
+                    //           suffixIcon: controller.text.isNotEmpty
+                    //               ? IconButton(
+                    //                   icon: Icon(Icons.cancel),
+                    //                   onPressed: () {
+                    //                     controller.clear();
+                    //                     onSearchTextChanged('');
+                    //                     setState(
+                    //                       () {
+                    //                         storeOpen(stores);
+                    //                       },
+                    //                     );
+                    //                   },
+                    //                 )
+                    //               : null,
+                    //         ),
+                    //         onChanged: onSearchTextChanged,
+                    //       ),
+                    //     ),
+                    //   )
                     : Container(),
                 Expanded(
                   child: _searchResult.length != 0 || controller.text.isNotEmpty
                       ? ListView.separated(
                           itemCount: _searchResult.length,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: getProportionateScreenWidth(
+                                kDefaultPadding / 2),
+                          ),
+                          separatorBuilder: (BuildContext context, int index) =>
+                              SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
                           itemBuilder: (BuildContext context, int index) {
                             return Container(
                               child: CustomListTile(
@@ -260,8 +287,7 @@ class _BodyState extends State<Body> {
                                       );
                                     } else {
                                       storeClicked(_searchResult[index]);
-                                      debugPrint(
-                                          "=======================PRODUCTS=======================");
+                                      // debugPrint(  "=======================PRODUCTS=======================");
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -280,8 +306,7 @@ class _BodyState extends State<Body> {
                                     }
                                   } catch (e) {
                                     storeClicked(_searchResult[index]);
-                                    debugPrint(
-                                        "=======================PRODUCTS=======================");
+                                    // debugPrint( "=======================PRODUCTS=======================");
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -305,13 +330,18 @@ class _BodyState extends State<Body> {
                               ),
                             );
                           },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const SizedBox(
-                            height: 2,
-                          ),
                         )
                       : ListView.separated(
                           itemCount: stores.length,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: getProportionateScreenWidth(
+                                kDefaultPadding / 2),
+                          ),
+                          separatorBuilder: (BuildContext context, int index) =>
+                              SizedBox(
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
                           itemBuilder: (BuildContext context, int index) {
                             return Container(
                               child: CustomListTile(
@@ -338,8 +368,7 @@ class _BodyState extends State<Body> {
                                       );
                                     } else {
                                       storeClicked(stores[index]);
-                                      debugPrint(
-                                          "=======================PRODUCTS=======================");
+                                      // debugPrint(  "=======================PRODUCTS=======================");
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -358,8 +387,7 @@ class _BodyState extends State<Body> {
                                     }
                                   } catch (e) {
                                     storeClicked(stores[index]);
-                                    debugPrint(
-                                        "=======================PRODUCTS=======================");
+                                    // debugPrint( "=======================PRODUCTS=======================");
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -382,10 +410,6 @@ class _BodyState extends State<Body> {
                               ),
                             );
                           },
-                          separatorBuilder: (BuildContext context, int index) =>
-                              const SizedBox(
-                            height: 2,
-                          ),
                         ),
                 )
               ],
@@ -555,6 +579,7 @@ class _BodyState extends State<Body> {
   }
 
   void storeClicked(dynamic store) async {
+    String now = DateTime.now().toUtc().toIso8601String();
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/add_user_and_store";
     Map data = {
@@ -562,7 +587,8 @@ class _BodyState extends State<Body> {
       "user_id": store['_id'],
       "latitude": widget.latitude,
       "longitude": widget.longitude,
-      "last_opened": DateTime.now().toUtc().add(Duration(hours: 3)).toString(),
+      "last_opened": now,
+      // DateTime.now().toUtc().add(Duration(hours: 3)).toString(),
       "is_promotional": false
     };
     var body = json.encode(data);
@@ -575,7 +601,7 @@ class _BodyState extends State<Body> {
         },
         body: body,
       );
-      debugPrint("Store clicked");
+      // debugPrint("Store clicked");
     } catch (e) {
       // debugPrint(e);
     }

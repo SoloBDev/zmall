@@ -16,7 +16,7 @@ class CartScreen extends StatelessWidget {
           Provider.of<ZLanguage>(context).basket,
           style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
+        // elevation: 1.0,
       ),
       body: SafeArea(child: Body()),
     );

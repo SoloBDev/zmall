@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/global/cart/global_cart.dart';
 import 'package:zmall/global/home_page/components/global_home_screen.dart';
@@ -20,47 +20,56 @@ class GlobalHome extends StatefulWidget {
 }
 
 class _GlobalHomeState extends State<GlobalHome> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    GlobalHomeScreen(),
+    GlobalCart(hasBack: false),
+    GlobalProfile(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        body: TabBarView(
-          children: [
-            GlobalHomeScreen(),
-            GlobalCart(hasBack: false),
-            GlobalProfile(),
-          ],
-        ),
-        bottomNavigationBar: TabBar(
-          labelColor: kSecondaryColor,
-          unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
-          unselectedLabelColor: kGreyColor,
-          indicatorColor: kSecondaryColor,
-          tabs: <Widget>[
-            Tab(
-              icon: Icon(
-                Icons.home_rounded,
-                size: getProportionateScreenHeight(kDefaultPadding * 1.5),
-              ),
-              text: "Home",
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: kSecondaryColor,
+        unselectedItemColor: kGreyColor,
+        selectedLabelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: kSecondaryColor,
             ),
-            Tab(
-              icon: Icon(
-                FontAwesomeIcons.basketShopping,
-                size: getProportionateScreenHeight(kDefaultPadding * 1.5),
-              ),
-              text: "Basket",
+        unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
+        onTap: _onItemTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(
+              HeroiconsMini.home,
+              size: getProportionateScreenHeight(kDefaultPadding * 1.5),
             ),
-            Tab(
-              icon: Icon(
-                Icons.account_circle_rounded,
-                size: getProportionateScreenHeight(kDefaultPadding * 1.5),
-              ),
-              text: "Profile",
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              HeroiconsSolid.shoppingCart,
+              size: getProportionateScreenHeight(kDefaultPadding * 1.5),
             ),
-          ],
-        ),
+            label: "Basket",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              HeroiconsSolid.user,
+              size: getProportionateScreenHeight(kDefaultPadding * 1.5),
+            ),
+            label: "Profile",
+          ),
+        ],
       ),
     );
   }

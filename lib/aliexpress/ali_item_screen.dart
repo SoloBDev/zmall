@@ -119,8 +119,11 @@ class _AliItemScreenState extends State<AliItemScreen> {
           setState(() {
             isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage("Error loading item detail ", true));
+
+          Service.showMessage(
+              context: context,
+              title: "Error loading item detail",
+              error: true);
         }
       }
     } catch (e) {
@@ -142,7 +145,7 @@ class _AliItemScreenState extends State<AliItemScreen> {
       });
       getUser();
     } else {
-      debugPrint("No logged user found");
+      // debugPrint("No logged user found");
     }
   }
 
@@ -172,8 +175,10 @@ class _AliItemScreenState extends State<AliItemScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+          context: context,
+          title: "Location permission denied. Please enable and try again",
+          error: true);
       FlLocation.requestLocationPermission();
     }
   }
@@ -191,7 +196,7 @@ class _AliItemScreenState extends State<AliItemScreen> {
   }
 
   void _doLocationTask() async {
-    debugPrint("checking user location");
+    // debugPrint("checking user location");
     LocationPermission _permissionStatus =
         await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
@@ -205,8 +210,10 @@ class _AliItemScreenState extends State<AliItemScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+              context: context,
+              title: "Location service disabled. Please enable and try again",
+              error: true);
         }
       }
     } else {
@@ -216,7 +223,7 @@ class _AliItemScreenState extends State<AliItemScreen> {
 
   //////////////////////////////////
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('cart');
     var aliCart = await Service.read('aliexpressCart');
     if (data != null) {
@@ -248,8 +255,8 @@ class _AliItemScreenState extends State<AliItemScreen> {
     );
     Service.save('cart', cart!.toJson());
     Service.save('aliexpressCart', aliexpressCart!.toJson());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(Service.showMessage("Item added to cart!", false));
+    Service.showMessage(
+        context: context, title: "Item added to cart!", error: false);
     getCart();
   }
 
@@ -537,16 +544,18 @@ class _AliItemScreenState extends State<AliItemScreen> {
     return InkWell(
       onTap: () async {
         if (!isInStock) {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Sorry, this item is currently out of stock.", true,
-              duration: 5));
+          Service.showMessage(
+              context: context,
+              title: "Sorry, this item is currently out of stock.",
+              error: true,
+              duration: 5);
           return;
         }
 
         if (userData == null) {
-          debugPrint("User not logged in...");
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Please login in...", true));
+          // debugPrint("User not logged in...");
+          Service.showMessage(
+              context: context, title: "Please login in...", error: true);
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -604,7 +613,7 @@ class _AliItemScreenState extends State<AliItemScreen> {
 
             // Handle empty cart case
             if (cart == null) {
-              debugPrint("Empty cart! Adding new item.");
+              // debugPrint("Empty cart! Adding new item.");
               addToCart(item, destination, storeLocation, storeId, itemIds,
                   productIds);
               getCart();
@@ -626,15 +635,15 @@ class _AliItemScreenState extends State<AliItemScreen> {
               Service.save('cart', aliexpressCart!.cart);
               Service.save('aliexpressCart', aliexpressCart!.toJson());
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                Service.showMessage("Item added to cart", false),
-              );
+              Service.showMessage(
+                  context: context, title: "Item added to cart", error: false);
               getCart();
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage("Selected item is already in cart", true),
-            );
+            Service.showMessage(
+                context: context,
+                title: "Selected item is already in cart",
+                error: true);
           }
         });
       },

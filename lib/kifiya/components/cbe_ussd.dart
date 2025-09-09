@@ -49,12 +49,12 @@ class _CbeUssdState extends State<CbeUssd> {
   void _initPayment() async {
     var data = await initPayment();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "${data['message']}. Waiting for payment to be completed", false,
           duration: 6));
       _verifyPayment();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "${data['message']}. Please try other payment methods", true,
           duration: 4));
       await Future.delayed(Duration(seconds: 3))
@@ -167,7 +167,7 @@ class _CbeUssdState extends State<CbeUssd> {
         this._loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
+        Service.showMessage1(
             "Something went wrong. Please check your internet connection!",
             true),
       );
@@ -221,7 +221,7 @@ class _CbeUssdState extends State<CbeUssd> {
         this._loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
+        Service.showMessage1(
             "Something went wrong. Please check your internet connection!",
             true),
       );

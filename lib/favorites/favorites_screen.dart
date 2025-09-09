@@ -20,12 +20,12 @@ class FavoritesScreen extends StatefulWidget {
   final double? longitude;
   final Controller? controller;
 
-  const FavoritesScreen(
-      {Key? key,
-      @required this.latitude,
-      @required this.longitude,
-      @required this.controller})
-      : super(key: key);
+  const FavoritesScreen({
+    super.key,
+    @required this.latitude,
+    @required this.longitude,
+    @required this.controller,
+  });
 
   @override
   FavoritesScreenState createState() => FavoritesScreenState(controller!);
@@ -43,7 +43,6 @@ class FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
   }
@@ -104,7 +103,8 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       if (store['store_time'] != null && store['store_time'].length != 0) {
         for (var i = 0; i < store['store_time'].length; i++) {
           DateFormat dateFormat = new DateFormat.Hm();
-          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+          // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+          DateTime now = DateTime.now().toUtc();
           int weekday;
           if (now.weekday == 7) {
             weekday = 0;
@@ -145,7 +145,8 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       } else {
         DateFormat dateFormat = DateFormat.Hm();
         DateTime zmallClose = dateFormat.parse("21:00");
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        DateTime now = DateTime.now().toUtc();
 
         zmallClose = DateTime(
             now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
@@ -195,7 +196,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
                             getProportionateScreenWidth(kDefaultPadding * 10),
                         child: FavoriteCustomListTile(
                           press: () {
-                            debugPrint("FAVORITE STORE CLICKED >>>>");
+                            // debugPrint("FAVORITE STORE CLICKED >>>>");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -257,7 +258,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
         Duration(seconds: 10),
         onTimeout: () {
           ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+              .showSnackBar(Service.showMessage1("Network error", true));
           setState(() {
             isLoading = false;
           });

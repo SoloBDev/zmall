@@ -64,7 +64,7 @@
 //   void _initMomoUssd() async {
 //     var data = await initMomoUssd();
 //     if (data != null && data['success']) {
-//       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+//       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
 //           "${data['message']}. Waiting for payment to be completed", false,
 //           duration: 6));
 //       _verifyPayment();

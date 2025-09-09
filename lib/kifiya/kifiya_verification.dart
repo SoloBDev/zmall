@@ -59,16 +59,20 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['message']}! Please complete your payment using Tele Birr App",
-          false,
-          duration: 4));
+      Service.showMessage(
+        context: context,
+        title:
+            "${data['message']}! Please complete your payment using Tele Birr App",
+        error: false,
+        duration: 4,
+      );
     } else {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(Service.showMessage("${data['message']}", true));
+
+      Service.showMessage(
+          context: context, title: "${data['message']}", error: true);
       await Future.delayed(Duration(seconds: 2));
     }
   }
@@ -83,16 +87,24 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("Payment successfull!", false, duration: 4));
+
+      Service.showMessage(
+        context: context,
+        title: "Payment successfull!",
+        error: false,
+        duration: 4,
+      );
       Navigator.pop(context, true);
     } else {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['error']}! Please complete your payment using Tele Birr App",
-          true));
+      Service.showMessage(
+        context: context,
+        title:
+            "${data['error']}! Please complete your payment using Tele Birr App",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 3));
     }
   }
@@ -181,10 +193,12 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                               setState(() {
                                 copied = true;
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
+
+                              Service.showMessage(
+                                  context: context,
+                                  title:
                                       "Reference number copied to clipboard! Please complete your payment using Tele Birr App",
-                                      false));
+                                  error: false);
                             });
                           },
                           child: Text(
@@ -234,10 +248,11 @@ class _KifiyaVerificationState extends State<KifiyaVerification> {
                   title: "Verify",
                   press: () {
                     if (!copied) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          Service.showMessage(
+                      Service.showMessage(
+                          context: context,
+                          title:
                               "Please copy the reference number and make payment on Tele Birr application.",
-                              true));
+                          error: true);
                     } else {
                       _telebirrVerifyBill();
                     }

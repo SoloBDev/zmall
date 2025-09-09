@@ -54,9 +54,12 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
   void _initiateUrl() async {
     var data = await initiateUrl();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['message']}. Loading...", false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "${data['message']}. Loading...",
+        error: false,
+        duration: 3,
+      );
       setState(() {
         initUrl = data['data']['formUrl'];
       });
@@ -102,11 +105,11 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
               },
               onReceivedError: (controller, request, error) {
                 // debugPrint("Error loading ${request.url}: ${error.description}");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  Service.showMessage(
-                      "Failed to load payment page: ${error.description}",
-                      true),
-                );
+
+                Service.showMessage(
+                    context: context,
+                    title: "Failed to load payment page: ${error.description}",
+                    error: true);
               },
             ),
           );
@@ -155,10 +158,11 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

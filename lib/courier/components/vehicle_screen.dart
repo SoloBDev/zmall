@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/courier_checkout/courier_checkout_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
@@ -14,9 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:zmall/size_config.dart';
 import 'package:zmall/login/login_screen.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:zmall/home/components/category_card.dart';
-import 'package:zmall/widgets/section_title.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
+import 'package:zmall/courier/components/category_card.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/order_status_row.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 
 class VehicleScreen extends StatefulWidget {
   static String routeName = '/vehicle';
@@ -37,7 +39,7 @@ class VehicleScreen extends StatefulWidget {
 }
 
 class _VehicleScreenState extends State<VehicleScreen> {
-  bool? _loading = false;
+  bool _loading = false;
   bool canAddImage = true;
   bool paidBySender = true;
   bool isRoundTrip = false;
@@ -52,7 +54,6 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getVehicleList();
   }
@@ -63,7 +64,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
       _loading = true;
     });
     var data = await getVehicleList();
-    debugPrint("fetched vehicle list");
+    // debugPrint("fetched vehicle list");
     if (data != null && data['success']) {
       setState(() {
         _loading = false;
@@ -73,9 +74,11 @@ class _VehicleScreenState extends State<VehicleScreen> {
       setState(() {
         _loading = false;
       });
-      // debugPrint(data);
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -85,16 +88,28 @@ class _VehicleScreenState extends State<VehicleScreen> {
     }
   }
 
+//from gallery
   Future getImage() async {
-    // final image = await imagePicker.getImage(source: ImageSource.camera); change getImage to pickImage
-    final image = await imagePicker.pickImage(source: ImageSource.camera);
+    final image = await imagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
       _image = File(image!.path);
       imageList.add(_image!);
-      imagePath.add(image!.path);
+      imagePath.add(_image!.path);
       imageList.length == 2 ? canAddImage = false : canAddImage = true;
     });
+    // debugPrint("image path $imagePath");
   }
+  //from camera
+  // Future getImage() async {
+  //   // final image = await imagePicker.getImage(source: ImageSource.camera); change getImage to pickImage
+  //   final image = await imagePicker.pickImage(source: ImageSource.camera);
+  // setState(() {
+  //   _image = File(image!.path);
+  //   imageList.add(_image!);
+  //   imagePath.add(image.path);
+  //   imageList.length == 2 ? canAddImage = false : canAddImage = true;
+  // });
+  // }
 
   void _getTotalDistance() async {
     setState(() {
@@ -116,30 +131,29 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   void _getCourierInvoice() async {
-    debugPrint("Fetching invoice.....");
+    // debugPrint("Fetching invoice.....");
     setState(() {
       _loading = true;
     });
     var data = await getCourierInvoice();
-    // debugPrint(data);
     if (data != null && data['success']) {
-//      setState(() {
-//        _loading = false;
-//      });
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) {
             return CourierCheckout(
-                orderDetail: widget.orderDetail,
-                userData: widget.userData,
-                cartInvoice: data);
+              orderDetail: widget.orderDetail,
+              userData: widget.userData,
+              cartInvoice: data,
+            );
           },
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -162,508 +176,869 @@ class _VehicleScreenState extends State<VehicleScreen> {
         ),
         elevation: 1.0,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
+      bottomNavigationBar: SafeArea(
+        minimum: EdgeInsets.only(
+            left: getProportionateScreenWidth(kDefaultPadding),
+            right: getProportionateScreenWidth(kDefaultPadding),
+            bottom: getProportionateScreenHeight(kDefaultPadding / 2)),
+        child: CustomButton(
+          title: "Checkout",
+          press: () async {
+            if (imagePath.length > 0) {
+              // debugPrint("Saving images");
+              await Service.save('images', imagePath);
+              // debugPrint("Images saved....");
+            }
+            await Service.saveBool('courier_paid_by_sender', paidBySender);
+            _getTotalDistance();
+          },
+          color: kSecondaryColor,
+        ),
+      ),
+      body: ModalProgressHUD(
+        color: kPrimaryColor.withValues(alpha: 0.1),
+        inAsyncCall: _loading,
+        progressIndicator: LinearLoadingIndicator(),
+        child: SafeArea(
+          child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
-              horizontal: getProportionateScreenHeight(kDefaultPadding),
+              horizontal: getProportionateScreenWidth(kDefaultPadding),
+              vertical: getProportionateScreenHeight(kDefaultPadding),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: getProportionateScreenHeight(kDefaultPadding),
               children: [
-                SectionTitle(
-                  sectionTitle: "Please Choose Vehicle",
-                  subTitle: " ",
-                ),
-                vehicleList != null && vehicleList['vehicles'].length > 0
-                    ? Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 9),
-                        child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) => CategoryCard(
-                                  selected: selected == index,
-                                  imageUrl: vehicleList['vehicles'][index]
-                                              ['image_url'] !=
-                                          null
-                                      ? "https://app.zmallapp.com/${vehicleList['vehicles'][index]['image_url']}"
-                                      // ? "http://159.65.147.111:8000/${vehicleList['vehicles'][index]['image_url']}"
-                                      : "https://google.com",
-                                  category: Service.capitalizeFirstLetters(
-                                    vehicleList['vehicles'][index]
-                                        ['vehicle_name'],
-                                  ),
-                                  press: () {
-                                    setState(() {
-                                      selected = index;
-                                    });
-                                  },
+                // Enhanced Vehicle Selection Section
+                Container(
+                  padding: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    border: Border.all(
+                      color: kWhiteColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OrderStatusRow(
+                              value: "Select Vehicle",
+                              title: "The vehicle for your delivery.",
+                              icon: HeroiconsOutline.truck,
+                            ),
+                          ),
+                          if (vehicleList != null &&
+                              vehicleList['vehicles'].length > 0)
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 4),
+                              ),
+                              decoration: BoxDecoration(
+                                color: kSecondaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
                                 ),
-                            separatorBuilder:
-                                (BuildContext context, int index) => SizedBox(
+                              ),
+                              child: Text(
+                                "${vehicleList['vehicles'].length} Available",
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenHeight(
+                                      kDefaultPadding * 0.6),
+                                  fontWeight: FontWeight.w600,
+                                  color: kSecondaryColor,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      vehicleList != null && vehicleList['vehicles'].length > 0
+                          ? Container(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 6),
+                              child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) => CategoryCard(
+                                        imageUrl: selected == index
+                                            ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
+                                            : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
+                                        //imageUrl:  vehicleList['vehicles'][index]
+                                        //             ['image_url'] !=
+                                        //         null
+                                        //     ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${vehicleList['vehicles'][index]['image_url']}"
+                                        //     : "https://google.com",
+                                        category:
+                                            Service.capitalizeFirstLetters(
+                                          vehicleList['vehicles'][index]
+                                              ['vehicle_name'],
+                                        ),
+                                        press: () {
+                                          setState(() {
+                                            selected = index;
+                                          });
+                                        },
+                                        selected: selected == index,
+                                      ),
+                                  separatorBuilder:
+                                      (BuildContext context, int index) =>
+                                          SizedBox(
+                                            width: getProportionateScreenWidth(
+                                                kDefaultPadding),
+                                          ),
+                                  itemCount: vehicleList['vehicles'] != null
+                                      ? vehicleList['vehicles'].length
+                                      : 0),
+                            )
+                          : _loading
+                              ? Container(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding * 5.5),
+                                  child: ListView.separated(
+                                    itemCount: 3,
+                                    scrollDirection: Axis.horizontal,
+                                    separatorBuilder: (context, index) =>
+                                        SizedBox(
                                       width: getProportionateScreenWidth(
                                           kDefaultPadding / 2),
                                     ),
-                            itemCount: vehicleList['vehicles'] != null
-                                ? vehicleList['vehicles'].length
-                                : 0),
-                      )
-                    : _loading!
-                        ? Center(
-                            child: SpinKitWave(
-                              color: kSecondaryColor,
-                              size:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                          )
-                        : Center(
-                            child: Text(
-                              "All our vehicles are busy to complete this order.\nPlease try again later...",
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(),
-                            ),
-                          ),
-                SectionTitle(
-                  sectionTitle: "Item Quantity",
-                  subTitle: " ",
-                ),
-                TextField(
-                  cursorColor: kSecondaryColor,
-                  style: TextStyle(color: kBlackColor),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  onChanged: (val) {
-                    quantity = int.parse(val);
-                  },
-                  decoration: InputDecoration(
-                    hintText: "$quantity",
-                    hintStyle: TextStyle(
-                      color: kGreyColor,
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: kSecondaryColor),
-                    ),
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        width: getProportionateScreenWidth(
+                                            kDefaultPadding * 6),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          spacing: getProportionateScreenHeight(
+                                              kDefaultPadding / 4),
+                                          children: [
+                                            SearchButtonShimmer(
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding * 5),
+                                              height:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding * 3),
+                                              borderRadius: kDefaultPadding / 2,
+                                            ),
+                                            SearchButtonShimmer(
+                                              height:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding * 1.5),
+                                              borderRadius: kDefaultPadding / 2,
+                                              width:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding * 5),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : Container(
+                                  padding: EdgeInsets.all(
+                                      getProportionateScreenWidth(
+                                          kDefaultPadding)),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        kSecondaryColor.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(
+                                      getProportionateScreenWidth(
+                                          kDefaultPadding),
+                                    ),
+                                    border: Border.all(
+                                      color: kSecondaryColor.withValues(
+                                          alpha: 0.2),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        HeroiconsOutline.exclamationTriangle,
+                                        color: kSecondaryColor,
+                                        size: getProportionateScreenWidth(
+                                            kDefaultPadding * 2),
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 2)),
+                                      Text(
+                                        "No Vehicles Available",
+                                        style: TextStyle(
+                                          fontSize:
+                                              getProportionateScreenHeight(
+                                                  kDefaultPadding * 0.8),
+                                          fontWeight: FontWeight.bold,
+                                          color: kBlackColor,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          height: getProportionateScreenHeight(
+                                              kDefaultPadding / 4)),
+                                      Text(
+                                        "All our vehicles are busy completing orders.\nPlease try again in a few minutes.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize:
+                                              getProportionateScreenHeight(
+                                                  kDefaultPadding * 0.65),
+                                          color: kGreyColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                    ],
                   ),
                 ),
-                SectionTitle(
-                  sectionTitle: "Round Trip?",
-                  subTitle: " ",
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        // borderRadius: BorderRadius.circular(
-                        //   getProportionateScreenWidth(kDefaultPadding / 1.2),
-                        // ),
-                        onTap: () {
-                          setState(() {
-                            isRoundTrip = false;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
-                            color: kPrimaryColor,
-                            border: Border.all(
-                                color: !isRoundTrip
-                                    ? kSecondaryColor
-                                    : kGreyColor),
-                            boxShadow: [boxShadow],
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: kDefaultPadding,
-                                  width: getProportionateScreenWidth(
+                // Enhanced Item Quantity Section
+                Container(
+                  padding: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    border: Border.all(
+                      color: kWhiteColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      OrderStatusRow(
+                        value: "Item Quantity",
+                        title: "How many items are you sending?",
+                        icon: HeroiconsOutline.shoppingBag,
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (quantity > 1) {
+                                setState(() {
+                                  quantity--;
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 1.5),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding * 0.4),
+                              ),
+                              decoration: BoxDecoration(
+                                color: kWhiteColor,
+                                border: Border.all(
+                                    color: kGreyColor.withValues(alpha: 0.1)),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
                                       kDefaultPadding / 2),
-                                  decoration: BoxDecoration(
-                                    color: !isRoundTrip
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                HeroiconsOutline.minus,
+                                color: quantity > 1
+                                    ? kBlackColor
+                                    : kGreyColor.withValues(alpha: 0.5),
+                                size: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              margin: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 8),
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    kSecondaryColor.withValues(alpha: 0.05),
+                                    kSecondaryColor.withValues(alpha: 0.1)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                border: Border.all(
+                                  color: kSecondaryColor.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                spacing: getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                                children: [
+                                  Text(
+                                    "$quantity",
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenHeight(
+                                          kDefaultPadding),
+                                      fontWeight: FontWeight.bold,
+                                      color: kSecondaryColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    quantity == 1 ? "Item" : "Items",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: kBlackColor),
+                                    // style: TextStyle(
+                                    //   fontSize: getProportionateScreenHeight(
+                                    //       kDefaultPadding / 2),
+                                    //   color: kGreyColor,
+                                    // ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                quantity++;
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 1.5),
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding * 0.4),
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    kSecondaryColor,
+                                    kSecondaryColor.withValues(alpha: 0.9)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        kSecondaryColor.withValues(alpha: 0.3),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                HeroiconsOutline.plus,
+                                color: kWhiteColor,
+                                size: getProportionateScreenWidth(
+                                    kDefaultPadding),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2)),
+                      // SingleChildScrollView(
+                      //   scrollDirection: Axis.horizontal,
+                      //   child: Center(
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       spacing: getProportionateScreenWidth(
+                      //           kDefaultPadding / 2),
+                      //       children: [
+                      //         _buildQuickQuantityButton(5),
+                      //         _buildQuickQuantityButton(10),
+                      //         _buildQuickQuantityButton(15),
+                      //         _buildQuickQuantityButton(20),
+                      //         _buildQuickQuantityButton(25),
+                      //         _buildQuickQuantityButton(30),
+                      //         // _buildQuickQuantityButton(35),
+                      //         // _buildQuickQuantityButton(40),
+                      //         // _buildQuickQuantityButton(50),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+                // Payment Method Section with Enhanced UI
+                Container(
+                  padding: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    border: Border.all(
+                      color: kWhiteColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      OrderStatusRow(
+                        value: "Payment Method",
+                        title: "Who will pay for this delivery?",
+                        icon: HeroiconsOutline.banknotes,
+                      ),
+                      Row(
+                        spacing:
+                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  paidBySender = true;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 200),
+                                padding: EdgeInsets.all(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding * 0.8),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                  // color: paidBySender ? null : kWhiteColor,
+                                  borderRadius: BorderRadius.circular(
+                                    getProportionateScreenWidth(
+                                        kDefaultPadding),
+                                  ),
+                                  border: Border.all(
+                                    color: paidBySender
                                         ? kSecondaryColor
-                                        : kPrimaryColor,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        width: 1,
+                                        : kGreyColor.withValues(alpha: 0.2),
+                                    width: paidBySender ? 2 : 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  spacing: getProportionateScreenHeight(
+                                      kDefaultPadding / 3),
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 2),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: kWhiteColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.person_outline_rounded,
+                                        color: kBlackColor,
+                                        size: getProportionateScreenWidth(
+                                            kDefaultPadding * 1.2),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Sender",
+                                      style: TextStyle(
+                                        color: kBlackColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: getProportionateScreenHeight(
+                                            kDefaultPadding * 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  paidBySender = false;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 200),
+                                padding: EdgeInsets.all(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding * 0.8),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                  borderRadius: BorderRadius.circular(
+                                    getProportionateScreenWidth(
+                                        kDefaultPadding),
+                                  ),
+                                  border: Border.all(
+                                    color: !paidBySender
+                                        ? kSecondaryColor
+                                        : kGreyColor.withValues(alpha: 0.2),
+                                    width: !paidBySender ? 2 : 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  spacing: getProportionateScreenHeight(
+                                      kDefaultPadding / 3),
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        getProportionateScreenWidth(
+                                            kDefaultPadding / 2),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: kWhiteColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.person_pin_outlined,
+                                        color: kBlackColor,
+                                        size: getProportionateScreenWidth(
+                                            kDefaultPadding * 1.2),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Receiver",
+                                      style: TextStyle(
+                                        color: kBlackColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: getProportionateScreenHeight(
+                                            kDefaultPadding * 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Round Trip Section with Enhanced UI
+                Container(
+                  padding: EdgeInsets.all(
+                      getProportionateScreenWidth(kDefaultPadding)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    border: Border.all(
+                      color: kWhiteColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      OrderStatusRow(
+                        value: "Trip Type",
+                        title: "Delivery trip type",
+                        icon: HeroiconsOutline.arrowPathRoundedSquare,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: kWhiteColor,
+                          borderRadius: BorderRadius.circular(
+                            getProportionateScreenWidth(kDefaultPadding * 2),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isRoundTrip = false;
+                                  });
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(
+                                        kDefaultPadding * 0.8),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: !isRoundTrip
+                                        ? LinearGradient(
+                                            colors: [
+                                              kSecondaryColor,
+                                              kSecondaryColor.withValues(
+                                                  alpha: 0.9)
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : null,
+                                    borderRadius: BorderRadius.circular(
+                                      getProportionateScreenWidth(
+                                          kDefaultPadding * 2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        HeroiconsOutline.mapPin,
                                         color: !isRoundTrip
-                                            ? kGreyColor
-                                            : kBlackColor),
+                                            ? kWhiteColor
+                                            : kGreyColor,
+                                        size: getProportionateScreenWidth(
+                                            kDefaultPadding * 0.8),
+                                      ),
+                                      SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 4)),
+                                      Text(
+                                        "One Way",
+                                        style: TextStyle(
+                                          color: !isRoundTrip
+                                              ? kWhiteColor
+                                              : kGreyColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize:
+                                              getProportionateScreenHeight(
+                                                  kDefaultPadding * 0.7),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                Text(
-                                  "No",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: !isRoundTrip
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                        width:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
-                    Expanded(
-                      child: GestureDetector(
-                        // borderRadius: BorderRadius.circular(
-                        //   getProportionateScreenWidth(kDefaultPadding / 2),
-                        // ),
-                        onTap: () {
-                          setState(() {
-                            isRoundTrip = true;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
-                            color: kPrimaryColor,
-                            boxShadow: [boxShadow],
-                            border: Border.all(
-                                color:
-                                    isRoundTrip ? kSecondaryColor : kGreyColor),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: kDefaultPadding,
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isRoundTrip = true;
+                                  });
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(
+                                        kDefaultPadding * 0.8),
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isRoundTrip
-                                        ? kSecondaryColor
-                                        : kPrimaryColor,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        width: 1,
+                                    gradient: isRoundTrip
+                                        ? LinearGradient(
+                                            colors: [
+                                              kSecondaryColor,
+                                              kSecondaryColor.withValues(
+                                                  alpha: 0.9)
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : null,
+                                    borderRadius: BorderRadius.circular(
+                                      getProportionateScreenWidth(
+                                          kDefaultPadding * 2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        HeroiconsOutline.arrowsRightLeft,
                                         color: isRoundTrip
-                                            ? kGreyColor
-                                            : kBlackColor),
+                                            ? kWhiteColor
+                                            : kGreyColor,
+                                        size: getProportionateScreenWidth(
+                                            kDefaultPadding * 0.8),
+                                      ),
+                                      SizedBox(
+                                          width: getProportionateScreenWidth(
+                                              kDefaultPadding / 4)),
+                                      Text(
+                                        "Round Trip",
+                                        style: TextStyle(
+                                          color: isRoundTrip
+                                              ? kWhiteColor
+                                              : kGreyColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize:
+                                              getProportionateScreenHeight(
+                                                  kDefaultPadding * 0.7),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                Text(
-                                  "Yes",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: isRoundTrip
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
+
+                //image section
+                Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                      vertical:
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
                     ),
-                  ],
-                ),
-                SectionTitle(
-                  sectionTitle: "Images",
-                  subTitle: " ",
-                ),
-                imageList.length > 0
-                    ? Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 9),
-                        child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) => Stack(
+                    border: Border.all(
+                      color: kWhiteColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OrderStatusRow(
+                              value: "Images",
+                              title: "Item proof photo",
+                              icon: HeroiconsOutline.photo,
+                            ),
+                          ),
+                          if (imageList.length < 2)
+                            InkWell(
+                              onTap: getImage,
+                              child: Row(
+                                spacing: getProportionateScreenWidth(
+                                    kDefaultPadding / 4),
+                                children: [
+                                  Text(
+                                    imageList.length > 0 && imageList.length < 2
+                                        ? "Add More "
+                                        : "Add Image",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium!
+                                        .copyWith(
+                                          color: kSecondaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  Icon(
+                                    imageList.length >= 2
+                                        ? null
+                                        : HeroiconsOutline.plusCircle,
+                                    color: kSecondaryColor,
+                                    size: getProportionateScreenHeight(18),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      imageList.length <= 0
+                          ? SizedBox.shrink()
+                          : Container(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 6),
+                              child: ListView.separated(
+                                itemCount: imageList.length,
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding),
+                                ),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding),
+                                ),
+                                itemBuilder: (context, index) => Stack(
                                   children: [
                                     Container(
                                       height: getProportionateScreenHeight(
-                                          kDefaultPadding * 9),
+                                          kDefaultPadding * 6),
                                       width: getProportionateScreenWidth(
-                                          kDefaultPadding * 7),
+                                          kDefaultPadding * 5),
                                       child: Image.file(imageList[index]),
                                     ),
                                     Positioned(
-                                      right: 0,
+                                      top: -2,
+                                      right: -3,
                                       child: GestureDetector(
-                                        child: Container(
-                                          margin: EdgeInsets.symmetric(
-                                            horizontal:
-                                                getProportionateScreenWidth(
-                                                    kDefaultPadding / 3),
-                                            vertical:
-                                                getProportionateScreenWidth(
-                                                    kDefaultPadding / 4),
-                                          ),
-                                          child: Icon(
-                                            Icons.cancel,
-                                            color: kSecondaryColor,
-                                            size: getProportionateScreenWidth(
-                                                kDefaultPadding),
-                                          ),
-                                        ),
                                         onTap: () {
                                           setState(() {
                                             imageList.removeAt(index);
                                           });
                                         },
+                                        child: Container(
+                                          // padding: EdgeInsets.all(1),
+                                          decoration: BoxDecoration(
+                                            color: kPrimaryColor,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: kWhiteColor,
+                                              width: 2,
+                                            ),
+                                            boxShadow: [kDefaultShadow],
+                                          ),
+                                          child: Icon(
+                                            HeroiconsOutline.xCircle,
+                                            color: kSecondaryColor,
+                                            size: getProportionateScreenWidth(
+                                                kDefaultPadding * 1.3),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                            separatorBuilder:
-                                (BuildContext context, int index) => SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                            itemCount: imageList.length),
-                      )
-                    : GestureDetector(
-                        onTap: getImage,
-                        child: Container(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding * 9),
-                          width:
-                              getProportionateScreenWidth(kDefaultPadding * 7),
-                          decoration: BoxDecoration(
-                            color: kGreyColor.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add,
-                                  color: kGreyColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding * 2),
-                                ),
-                                Text("Add Image")
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                // SizedBox(
-                //   height: getProportionateScreenHeight(kDefaultPadding / 2),
-                // ),
-                imageList.length > 0 && imageList.length < 2
-                    ? Center(
-                        child: TextButton(
-                            onPressed: getImage,
-                            child: Text(
-                              "Add More Images",
-                              style: TextStyle(color: kSecondaryColor),
-                            )),
-                      )
-                    : Container(),
-
-                SectionTitle(
-                  sectionTitle: "Paid by",
-                  subTitle: " ",
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            paidBySender = true;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
-                            border: Border.all(
-                                color: paidBySender
-                                    ? kSecondaryColor
-                                    : kBlackColor),
-                            boxShadow: [boxShadow],
-                            color: kPrimaryColor,
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: kDefaultPadding,
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                  decoration: BoxDecoration(
-                                    color: paidBySender
-                                        ? kSecondaryColor
-                                        : kPrimaryColor,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        width: 1,
-                                        color: paidBySender
-                                            ? kGreyColor
-                                            : kBlackColor),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                Text(
-                                  "Sender",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: paidBySender
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                        width:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
-                    Expanded(
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            paidBySender = false;
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                            border: Border.all(
-                                color: paidBySender
-                                    ? kGreyColor.withValues(alpha: 0.4)
-                                    : kSecondaryColor),
-                            borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
-                            boxShadow: [boxShadow],
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: kDefaultPadding,
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                  decoration: BoxDecoration(
-                                    color: !paidBySender
-                                        ? kSecondaryColor
-                                        : kPrimaryColor,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        width: 1,
-                                        color: !paidBySender
-                                            ? kGreyColor
-                                            : kBlackColor),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                Text(
-                                  "Receiver",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: !paidBySender
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2),
-                ),
-                _loading!
-                    ? SpinKitWave(
-                        color: kSecondaryColor,
-                        size: getProportionateScreenWidth(kDefaultPadding),
-                      )
-                    : CustomButton(
-                        title: "Checkout",
-                        press: () async {
-                          if (imagePath.length > 0) {
-                            debugPrint("Saving images");
-                            await Service.save('images', imagePath);
-                            debugPrint("Images saved....");
-                          }
-                          await Service.saveBool(
-                              'courier_paid_by_sender', paidBySender);
-                          _getTotalDistance();
-                        },
-                        color: kSecondaryColor,
-                      ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
+                              ),
+                            )
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -674,7 +1049,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getVehicleList() async {
-    debugPrint("getting vehicle list");
+    // debugPrint("getting vehicle list");
     setState(() {
       _loading = true;
     });
@@ -735,7 +1110,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getTotalDistance() async {
-    debugPrint("getting total distance");
+    // debugPrint("getting total distance");
     var url =
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${widget.pickupAddress!.latitude.toStringAsFixed(6)},${widget.pickupAddress!.longitude.toStringAsFixed(6)}&destinations=${widget.destinationAddress!.latitude.toStringAsFixed(6)},${widget.destinationAddress!.longitude}&key=$apiKey";
 
@@ -768,7 +1143,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Future<dynamic> getCourierInvoice() async {
-    debugPrint("getting courier invoice");
+    // debugPrint("getting courier invoice");
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_courier_order_invoice";
 
@@ -816,10 +1191,50 @@ class _VehicleScreenState extends State<VehicleScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage("Please check your internet connection", true),
-      );
+
+      Service.showMessage(
+          context: context,
+          title: "Please check your internet connection",
+          error: true);
       return null;
     }
   }
+
+  // Widget _buildQuickQuantityButton(int value) {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       setState(() {
+  //         quantity = value;
+  //       });
+  //     },
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(
+  //         horizontal: getProportionateScreenWidth(kDefaultPadding * 0.6),
+  //         vertical: getProportionateScreenHeight(kDefaultPadding * 0.3),
+  //       ),
+  //       decoration: BoxDecoration(
+  //         color: quantity == value
+  //             ? kSecondaryColor.withValues(alpha: 0.1)
+  //             : kWhiteColor,
+  //         borderRadius: BorderRadius.circular(
+  //           getProportionateScreenWidth(kDefaultPadding / 2),
+  //         ),
+  //         border: Border.all(
+  //           color: quantity == value
+  //               ? kSecondaryColor
+  //               : kGreyColor.withValues(alpha: 0.2),
+  //           width: quantity == value ? 1.5 : 1,
+  //         ),
+  //       ),
+  //       child: Text(
+  //         "$value",
+  //         style: TextStyle(
+  //           fontSize: getProportionateScreenHeight(kDefaultPadding * 0.65),
+  //           fontWeight: quantity == value ? FontWeight.bold : FontWeight.normal,
+  //           color: quantity == value ? kSecondaryColor : kGreyColor,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }

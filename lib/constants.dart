@@ -1,19 +1,31 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:zmall/size_config.dart';
 import 'package:encrypt/encrypt.dart' as Encrypt;
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-//
+//unknown
 //const BASE_URL = "https://tele.zmallapp.com";
-const BASE_URL = "https://app.zmallapp.com"; //Eth production
+
+// south sudan production
 const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // const BASE_URL_JUBA = "http://196.189.124.241:8000"; //Juba Production
-// const BASE_URL = "http://196.188.187.43:8000"; //new production
-// const BASE_URL = "https://test.zmallapp.com"; //test
+
+//south sudan test
 // const BASE_URL_JUBA = "http://167.172.180.220:7000"; //test
 
+//Ethiopia production
+// const BASE_URL = "https://app.zmallapp.com"; //Eth production
+// const BASE_URL = "http://159.65.147.111:8000"; //cloudocean server
+// const BASE_URL = "http://196.188.187.43:8000"; //new production
+
+const BASE_URL = "https://app.zmall.et"; //Eth new domain
+
+// Ethiopia test
+// const BASE_URL = "https://test.zmallapp.com"; //test
+//
+const String appVersion = "3.2.0"; // "3.1.4",
 const kPrimaryColor = Colors.white;
 const kWhiteColor = Color(0xFFF3F4F8);
 const kYellowColor = Color(0xFFF7EA00);
@@ -76,23 +88,42 @@ final textFieldInputDecorator = InputDecoration(
     ),
   ),
 );
+Widget loadingIndicator({Color? color, double? size, Widget? child}) {
+  return Center(
+    child: child ??
+        SpinKitFadingCircle(color: color ?? kPrimaryColor, size: size ?? 30.0),
+  );
+}
 
 final boxShadow = BoxShadow(
-    blurRadius: 0,
-    color: Colors.black.withValues(alpha: 0.1),
-    offset: Offset(1, 3));
+    color: kWhiteColor, blurRadius: 3, spreadRadius: 2, offset: Offset(0, 2));
+//old
+// blurRadius: 0,
+// color: Colors.black.withValues(alpha: 0.1),
+// offset: Offset(1, 3));
 
 final kDefaultShadow = BoxShadow(
-  offset: Offset(3, 3),
-  blurRadius: 5,
-  color: kBlackColor.withValues(alpha: 0.1),
-//  color: Color(0xFFE9E9E9).withValues(alpha: 0.56),
+  blurRadius: 8,
+  spreadRadius: 0,
+  offset: Offset(0, 4),
+  color: kBlackColor.withValues(alpha: 0.08),
 );
+// BoxShadow(
+//   color: Colors.black.withValues(alpha: 0.1),
+//   blurRadius: 20,
+//   offset: Offset(0, 10),
+
+// //old
+//   // offset: Offset(3, 3),
+//   // blurRadius: 5,
+//   // color: kBlackColor.withValues(alpha: 0.1),
+// //  color: Color(0xFFE9E9E9).withValues(alpha: 0.56),
+// );
 
 class VerticalSpacing extends StatelessWidget {
   const VerticalSpacing({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -102,20 +133,23 @@ class VerticalSpacing extends StatelessWidget {
   }
 }
 
-final RegExp phoneValidatorRegExp = RegExp(r'^[97][0-9]{8}$');
+final RegExp phoneValidatorRegExp = RegExp(r'^[9][0-9]{8}$');
+
+// RegExp(r'^[97][0-9]{8}$');
 final RegExp emailValidatorRegExp =
     RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
 final RegExp passwordRegex = RegExp(
     r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
 
 const String kPasswordErrorMessage =
-    "Password must be at least 8 characters long, one uppercase letter, one lowercase letter, one number, and one special character (@, #, !, %, , ?, &).";
+    "Password must be at least 8 characters long, one uppercase letter, one lowercase letter, one number, and one special character (@, !, %, ?, &, \$, *).";
 const String kEmailNullError = "Please Enter your email";
 const String kInvalidEmailError = "Please Enter Valid Email";
 const String kPassNullError = "Please Enter your password";
 const String kShortPassError = "Password is too short";
 const String kMatchPassError = "Passwords don't match";
 const String kNameNullError = "Please Enter your name";
+const String kNameLastNullError = "Please Enter your last name";
 const String kPhoneNumberNullError = "Please Enter your phone number";
 const String kPhoneInvalidError = "Please Enter a valid phone number";
 const String kAddressNullError = "Please Enter your address";

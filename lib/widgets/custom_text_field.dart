@@ -41,10 +41,17 @@ class CustomTextField extends StatelessWidget {
     this.style,
     this.hintStyle,
     this.labelStyle,
+    this.initialValue,
+    // this.maxLines = 1,
 
     ///for phone TextFormField with flgs
     this.onFlagChanged,
     this.countryFilter,
+    this.favorite = const [],
+    this.dialogSize,
+    this.hideSearch = true,
+    this.minLines,
+    this.maxLines = 1,
   });
   final int? maxLength;
   final FocusNode? focusNode;
@@ -81,11 +88,23 @@ class CustomTextField extends StatelessWidget {
   TextStyle? style;
   TextStyle? hintStyle;
   TextStyle? labelStyle;
+  String? initialValue;
+  List<String> favorite;
+  Size? dialogSize;
+  bool hideSearch;
+  // int? maxLines;
+  int? minLines;
+  int? maxLines;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      minLines: minLines,
+      maxLines: maxLines,
       enabled: enabled,
       style: style,
+      // maxLines: maxLines,
+      initialValue: initialValue,
       controller: controller,
       obscureText: obscureText ?? false,
       maxLength: maxLength,
@@ -97,6 +116,7 @@ class CustomTextField extends StatelessWidget {
       onChanged: onChanged,
       validator: validator,
       inputFormatters: inputFormatters,
+      obscuringCharacter: "*",
       decoration: InputDecoration(
         filled: filled,
         fillColor: fillColor,
@@ -108,36 +128,69 @@ class CustomTextField extends StatelessWidget {
         prefixIcon: isPhoneWithFlag != null && isPhoneWithFlag == true
             ? IntrinsicHeight(
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     CountryCodePicker(
                       showFlag: true,
-                      flagWidth: 32.0,
+                      flagWidth:
+                          getProportionateScreenWidth(kDefaultPadding * 2),
                       alignLeft: false,
-                      hideSearch: true,
+                      hideSearch: hideSearch,
                       hideMainText: true,
                       showFlagDialog: true,
                       showCountryOnly: false,
+                      favorite: favorite,
                       padding: EdgeInsets.zero,
                       onChanged: onFlagChanged,
                       showDropDownButton: false,
                       countryFilter: countryFilter,
                       showOnlyCountryWhenClosed: false,
                       initialSelection: initialSelection,
-                      dialogSize: Size.fromHeight(
-                          getProportionateScreenHeight(kDefaultPadding * 12)),
+                      dialogSize: dialogSize ??
+                          Size.fromHeight(getProportionateScreenHeight(
+                              kDefaultPadding * 12)),
                       boxDecoration: BoxDecoration(
                         color: kPrimaryColor,
                         borderRadius: BorderRadius.circular(kDefaultPadding),
                       ),
+                      searchDecoration: InputDecoration(
+                        border: border ??
+                            OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                        enabledBorder: enabledBorder ??
+                            OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                  color: kGreyColor.withValues(alpha: 0.15)
+                                  // kWhiteColor
+                                  ),
+                            ),
+                        focusedBorder: focusedBorder ??
+                            OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                  color: kGreyColor.withValues(alpha: 0.3)),
+                            ),
+                      ),
                     ),
-                    VerticalDivider(color: Colors.grey.withValues(alpha: 0.3)),
+                    Container(
+                        width: 2,
+                        margin: EdgeInsets.only(
+                            right: getProportionateScreenWidth(
+                                kDefaultPadding / 2)),
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 1.8),
+                        color:
+                            // kWhiteColor
+                            Colors.grey.withValues(alpha: 0.08)),
                   ],
-                  mainAxisSize: MainAxisSize.min,
                 ),
               )
             : prefixIcon,
         prefix: prefix,
-        hintStyle: hintStyle ?? TextStyle(fontSize: 14),
+        hintStyle: hintStyle ?? TextStyle(fontSize: 14, color: kGreyColor),
         floatingLabelStyle:
             WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
           if (states.contains(WidgetState.error)) {
@@ -158,19 +211,51 @@ class CustomTextField extends StatelessWidget {
         suffixIcon: suffixIcon,
         border: border ??
             OutlineInputBorder(
-              borderRadius: BorderRadius.circular(kDefaultPadding),
-              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
         enabledBorder: enabledBorder ??
             OutlineInputBorder(
-              borderRadius: BorderRadius.circular(kDefaultPadding),
-              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.15)
+                  // kWhiteColor
+                  ),
             ),
         focusedBorder: focusedBorder ??
             OutlineInputBorder(
-              borderRadius: BorderRadius.circular(kDefaultPadding),
-              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.3)),
             ),
+        errorBorder: focusedBorder ??
+            OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  BorderSide(color: kSecondaryColor.withValues(alpha: 0.3)),
+            ),
+        focusedErrorBorder: focusedBorder ??
+            OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  width: 2, color: kSecondaryColor.withValues(alpha: 0.3)),
+            ),
+        // border: border ??
+        //     OutlineInputBorder(
+        //       borderRadius: BorderRadius.circular(kDefaultPadding),
+        //       borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+        //     ),
+        // enabledBorder: enabledBorder ??
+        //     OutlineInputBorder(
+        //       borderRadius: BorderRadius.circular(kDefaultPadding),
+        //       borderSide: BorderSide(color: kSecondaryColor),
+        //       // borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+        //     ),
+        // focusedBorder: focusedBorder ??
+        //     OutlineInputBorder(
+        //       borderRadius: BorderRadius.circular(kDefaultPadding),
+        //       borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
+        //     ),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: kDefaultPadding, vertical: kDefaultPadding),
       ),
     );
   }

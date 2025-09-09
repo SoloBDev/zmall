@@ -10,11 +10,12 @@ import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 
 class TelebirrInApp extends StatefulWidget {
-  const TelebirrInApp(
-      {required this.amount,
-      required this.phone,
-      required this.traceNo,
-      required this.context});
+  const TelebirrInApp({
+    required this.amount,
+    required this.phone,
+    required this.traceNo,
+    required this.context,
+  });
   final double amount;
   final String phone;
   final String traceNo;
@@ -38,7 +39,6 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         'receiveCode': receiveCode,
         'appId': appId,
         'shortCode': shortCode,
-        // 'returnUrl': returnUrl
       };
       // debugPrint('Invoking native placeOrder method with arguments:>>>> $arguments\n');
 
@@ -48,6 +48,13 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       // Check if the response is a map and contains status and code
       if (response.isNotEmpty) {
         final int code = int.parse(response['code'].toString());
+        // debugPrint("iOS Code:>>>> $code");
+        Map<String, dynamic> _paymentResult = {
+          "code": code,
+          "status": response['status'].toString(),
+          "traceNo": widget.traceNo,
+          "message": response['errMsg'].toString(),
+        };
 
         ///Confirm payment verification
         if (code == 0) {
@@ -56,20 +63,21 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
               status: response['status'].toString(),
               traceNo: widget.traceNo,
               message: response['errMsg'].toString());
+          // debugPrint("confirmPaymentResponce:>>>> $confirmPaymentResponce");
           if (confirmPaymentResponce != null &&
               confirmPaymentResponce["success"]) {
             _handlePaymentResponse(code: code);
-            Future.delayed(
-                Duration(seconds: 2), () => Navigator.pop(context, true));
+            Future.delayed(Duration(seconds: 2),
+                () => Navigator.pop(context, _paymentResult));
           } else {
             _handlePaymentResponse(code: -99);
-            Future.delayed(
-                Duration(seconds: 2), () => Navigator.pop(context, false));
+            Future.delayed(Duration(seconds: 2),
+                () => Navigator.pop(context, _paymentResult));
           }
         } else {
           _handlePaymentResponse(code: code);
-          Future.delayed(
-              Duration(seconds: 2), () => Navigator.pop(context, false));
+          Future.delayed(Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult));
         }
       } else {
         // Unexpected response format
@@ -78,22 +86,32 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             Duration(seconds: 2), () => Navigator.pop(context, false));
       }
     } on PlatformException catch (e) {
+      _handlePaymentResponse(code: e.details["code"]);
+      Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
       // debugPrint('PlatformException caught:');
       // debugPrint('Error details: ${e.details}');
       // debugPrint('Error message: ${e.message}');
       // debugPrint('Error code: ${e.details["code"]}');
-      _handlePaymentResponse(code: e.details["code"]);
-      if (mounted) {
-        // Check if the widget is still mounted
-        Future.delayed(Duration(seconds: 2), () {
-          if (mounted) {
-            Navigator.pop(context, false);
-          }
-        });
-      }
-    } catch (e) {
+      // _handlePaymentResponse(code: e.details["code"]);
+      //   if (mounted) {
+      //     // Check if the widget is still mounted
+      //     Future.delayed(Duration(seconds: 2), () {
+      //       if (mounted) {
+      //         Navigator.pop(
+      //           context,
+      //          false
+      //         );
+      //       }
+      //     });
+      //   }
+      // } catch (e) {
       // debugPrint('Unexpected error in placeOrderIOS: $e');
-      Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
+      //  Future.delayed(
+      //     Duration(seconds: 2),
+      //     () => Navigator.pop(
+      //           context,
+      //           false
+      //         ));
     }
   }
 
@@ -117,6 +135,12 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       // Check if the response is a map and contains status and code
       if (response.isNotEmpty) {
         final int code = int.parse(response['code'].toString());
+        Map<String, dynamic> _paymentResult = {
+          "code": code,
+          "status": response['status'].toString(),
+          "traceNo": widget.traceNo,
+          "message": response['errMsg'].toString(),
+        };
 
         ///Confirm payment verification
         if (code == 0) {
@@ -128,16 +152,18 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
           if (confirmPaymentResponce != null &&
               confirmPaymentResponce["success"]) {
             _handlePaymentResponse(code: code);
-            Future.delayed(
-                Duration(seconds: 2), () => Navigator.pop(context, true));
+            Future.delayed(Duration(seconds: 2),
+                () => Navigator.pop(context, _paymentResult));
           } else {
             Future.delayed(
-                Duration(seconds: 2), () => Navigator.pop(context, false));
+              Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult),
+            );
           }
         } else {
           _handlePaymentResponse(code: -99);
-          Future.delayed(
-              Duration(seconds: 2), () => Navigator.pop(context, false));
+          Future.delayed(Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult));
         }
       } else {
         // Unexpected response format
@@ -146,9 +172,6 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             Duration(seconds: 2), () => Navigator.pop(context, false));
       }
     } on PlatformException catch (e) {
-      // debugPrint('Error details: ${e.details}');
-      // debugPrint('Error message: ${e.message}');
-      // debugPrint('Error code: ${e.details["code"]}');
       _handlePaymentResponse(code: e.details["code"]);
       Future.delayed(Duration(seconds: 2), () => Navigator.pop(context, false));
     }
@@ -205,73 +228,109 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       }
     }
     // Display the message in the UI
-    ScaffoldMessenger.of(context).showSnackBar(
-      Service.showMessage(message, isError, duration: 4),
-    );
+
+    Service.showMessage(
+        context: context, title: message, error: isError, duration: 3);
   }
 
   @override
   void initState() {
     super.initState();
     getRreceiveCode(
-        amount: "${widget.amount}",
-        traceNo: widget.traceNo,
-        phone: widget.phone,
-        description: "ZMall_Telebirr_InApp");
+      amount: "${widget.amount}",
+      traceNo: widget.traceNo,
+      phone: widget.phone,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "TeleBirr InApp",
-            style: TextStyle(color: kBlackColor),
-          ),
-          leading: BackButton(
-            onPressed: () {
-              Navigator.pop(context, false);
-            },
-          ),
+      appBar: AppBar(
+        title: Text(
+          "TeleBirr InApp",
+          style: TextStyle(color: kBlackColor),
         ),
-        body: Padding(
-          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pay Using Telebirr',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Powered by Ethiotelecom',
-                    style: TextStyle(fontSize: 21, color: Colors.black45),
-                  ),
-                ],
-              ),
-              Image.asset(
+        centerTitle: true,
+        leading: BackButton(
+          onPressed: () {
+            Navigator.pop(context, false);
+          },
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Initiating Payment',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: kBlackColor,
+                        letterSpacing: 0.8,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 4)),
+                Text(
+                  'Powered by Ethiotelecom',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: kGreyColor,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
+
+            // Telebirr Logo
+            ClipRRect(
+              borderRadius: BorderRadius.circular(
+                  getProportionateScreenWidth(kDefaultPadding / 2)),
+              child: Image.asset(
                 "images/telebirr.png",
-                height: getProportionateScreenHeight(kDefaultPadding * 10),
-                width: getProportionateScreenWidth(kDefaultPadding * 10),
+                height: getProportionateScreenHeight(kDefaultPadding * 12),
+                width: getProportionateScreenWidth(kDefaultPadding * 12),
+                fit: BoxFit.contain,
               ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              SpinKitPouringHourGlassRefined(color: kBlackColor),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              Text(
-                "Waiting for payment to be completed....",
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ));
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
+
+            // Loading Indicator
+            SpinKitPouringHourGlassRefined(
+              color: kGreyColor,
+              size: getProportionateScreenWidth(kDefaultPadding * 3),
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+
+            // Loading Text
+            Text(
+              "Waiting for your payment to be confirmed...",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: kBlackColor.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
+            Text(
+              "Please complete the transaction in the Telebirr app.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: kGreyColor,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<dynamic> confirmPayment(
@@ -309,11 +368,11 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
     }
   }
 
-  Future<dynamic> getRreceiveCode(
-      {required String amount,
-      required String traceNo,
-      required String phone,
-      required String description}) async {
+  Future<dynamic> getRreceiveCode({
+    required String amount,
+    required String traceNo,
+    required String phone,
+  }) async {
     final deviceType = Platform.isIOS ? "iOS" : "android";
     var url = "https://pgw.shekla.app/telebirrInapp/create_order";
     var responseData;
@@ -321,7 +380,7 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       "traceNo": traceNo,
       "phone": phone,
       "amount": amount,
-      "description": description,
+      "description": "ZMall_Telebirr_InApp",
       "isInapp": true
     };
     var body = json.encode(data);

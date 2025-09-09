@@ -4,11 +4,11 @@ import 'package:zmall/size_config.dart';
 
 class CustomTag extends StatelessWidget {
   const CustomTag({
-    Key? key,
+    super.key,
     this.color = Colors.black,
     this.text = "Tag",
     this.textColor = kPrimaryColor,
-  }) : super(key: key);
+  });
 
   final Color? color;
   final String? text;
@@ -19,16 +19,17 @@ class CustomTag extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(
-            getProportionateScreenHeight(kDefaultPadding / 4),
+            getProportionateScreenHeight(kDefaultPadding / 3),
           ),
           color: color),
       padding: EdgeInsets.symmetric(
         horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+        vertical: getProportionateScreenHeight(kDefaultPadding / 4),
       ),
       child: Text(
         text!,
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: kPrimaryColor,
+              color: textColor,
               fontWeight: FontWeight.bold,
             ),
       ),

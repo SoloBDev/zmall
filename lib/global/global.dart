@@ -1,21 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
-import 'package:zmall/firebase_core_services.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/random_digits.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
 import 'home_page/global_home.dart';
 
 class GlobalScreen extends StatefulWidget {
@@ -26,6 +23,7 @@ class GlobalScreen extends StatefulWidget {
 }
 
 class _GlobalScreenState extends State<GlobalScreen> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _firstName = TextEditingController();
@@ -40,133 +38,135 @@ class _GlobalScreenState extends State<GlobalScreen> {
   bool success = false;
 
   onCountryCodeChanged(CountryCode code) {
+    // print("code $code");
     setState(() {
       countryCode = code.toString();
       country = code.toCountryStringOnly();
     });
   }
 
-  void addError({required String error}) {
-    if (!errors.contains(error))
-      setState(() {
-        errors.add(error);
-      });
-  }
+  // void addError({required String error}) {
+  //   if (!errors.contains(error))
+  //     setState(() {
+  //       errors.add(error);
+  //     });
+  // }
 
-  void removeError({required String error}) {
-    if (errors.contains(error))
-      setState(() {
-        errors.remove(error);
-      });
-  }
+  // void removeError({required String error}) {
+  //   if (errors.contains(error))
+  //     setState(() {
+  //       errors.remove(error);
+  //     });
+  // }
+  //firebase auth
+  // Future<bool?> loginUser(String phone, BuildContext context) async {
+  //   // debugPrint(phone);
+  //   FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<bool?> loginUser(String phone, BuildContext context) async {
-    // debugPrint(phone);
-    FirebaseAuth _auth = FirebaseAuth.instance;
+  //   _auth.verifyPhoneNumber(
+  //       phoneNumber: phone,
+  //       timeout: Duration(seconds: 60),
+  //       verificationCompleted: (AuthCredential credential) async {
+  //         Navigator.of(context).pop();
+  //         // debugPrint("Verification completed...");
+  //         UserCredential result = await _auth.signInWithCredential(credential);
+  //         User user = result.user!;
+  //         setState(() {
+  //           _loading = false;
+  //         });
+  //         if (user != null) {
+  //           // debugPrint(user);
+  //           Service.saveBool('is_global', true);
+  //           Service.save('global_user_id', user.uid);
+  //           Navigator.pushReplacement(
+  //               context, MaterialPageRoute(builder: (context) => GlobalHome()));
+  //         } else {
+  //           Navigator.pushReplacement(context,
+  //               MaterialPageRoute(builder: (context) => LoginScreen()));
+  //           // debugPrint("Error");
+  //         }
 
-    _auth.verifyPhoneNumber(
-        phoneNumber: phone,
-        timeout: Duration(seconds: 60),
-        verificationCompleted: (AuthCredential credential) async {
-          Navigator.of(context).pop();
-          debugPrint("Verification completed...");
-          UserCredential result = await _auth.signInWithCredential(credential);
-          User user = result.user!;
-          setState(() {
-            _loading = false;
-          });
-          if (user != null) {
-            // debugPrint(user);
-            Service.saveBool('is_global', true);
-            Service.save('global_user_id', user.uid);
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => GlobalHome()));
-          } else {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => LoginScreen()));
-            // debugPrint("Error");
-          }
+  //         //This callback would gets called when verification is done automatically
+  //       },
+  //       verificationFailed: (FirebaseAuthException exception) {
+  //         // debugPrint(exception.message);
+  //         ScaffoldMessenger.of(context)
+  //             .showSnackBar(Service.showMessage1(exception.message, true));
+  //         setState(() {
+  //           _loading = false;
+  //         });
+  //       },
+  //       codeSent: (String verificationId, [int? forceResendingToken]) {
+  //         showDialog(
+  //             context: context,
+  //             barrierDismissible: false,
+  //             builder: (context) {
+  //               return AlertDialog(
+  //                 title: Text("OTP?"),
+  //                 backgroundColor: kPrimaryColor,
+  //                 content: Column(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: <Widget>[
+  //                     TextField(
+  //                       controller: _codeController,
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 actions: <Widget>[
+  //                   CustomButton(
+  //                     title: "Confirm",
+  //                     color: kSecondaryColor,
+  //                     press: () async {
+  //                       final code = _codeController.text.trim();
+  //                       AuthCredential credential =
+  //                           PhoneAuthProvider.credential(
+  //                               verificationId: verificationId, smsCode: code);
 
-          //This callback would gets called when verification is done automatically
-        },
-        verificationFailed: (FirebaseAuthException exception) {
-          // debugPrint(exception.message);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage(exception.message, true));
-          setState(() {
-            _loading = false;
-          });
-        },
-        codeSent: (String verificationId, [int? forceResendingToken]) {
-          showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text("OTP?"),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      TextField(
-                        controller: _codeController,
-                      ),
-                    ],
-                  ),
-                  actions: <Widget>[
-                    CustomButton(
-                      title: "Confirm",
-                      color: kSecondaryColor,
-                      press: () async {
-                        final code = _codeController.text.trim();
-                        AuthCredential credential =
-                            PhoneAuthProvider.credential(
-                                verificationId: verificationId, smsCode: code);
+  //                       UserCredential result =
+  //                           await _auth.signInWithCredential(credential);
 
-                        UserCredential result =
-                            await _auth.signInWithCredential(credential);
+  //                       User user = result.user!;
 
-                        User user = result.user!;
-
-                        if (user != null) {
-                          Service.saveBool('is_global', true);
-                          Service.save('global_user_id', user.uid);
-                          // bool success =
-                          //     await FirebaseCoreServices.addDataToUserProfile(
-                          //         user.uid, {
-                          //   "phone": phoneWithCountryCode,
-                          //   "country": country,
-                          //   "country_phone_code": countryCode,
-                          //   "wallet": 0,
-                          //   "order_count": 0,
-                          //   "full_name": "",
-                          //   "email": "",
-                          //   "city": "",
-                          // });
-                          // if (success) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //       Service.showMessage("Data saved", false));
-                          // } else {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //     Service.showMessage(
-                          //         "Something went wrong, data wasn't saved",
-                          //         true),
-                          //   );
-                          // }
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => GlobalHome()));
-                        } else {
-                          debugPrint("Error while signing user");
-                        }
-                      },
-                    )
-                  ],
-                );
-              });
-        },
-        codeAutoRetrievalTimeout: ((verificationId) {}));
-  }
+  //                       if (user != null) {
+  //                         Service.saveBool('is_global', true);
+  //                         Service.save('global_user_id', user.uid);
+  //                         // bool success =
+  //                         //     await FirebaseCoreServices.addDataToUserProfile(
+  //                         //         user.uid, {
+  //                         //   "phone": phoneWithCountryCode,
+  //                         //   "country": country,
+  //                         //   "country_phone_code": countryCode,
+  //                         //   "wallet": 0,
+  //                         //   "order_count": 0,
+  //                         //   "full_name": "",
+  //                         //   "email": "",
+  //                         //   "city": "",
+  //                         // });
+  //                         // if (success) {
+  //                         //   ScaffoldMessenger.of(context).showSnackBar(
+  //                         //       Service.showMessage("Data saved", false));
+  //                         // } else {
+  //                         //   ScaffoldMessenger.of(context).showSnackBar(
+  //                         //     Service.showMessage(
+  //                         //         "Something went wrong, data wasn't saved",
+  //                         //         true),
+  //                         //   );
+  //                         // }
+  //                         Navigator.pushReplacement(
+  //                             context,
+  //                             MaterialPageRoute(
+  //                                 builder: (context) => GlobalHome()));
+  //                       } else {
+  //                         // debugPrint("Error while signing user");
+  //                       }
+  //                     },
+  //                   )
+  //                 ],
+  //               );
+  //             });
+  //       },
+  //       codeAutoRetrievalTimeout: ((verificationId) {}));
+  // }
 
   void saveGlobal() async {
     var data = await Service.readBool('is_global');
@@ -189,223 +189,198 @@ class _GlobalScreenState extends State<GlobalScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0.1,
-        title: Text.rich(
-          TextSpan(
-            text: "Z",
-            style: TextStyle(
-              color: kSecondaryColor,
-              fontSize: getProportionateScreenWidth(kDefaultPadding * 1.8),
-              fontWeight: FontWeight.bold,
-            ),
-            children: [
-              TextSpan(
-                text: "Mall Global",
+      bottomNavigationBar: SizedBox(
+        height: getProportionateScreenWidth(60),
+        child: SafeArea(
+          child: Center(
+            child: TextButton(
+              onPressed: () {
+                Service.saveBool('is_global', false);
+                Navigator.pushNamedAndRemoveUntil(
+                    context, "/login", (Route<dynamic> route) => false);
+              },
+              child: Text(
+                "Change to ZMall Ethiopia?",
                 style: TextStyle(
-                  color: kBlackColor,
-                  fontSize: getProportionateScreenWidth(kDefaultPadding * 1.8),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.bold,
+                  //    decoration: TextDecoration.underline,
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-          child: Form(
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    "LOGIN",
-                    style: TextStyle(
-                        color: kBlackColor,
-                        fontSize:
-                            getProportionateScreenWidth(kDefaultPadding * 1.8),
-                        fontWeight: FontWeight.w700),
-                  ),
-                  SizedBox(
-                    height:
-                        getProportionateScreenHeight(kDefaultPadding * 0.75),
-                  ),
-                  Container(
-                    child: Row(
-                      children: [
-                        CountryCodePicker(
-                          onChanged: onCountryCodeChanged,
-                          // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                          initialSelection: 'US',
-                          favorite: ['US', 'FR'],
-                          // optional. Shows only country name and flag
-                          showCountryOnly: false,
-                          // optional. Shows only country name and flag when popup is closed.
-                          showOnlyCountryWhenClosed: false,
-                          // optional. aligns the flag and the Text left
-                          alignLeft: false,
-                        ),
-                        Text("Please choose your country code..."),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height:
-                        getProportionateScreenHeight(kDefaultPadding * 0.75),
-                  ),
-                  TextFormField(
-                    decoration: textFieldInputDecorator.copyWith(
-                      labelText: "Phone Number",
-                      hintText: "Without country code...",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
+      backgroundColor: kPrimaryColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            padding:
+                EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+            child: Form(
+              child: Center(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text.rich(
+                        TextSpan(
+                          text: "Z",
+                          style: TextStyle(
+                            color: kSecondaryColor,
+                            fontSize: getProportionateScreenWidth(
+                                kDefaultPadding * 1.6),
+                            fontWeight: FontWeight.bold,
                           ),
+                          children: [
+                            TextSpan(
+                              text: "Mall Global",
+                              style: TextStyle(
+                                color: kBlackColor,
+                                fontSize: getProportionateScreenWidth(
+                                    kDefaultPadding * 1.6),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.2)),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.3)),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 2),
                       ),
-                    ),
-                    keyboardType: TextInputType.phone,
-                    controller: _phoneController,
-                  ),
-                  SizedBox(
-                    height:
-                        getProportionateScreenHeight(kDefaultPadding * 0.75),
-                  ),
-                  TextFormField(
-                    decoration: textFieldInputDecorator.copyWith(
-                      labelText: "Email",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.2)),
+                      Text(
+                        "Login",
+                        style: TextStyle(
+                            color: kBlackColor,
+                            fontSize: getProportionateScreenWidth(
+                                kDefaultPadding * 1.3),
+                            fontWeight: FontWeight.bold),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.3)),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
                       ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailController,
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        removeError(error: kEmailNullError);
-                      } else if (emailValidatorRegExp.hasMatch(value)) {
-                        removeError(error: kInvalidEmailError);
-                      }
-                      return null;
-                    },
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        addError(error: kEmailNullError);
-                        return "";
-                      } else if (!emailValidatorRegExp.hasMatch(value)) {
-                        addError(error: kInvalidEmailError);
-                        return "";
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(
-                    height:
-                        getProportionateScreenHeight(kDefaultPadding * 0.75),
-                  ),
-                  TextFormField(
-                    decoration: textFieldInputDecorator.copyWith(
-                      labelText: "First Name",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.2)),
+                      Text(
+                        "Phone Number",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.3)),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
                       ),
-                    ),
-                    controller: _firstName,
-                    keyboardType: TextInputType.name,
-                  ),
-                  SizedBox(
-                    height:
-                        getProportionateScreenHeight(kDefaultPadding * 0.75),
-                  ),
-                  TextFormField(
-                    decoration: textFieldInputDecorator.copyWith(
-                      labelText: "Last Name",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                          ),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.2)),
+                      CustomTextField(
+                        // decoration: textFieldInputDecorator.copyWith(
+                        // labelText: "Phone Number",
+                        isPhoneWithFlag: true,
+                        initialSelection: 'US',
+                        favorite: ['US', 'FR'],
+                        hideSearch: false,
+                        onFlagChanged: onCountryCodeChanged,
+                        dialogSize: Size.fromHeight(
+                            getProportionateScreenHeight(double.maxFinite)),
+                        hintText: "Without country code...",
+
+                        keyboardType: TextInputType.phone,
+                        controller: _phoneController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Please enter your phone number";
+                          } else if (value.length < 5) {
+                            return "Please enter a valid phone number";
+                          }
+                          return null;
+                        },
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2),
-                        ),
-                        borderSide: BorderSide(
-                            color: Colors.grey.withValues(alpha: 0.3)),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
                       ),
-                    ),
-                    controller: _lastName,
-                    keyboardType: TextInputType.name,
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  _loading
-                      ? SpinKitWave(
-                          size: getProportionateScreenHeight(kDefaultPadding),
-                          color: kSecondaryColor,
-                        )
-                      : CustomButton(
-                          title: "Send Verification Code",
-                          color: kSecondaryColor,
-                          press: () {
+                      Text(
+                        "Email",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      CustomTextField(
+                        keyboardType: TextInputType.emailAddress,
+                        controller: _emailController,
+                        hintText: "Enter your email",
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return kEmailNullError;
+                          } else if (!emailValidatorRegExp.hasMatch(value)) {
+                            return kInvalidEmailError;
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      Text(
+                        "First name",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      CustomTextField(
+                        controller: _firstName,
+                        keyboardType: TextInputType.name,
+                        hintText: "Enter your name",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      Text(
+                        "Last name",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      CustomTextField(
+                        controller: _lastName,
+                        keyboardType: TextInputType.name,
+                        hintText: "Enter your last name",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your last';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 1.5),
+                      ),
+                      CustomButton(
+                        isLoading: _loading,
+                        title: "Send Verification Code",
+                        color: kSecondaryColor,
+                        press: () {
+                          if (_formKey.currentState!.validate()) {
                             var phone = _phoneController.text.trim();
                             var email = _emailController.text.trim();
                             var firstName = _firstName.text.trim();
@@ -426,115 +401,30 @@ class _GlobalScreenState extends State<GlobalScreen> {
                                 (success) {
                                   if (success) {
                                     _loading = !_loading;
-                                    showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            backgroundColor: kPrimaryColor,
-                                            title: Text("Account Verification"),
-                                            content: Wrap(
-                                              children: [
-                                                Text(
-                                                    "Please enter the one time pin(OTP) sent to your email.\n"),
-                                                SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                TextField(
-                                                  controller: _codeController,
-                                                ),
-                                              ],
-                                            ),
-                                            actions: <Widget>[
-                                              CustomButton(
-                                                title: "Confirm",
-                                                color: kSecondaryColor,
-                                                press: () async {
-                                                  final code = _codeController
-                                                      .text
-                                                      .trim();
-
-                                                  if (code == smsCode) {
-                                                    await Service.saveBool(
-                                                        'is_global', true);
-                                                    await Service.save(
-                                                        'global_user_id',
-                                                        phoneWithCountryCode);
-                                                    AbroadData abroadData = AbroadData(
-                                                        abroadEmail: email,
-                                                        abroadPhone:
-                                                            phoneWithCountryCode,
-                                                        abroadName:
-                                                            "$firstName $lastName");
-                                                    await Service.save(
-                                                        "abroad_user",
-                                                        abroadData);
-                                                    Navigator.of(context).pop();
-                                                    setState(() {
-                                                      _loading = true;
-                                                    });
-
-                                                    Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                GlobalHome()));
-                                                  } else {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                            Service.showMessage(
-                                                                ("Error while verifying phone number. Please try again"),
-                                                                true));
-                                                    setState(() {
-                                                      _loading = false;
-                                                    });
-                                                    Navigator.of(context).pop();
-                                                    Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                LoginScreen()));
-                                                  }
-                                                },
-                                              )
-                                            ],
-                                          );
-                                        });
+                                    _showOtpBottomSheet(
+                                      email: email,
+                                      lastName: lastName,
+                                      firstName: firstName,
+                                    );
                                   }
                                 },
                               );
-
-                              // loginUser(phoneWithCountryCode, context);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Phone number cannot be empty", true));
                             }
-                          },
-                        ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Service.saveBool('is_global', false);
-                        Navigator.pushNamedAndRemoveUntil(
-                            context, "/login", (Route<dynamic> route) => false);
-                      },
-                      child: Text(
-                        "Change to ZMall Ethiopia?",
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
-                        ),
+
+                            // loginUser(phoneWithCountryCode, context);
+                            // } else {
+                            //   setState(() {
+                            //     _loading = false;
+                            //   });
+                            //   ScaffoldMessenger.of(context).showSnackBar(
+                            //       Service.showMessage1(
+                            //           "Phone number cannot be empty", true));
+                          }
+                        },
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -543,9 +433,110 @@ class _GlobalScreenState extends State<GlobalScreen> {
     );
   }
 
+  void _showOtpBottomSheet({
+    required String email,
+    required String firstName,
+    required String lastName,
+  }) {
+    showModalBottomSheet(
+        context: context,
+        showDragHandle: true,
+        backgroundColor: kPrimaryColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(kDefaultPadding)),
+        builder: (context) {
+          return SafeArea(
+            minimum: MediaQuery.of(context).viewInsets,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+              decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadiusGeometry.circular(kDefaultPadding)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Account Verification",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      InkWell(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(HeroiconsOutline.xCircle),
+                      )
+                    ],
+                  ),
+                  Text(
+                    "Please enter the one time pin(OTP) sent to your email.",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding * 2),
+                  ),
+                  CustomTextField(
+                    controller: _codeController,
+                    hintText: "Enter an OTP",
+                  ),
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding),
+                  ),
+                  CustomButton(
+                    title: "Confirm",
+                    color: kSecondaryColor,
+                    press: () async {
+                      final code = _codeController.text.trim();
+
+                      if (code == smsCode) {
+                        await Service.saveBool('is_global', true);
+                        await Service.save(
+                            'global_user_id', phoneWithCountryCode);
+                        AbroadData abroadData = AbroadData(
+                            abroadEmail: email,
+                            abroadPhone: phoneWithCountryCode,
+                            abroadName: "$firstName $lastName");
+                        await Service.save("abroad_user", abroadData);
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _loading = true;
+                        });
+
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => GlobalHome()));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            Service.showMessage1(
+                                ("Error while verifying phone number. Please try again"),
+                                true));
+                        setState(() {
+                          _loading = false;
+                        });
+                        Navigator.of(context).pop();
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen()));
+                      }
+                    },
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   Future<dynamic> verificationEmail(String email) async {
     var url =
-        "https://app.zmallapp.com/api/admin/simple_email_otp_verification";
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/simple_email_otp_verification";
+
     Map data = {
       "email": email,
     };

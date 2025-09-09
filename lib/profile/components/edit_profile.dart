@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,10 +11,11 @@ import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/profile/components/change_password.dart';
+import 'package:zmall/profile/components/profile_list_tile.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({this.userData});
@@ -62,300 +63,682 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
+      bottomNavigationBar: enabled
+          ? Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getProportionateScreenWidth(kDefaultPadding * 2),
+              ).copyWith(
+                bottom: getProportionateScreenWidth(kDefaultPadding / 2),
+              ),
+              child: SafeArea(
+                child: CustomButton(
+                    title: 'Update',
+                    // icon: HeroiconsOutline.arrowPath,
+                    press: () {
+                      _showPasswordBottomSheet();
+                    }),
+              ),
+            )
+          : SizedBox.shrink(),
       appBar: AppBar(
         title: Text(
           "${Provider.of<ZLanguage>(context).edit} ${Provider.of<ZLanguage>(context).profilePage}",
           style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
-        actions: [
-          IconButton(
-              icon: Icon(enabled ? Icons.close : Icons.edit),
-              onPressed: () {
-                setState(() {
-                  enabled = !enabled;
-                });
-              })
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          padding: EdgeInsets.all(
+              getProportionateScreenWidth(kDefaultPadding * 1.5)),
           child: Column(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding),
-                  ),
-                ),
-                padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: imageEdited
-                          ? Container(
-                              width: getProportionateScreenWidth(
-                                  kDefaultPadding * 4.5),
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding * 4.5),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: kWhiteColor,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: FileImage(imageList[0]),
-                                ),
-                              ),
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey[300]!, width: 2),
+                      image: imageEdited
+                          ? DecorationImage(
+                              fit: BoxFit.cover,
+                              image: FileImage(imageList[0]),
                             )
-                          : ImageContainer(
+                          : null,
+                    ),
+                    child: !imageEdited
+                        ? ClipOval(
+                            child: ImageContainer(
                               url:
-                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.userData['user']['image_url']}"),
-                    ),
-                    enabled
-                        ? Center(
-                            child: TextButton(
-                                onPressed: () {
-                                  getImage();
-                                },
-                                child: Text("Change Profile Picture")),
+                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.userData['user']['image_url']}",
+                            ),
                           )
-                        : Container(),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Text(
-                      Provider.of<ZLanguage>(context).name,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextField(
-                      enabled: enabled,
-                      cursorColor: kSecondaryColor,
-                      style:
-                          TextStyle(color: enabled ? kBlackColor : kGreyColor),
-                      keyboardType: TextInputType.text,
-                      onChanged: (val) {
-                        firstName = val;
-                      },
-                      decoration: InputDecoration(
-                        labelStyle: TextStyle(
-                          color: enabled ? kGreyColor : kBlackColor,
+                        : null,
+                  ),
+                  if (enabled)
+                    GestureDetector(
+                      onTap: getImage,
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: kSecondaryColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
-                        hintText: firstName,
-                        hintStyle: TextStyle(
-                            color: enabled ? kGreyColor : kBlackColor),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kBlackColor),
+                        child: Icon(
+                          Icons.camera_alt,
+                          size: 20,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Text(
-                      "Last Name",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextField(
-                      enabled: enabled,
-                      cursorColor: kSecondaryColor,
-                      style:
-                          TextStyle(color: enabled ? kBlackColor : kGreyColor),
-                      keyboardType: TextInputType.text,
-                      onChanged: (val) {
-                        lastName = val;
-                      },
-                      decoration: InputDecoration(
-                        labelStyle: TextStyle(
-                          color: enabled ? kBlackColor : kGreyColor,
-                        ),
-                        hintText: lastName,
-                        hintStyle: TextStyle(
-                            color: enabled ? kGreyColor : kBlackColor),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kBlackColor),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Text(
-                      "Email",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextField(
-                      enabled: enabled,
-                      cursorColor: kSecondaryColor,
-                      style:
-                          TextStyle(color: enabled ? kBlackColor : kGreyColor),
-                      keyboardType: TextInputType.emailAddress,
-                      onChanged: (val) {
-                        email = val;
-                      },
-                      decoration: InputDecoration(
-                        hintText: email,
-                        hintStyle: TextStyle(
-                            color: enabled ? kGreyColor : kBlackColor),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kBlackColor),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Text(
-                      "Address",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextField(
-                      enabled: enabled,
-                      cursorColor: kSecondaryColor,
-                      style:
-                          TextStyle(color: enabled ? kBlackColor : kGreyColor),
-                      keyboardType: TextInputType.text,
-                      onChanged: (val) {
-                        address = val;
-                      },
-                      decoration: InputDecoration(
-                        hintText: address,
-                        hintStyle: TextStyle(
-                            color: enabled ? kGreyColor : kBlackColor),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kSecondaryColor),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: kBlackColor),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    enabled
-                        ? Center(
-                            child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ChangePassword(
-                                        userData: widget.userData,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text("Change Password")),
-                          )
-                        : Container(),
-                  ],
-                ),
+                ],
+              ),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              _customActionButton(
+                  title: enabled ? "Cancle" : "Edit",
+                  padding: kDefaultPadding / 2,
+                  textColor: kGreyColor,
+                  backgroundColor: kWhiteColor,
+                  icon: enabled
+                      ? HeroiconsOutline.xCircle
+                      : HeroiconsOutline.pencilSquare,
+                  width: MediaQuery.sizeOf(context).width * 0.23,
+                  onTap: () {
+                    setState(() {
+                      enabled = !enabled;
+                    });
+                  }),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              _buildLable(
+                icon: HeroiconsOutline.user,
+                title: "First Name",
               ),
               SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding),
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              CustomTextField(
+                enabled: enabled,
+                initialValue: firstName,
+                // label: "First Name",
+                keyboardType: TextInputType.text,
+                onChanged: (val) {
+                  firstName = val;
+                },
               ),
-              enabled
-                  ? _loading
-                      ? SpinKitWave(
-                          color: kSecondaryColor,
-                          size: getProportionateScreenHeight(kDefaultPadding),
-                        )
-                      : CustomButton(
-                          title: "Update",
-                          color: kSecondaryColor,
-                          press: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text("Enter Password To Update"),
-                                    content: TextField(
-                                      cursorColor: kSecondaryColor,
-                                      style: TextStyle(color: kBlackColor),
-                                      keyboardType: TextInputType.text,
-                                      obscureText: true,
-                                      onChanged: (val) {
-                                        setState(() {
-                                          password = val;
-                                        });
-                                      },
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: kGreyColor,
-                                        ),
-                                        labelText: "Password",
-                                        focusedBorder: UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: kSecondaryColor),
-                                        ),
-                                        enabledBorder: UnderlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: kBlackColor),
-                                        ),
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        child: Text(
-                                          "Cancel",
-                                          style:
-                                              TextStyle(color: kSecondaryColor),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text(
-                                          "Submit",
-                                          style: TextStyle(color: kBlackColor),
-                                        ),
-                                        onPressed: () async {
-                                          if (password.isNotEmpty) {
-                                            setState(() {
-                                              _loading = true;
-                                            });
-                                            Navigator.of(context).pop();
-                                            var data = await updateUser();
-                                            if (data != null &&
-                                                data['success']) {
-                                              userDetails();
-                                              setState(() {
-                                                enabled = false;
-                                                _loading = false;
-                                              });
-                                            }
-                                          } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(Service.showMessage(
-                                                    "Please enter your password",
-                                                    true));
-                                          }
-                                        },
-                                      )
-                                    ],
-                                  );
-                                });
-                          })
-                  : Container(),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              _buildLable(
+                icon: HeroiconsOutline.user,
+                title: "Last Name",
+              ),
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              CustomTextField(
+                // label: 'Last Name',
+                initialValue: lastName,
+                onChanged: (val) => lastName = val,
+                enabled: enabled,
+              ),
+              if (!email.toLowerCase().contains("telebirr") &&
+                  !email.toLowerCase().contains("dashen"))
+                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              if (!email.toLowerCase().contains("telebirr") &&
+                  !email.toLowerCase().contains("dashen"))
+                _buildLable(
+                  icon: HeroiconsOutline.envelope,
+                  title: "Email",
+                ),
+              if (!email.toLowerCase().contains("telebirr") &&
+                  !email.toLowerCase().contains("dashen"))
+                SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              if (!email.toLowerCase().contains("telebirr") &&
+                  !email.toLowerCase().contains("dashen"))
+                CustomTextField(
+                  // label: 'Email',
+                  initialValue: email,
+                  onChanged: (val) => email = val,
+                  enabled: enabled,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              _buildLable(
+                icon: HeroiconsOutline.mapPin,
+                title: "Address",
+              ),
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              CustomTextField(
+                // label: 'Address',
+                initialValue: address,
+                onChanged: (val) => address = val,
+                enabled: enabled,
+              ),
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              if (enabled)
+                Divider(
+                  color: kWhiteColor,
+                ),
+              if (enabled)
+                SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
+              if (enabled)
+                ProfileListTile(
+                  borderColor: kWhiteColor,
+                  showTrailing: false,
+                  icon: Icon(
+                    HeroiconsOutline.lockClosed,
+                  ),
+                  title: 'Change Password',
+                  onTap: () {
+                    _showChangePasswordBottomSheet();
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => ChangePassword(
+                    //       userData: widget.userData,
+                    //     ),
+                    //   ),
+                    // );
+                  },
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildLable({required IconData icon, required String title}) {
+    return Row(
+      spacing: kDefaultPadding,
+      children: [
+        Icon(
+          icon,
+          size: 18,
+        ),
+        Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _customActionButton({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+    double? padding,
+    double? width,
+    Color? backgroundColor,
+    Color? textColor,
+  }) {
+    return Container(
+      width: width ?? double.infinity,
+      padding: padding != null
+          ? EdgeInsets.all(padding / 2)
+          : EdgeInsets.symmetric(
+              horizontal: kDefaultPadding,
+              vertical: kDefaultPadding / 2,
+            ),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? kSecondaryColor,
+        border: Border.all(color: kPrimaryColor),
+        borderRadius: BorderRadius.circular(padding ?? kDefaultPadding),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: textColor ?? kPrimaryColor,
+                size: 20,
+              ),
+              const SizedBox(width: kDefaultPadding / 2),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor ?? kPrimaryColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPasswordBottomSheet() {
+    bool _showPassword = false;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: kPrimaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext sheetContext, StateSetter setState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext)
+                  .viewInsets
+                  .bottom, // Adjust for keyboard
+            ),
+            child: SafeArea(
+              minimum: EdgeInsets.symmetric(
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Security Check',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: kBlackColor,
+                        ),
+                      ),
+                      InkWell(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(
+                            HeroiconsOutline.xCircle,
+                            color: kBlackColor,
+                          ))
+                    ],
+                  ),
+                  Text(
+                    "Please confirm your password to update your profile.",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: kGreyColor,
+                    ),
+                  ),
+                  SizedBox(height: kDefaultPadding),
+                  Text(
+                    "Password",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      color: kGreyColor,
+                    ),
+                  ),
+                  SizedBox(
+                      height:
+                          getProportionateScreenHeight(kDefaultPadding / 2)),
+                  CustomTextField(
+                    cursorColor: kSecondaryColor,
+                    style: TextStyle(color: kBlackColor),
+                    obscureText: !_showPassword,
+                    onChanged: (val) {
+                      setState(() {
+                        password = val;
+                      });
+                    },
+                    hintText: 'Enter your password',
+                    suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _showPassword = !_showPassword;
+                          });
+                        },
+                        icon: Icon(
+                          _showPassword
+                              ? HeroiconsOutline.eyeSlash
+                              : HeroiconsOutline.eye,
+                        )),
+                  ),
+                  SizedBox(height: kDefaultPadding * 1.5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kSecondaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        onPressed: () async {
+                          if (password.isNotEmpty) {
+                            setState(() => _loading = true);
+                            Navigator.of(context).pop();
+                            var data = await updateUser();
+                            if (data != null && data['success']) {
+                              userDetails();
+                              setState(() {
+                                enabled = false;
+                                _loading = false;
+                              });
+                            }
+                          } else {
+                            Service.showMessage(
+                              context: context,
+                              title: 'Please enter your password',
+                              error: true,
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  String oldPassword = "";
+  String newPassword = "";
+  String confirmPassword = "";
+  void _showChangePasswordBottomSheet() {
+    bool _isLoadingButton = false;
+    final _formKey = GlobalKey<FormState>();
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: kPrimaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (context) {
+          return StatefulBuilder(
+              builder: (BuildContext sheetContext, StateSetter sheetSetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext)
+                    .viewInsets
+                    .bottom, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenHeight(kDefaultPadding)),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Change Password",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const Text(
+                                "Update your password by entering a new one.",
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            icon: Icon(HeroiconsOutline.xCircle),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding * 1.5)),
+
+                      _buildLable(
+                        icon: HeroiconsOutline.lockClosed,
+                        title: "Old Password",
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      CustomTextField(
+                        hintText: "Enter your old password",
+                        onChanged: (val) {
+                          oldPassword = val;
+                        },
+                        validator: (value) {
+                          if (!passwordRegex.hasMatch(value!)) {
+                            return kPasswordErrorMessage;
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
+                      _buildLable(
+                        icon: HeroiconsOutline.lockClosed,
+                        title: "New Password",
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      CustomTextField(
+                        hintText: "Enter your new password",
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (val) {
+                          sheetSetState(() {
+                            newPassword = val;
+                          });
+                        },
+                        validator: (value) {
+                          if (!passwordRegex.hasMatch(value!)) {
+                            return kPasswordErrorMessage;
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
+                      _buildLable(
+                        icon: HeroiconsOutline.lockClosed,
+                        title: "Confirm Password",
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      CustomTextField(
+                        // label: 'Address',
+                        // initialValue: '',
+                        hintText: "Confirm your new password",
+                        onChanged: (val) {
+                          sheetSetState(() {
+                            confirmPassword = val;
+                          });
+                        },
+
+                        suffixIcon: newPassword.isNotEmpty &&
+                                newPassword == confirmPassword
+                            ? Icon(
+                                Icons.check,
+                                color: Colors.green,
+                              )
+                            : Icon(
+                                Icons.close,
+                                color: kWhiteColor,
+                              ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return kPassNullError;
+                          } else if ((newPassword != value)) {
+                            return kMatchPassError;
+                          } else if (newPassword == oldPassword) {
+                            return "New password cannot be the same as the old password.";
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
+
+                      ///
+                      CustomButton(
+                        title: "Submit",
+                        isLoading: _isLoadingButton,
+                        press: () {
+                          // Validate the form before attempting to change password
+                          if (_formKey.currentState!.validate()) {
+                            sheetSetState(() {
+                              _isLoadingButton = true; // Show loading
+                            });
+
+                            _changePassword();
+
+                            // After _changePassword completes
+                            if (Navigator.of(sheetContext).mounted) {
+                              // Check if widget is still in tree
+                              sheetSetState(() {
+                                _isLoadingButton = false; // Hide loading
+                              });
+                              // Navigator.of(sheetContext).pop(); // This would be in _changePassword usually on success
+                            }
+                          }
+                        },
+                        color: newPassword.isNotEmpty &&
+                                newPassword == confirmPassword
+                            ? kSecondaryColor
+                            : kSecondaryColor.withValues(alpha: 0.7),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  void _changePassword() async {
+    var data = await changePassword();
+    if (data != null && data['success']) {
+      Navigator.of(context).pop();
+      Service.showMessage(
+        context: context,
+        title: "Password changed successfull",
+        error: false,
+      );
+      setState(() {
+        _loading = false;
+      });
+    } else {
+      if (data['error_code'] == 999) {
+        Navigator.of(context).pop();
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true,
+        );
+        await Service.saveBool('logged', false);
+        await Service.remove('user');
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      } else {
+        Navigator.of(context).pop();
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true,
+        );
+        Service.showMessage(
+          context: context,
+          title: "Change password failed! Please try again",
+          error: true,
+        );
+      }
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<dynamic> changePassword() async {
+    setState(() {
+      _loading = true;
+    });
+
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/update";
+    Map data = {
+      "user_id": widget.userData['user']['_id'],
+      "server_token": widget.userData['user']['server_token'],
+      "first_name": widget.userData['user']['first_name'],
+      "last_name": widget.userData['user']['last_name'],
+      "old_password": oldPassword,
+      "new_password": newPassword,
+    };
+    var body = json.encode(data);
+    try {
+      http.Response response = await http
+          .post(
+        Uri.parse(url),
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: body,
+      )
+          .timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          setState(() {
+            _loading = false;
+          });
+          throw TimeoutException("The connection has timed out!");
+        },
+      );
+
+      return json.decode(response.body);
+    } catch (e) {
+      // debugPrint(e);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              "Something went wrong. Please check your internet connection!"),
+          backgroundColor: kSecondaryColor,
+        ),
+      );
+      return null;
+    } finally {
+      setState(() {
+        this._loading = false;
+      });
+    }
   }
 
   Future<void> userDetails() async {
@@ -384,8 +767,8 @@ class _EditProfileState extends State<EditProfile> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
 
           throw TimeoutException("The connection has timed out!");
         },
@@ -410,6 +793,9 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<dynamic> updateUser() async {
+    setState(() {
+      this._loading = true;
+    });
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/update";
     var postUri = Uri.parse(url);
@@ -423,7 +809,7 @@ class _EditProfileState extends State<EditProfile> {
         ..fields['address'] = address
         ..fields['old_password'] = password
         ..fields['new_password'] = password;
-      if (imageList != null && imageList.length > 0) {
+      if (imageList.isNotEmpty && imageList.length > 0) {
         http.MultipartFile multipartFile =
             await http.MultipartFile.fromPath('file', imageList[0].path);
         request.files.add(multipartFile);
@@ -432,48 +818,49 @@ class _EditProfileState extends State<EditProfile> {
         http.Response.fromStream(response).then((value) async {
           var data = json.decode(value.body);
           if (data != null && data['success']) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                Service.showMessage("User updated successfully!", false));
+            Service.showMessage(
+                context: context,
+                title: "Profile data updated successfully!",
+                error: false);
             setState(() {
               _loading = false;
               enabled = false;
             });
           } else {
-            setState(() {
-              _loading = false;
-            });
             if (data['error_code'] == 999) {
-              ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-                  "${errorCodes['${data['error_code']}']}!", true));
+              Service.showMessage(
+                  context: context,
+                  title: "${errorCodes['${data['error_code']}']}!",
+                  error: true);
               await Service.saveBool('logged', false);
               await Service.remove('user');
               Navigator.pushReplacementNamed(context, LoginScreen.routeName);
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-                  "Something went wrong. Please try again!", true));
+              Service.showMessage(
+                  context: context,
+                  title: "Something went wrong. Please try again!",
+                  error: true);
             }
           }
           // print("update ${json.decode(value.body)}");
           return json.decode(value.body);
         });
       }).timeout(Duration(seconds: 10), onTimeout: () {
-        setState(() {
-          _loading = false;
-        });
-        throw TimeoutException("The connection has timed out!");
+        throw TimeoutException(
+            "The connection has timed out, please try again!");
       });
     } catch (e) {
+      // print("update ${json.decode(value.body)}");
+
+      Service.showMessage(
+          context: context,
+          title: "Something went wrong. Please check your internet connection!",
+          error: true);
+      return null;
+    } finally {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              "Something went wrong. Please check your internet connection!"),
-          backgroundColor: kSecondaryColor,
-        ),
-      );
-      return null;
     }
   }
 }

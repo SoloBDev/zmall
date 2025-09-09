@@ -5,11 +5,20 @@ import 'package:zmall/constants.dart';
 import 'package:zmall/size_config.dart';
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({Key? key, this.sectionTitle, this.press, this.subTitle})
-      : super(key: key);
-
+  const SectionTitle({
+    super.key,
+    this.icon,
+    this.onSubTitlePress,
+    this.subTitle,
+    this.sectionTitle,
+    this.subTitleColor,
+    this.subTitleFontWeight,
+  });
+  final IconData? icon;
+  final Color? subTitleColor;
   final String? sectionTitle, subTitle;
-  final GestureTapCallback? press;
+  final FontWeight? subTitleFontWeight;
+  final GestureTapCallback? onSubTitlePress;
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +44,38 @@ class SectionTitle extends StatelessWidget {
           ),
           subTitle != null && subTitle!.isNotEmpty
               ? InkWell(
-                  onTap: press,
-                  child: Text(
-                    subTitle!,
-                    style: TextStyle(color: kGreyColor),
-                  ),
+                  onTap: onSubTitlePress,
+                  child: icon != null
+                      ? Row(
+                          spacing:
+                              getProportionateScreenWidth(kDefaultPadding / 3),
+                          children: [
+                            Text(
+                              subTitle!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: subTitleFontWeight,
+                                color: subTitleColor ?? kGreyColor,
+                              ),
+                            ),
+                            Icon(
+                              icon,
+                              size: 18,
+                              color: subTitleColor,
+                            ),
+                          ],
+                        )
+                      : Text(
+                          subTitle!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: subTitleFontWeight,
+                            color: subTitleColor ?? kGreyColor,
+                          ),
+                        ),
                 )
               : GestureDetector(
-                  onTap: press,
+                  onTap: onSubTitlePress,
                   child: Icon(
                     Icons.add_circle,
                     color: kSecondaryColor,

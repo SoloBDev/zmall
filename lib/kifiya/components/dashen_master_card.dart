@@ -56,15 +56,18 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
   void _initDashenMasterCard() async {
     var data = await initDashenMasterCard();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(Service.showMessage("Loading...", false, duration: 6));
+      Service.showMessage(
+          context: context, title: "Loading...", error: false, duration: 6);
       setState(() {
         masterCardUrl = data['mastercardUrl'];
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Something went wrong. Please check your internet connection!", true,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
+        duration: 3,
+      );
       Future.delayed(Duration(seconds: 7), () {
         Navigator.of(context).pop();
       });
@@ -180,10 +183,11 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

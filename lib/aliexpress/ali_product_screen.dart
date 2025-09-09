@@ -17,8 +17,8 @@ import 'package:zmall/size_config.dart';
 
 class AliProductListScreen extends StatefulWidget {
   const AliProductListScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<AliProductListScreen> createState() => _AliProductListScreenState();
@@ -100,7 +100,7 @@ class _AliProductListScreenState extends State<AliProductListScreen> {
   }
 
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {

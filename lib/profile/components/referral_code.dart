@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:zmall/constants.dart';
-import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +17,7 @@ class ReferralScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
           "Referral",
@@ -30,24 +31,37 @@ class ReferralScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Spacer(),
+              // Spacer(),
               Container(
                 decoration: BoxDecoration(
                     color: kPrimaryColor,
+                    border: Border.all(color: kWhiteColor),
                     borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding / 2),
+                      getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    boxShadow: [boxShadow]),
+                    boxShadow: [kDefaultShadow]),
                 child: Padding(
                   padding: EdgeInsets.all(
                       getProportionateScreenWidth(kDefaultPadding)),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.share_outlined,
-                        size: getProportionateScreenWidth(kDefaultPadding * 3),
+                      Container(
+                        padding: EdgeInsets.all(kDefaultPadding),
+                        decoration: BoxDecoration(
+                            color: kWhiteColor,
+                            // boxShadow: [boxShadow],
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding)),
+                        child: Icon(
+                          HeroiconsOutline.share,
+                          size:
+                              getProportionateScreenWidth(kDefaultPadding * 3),
+                        ),
                       ),
+                      SizedBox(
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding)),
                       Text(
                         "Refer now and earn up to 50 ${Provider.of<ZMetaData>(context, listen: false).currency}.",
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -66,62 +80,117 @@ class ReferralScreen extends StatelessWidget {
                       SizedBox(
                           height:
                               getProportionateScreenHeight(kDefaultPadding)),
-                      Text(
-                        "REFERRAL CODE",
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      Container(
-                        width:
-                            getProportionateScreenWidth(kDefaultPadding * 10),
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 3),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding / 2),
+                      // Text(
+                      //   "REFERRAL CODE",
+                      //   style:
+                      //       Theme.of(context).textTheme.titleMedium?.copyWith(
+                      //             fontWeight: FontWeight.w500,
+                      //           ),
+                      // ),
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding / 2)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: getProportionateScreenWidth(
+                                kDefaultPadding * 10),
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding * 3),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                              ),
+                              border: Border.all(
+                                color: kWhiteColor,
+                              ),
+                              // boxShadow: [boxShadow],
+                            ),
+                            child: Center(
+                              child: Text(
+                                referralCode,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                              ),
+                            ),
                           ),
-                          border: Border.all(
-                            color: kSecondaryColor,
+                          Container(
+                            alignment: Alignment.center,
+                            width: getProportionateScreenWidth(
+                                kDefaultPadding * 10),
+                            height: getProportionateScreenHeight(
+                                kDefaultPadding * 3),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                              ),
+                              border: Border.all(
+                                color: kWhiteColor,
+                              ),
+                              // boxShadow: [boxShadow],
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                Clipboard.setData(
+                                        new ClipboardData(text: referralCode))
+                                    .then((_) {
+                                  Service.showMessage(
+                                      context: context,
+                                      title:
+                                          "Referral code copied to clipboard",
+                                      error: false);
+                                });
+                              },
+                              child: Row(
+                                spacing: kDefaultPadding,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.copy),
+                                  Text(
+                                    "Copy Code",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          // fontStyle: FontStyle.italic,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          boxShadow: [boxShadow],
-                        ),
-                        child: Center(
-                          child: Text(
-                            referralCode,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
               //            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              Spacer(),
-              CustomButton(
-                title: "COPY CODE",
-                press: () {
-                  Clipboard.setData(new ClipboardData(text: referralCode))
-                      .then((_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage(
-                            "Referral code copied to clipboard", false));
-                  });
-                },
-                color: kBlackColor,
-              )
+              // Spacer(),
+              // CustomButton(
+              //   title: "COPY CODE",
+              //   press: () {
+              //     Clipboard.setData(new ClipboardData(text: referralCode))
+              //         .then((_) {
+              //       Service.showMessage(
+              //           context: context,
+              //           title: "Referral code copied to clipboard",
+              //           error: false);
+              //     });
+              //   },
+              //   color: kBlackColor,
+              // )
             ],
           ),
         ),

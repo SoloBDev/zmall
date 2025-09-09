@@ -11,6 +11,7 @@ class ImageContainer extends StatelessWidget {
   final double? height;
   final BorderRadiusGeometry? borderRadius;
   final BoxShape? shape;
+  final BoxBorder? border;
 
   ImageContainer({
     super.key,
@@ -21,6 +22,7 @@ class ImageContainer extends StatelessWidget {
     this.height,
     this.borderRadius,
     this.shape,
+    this.border,
   });
   @override
   Widget build(BuildContext context) {
@@ -29,13 +31,17 @@ class ImageContainer extends StatelessWidget {
       imageBuilder: (context, imageProvider) => Container(
         width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
         height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
+        padding: EdgeInsets.all(kDefaultPadding),
         decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          borderRadius: borderRadius ??
-              BorderRadius.circular(
-                getProportionateScreenWidth(kDefaultPadding / 1.5),
-              ),
+          shape: shape ?? BoxShape.rectangle,
+          borderRadius: (shape ?? BoxShape.rectangle) == BoxShape.rectangle
+              ? (borderRadius ??
+                  BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding / 1.5),
+                  ))
+              : null,
           color: kWhiteColor,
+          border: border,
           image: DecorationImage(
             fit: fit ?? BoxFit.cover,
             image: imageProvider,

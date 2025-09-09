@@ -13,6 +13,7 @@ class ZLanguage extends ChangeNotifier {
 
   String search = "Search";
   String hello = "Hello";
+  String guest = "Guest";
   String specialForYou = "Special for you";
   String featuredStores = "Featured Stores";
   String nearbyStores = "Nearby Stores";
@@ -165,6 +166,7 @@ class ZLanguage extends ChangeNotifier {
 
       search = "Search";
       hello = "Hello";
+      guest = "Guest";
       specialForYou = "Special for you";
       featuredStores = "Featured Stores";
       nearbyStores = "Nearby Stores";

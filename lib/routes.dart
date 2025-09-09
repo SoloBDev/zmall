@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:zmall/borsa/borsa_screen.dart';
 import 'package:zmall/cart/cart_screen.dart';
@@ -30,7 +28,6 @@ import 'package:zmall/report/report_screen.dart';
 import 'package:zmall/splash/splash_screen.dart';
 import 'package:zmall/tab_screen.dart';
 import 'package:zmall/store/store_screen.dart';
-
 import 'global/home_page/global_home.dart';
 
 final Map<String, WidgetBuilder> routes = {

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -21,12 +22,13 @@ import 'package:zmall/kifiya/components/etta_card_screen.dart';
 import 'package:zmall/kifiya/components/santimpay_screen.dart';
 import 'package:zmall/kifiya/components/telebirr_inapp.dart';
 import 'package:zmall/kifiya/components/telebirr_ussd.dart';
+import 'package:zmall/kifiya/components/yagoutpay.dart';
 import 'package:zmall/kifiya/kifiya_verification.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/product/product_screen.dart';
+import 'package:zmall/widgets/order_status_row.dart';
 import 'package:zmall/random_digits.dart';
 import 'package:zmall/report/report_screen.dart';
 import 'package:zmall/service.dart';
@@ -101,7 +103,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   void initState() {
     super.initState();
     getUser();
-    if (widget.onlyCashless!) {
+    if (widget.onlyCashless != null && widget.onlyCashless == true) {
       kifiyaMethod = -1;
     }
     uuid = widget.orderPaymentUniqueId!;
@@ -173,7 +175,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   //   }
   // }
   void getCart() async {
-    if (widget.isCourier!) {
+    if (widget.isCourier != null && widget.isCourier == true) {
       var data = await Service.read('courier');
 
       if (data != null) {
@@ -218,7 +220,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
   void getImages() async {
     var data = await Service.read('images');
-
+    // debugPrint("image path  in kifiya $data");
     if (data != null) {
       setState(() {
         imagePath = data;
@@ -320,8 +322,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Faild to create the order! please try again.", true));
+      Service.showMessage(
+        context: context,
+        title: "Faild to create the order! please try again.",
+        error: true,
+      );
     }
   }
 
@@ -332,8 +337,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     });
     var data = await createOrder(orderIds: orderIds);
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(("Order successfully created"), true));
+      Service.showMessage(
+          context: context, title: "Order successfully created", error: true);
       await Service.remove('cart');
       await Service.remove('aliexpressCart');
       setState(() {
@@ -353,8 +358,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       setState(() {
         _loading = false;
         _placeOrder = false;
@@ -385,7 +392,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   //         _loading = false;
   //         _placeOrder = false;
   //       });
-  //       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //       Service.showMessage(  context: context,
+  // title:
   //           "${errorCodes['${data['error_code']}']}!", true));
   //       await Future.delayed(Duration(seconds: 2));
   //       if (data['error_code'] == 999) {
@@ -395,7 +403,8 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   //       }
   //     }
   //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+  //     Service.showMessage(  context: context,
+  // title:
   //         "Please select a payment method for your order.", true,
   //         duration: 4));
   //   }
@@ -405,7 +414,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     if (otp.toString().isNotEmpty) {
       pId = paymentId;
     } else {
-      if (!widget.isCourier!) {
+      if (widget.isCourier != null && widget.isCourier == false) {
         pId = "0";
       }
     }
@@ -416,6 +425,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       });
       var data = await payOrderPayment(
           otp, paymentResponse['payment_gateway'][kifiyaMethod]['_id']);
+      // debugPrint("payOrderPayment>>>$data");
       if (data != null && data['success']) {
         widget.isCourier!
             ? _createCourierOrder()
@@ -428,8 +438,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
           _loading = false;
           _placeOrder = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-            "${errorCodes['${data['error_code']}']}!", true));
+        Service.showMessage(
+            context: context,
+            title: "${errorCodes['${data['error_code']}']}!",
+            error: true);
         await Future.delayed(Duration(seconds: 2));
         if (data['error_code'] == 999) {
           await Service.saveBool('logged', false);
@@ -438,9 +450,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         }
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Please select a payment method for your order.", true,
-          duration: 4));
+      Service.showMessage(
+          context: context,
+          title: "Please select a payment method for your order.",
+          error: true,
+          duration: 4);
     }
   }
 
@@ -455,9 +469,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Payment verification Successfull!", false,
-          duration: 2));
+      Service.showMessage(
+          context: context,
+          title: "Payment verification Successfull!",
+          error: false,
+          duration: 2);
       // if (widget.isCourier!) {
       //   _createCourierOrder();
       // } else {
@@ -480,8 +496,10 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         }
       });
       await useBorsa();
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['error']}! Please complete your payment!", true));
+      Service.showMessage(
+          context: context,
+          title: "${data['error']}! Please complete your payment!",
+          error: true);
       await Future.delayed(Duration(seconds: 3));
     }
   }
@@ -505,10 +523,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         }
       });
       await useBorsa();
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Payment was not made or verified! If payment is completed please contact support on 8707!",
-          true,
-          duration: 6));
+      Service.showMessage(
+          context: context,
+          title:
+              "Payment was not made or verified! If payment is completed please contact support on 8707!",
+          error: true,
+          duration: 6);
       await Future.delayed(Duration(seconds: 3));
     }
   }
@@ -516,12 +536,14 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
+        // surfaceTintColor: kPrimaryColor,
         title: Text(
           Provider.of<ZLanguage>(context).payments,
           style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
+        // elevation: 1.0,
       ),
       body: SafeArea(
         child: ModalProgressHUD(
@@ -532,113 +554,164 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
               ? Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: getProportionateScreenWidth(kDefaultPadding),
-                    vertical: getProportionateScreenHeight(kDefaultPadding),
                   ),
                   child: Center(
                     child: Column(
-                      mainAxisSize: MainAxisSize.max,
+                      // mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "${Provider.of<ZLanguage>(context).howWouldYouPay} ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)}?",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
-                          // Theme.of(context)
-                          //     .textTheme
-                          //     .titleLarge
-                          //     ?.copyWith(fontWeight: FontWeight.w600),
-                          textAlign: TextAlign.center,
-                        ),
-                        // SizedBox(
-                        //     height: getProportionateScreenHeight(
-                        //         kDefaultPadding / 2)),
-                        // CategoryContainer(
-                        //     title: Provider.of<ZLanguage>(context).balance),
-                        // SizedBox(
-                        //     height: getProportionateScreenHeight(
-                        //         kDefaultPadding / 2)),
                         Container(
-                          // height:
-                          //     getProportionateScreenHeight(kDefaultPadding * 4),
-                          width: double.infinity,
                           padding: EdgeInsets.symmetric(
+                              vertical:
+                                  getProportionateScreenHeight(kDefaultPadding),
                               horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
+                                  getProportionateScreenWidth(kDefaultPadding)),
                           margin: EdgeInsets.symmetric(
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                            border: Border.all(
-                                color: kBlackColor.withValues(alpha: 0.2)),
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
                           ),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Text(
-                                  "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w600),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              border: Border.all(color: kWhiteColor),
+                              borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                      kDefaultPadding / 1.5))),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: OrderStatusRow(
+                                  title: "Total Price",
+                                  icon: HeroiconsOutline.banknotes,
+                                  fontSize: getProportionateScreenHeight(16),
+                                  value:
+                                      "${widget.price!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                 ),
-                                Text(
-                                  Provider.of<ZLanguage>(context).balance,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: kGreyColor),
+                              ),
+                              Flexible(
+                                child: OrderStatusRow(
+                                  icon: HeroiconsOutline.creditCard,
+                                  title:
+                                      Provider.of<ZLanguage>(context).balance,
+                                  fontSize: getProportionateScreenHeight(16),
+                                  value:
+                                      "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
+                        // Text(
+                        //   "${Provider.of<ZLanguage>(context).howWouldYouPay} ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)}?",
+                        //   style: TextStyle(
+                        //       fontSize: 20, fontWeight: FontWeight.w600),
+                        //   // Theme.of(context)
+                        //   //     .textTheme
+                        //   //     .titleLarge
+                        //   //     ?.copyWith(fontWeight: FontWeight.w600),
+                        //   textAlign: TextAlign.center,
+                        // ),
+                        // // SizedBox(
+                        // //     height: getProportionateScreenHeight(
+                        // //         kDefaultPadding / 2)),
+                        // // CategoryContainer(
+                        // //     title: Provider.of<ZLanguage>(context).balance),
+                        // // SizedBox(
+                        // //     height: getProportionateScreenHeight(
+                        // //         kDefaultPadding / 2)),
+                        // Container(
+                        //   // height:
+                        //   //     getProportionateScreenHeight(kDefaultPadding * 4),
+                        //   width: double.infinity,
+                        //   padding: EdgeInsets.symmetric(
+                        //       horizontal:
+                        //           getProportionateScreenWidth(kDefaultPadding),
+                        //       vertical: getProportionateScreenHeight(
+                        //           kDefaultPadding / 2)),
+                        //   margin: EdgeInsets.symmetric(
+                        //       vertical: getProportionateScreenHeight(
+                        //           kDefaultPadding / 2)),
+                        //   decoration: BoxDecoration(
+                        //     color: kPrimaryColor,
+                        //     border: Border.all(
+                        //         color: kBlackColor.withValues(alpha: 0.2)),
+                        //     borderRadius: BorderRadius.circular(
+                        //       getProportionateScreenWidth(kDefaultPadding / 2),
+                        //     ),
+                        //   ),
+                        //   child: Center(
+                        //     child: Column(
+                        //       children: [
+                        //         Text(
+                        //           "${paymentResponse['wallet'].toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency} ",
+                        //           style: Theme.of(context)
+                        //               .textTheme
+                        //               .titleLarge
+                        //               ?.copyWith(fontWeight: FontWeight.w600),
+                        //         ),
+                        //         Text(
+                        //           Provider.of<ZLanguage>(context).balance,
+                        //           style: TextStyle(
+                        //               fontWeight: FontWeight.w600,
+                        //               color: kGreyColor),
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
                         // SizedBox(
                         //     height: getProportionateScreenHeight(
                         //         kDefaultPadding / 2)),
-                        Text(Provider.of<ZLanguage>(context).addFundsInfo),
-                        SizedBox(
-                          height: getProportionateScreenHeight(kDefaultPadding),
+                        // Text(
+                        //   Provider.of<ZLanguage>(context).addFundsInfo,
+                        //   style:
+                        //       Theme.of(context).textTheme.bodySmall?.copyWith(
+                        //             color: Theme.of(context)
+                        //                 .colorScheme
+                        //                 .onSurface
+                        //                 .withValues(alpha: 0.6),
+                        //           ),
+                        // ),
+                        // SizedBox(
+                        //   height: getProportionateScreenHeight(kDefaultPadding),
+                        // ),
+                        Text(
+                          Provider.of<ZLanguage>(context).selectPayment,
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
-                        CategoryContainer(
-                            title:
-                                Provider.of<ZLanguage>(context).selectPayment),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                        widget.onlyCashless!
-                            ? Text(
-                                Provider.of<ZLanguage>(context)
-                                    .onlyDigitalPayments,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              )
-                            : Container(),
-                        widget.onlyCashless!
-                            ? SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 2))
-                            : Container(),
+                        if (widget.onlyCashless!)
+                          Text(
+                            Provider.of<ZLanguage>(context).onlyDigitalPayments,
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                          ),
+
+                        ///list of payment methods///
                         Expanded(
                           child: GridView.builder(
-                            // physics: NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.only(bottom: kDefaultPadding),
                             shrinkWrap: true,
+                            itemCount:
+                                paymentResponse['payment_gateway'].length,
+                            padding: EdgeInsets.symmetric(
+                                vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 2)),
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3,
                               crossAxisSpacing:
                                   getProportionateScreenWidth(kDefaultPadding),
-                              mainAxisSpacing:
-                                  getProportionateScreenWidth(kDefaultPadding),
+                              mainAxisSpacing: getProportionateScreenWidth(
+                                  kDefaultPadding / 2),
                             ),
-                            itemCount:
-                                paymentResponse['payment_gateway'].length,
                             itemBuilder: (BuildContext ctx, index) {
                               String paymentName =
                                   paymentResponse['payment_gateway'][index]
@@ -647,8 +720,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                       .toLowerCase();
                               return KifiyaMethodContainer(
                                   selected: kifiyaMethod == index,
-                                  title: Service.capitalizeFirstLetters(
-                                      paymentName),
+                                  title: paymentName,
                                   // .toUpperCase(),
                                   kifiyaMethod: kifiyaMethod,
                                   imagePath: paymentName == "wallet"
@@ -680,7 +752,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                   //     ? 'images/momo.png'
                                                   ///******************MOMO***********************
                                                   : paymentName == "santimpay"
-                                                      ? 'images/santim.png'
+                                                      ? 'images/santimpay.png'
                                                       : paymentName ==
                                                               "etta card"
                                                           ? 'images/dashen.png'
@@ -706,9 +778,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                                                           ? 'images/zmall.jpg'
                                                                                           : paymentName == "dashen"
                                                                                               ? 'images/dashen.png'
-                                                                                              : paymentName.contains("telebirr") || paymentName.contains("tele birr")
-                                                                                                  ? 'images/telebirr.png'
-                                                                                                  : '',
+                                                                                              : paymentName == "yagoutpay"
+                                                                                                  ? 'images/yagoutpay.png'
+                                                                                                  : paymentName.contains("telebirr") || paymentName.contains("tele birr")
+                                                                                                      ? 'images/telebirr.png'
+                                                                                                      : '',
                                   // 'images/telebirr.png',
 
                                   press: () async {
@@ -717,15 +791,13 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     });
                                     if (paymentName == "cash") {
                                       if (widget.onlyCashless!) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          Service.showMessage(
-                                            Provider.of<ZLanguage>(context,
-                                                    listen: false)
-                                                .onlyDigitalPayments,
-                                            false,
-                                            duration: 5,
-                                          ),
+                                        Service.showMessage(
+                                          context: context,
+                                          title: Provider.of<ZLanguage>(context,
+                                                  listen: false)
+                                              .onlyDigitalPayments,
+                                          // error: false,
+                                          duration: 5,
                                         );
                                         setState(() {
                                           kifiyaMethod = -1;
@@ -738,13 +810,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                           paymentResponse != null &&
                                           paymentResponse['wallet'] <
                                               widget.price) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          Service.showMessage(
-                                            "Only digital payment accepted and your balance is insufficient!",
-                                            false,
-                                            duration: 5,
-                                          ),
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Only digital payment accepted and your balance is insufficient!",
+                                          // error: false,
+                                          duration: 5,
                                         );
                                         setState(() {
                                           kifiyaMethod = -1;
@@ -760,6 +831,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (dialogContext) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using Telebirr App"),
                                                 content: Text(
@@ -786,7 +858,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(
@@ -813,12 +887,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         if (success != null ||
                                                             !success) {
                                                           if (mounted) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(Service
-                                                                    .showMessage(
-                                                                        "Payment not completed. Please choose your payment method.",
-                                                                        true));
+                                                            Service.showMessage(
+                                                              context: context,
+                                                              title:
+                                                                  "Payment not completed. Please choose your payment method.",
+                                                              error: true,
+                                                            );
                                                           }
                                                         } else {
                                                           /////////old/////
@@ -869,10 +943,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                           _boaVerify();
                                         });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                       }
                                     } else if (paymentName == "amole") {
                                       var data = await useBorsa();
@@ -895,10 +971,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                           }
                                         });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -910,6 +988,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title:
                                                     Text("Pay Using EthSwitch"),
                                                 content: Text(
@@ -935,7 +1014,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -981,10 +1062,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
+                                        Service.showMessage(
+                                            context: context,
+                                            title:
                                                 "Something went wrong! Please try again!",
-                                                true));
+                                            error: true);
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -996,6 +1078,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using Loyalty Card"),
                                                 content: Text(
@@ -1021,7 +1104,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1062,10 +1147,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1077,6 +1164,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title:
                                                     Text("Pay Using SantimPay"),
                                                 content: Text(
@@ -1102,7 +1190,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1119,7 +1209,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                           builder: (context) {
                                                             return SantimPay(
                                                               title:
-                                                                  "SantimPay Payment Gateway",
+                                                                  "SantimPay Payment",
                                                               url:
                                                                   "$BASE_URL/api/santimpay/generatepaymenturl",
                                                               hisab:
@@ -1145,10 +1235,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1160,6 +1252,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text("Pay Using Chapa"),
                                                 content: Text(
                                                     "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Chapa?"),
@@ -1184,7 +1277,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1227,10 +1322,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1242,6 +1339,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title:
                                                     Text("Pay Using CBE Birr"),
                                                 content: Text(
@@ -1267,7 +1365,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1307,10 +1407,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1322,6 +1424,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (dialogContext) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using TeleBirr USSD"),
                                                 content: Text(
@@ -1348,7 +1451,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       var uniqueId =
@@ -1401,10 +1506,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1420,6 +1527,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using Mastercard"),
                                                 content: Text(
@@ -1445,7 +1553,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1484,10 +1594,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
+                                        Service.showMessage(
+                                            context: context,
+                                            title:
                                                 "Something went wrong! Please try again!",
-                                                true));
+                                            error: true);
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1506,6 +1617,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (dialogContext) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using Telebirr App"),
                                                 content: Text(
@@ -1532,19 +1644,20 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
-                                                      Navigator.of(
-                                                              dialogContext)
+                                                      Navigator.of(context)
                                                           .pop();
                                                       Navigator.push(context,
                                                           MaterialPageRoute(
                                                         builder: (context) {
                                                           return TelebirrInApp(
+                                                            context: context,
                                                             amount:
                                                                 widget.price!,
-                                                            context: context,
                                                             traceNo: widget
                                                                 .orderPaymentUniqueId!,
                                                             phone:
@@ -1553,33 +1666,51 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                           );
                                                         },
                                                       )).then((value) {
-                                                        // debugPrint("Value: $value");
-                                                        if (value != null &&
-                                                            value == true) {
-                                                          // debugPrint( "Payment Successful>>>");
-                                                          widget.isCourier!
-                                                              ? _createCourierOrder()
-                                                              : (aliexpressCart !=
-                                                                          null &&
-                                                                      aliexpressCart!
-                                                                              .cart
-                                                                              .storeId ==
-                                                                          cart.storeId)
-                                                                  ? _createAliexpressOrder()
-                                                                  : _createOrder();
+                                                        // debugPrint( "Value: $value");
+                                                        if (value != null) {
+                                                          if (value == false) {
+                                                            Service.showMessage(
+                                                              context: context,
+                                                              title:
+                                                                  "Payment was not completed. Please choose your payment method and try again!.",
+                                                              error: true,
+                                                            );
+                                                          } else if ((value[
+                                                                          'code'] !=
+                                                                      null &&
+                                                                  value['code'] ==
+                                                                      0) ||
+                                                              (value['status'] !=
+                                                                      null &&
+                                                                  value['status']
+                                                                          .toString()
+                                                                          .toLowerCase() ==
+                                                                      "success")) {
+                                                            // debugPrint( "Payment Successful>>>");
+                                                            widget.isCourier!
+                                                                ? _createCourierOrder()
+                                                                : (aliexpressCart !=
+                                                                            null &&
+                                                                        aliexpressCart!.cart.storeId ==
+                                                                            cart.storeId)
+                                                                    ? _createAliexpressOrder()
+                                                                    : _createOrder();
+                                                          }
                                                         } else {
+                                                          // _boaVerify();
                                                           Future.delayed(
                                                               Duration(
                                                                   milliseconds:
                                                                       100), () {
                                                             if (mounted) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      Service.showMessage(
-                                                                          "Payment not completed. Please choose your payment method.",
-                                                                          true));
+                                                              Service
+                                                                  .showMessage(
+                                                                context:
+                                                                    context,
+                                                                title:
+                                                                    "Payment was not completed. Please choose your payment method and try again!.",
+                                                                error: true,
+                                                              );
                                                             }
                                                           });
                                                         }
@@ -1590,10 +1721,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1611,6 +1744,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title:
                                                     Text("Pay Using AddisPay"),
                                                 content: Text(
@@ -1636,7 +1770,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       var uniqueId =
@@ -1686,10 +1822,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1699,6 +1837,109 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     ///*******************************Addis Pay*******************************
                                     ///
                                     ///
+                                    //////
+                                    ///*******************************Yagout Pay*******************************
+                                    else if (paymentResponse['payment_gateway']
+                                                [index]['name']
+                                            .toString()
+                                            .toLowerCase() ==
+                                        "yagoutpay") {
+                                      var data = await useBorsa();
+                                      if (data != null && data['success']) {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
+                                                title:
+                                                    Text("Pay Using YagoutPay"),
+                                                content: Text(
+                                                    "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using YagoutPay?"),
+                                                actions: [
+                                                  TextButton(
+                                                    child: Text(
+                                                      Provider.of<ZLanguage>(
+                                                              context)
+                                                          .cancel,
+                                                      style: TextStyle(
+                                                          color:
+                                                              kSecondaryColor),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: Text(
+                                                      Provider.of<ZLanguage>(
+                                                              context)
+                                                          .cont,
+                                                      style: TextStyle(
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    onPressed: () {
+                                                      var uniqueId =
+                                                          RandomDigits
+                                                              .getString(6);
+                                                      String uniqueIdString =
+                                                          '';
+                                                      Navigator.of(context)
+                                                          .pop();
+
+                                                      setState(() {
+                                                        uniqueIdString =
+                                                            uniqueId;
+                                                      });
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return YagoutPay(
+                                                              url:
+                                                                  "https://pgw.shekla.app/yagout/payment_link",
+                                                              amount:
+                                                                  widget.price!,
+                                                              traceNo:
+                                                                  "${widget.orderPaymentUniqueId!}_${uniqueIdString}",
+                                                              phone: userData[
+                                                                      'user']
+                                                                  ['phone'],
+                                                              firstName: userData[
+                                                                      'user'][
+                                                                  "first_name"],
+                                                              lastName: userData[
+                                                                      'user']
+                                                                  ["last_name"],
+                                                              email: userData[
+                                                                      'user']
+                                                                  ["email"],
+                                                            );
+                                                          },
+                                                        ),
+                                                      ).then((value) {
+                                                        _boaVerify();
+                                                      });
+                                                    },
+                                                  )
+                                                ],
+                                              );
+                                            });
+                                      } else {
+                                        Service.showMessage(
+                                            context: context,
+                                            title:
+                                                "Something went wrong! Please try again!",
+                                            error: true);
+                                        setState(() {
+                                          kifiyaMethod = -1;
+                                        });
+                                      }
+                                    }
+
+                                    //////////////////////////////// Yagout Pay ///////////////////////////////////////
                                     ///**************************MoMo***************************************
 
                                     //    else if (paymentResponse['payment_gateway']
@@ -1711,7 +1952,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     //       showDialog(
                                     //           context: context,
                                     //           builder: (context) {
-                                    //             return AlertDialog(
+                                    //             return AlertDialog(  backgroundColor: kPrimaryColor,
                                     //               title: Text("Pay Using MoMo"),
                                     //               content: Text(
                                     //                   "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using MoMo?"),
@@ -1773,7 +2014,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                     //           });
                                     //     } else {
                                     //       ScaffoldMessenger.of(context)
-                                    //           .showSnackBar(Service.showMessage(
+                                    //           .showSnackBar(Service.showMessage1(
                                     //               "Something went wrong! Please try again!",
                                     //               true));
                                     //       setState(() {
@@ -1791,6 +2032,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using International Card"),
                                                 content: Text(
@@ -1816,7 +2058,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                               context)
                                                           .cont,
                                                       style: TextStyle(
-                                                          color: kBlackColor),
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1859,10 +2103,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1874,6 +2120,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
                                                     "Pay Using International Card"),
                                                 content: Text(
@@ -1886,7 +2133,9 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                           .cancel,
                                                       style: TextStyle(
                                                           color:
-                                                              kSecondaryColor),
+                                                              kSecondaryColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context)
@@ -1942,10 +2191,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                         setState(() {
                                           kifiyaMethod = -1;
                                         });
@@ -1958,25 +2209,36 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                         // SizedBox(
                         //   height: getProportionateScreenHeight(kDefaultPadding),
                         // ),
-                        _placeOrder
-                            ? SpinKitWave(
-                                color: kSecondaryColor,
-                                size: getProportionateScreenWidth(
-                                    kDefaultPadding),
-                              )
-                            : CustomButton(
-                                title:
-                                    Provider.of<ZLanguage>(context).placeOrder,
-                                press: () {
-                                  _payOrderPayment(otp: "");
-                                },
-                                color: kSecondaryColor,
-                              )
                       ],
                     ),
                   ),
                 )
               : Container(),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          width: double.infinity,
+          // height: kDefaultPadding * 4,
+          padding: EdgeInsets.symmetric(
+            vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+            horizontal: getProportionateScreenHeight(kDefaultPadding),
+          ),
+          decoration: BoxDecoration(
+              color: kPrimaryColor,
+              border: Border(top: BorderSide(color: kWhiteColor)),
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kDefaultPadding),
+                  topRight: Radius.circular(kDefaultPadding))),
+
+          child: CustomButton(
+            isLoading: paymentResponse != null && _placeOrder,
+            title: Provider.of<ZLanguage>(context).placeOrder,
+            press: () {
+              _payOrderPayment(otp: "");
+            },
+            color: kSecondaryColor,
+          ),
         ),
       ),
     );
@@ -2360,14 +2622,19 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
           http.MultipartFile multipartFile =
               await http.MultipartFile.fromPath('file', imagePath[i]);
           request.files.add(multipartFile);
+          // print("current multipartFile $multipartFile");
         }
       }
       await request.send().then((response) async {
         http.Response.fromStream(response).then((value) async {
           var data = json.decode(value.body);
           if (data != null && data['success']) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                Service.showMessage("Order successfully created", false));
+            // print("after send reps>>> $data");
+            Service.showMessage(
+              context: context,
+              title: "Order successfully created",
+              error: false,
+            );
             await Service.remove("images");
             setState(() {
               _loading = false;
@@ -2379,8 +2646,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
               _loading = false;
               _placeOrder = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-                "${errorCodes['${data['error_code']}']}!", true));
+            Service.showMessage(
+              context: context,
+              title: "${errorCodes['${data['error_code']}']}!",
+              error: true,
+            );
+            // print("else error>>> ${data['error_code']}");
             await Future.delayed(Duration(seconds: 2));
             if (data['error_code'] == 999) {
               await Service.saveBool('logged', false);
@@ -2398,6 +2669,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         throw TimeoutException("The connection has timed out!");
       });
     } catch (e) {
+      // print("catch error>>> $e");
       setState(() {
         this._loading = false;
         this._placeOrder = false;
@@ -2506,11 +2778,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         setState(() {
           this._loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
-            "Failed to create aliexpress order, please check your internet and try again",
-            true,
-          ),
+
+        Service.showMessage(
+          context: context,
+          title:
+              "Failed to create aliexpress order, please check your internet and try again",
+          error: true,
         );
         return null;
       }
@@ -2586,11 +2859,12 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
         this._loading = false;
         this._placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-          "Failed to create order, please check your internet and try again",
-          true,
-        ),
+
+      Service.showMessage(
+        context: context,
+        title:
+            "Failed to create order, please check your internet and try again",
+        error: true,
       );
       return null;
     }
@@ -2690,8 +2964,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
           .timeout(
         Duration(seconds: 30),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+          Service.showMessage(
+            context: context,
+            title: "Network error",
+            error: true,
+          );
           setState(() {
             _loading = false;
           });
@@ -2761,9 +3038,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Failed to verify payment. Check you internet and try again", true,
-          duration: 4));
+      Service.showMessage(
+          context: context,
+          title: "Failed to verify payment. Check you internet and try again",
+          error: true,
+          duration: 4);
       return null;
     }
   }
@@ -2825,9 +3104,11 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Failed to verify payment. Check you internet and try again", true,
-          duration: 4));
+      Service.showMessage(
+          context: context,
+          title: "Failed to verify payment. Check you internet and try again",
+          error: true,
+          duration: 4);
       return null;
     }
   }

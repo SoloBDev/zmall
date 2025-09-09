@@ -41,7 +41,7 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
         setState(() {
           _loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
             "${errorCodes['${data['error_code']}']}!", true));
       }
     }

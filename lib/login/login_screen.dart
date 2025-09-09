@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
-import 'dart:math';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/core_services.dart';
@@ -25,7 +23,10 @@ import 'package:zmall/widgets/custom_text_field.dart';
 class LoginScreen extends StatefulWidget {
   static String routeName = "/login";
 
-  const LoginScreen({this.firstRoute = true});
+  const LoginScreen({
+    super.key,
+    this.firstRoute = true,
+  });
 
   final bool firstRoute;
 
@@ -63,11 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-          "Location permission denied. Please enable and try again",
-          true,
-        ),
+
+      Service.showMessage(
+        context: context,
+        title: "Location permission denied. Please enable and try again",
+        error: true,
       );
       FlLocation.requestLocationPermission();
     }
@@ -101,11 +102,10 @@ class _LoginScreenState extends State<LoginScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage(
-              "Location service disabled. Please enable and try again",
-              true,
-            ),
+          Service.showMessage(
+            context: context,
+            title: "Location service disabled. Please enable and try again",
+            error: true,
           );
         }
       }
@@ -208,16 +208,18 @@ class _LoginScreenState extends State<LoginScreen> {
       categories = categoriesResponse['deliveries'];
       Service.saveBool('is_global', false);
     } else {
-      if (categoriesResponse['error_code'] == 999) {
+      if (categoriesResponse != null &&
+          categoriesResponse['error_code'] == 999) {
         await CoreServices.clearCache();
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
-            "${errorCodes['${categoriesResponse['error_code']}']}",
-            true,
-          ),
+
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${categoriesResponse['error_code']}']}",
+          error: true,
         );
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-      } else if (categoriesResponse['error_code'] == 813) {
+      } else if (categoriesResponse != null &&
+          categoriesResponse['error_code'] == 813) {
         debugPrint("Not in Addis Ababa");
         Provider.of<ZMetaData>(
           context,
@@ -241,11 +243,12 @@ class _LoginScreenState extends State<LoginScreen> {
         //             )
         //           ],
         //         ));
-      } else {
-        // debugPrint("${errorCodes['${categoriesResponse['error_code']}']}");
-        // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-        //     "${errorCodes['${categoriesResponse['error_code']}']}", true));
       }
+      // else {
+      // debugPrint("${errorCodes['${categoriesResponse['error_code']}']}");
+      // ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+      //     "${errorCodes['${categoriesResponse['error_code']}']}", true));
+      // }
     }
   }
 
@@ -275,277 +278,492 @@ class _LoginScreenState extends State<LoginScreen> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        // backgroundColor: kPrimaryColor,
+        backgroundColor: kPrimaryColor,
+        bottomNavigationBar: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                Provider.of<ZLanguage>(context).noAccount,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+                child: Text(
+                  Provider.of<ZLanguage>(context).register,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: kSecondaryColor,
+                    // decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: getProportionateScreenWidth(kDefaultPadding)),
+                horizontal: getProportionateScreenWidth(kDefaultPadding * 2)),
             child: Center(
-              child: SingleChildScrollView(
-                child: Container(
-                  height: SizeConfig.screenHeight! * 0.9,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: kDefaultPadding,
-                      vertical: kDefaultPadding * 2),
-                  // decoration: BoxDecoration(
-                  //   color: kPrimaryColor,
-                  //   borderRadius: BorderRadius.circular(kDefaultPadding),
-                  //   // boxShadow: [
-                  //   BoxShadow(
-                  //     color: Colors.black.withValues(alpha: 0.1),
-                  //     spreadRadius: 1,
-                  //     blurRadius: 3,
-                  //     offset: const Offset(0, 2),
-                  //   ),
-                  // ],
-                  // ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ////header///
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                alignment: Alignment.center,
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding * 5),
-                                height: getProportionateScreenHeight(
-                                  kDefaultPadding * 5,
-                                ),
-                                margin:
-                                    EdgeInsets.only(top: kDefaultPadding * 2),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  // boxShadow: [kDefaultShadow],
-                                  image: DecorationImage(
-                                    image: AssetImage(zmallLogo),
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: getProportionateScreenHeight(
-                                  kDefaultPadding * 2,
-                                ),
-                              ),
-                              Text(
-                                Provider.of<ZLanguage>(context).welcome,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge!
-                                    .copyWith(fontWeight: FontWeight.bold),
-                                // headingStyle,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        /////form filds//
-                        SizedBox(height: SizeConfig.screenHeight! * 0.06),
-                        // buildCountryDropDown(),
-                        // SizedBox(
-                        //   height: getProportionateScreenHeight(
-                        //     kDefaultPadding / 2,
-                        //   ),
-                        // ),
-                        buildPhoneNumberFormField(),
-                        SizedBox(height: kDefaultPadding),
-                        buildPasswordFormField(),
-                        // SizedBox(height: kDefaultPadding),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                ForgotPassword.routeName,
-                              );
-                            },
-                            child: Text(
-                              "${Provider.of<ZLanguage>(context).forgotPassword}?",
-                              style: TextStyle(
-                                color: kGreyColor,
-                                fontWeight: FontWeight.w600,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ////header///
+                    Center(
+                      child: Column(
+                        children: [
+                          Container(
+                            alignment: Alignment.center,
+                            width: getProportionateScreenWidth(
+                                kDefaultPadding * 5),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding * 5,
+                            ),
+                            margin: EdgeInsets.only(top: kDefaultPadding * 2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              // boxShadow: [kDefaultShadow],
+                              image: DecorationImage(
+                                image: AssetImage(zmallLogo),
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
+                          SizedBox(
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding,
+                            ),
+                          ),
+                          Text(
+                            Provider.of<ZLanguage>(context).welcome,
+                            // "ZMall Delivery"
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                            // headingStyle,
+                          ),
+                          Text(
+                            "Delivery Done Right!",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .copyWith(color: kGreyColor),
+                            // headingStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    /////form filds//
+                    SizedBox(height: SizeConfig.screenHeight! * 0.06),
+
+                    buildPhoneNumberFormField(),
+                    SizedBox(height: kDefaultPadding),
+                    buildPasswordFormField(),
+                    // SizedBox(height: kDefaultPadding),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            ForgotPassword.routeName,
+                          );
+                        },
+                        child: Text(
+                          "${Provider.of<ZLanguage>(context).forgotPassword}?",
+                          style: TextStyle(
+                            color: kBlackColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //   children: [
-                        //     TextButton(
-                        //       onPressed: () {
-                        //         Navigator.pushNamed(
-                        //           context,
-                        //           ForgotPassword.routeName,
-                        //         );
-                        //       },
-                        //       child: Text(
-                        //         Provider.of<ZLanguage>(context).forgotPassword,
-                        //         style: TextStyle(
-                        //           color: kGreyColor,
-                        //           fontWeight: FontWeight.w600,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //     TextButton(
-                        //       onPressed: () {
-                        //         Navigator.pushNamedAndRemoveUntil(
-                        //           context,
-                        //           "/global",
-                        //           (Route<dynamic> route) => false,
-                        //         );
-                        //         //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
-                        //         Provider.of<ZMetaData>(
-                        //           context,
-                        //           listen: false,
-                        //         ).changeCountrySettings("Ethiopia");
-                        //       },
-                        //       child: Text(
-                        //         Provider.of<ZLanguage>(context).zGlobal,
-                        //         style: TextStyle(
-                        //           fontWeight: FontWeight.bold,
-                        //           decoration: TextDecoration.underline,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ),
-                        SizedBox(height: kDefaultPadding * 2),
-                        ////////////login button////
-                        CustomButton(
-                          title: Provider.of<ZLanguage>(context).login,
-                          child: _isLoading
-                              ? SpinKitWave(
-                                  color: kSecondaryColor,
-                                  size: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                )
-                              : null,
-                          press: () {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                            try {
-                              Service.isConnected(context).then((
-                                connected,
-                              ) async {
-                                if (_formKey.currentState!.validate()) {
-                                  if (connected) {
-                                    // await login(phoneNumber, password);
-                                    bool isGeneratOtp =
-                                        await generateOtpAtLogin(
-                                            phone: phoneNumber,
-                                            password: password);
-                                    if (isGeneratOtp != null && isGeneratOtp) {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) => OtpScreen(
-                                                  password: password,
-                                                  phone: phoneNumber,
-                                                  areaCode: areaCode)));
-                                      // print("after otp auth");
-                                    } else {
-                                      Service.showMessage(
-                                        'Faild to send OTP, please try again!',
-                                        true,
-                                      );
-                                    }
-                                  }
+                      ),
+                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     TextButton(
+                    //       onPressed: () {
+                    //         Navigator.pushNamed(
+                    //           context,
+                    //           ForgotPassword.routeName,
+                    //         );
+                    //       },
+                    //       child: Text(
+                    //         Provider.of<ZLanguage>(context).forgotPassword,
+                    //         style: TextStyle(
+                    //           color: kGreyColor,
+                    //           fontWeight: FontWeight.w600,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     TextButton(
+                    //       onPressed: () {
+                    //         Navigator.pushNamedAndRemoveUntil(
+                    //           context,
+                    //           "/global",
+                    //           (Route<dynamic> route) => false,
+                    //         );
+                    //         //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
+                    //         Provider.of<ZMetaData>(
+                    //           context,
+                    //           listen: false,
+                    //         ).changeCountrySettings("Ethiopia");
+                    //       },
+                    //       child: Text(
+                    //         Provider.of<ZLanguage>(context).zGlobal,
+                    //         style: TextStyle(
+                    //           fontWeight: FontWeight.bold,
+                    //           decoration: TextDecoration.underline,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    SizedBox(height: kDefaultPadding * 2),
+                    ////////////login button////
+                    CustomButton(
+                      isLoading: _isLoading,
+                      title: Provider.of<ZLanguage>(context).login,
+                      child: Text(
+                        Provider.of<ZLanguage>(context)
+                            .login
+                            .toString()
+                            .toUpperCase(),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              wordSpacing: 3,
+                              color: kPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      press: () {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        try {
+                          Service.isConnected(context).then((
+                            connected,
+                          ) async {
+                            if (_formKey.currentState!.validate()) {
+                              if (connected) {
+                                // Navigator.of(context).push(MaterialPageRoute(
+                                //     builder: (context) => OtpScreen(
+                                //         password: password,
+                                //         phone: phoneNumber,
+                                //         areaCode: areaCode)));
+                                // await login(phoneNumber, password);
+                                bool isGeneratOtp = await generateOtpAtLogin(
+                                    phone: phoneNumber, password: password);
+                                if (isGeneratOtp) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => OtpScreen(
+                                          password: password,
+                                          phone: phoneNumber,
+                                          areaCode: areaCode)));
+                                  // print("after otp auth");
                                 }
-                              });
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              } else {
                                 Service.showMessage(
-                                  "Connection unavailable. Check your internet and try again.",
-                                  // "Please check your internet connection",
-                                  true,
-                                ),
-                              );
-                            } finally {
-                              setState(() {
-                                _isLoading = false;
-                              });
+                                  context: context,
+                                  title:
+                                      "No internet connection. Check your network and try again.",
+                                  error: true,
+                                );
+                              }
                             }
-                          },
-                          color: kSecondaryColor,
-                        ),
+                          });
+                        } catch (e) {
+                          Service.showMessage(
+                            context: context,
+                            title:
+                                "Connection unavailable. Check your internet and try again.",
+                            // "Please check your internet connection",
+                            error: true,
+                          );
+                        } finally {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      },
+                      color: kSecondaryColor,
+                    ),
 
-                        // SizedBox(
-                        //   height:
-                        //       getProportionateScreenHeight(kDefaultPadding * 2),
-                        // ),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        TabScreen(isLaunched: true),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                "Continue as a guest>>",
-                                style: TextStyle(color: kSecondaryColor),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  "/global",
-                                  (Route<dynamic> route) => false,
-                                );
-                                //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
-                                Provider.of<ZMetaData>(
-                                  context,
-                                  listen: false,
-                                ).changeCountrySettings("Ethiopia");
-                              },
-                              child: Text(
-                                Provider.of<ZLanguage>(context).zGlobal,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding * 2),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: kGreyColor.withValues(alpha: 0.5),
+                            thickness: 1,
+                            endIndent: 10,
+                          ),
                         ),
-                        // SizedBox(
-                        //   height: getProportionateScreenHeight(kDefaultPadding),
-                        // ),
-                        Spacer(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(Provider.of<ZLanguage>(context).noAccount),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/register');
-                              },
-                              child: Text(
-                                Provider.of<ZLanguage>(context).register,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: kSecondaryColor,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          "Continue with",
+                          style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            color: kGreyColor,
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: kGreyColor.withValues(alpha: 0.5),
+                            thickness: 1,
+                            indent: 10,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding)),
+                      decoration: BoxDecoration(
+                          color: kWhiteColor,
+                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TabScreen(isLaunched: true),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: getProportionateScreenWidth(kDefaultPadding),
+                          children: [
+                            Icon(HeroiconsOutline.user),
+                            Text(
+                              "Continue as a Guest",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: kBlackColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding)),
+                      decoration: BoxDecoration(
+                          color: kWhiteColor,
+                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            "/global",
+                            (Route<dynamic> route) => false,
+                          );
+                          //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
+                          Provider.of<ZMetaData>(
+                            context,
+                            listen: false,
+                          ).changeCountrySettings("Ethiopia");
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: getProportionateScreenWidth(kDefaultPadding),
+                          children: [
+                            Icon(HeroiconsOutline.globeEuropeAfrica),
+                            Text(
+                              // "ZMall Global",
+                              Provider.of<ZLanguage>(context).zGlobal,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: kBlackColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   spacing: getProportionateScreenWidth(kDefaultPadding),
+                    //   children: [
+                    //     Flexible(
+                    //       child: Container(
+                    //         height: 50,
+                    //         alignment: Alignment.center,
+                    //         padding: EdgeInsets.symmetric(
+                    //             vertical: getProportionateScreenHeight(
+                    //                 kDefaultPadding / 2),
+                    //             horizontal: getProportionateScreenWidth(
+                    //                 kDefaultPadding)),
+                    //         decoration: BoxDecoration(
+                    //             color: kWhiteColor,
+                    //             borderRadius:
+                    //                 BorderRadius.circular(kDefaultPadding)),
+                    //         child: InkWell(
+                    //           onTap: () {
+                    //             Navigator.pushReplacement(
+                    //               context,
+                    //               MaterialPageRoute(
+                    //                 builder: (context) =>
+                    //                     TabScreen(isLaunched: true),
+                    //               ),
+                    //             );
+                    //           },
+                    //           child: Row(
+                    //             mainAxisAlignment: MainAxisAlignment.center,
+                    //             spacing: getProportionateScreenWidth(
+                    //                 kDefaultPadding),
+                    //             children: [
+                    //               Icon(HeroiconsOutline.user),
+                    //               Text(
+                    //                 "Guest",
+                    //                 style: TextStyle(
+                    //                   fontWeight: FontWeight.bold,
+                    //                   color: kBlackColor,
+                    //                 ),
+                    //               ),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Flexible(
+                    //       child: Container(
+                    //         height: 50,
+                    //         alignment: Alignment.center,
+                    //         padding: EdgeInsets.symmetric(
+                    //             vertical: getProportionateScreenHeight(
+                    //                 kDefaultPadding / 2),
+                    //             horizontal: getProportionateScreenWidth(
+                    //                 kDefaultPadding)),
+                    //         decoration: BoxDecoration(
+                    //             color: kWhiteColor,
+                    //             borderRadius:
+                    //                 BorderRadius.circular(kDefaultPadding)),
+                    //         child: InkWell(
+                    //           onTap: () {
+                    //             Navigator.pushNamedAndRemoveUntil(
+                    //               context,
+                    //               "/global",
+                    //               (Route<dynamic> route) => false,
+                    //             );
+                    //             //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
+                    //             Provider.of<ZMetaData>(
+                    //               context,
+                    //               listen: false,
+                    //             ).changeCountrySettings("Ethiopia");
+                    //           },
+                    //           child: Row(
+                    //             mainAxisAlignment: MainAxisAlignment.center,
+                    //             spacing: getProportionateScreenWidth(
+                    //                 kDefaultPadding),
+                    //             children: [
+                    //               Icon(HeroiconsOutline.globeEuropeAfrica),
+                    //               Text(
+                    //                 "ZMall Global",
+                    //                 // Provider.of<ZLanguage>(context).zGlobal,
+                    //                 style: TextStyle(
+                    //                   fontWeight: FontWeight.bold,
+                    //                   color: kBlackColor,
+                    //                 ),
+                    //               ),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+
+                    //     // TextButton(
+                    //     //   onPressed: () {
+                    //     //     Navigator.pushReplacement(
+                    //     //       context,
+                    //     //       MaterialPageRoute(
+                    //     //         builder: (context) =>
+                    //     //             TabScreen(isLaunched: true),
+                    //     //       ),
+                    //     //     );
+                    //     //   },
+                    //     //   child: Text(
+                    //     //     "Continue as a Guest",
+                    //     //     style: TextStyle(
+                    //     //       color: kSecondaryColor,
+                    //     //       fontWeight: FontWeight.bold,
+                    //     //     ),
+                    //     //   ),
+                    //     // ),
+                    //     // TextButton(
+                    //     //   onPressed: () {
+                    //     //     Navigator.pushNamedAndRemoveUntil(
+                    //     //       context,
+                    //     //       "/global",
+                    //     //       (Route<dynamic> route) => false,
+                    //     //     );
+                    //     //     //TODO: the next line change the country to Ethiopia for global screen because when the user selects country to South Sudan at CountryDropDown section it changes the base url to South Sudan which results mismatch in Global screen
+                    //     //     Provider.of<ZMetaData>(
+                    //     //       context,
+                    //     //       listen: false,
+                    //     //     ).changeCountrySettings("Ethiopia");
+                    //     //   },
+                    //     //   child: Text(
+                    //     //     Provider.of<ZLanguage>(context).zGlobal,
+                    //     //     style: TextStyle(
+                    //     //       fontWeight: FontWeight.bold,
+                    //     //       // decoration: TextDecoration.underline,
+                    //     //     ),
+                    //     //   ),
+                    //     // ),
+                    //   ],
+                    // ),
+                    // SizedBox(
+                    //   height: getProportionateScreenHeight(kDefaultPadding),
+                    // ),
+                    // Spacer(),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     Text(Provider.of<ZLanguage>(context).noAccount),
+                    //     TextButton(
+                    //       onPressed: () {
+                    //         Navigator.pushNamed(context, '/register');
+                    //       },
+                    //       child: Text(
+                    //         Provider.of<ZLanguage>(context).register,
+                    //         style: TextStyle(
+                    //           fontWeight: FontWeight.bold,
+                    //           color: kSecondaryColor,
+                    //           decoration: TextDecoration.underline,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                  ],
                 ),
               ),
             ),
@@ -554,19 +772,25 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
 ////////////////otp authentication/////
 
-  Future<dynamic> generateOtpAtLogin(
-      {required String phone, required String password}) async {
+  Future<dynamic> generateOtpAtLogin({
+    required String phone,
+    required String password,
+  }) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/generate_otp_at_login";
-
+    setState(() {
+      _isLoading = true;
+    });
     try {
       Map data = {
         "phone": phone,
         "password": password,
       };
       var body = json.encode(data);
+      // debugPrint("body??? $body}");
       http.Response response = await http
           .post(
         Uri.parse(url),
@@ -579,23 +803,27 @@ class _LoginScreenState extends State<LoginScreen> {
           throw TimeoutException("The connection has timed out!");
         },
       );
-      // print("otp??? ${json.decode(response.body)}");
+      // debugPrint("otp??? ${json.decode(response.body)}");
       // return json.decode(response.body);
       var newResponse = json.decode(response.body);
       if (newResponse != null &&
           (newResponse["success"] != null && newResponse["success"])) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("OTP code sent to your phone...", false));
         return true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-            "Failed to send an OTP. Please check your phone and password and try again.",
-            true));
+        Service.showMessage(
+            context: context,
+            title:
+                "Failed to send an OTP. Please check your phone and password and try again.",
+            error: true);
         return false;
       }
     } catch (e) {
       // print(e);
       return false;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -762,7 +990,8 @@ class _LoginScreenState extends State<LoginScreen> {
             _showPassword = !_showPassword;
           });
         },
-        icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+        icon: Icon(
+            _showPassword ? HeroiconsOutline.eyeSlash : HeroiconsOutline.eye),
       ),
       // ),
     );

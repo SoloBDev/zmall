@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/kifiya/kifiya_screen.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/order_status_row.dart';
+import 'package:zmall/courier_checkout/components/checkout_detail_row.dart';
 
 class CourierCheckout extends StatefulWidget {
   static String routeName = '/courier_checkout';
@@ -14,6 +16,7 @@ class CourierCheckout extends StatefulWidget {
   _CourierCheckoutState createState() => _CourierCheckoutState();
 
   const CourierCheckout({
+    super.key,
     @required this.orderDetail,
     @required this.userData,
     @required this.cartInvoice,
@@ -27,7 +30,6 @@ class CourierCheckout extends StatefulWidget {
 class _CourierCheckoutState extends State<CourierCheckout> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -39,380 +41,182 @@ class _CourierCheckoutState extends State<CourierCheckout> {
           "Checkout",
           style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
+        elevation: 0,
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: EdgeInsets.only(
+          left: getProportionateScreenWidth(kDefaultPadding),
+          right: getProportionateScreenWidth(kDefaultPadding),
+          bottom: getProportionateScreenHeight(kDefaultPadding / 2),
+        ),
+        child: CustomButton(
+          title: "Place Order",
+          press: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return KifiyaScreen(
+                    price:
+                        widget.cartInvoice['order_payment']['total'].toDouble(),
+                    orderPaymentId: widget.cartInvoice['order_payment']['_id'],
+                    orderPaymentUniqueId: widget.cartInvoice['order_payment']
+                            ['unique_id']
+                        .toString(),
+                    isCourier: true,
+                    vehicleId: widget.cartInvoice['vehicles'][0]['_id'],
+                  );
+                },
+              ),
+            );
+          },
+          color: kSecondaryColor,
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(
-              getProportionateScreenWidth(kDefaultPadding),
-            ),
-            child: Column(
-              children: [
-                CategoryContainer(
-                  title: "Order Details",
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: getProportionateScreenHeight(kDefaultPadding),
+            children: [
+              Container(
+                padding: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding / 2),
+                  ),
+                  boxShadow: [boxShadow],
                 ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
-                Container(
-                  padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding / 2),
+                child: Column(
+                  children: [
+                    OrderStatusRow(
+                      value: "Order Details",
+                      title: "Your courier delivery details",
+                      icon: HeroiconsOutline.informationCircle,
                     ),
-                    boxShadow: [boxShadow],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Sender :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${widget.orderDetail['pickup_addresses'][0]['user_details']['name']}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Phone :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.orderDetail['pickup_addresses'][0]['user_details']['phone']}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: getProportionateScreenWidth(
-                                  kDefaultPadding * .8),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Receiver :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${widget.orderDetail['destination_addresses'][0]['user_details']['name']}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Phone :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.orderDetail['destination_addresses'][0]['user_details']['phone']}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: getProportionateScreenWidth(
-                                  kDefaultPadding * .8),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Pickup :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "${widget.orderDetail['pickup_addresses'][0]['address']}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding * .8),
-                              ),
-                              softWrap: true,
-                              textAlign: TextAlign.right,
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Dropoff :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "${widget.orderDetail['destination_addresses'][0]['address']}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding * .8),
-                              ),
-                              softWrap: true,
-                              textAlign: TextAlign.right,
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
-                ),
-                CategoryContainer(
-                  title: "Payment Details",
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
-                Container(
-                  padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    boxShadow: [boxShadow],
-                    borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding / 2),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Time :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${widget.cartInvoice['order_payment']['total_time']} mins",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: getProportionateScreenWidth(
-                                  kDefaultPadding * .8),
-                            ),
-                          )
-                        ],
+                    CheckoutDetailRow(
+                      label: "Sender",
+                      value:
+                          "${widget.orderDetail['pickup_addresses'][0]['user_details']['name']}",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: getProportionateScreenWidth(kDefaultPadding),
                       ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Phone",
+                      value:
+                          "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.orderDetail['pickup_addresses'][0]['user_details']['phone']}",
+                    ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(
+                      kDefaultPadding,
+                    )),
+                    CheckoutDetailRow(
+                      label: "Receiver",
+                      value:
+                          "${widget.orderDetail['destination_addresses'][0]['user_details']['name']}",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: getProportionateScreenWidth(kDefaultPadding),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Distance :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${widget.cartInvoice['order_payment']['total_distance'].toStringAsFixed(2)} km",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: getProportionateScreenWidth(
-                                  kDefaultPadding * .8),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Service Price :",
-                            style: TextStyle(color: kGreyColor),
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding / 2),
-                          ),
-                          Text(
-                            "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.cartInvoice['order_payment']['total_service_price'].toStringAsFixed(2)}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ),
-                          )
-                        ],
-                      ),
-                      Container(
-                          width: double.infinity,
-                          height: 0.1,
-                          color: kGreyColor),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 3),
-                      ),
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              "Total",
-                              style: TextStyle(
-                                color: kGreyColor,
-                              ),
-                            ),
-                            SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3),
-                            ),
-                            Text(
-                              "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.cartInvoice['order_payment']['total'].toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding),
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
+                    ),
+                    CheckoutDetailRow(
+                      label: "Phone",
+                      value:
+                          "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.orderDetail['destination_addresses'][0]['user_details']['phone']}",
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Pickup",
+                      value:
+                          "${widget.orderDetail['pickup_addresses'][0]['address']}",
+                      isExpanded: true,
+                    ),
+                    CheckoutDetailRow(
+                      label: "Dropoff",
+                      value:
+                          "${widget.orderDetail['destination_addresses'][0]['address']}",
+                      isExpanded: true,
+                      spacing: 0,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(
+                    getProportionateScreenWidth(kDefaultPadding)),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  boxShadow: [boxShadow],
+                  borderRadius: BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding / 2),
                   ),
                 ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
-                ),
-                CustomButton(
-                  title: "Place Order",
-                  press: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return KifiyaScreen(
-                            price: widget.cartInvoice['order_payment']['total']
-                                .toDouble(),
-                            orderPaymentId: widget.cartInvoice['order_payment']
-                                ['_id'],
-                            orderPaymentUniqueId: widget
-                                .cartInvoice['order_payment']['unique_id']
-                                .toString(),
-                            isCourier: true,
-                            vehicleId: widget.cartInvoice['vehicles'][0]['_id'],
-                          );
-                        },
+                child: Column(
+                  children: [
+                    OrderStatusRow(
+                      value: "Payment Details",
+                      title: "Your courier payment details",
+                      icon: HeroiconsOutline.banknotes,
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Time",
+                      value:
+                          "${widget.cartInvoice['order_payment']['total_time']} mins",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize:
+                            getProportionateScreenWidth(kDefaultPadding * 0.8),
                       ),
-                    );
-                  },
-                  color: kSecondaryColor,
-                )
-                //              Text("${widget.cartInvoice}"),
-              ],
-            ),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Distance",
+                      value:
+                          "${widget.cartInvoice['order_payment']['total_distance'].toStringAsFixed(2)} km",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize:
+                            getProportionateScreenWidth(kDefaultPadding * 0.8),
+                      ),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Service Price",
+                      value:
+                          "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.cartInvoice['order_payment']['total_service_price'].toStringAsFixed(2)}",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize:
+                            getProportionateScreenWidth(kDefaultPadding * 0.8),
+                      ),
+                      spacing:
+                          getProportionateScreenHeight(kDefaultPadding / 3),
+                    ),
+                    CheckoutDetailRow(
+                      label: "Total Order Price",
+                      value:
+                          "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.cartInvoice['order_payment']['total'].toStringAsFixed(2)}",
+                      valueStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: getProportionateScreenWidth(kDefaultPadding),
+                      ),
+                      spacing: 0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

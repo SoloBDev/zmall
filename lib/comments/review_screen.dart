@@ -16,6 +16,7 @@ import 'package:zmall/widgets/custom_progress_indicator.dart';
 
 class CommentsScreen extends StatefulWidget {
   const CommentsScreen({
+    super.key,
     required this.userId,
     required this.storeId,
     required this.serverToken,
@@ -46,8 +47,10 @@ class _CommentsScreenState extends State<CommentsScreen> {
         _loading = false;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       if (data['error_code'] == 999) {
         await CoreServices.clearCache();
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -60,7 +63,6 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getStoreReviews();
   }
@@ -71,20 +73,18 @@ class _CommentsScreenState extends State<CommentsScreen> {
       appBar: AppBar(
         title: Text(
           "Reviews",
-          style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenHeight(kDefaultPadding),
+          horizontal: getProportionateScreenHeight(kDefaultPadding / 2),
           vertical: getProportionateScreenHeight(kDefaultPadding / 2),
         ),
         child: ModalProgressHUD(
           inAsyncCall: _loading,
           progressIndicator:
               CustomLinearProgressIndicator(message: "Loading reviews..."),
-          color: kWhiteColor,
+          color: kPrimaryColor,
           child: reviews != null
               ? reviews['store_review_list'].length > 0
                   ? ListView.separated(
@@ -185,8 +185,10 @@ class _CommentsScreenState extends State<CommentsScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Your internet connection is unstable. Please try again...", true));
+      Service.showMessage(
+          context: context,
+          title: "Your internet connection is unstable. Please try again...",
+          error: true);
       return null;
     }
   }

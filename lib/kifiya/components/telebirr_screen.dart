@@ -5,7 +5,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 // import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:uuid/uuid.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
@@ -57,9 +56,12 @@ class _TelebirrState extends State<Telebirr> {
   void _initTelebirr() async {
     var data = await initTelebirr();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['message']}. Loading...", false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "${data['message']}. Loading...",
+        error: false,
+        duration: 3,
+      );
       setState(() {
         telebirrUrl = data['data']['data']['toPayUrl'];
       });
@@ -162,10 +164,11 @@ class _TelebirrState extends State<Telebirr> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

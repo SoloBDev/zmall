@@ -32,16 +32,19 @@ class AddisPay extends StatefulWidget {
 }
 
 class _AddisPayState extends State<AddisPay> {
-  String title = "AddisPay Payment Gateway";
+  String title = "AddisPay";
+  String message = "Connecting to AddisPay...";
   bool _loading = false;
+  bool _isError = false;
   String initUrl = "";
-  bool isError = false;
+  // bool isError = false;
   InAppWebViewSettings settings = InAppWebViewSettings(
     //both platforms
     useShouldOverrideUrlLoading: true,
     mediaPlaybackRequiresUserGesture: false,
     javaScriptEnabled: true, // Ensure payment JS works
     clearCache: true, // Clear cache for security
+    disableDefaultErrorPage: true,
     //android
     useHybridComposition: true,
     //ios
@@ -59,13 +62,13 @@ class _AddisPayState extends State<AddisPay> {
 
     setState(() {
       _loading = true;
-      isError = false;
     });
     try {
       final data = await initiateUrl();
       if (data != null) {
         setState(() {
           initUrl = "${data['checkout_url']}/${data['uuid']}";
+          message = "Invoice initiated successfully. Loading...";
         });
       } else {
         throw Exception('Invalid response from initiateUrl');
@@ -73,15 +76,11 @@ class _AddisPayState extends State<AddisPay> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          isError = true;
+          _isError = true;
+          message = "Failed to initiate payment. Please try again.";
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true,
-          ),
-        );
-        if (Navigator.canPop(context)) {
+
+        if (_isError || Navigator.canPop(context)) {
           Navigator.of(context).pop();
         }
       }
@@ -102,44 +101,44 @@ class _AddisPayState extends State<AddisPay> {
         ),
         leading: CustomBackButton(),
       ),
-      body: _loading
+      body: _loading || _isError || initUrl.isEmpty
           ? Center(
               child: Column(
-                spacing: kDefaultPadding,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SpinKitWave(
-                    color: kSecondaryColor,
-                    size: getProportionateScreenWidth(kDefaultPadding),
+                  if (_loading && !_isError)
+                    SpinKitWave(
+                      color: kSecondaryColor,
+                      size: getProportionateScreenWidth(kDefaultPadding * 2),
+                    ),
+                  SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding)),
+                  Text(
+                    message,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: kBlackColor.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
-                  Text("Loading...")
                 ],
               ),
             )
-          : isError
-              ? Center(
-                  child: Column(
-                    spacing: kDefaultPadding,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Error initializing payment, please try again."),
-                      TextButton(
-                          onPressed: () {
-                            _initiateUrl();
-                          },
-                          child: Text("Retry"))
-                    ],
-                  ),
-                )
-              : InAppWebView(
-                  initialSettings: settings,
-                  initialUrlRequest: URLRequest(url: WebUri(initUrl)),
-                  shouldOverrideUrlLoading:
-                      (controller, navigationAction) async {
-                    return NavigationActionPolicy
-                        .ALLOW; // Allow all navigations
-                  },
-                ),
+          : InAppWebView(
+              initialSettings: settings,
+              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                return NavigationActionPolicy.ALLOW; // Allow all navigations
+              },
+              onReceivedError: (controller, request, error) {
+                setState(() {
+                  _loading = false;
+                  message = "Failed to initiate payment. Please try again.";
+                  // Force rebuild to show error message
+                  initUrl =
+                      ""; // Clear the URL so the error message is shown instead of the webview
+                });
+              },
+            ),
     );
   }
 
@@ -179,11 +178,12 @@ class _AddisPayState extends State<AddisPay> {
       );
       return json.decode(response.body);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
-      );
+      setState(() {
+        _isError = true;
+        message =
+            "Something went wrong. Please check your internet connection!";
+      });
+
       return null;
     } finally {
       setState(() {

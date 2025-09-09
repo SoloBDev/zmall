@@ -81,7 +81,7 @@ class _StoreMapViewState extends State<StoreMapView> {
             });
           });
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
               "Location service disabled. Please enable and try again", true));
         }
       }
@@ -100,7 +100,7 @@ class _StoreMapViewState extends State<StoreMapView> {
         });
       } else {
         // Handle permission denial
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
             "Location permission denied. Please enable and try again", true));
         FlLocation.requestLocationPermission();
       }
@@ -302,7 +302,7 @@ class _StoreMapViewState extends State<StoreMapView> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "Location permission denied. Please enable and try again", true));
       FlLocation.requestLocationPermission();
     }
@@ -334,7 +334,7 @@ class _StoreMapViewState extends State<StoreMapView> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
               "Location service disabled. Please enable and try again", true));
         }
       }

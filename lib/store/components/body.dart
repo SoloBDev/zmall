@@ -22,6 +22,7 @@ import 'custom_list_tile.dart';
 
 class Body extends StatefulWidget {
   Body({
+    super.key,
     @required this.cityId,
     @required this.storeDeliveryId,
     @required this.latitude,
@@ -45,6 +46,7 @@ class Body extends StatefulWidget {
   // Callback to notify parent
   final Function(bool)? onAllClosedChanged;
   final Function(bool)? onSearching;
+
   @override
   BodyState createState() => BodyState(this.controller!);
 }
@@ -212,7 +214,8 @@ class BodyState extends State<Body> {
   void storeOpen(List stores) async {
     isOpen.clear();
     DateFormat dateFormat = new DateFormat.Hm();
-    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    DateTime now = DateTime.now().toUtc();
     if (appOpen == null || appClose == null) {
       appOpen = await Service.read('app_open');
       appClose = await Service.read('app_close');
@@ -283,7 +286,8 @@ class BodyState extends State<Body> {
           }
         }
       } else {
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        DateTime now = DateTime.now().toUtc();
         DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
         DateFormat dateFormat = DateFormat.Hm();
         if (appClose != null) {
@@ -386,7 +390,10 @@ class BodyState extends State<Body> {
                   child: Column(
                     spacing: getProportionateScreenHeight(kDefaultPadding),
                     children: [
-                      SearchButtonShimmer(width: screenWidth * 0.9),
+                      Padding(
+                        padding: const EdgeInsets.only(top: kDefaultPadding),
+                        child: SearchButtonShimmer(width: screenWidth * 0.9),
+                      ),
                       Container(
                         height:
                             getProportionateScreenHeight(kDefaultPadding * 5),
@@ -401,10 +408,12 @@ class BodyState extends State<Body> {
                   ),
                 ),
           child: stores != null
-              ? Column(
-                  children: [
-                    !widget.isStore!
-                        ? CustomSearchBar(
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: kDefaultPadding),
+                  child: Column(
+                    children: [
+                      if (!widget.isStore!)
+                        CustomSearchBar(
                             controller: controller,
                             hintText: Provider.of<ZLanguage>(context).search,
                             onChanged: onSearchTextChanged,
@@ -417,187 +426,95 @@ class BodyState extends State<Body> {
                               setState(() {
                                 storeOpen(stores);
                               });
-                            })
-                        : Container(),
-                    // Container(
-                    //     color: kPrimaryColor,
-                    //     child: Container(
-                    //       // color: kPrimaryColor,
-                    //       margin: EdgeInsets.all(
-                    //         getProportionateScreenWidth(
-                    //             kDefaultPadding / 4),
-                    //       ),
-                    //       padding: EdgeInsets.symmetric(
-                    //         horizontal: getProportionateScreenWidth(
-                    //             kDefaultPadding),
-                    //       ),
-                    //       decoration: BoxDecoration(
-                    //           color: kPrimaryColor,
-                    //           border:
-                    //               Border.all(color: kWhiteColor, width: 2),
-                    //           borderRadius: BorderRadius.circular(
-                    //               kDefaultPadding * 2)),
-                    //       // child: Card(
-                    //       //   elevation: 0.3,
-                    //       child: Row(
-                    //         mainAxisAlignment:
-                    //             MainAxisAlignment.spaceAround,
-                    //         children: [
-                    //           Icon(
-                    //             Icons.search,
-                    //             color: controller.text.isNotEmpty
-                    //                 ? kSecondaryColor.withValues(alpha: 0.6)
-                    //                 : kGreyColor,
-                    //           ),
-                    //           SizedBox(
-                    //               width: getProportionateScreenWidth(
-                    //                   kDefaultPadding)),
-                    //           Expanded(
-                    //             child: TextField(
-                    //               controller: controller,
-                    //               decoration: InputDecoration(
-                    //                 hintText:
-                    //                     Provider.of<ZLanguage>(context)
-                    //                         .search,
-                    //                 border: InputBorder.none,
-                    //                 // prefixIcon: Icon(Icons.search),
-                    //                 // suffixIcon: controller.text.isNotEmpty
-                    //                 //     ? IconButton(
-                    //                 //         icon: Icon(Icons.cancel),
-                    //                 //         onPressed: () {
-                    //                 //           controller.clear();
-                    //                 //           onSearchTextChanged('');
-                    //                 //           setState(
-                    //                 //             () {
-                    //                 //               storeOpen(stores);
-                    //                 //             },
-                    //                 //           );
-                    //                 //         },
-                    //                 //       )
-                    //                 //     : null,
-                    //               ),
-                    //               onChanged: onSearchTextChanged,
-                    //             ),
-                    //           ),
-                    //           if (controller.text.isNotEmpty)
-                    //             IconButton(
-                    //               icon: Icon(
-                    //                 Icons.cancel,
-                    //                 color: kSecondaryColor,
-                    //               ),
-                    //               onPressed: () {
-                    //                 controller.clear();
-                    //                 onSearchTextChanged('');
-                    //                 setState(
-                    //                   () {
-                    //                     storeOpen(stores);
-                    //                   },
-                    //                 );
-                    //               },
-                    //             ),
-                    //         ],
-                    //       ),
-                    //     ),
-                    //   )
-                    // : Container(),
-                    tagFilters.length != 0
-                        ? Container(
-                            color: kPrimaryColor,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: kDefaultPadding * 0.4,
-                                vertical: kDefaultPadding * 0.5,
-                              ),
-                              // padding: EdgeInsets.only(
-                              //   left: kDefaultPadding * 0.4,
-                              //   right: kDefaultPadding * 0.4,
-                              //   bottom: kDefaultPadding * 0.4,
-
-                              // ),
-                              child: Container(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding * 2),
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: tagFilters.length,
-                                  itemBuilder: (context, index) {
-                                    bool isSelected = selectedTagFilters
-                                        .contains(tagFilters[index]);
-                                    return InkWell(
-                                      onTap: () {
-                                        if (isSelected) {
-                                          selectedTagFilters
-                                              .remove(tagFilters[index]);
-                                        } else {
-                                          selectedTagFilters
-                                              .add(tagFilters[index]);
-                                        }
-                                        filterUsingTag();
-                                      },
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
+                            }),
+                      tagFilters.length != 0
+                          ? Container(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 3),
+                              child: ListView.separated(
+                                itemCount: tagFilters.length,
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: kDefaultPadding,
+                                  vertical: kDefaultPadding / 2,
+                                ),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        SizedBox(
+                                  width: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                ),
+                                itemBuilder: (context, index) {
+                                  bool isSelected = selectedTagFilters
+                                      .contains(tagFilters[index]);
+                                  return InkWell(
+                                    onTap: () {
+                                      if (isSelected) {
+                                        selectedTagFilters
+                                            .remove(tagFilters[index]);
+                                      } else {
+                                        selectedTagFilters
+                                            .add(tagFilters[index]);
+                                      }
+                                      filterUsingTag();
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? kSecondaryColor.withValues(
+                                                alpha: 0.3)
+                                            : kPrimaryColor,
+                                        borderRadius: BorderRadius.circular(
+                                          getProportionateScreenWidth(
+                                              kDefaultPadding / 2),
+                                        ),
+                                        border: Border.all(
+                                          width: isSelected ? 1.0 : 2.0,
                                           color: isSelected
                                               ? kSecondaryColor.withValues(
-                                                  alpha: 0.3)
-                                              : kPrimaryColor,
-                                          borderRadius: BorderRadius.circular(
-                                            getProportionateScreenWidth(
-                                                kDefaultPadding / 2),
-                                          ),
-                                          border: Border.all(
-                                            width: isSelected ? 1.0 : 2.0,
-                                            color: isSelected
-                                                ? kSecondaryColor.withValues(
-                                                    alpha: 0.6)
-                                                : kWhiteColor,
-                                          ),
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal:
-                                                getProportionateScreenWidth(
-                                                    kDefaultPadding / 2)),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              Service.capitalizeFirstLetters(
-                                                  tagFilters[index].toString()),
-                                              // .toUpperCase(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    fontWeight: isSelected
-                                                        ? FontWeight.bold
-                                                        : FontWeight.normal,
-                                                    color: isSelected
-                                                        ? kSecondaryColor
-                                                        : kBlackColor,
-                                                  ),
-                                            ),
-                                          ],
+                                                  alpha: 0.6)
+                                              : kWhiteColor,
                                         ),
                                       ),
-                                    );
-                                  },
-                                  separatorBuilder:
-                                      (BuildContext context, int index) =>
-                                          SizedBox(
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding / 2),
-                                  ),
-                                ),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal:
+                                              getProportionateScreenWidth(
+                                                  kDefaultPadding / 2)),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            Service.capitalizeFirstLetters(
+                                                tagFilters[index].toString()),
+                                            // .toUpperCase(),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.bold
+                                                      : FontWeight.normal,
+                                                  color: isSelected
+                                                      ? kSecondaryColor
+                                                      : kBlackColor,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
-                          )
-                        : Container(),
-                    Expanded(
-                      child:
-                          _searchResult.isNotEmpty || controller.text.isNotEmpty
-                              ? _buildSearchList()
-                              : _buildStoreList(),
-                    ),
-                  ],
+                            )
+                          : Container(),
+                      Expanded(
+                        child: _searchResult.isNotEmpty ||
+                                controller.text.isNotEmpty
+                            ? _buildSearchList()
+                            : _buildStoreList(),
+                      ),
+                    ],
+                  ),
                 )
               : !_loading
                   ? Padding(
@@ -638,7 +555,9 @@ class BodyState extends State<Body> {
               ? Column(
                   children: [
                     StoreLists(index: index),
-                    SizedBox(height: kDefaultPadding / 4),
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
                   ],
                 )
               : const SizedBox();
@@ -646,7 +565,8 @@ class BodyState extends State<Body> {
           return Column(
             children: [
               StoreLists(index: index),
-              SizedBox(height: kDefaultPadding / 4),
+              SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
             ],
           );
         }
@@ -659,8 +579,7 @@ class BodyState extends State<Body> {
       itemCount: _searchResult.length,
       padding: const EdgeInsets.all(kDefaultPadding / 2),
       separatorBuilder: (context, index) => Container(
-        height: kDefaultPadding / 4,
-        color: kWhiteColor,
+        height: getProportionateScreenHeight(kDefaultPadding / 2),
       ),
       itemBuilder: (context, index) {
         return Container(
@@ -856,12 +775,12 @@ class BodyState extends State<Body> {
             this._loading = false;
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage(
-                  "Something went wrong! Check your internet and try again",
-                  true,
-                  duration: 3),
-            );
+            Service.showMessage(
+                context: context,
+                title:
+                    "Something went wrong! Check your internet and try again",
+                error: true,
+                duration: 3);
           }
 
           throw TimeoutException("The connection has timed out!");

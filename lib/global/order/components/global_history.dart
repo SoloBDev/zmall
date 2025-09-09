@@ -46,8 +46,8 @@ class _GlobalOrderHistoryState extends State<GlobalOrderHistory> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+          "${errorCodes['${data['error_code']}']}!", true));
     }
   }
 

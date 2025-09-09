@@ -70,8 +70,10 @@ class _SplashScreenState extends State<SplashScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+          context: context,
+          title: "Location permission denied. Please enable and try again",
+          error: true);
       FlLocation.requestLocationPermission();
     }
   }
@@ -97,8 +99,10 @@ class _SplashScreenState extends State<SplashScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+              context: context,
+              title: "Location service disabled. Please enable and try again",
+              error: true);
         }
       }
     } else {

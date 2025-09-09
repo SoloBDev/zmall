@@ -4,12 +4,16 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
+import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
+import 'package:zmall/world_cup/components/score_prediction_widget.dart';
+import 'package:zmall/world_cup/components/win_percentage_widget.dart';
 
 class PredictScreen extends StatefulWidget {
   const PredictScreen({super.key, @required this.game});
@@ -33,7 +37,6 @@ class _PredictScreenState extends State<PredictScreen> {
   DateTime euroPredictEnd = DateTime(2024, 07, 15);
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
   }
@@ -53,6 +56,7 @@ class _PredictScreenState extends State<PredictScreen> {
       _isLoading = true;
     });
     var data = await getPredictions();
+    // debugPrint("prediction data: $data");
     if (data != null && data['success']) {
       for (var index = 0; index < data['scores'].length; index++) {
         if (data['scores'][index]['game_id'] == widget.game['_id']) {
@@ -87,9 +91,11 @@ class _PredictScreenState extends State<PredictScreen> {
     });
     var data = await predictGame();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Prediction submitted successfully! Good luck...", false,
-          duration: 4));
+      Service.showMessage(
+          context: context,
+          title: "Prediction submitted successfully! Good luck...",
+          error: false,
+          duration: 4);
       setState(() {
         _isLoading = false;
       });
@@ -146,6 +152,7 @@ class _PredictScreenState extends State<PredictScreen> {
           ),
           child: SingleChildScrollView(
             child: Column(
+              spacing: getProportionateScreenHeight(kDefaultPadding),
               children: [
                 Container(
                   width: double.infinity,
@@ -166,11 +173,16 @@ class _PredictScreenState extends State<PredictScreen> {
                     ),
                   ),
                   child: Column(
+                    spacing: kDefaultPadding,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      ///game type section////
                       CustomTag(
-                          color: Colors.lightBlueAccent,
+                          // color: Colors.lightBlueAccent,
+                          color: kBlackColor.withValues(alpha: 0.5),
                           text: widget.game['type'].toString().toUpperCase()),
+
+                      ///clubs logo section////
                       Container(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -190,7 +202,7 @@ class _PredictScreenState extends State<PredictScreen> {
                                         fit: BoxFit.fill,
                                       ),
                                       shape: BoxShape.circle,
-                                      color: kPrimaryColor,
+                                      // color: kPrimaryColor,
                                     ),
                                   ),
                                   SizedBox(
@@ -198,7 +210,8 @@ class _PredictScreenState extends State<PredictScreen> {
                                         kDefaultPadding / 2),
                                   ),
                                   CustomTag(
-                                    color: Colors.lightBlueAccent,
+                                    color: kBlackColor.withValues(alpha: 0.8),
+                                    // color: Colors.lightBlueAccent,
                                     text: widget.game['home_team']
                                         .toString()
                                         .toUpperCase(),
@@ -206,39 +219,53 @@ class _PredictScreenState extends State<PredictScreen> {
                                 ],
                               ),
                             ),
-                            Text(
-                              widget.game['is_finished']
-                                  ? widget.game['home_score'].toString()
-                                  : "-",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: kDefaultPadding / 4,
+                                  vertical: kDefaultPadding / 8),
+                              decoration: BoxDecoration(
+                                color: kBlackColor.withValues(alpha: 0.4),
+                                borderRadius:
+                                    BorderRadius.circular(kDefaultPadding / 2),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    widget.game['is_finished']
+                                        ? widget.game['home_score'].toString()
+                                        : "-",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
-                            ),
-                            Text(
-                              "\t:\t",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
+                                  Text(
+                                    "\t:\t",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
-                            ),
-                            Text(
-                              widget.game['is_finished']
-                                  ? widget.game['away_score'].toString()
-                                  : "-",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
+                                  Text(
+                                    widget.game['is_finished']
+                                        ? widget.game['away_score'].toString()
+                                        : "-",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
+                                ],
+                              ),
                             ),
                             Expanded(
                               child: Column(
@@ -263,7 +290,8 @@ class _PredictScreenState extends State<PredictScreen> {
                                         kDefaultPadding / 2),
                                   ),
                                   CustomTag(
-                                    color: Colors.lightBlueAccent,
+                                    color: kBlackColor.withValues(alpha: 0.8),
+                                    // color: Colors.lightBlueAccent,
                                     text: widget.game['away_team']
                                         .toString()
                                         .toUpperCase(),
@@ -274,12 +302,16 @@ class _PredictScreenState extends State<PredictScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
+
+                      ///game time section////
                       Container(
-                        color: kBlackColor.withValues(alpha: 0.3),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: kDefaultPadding / 2,
+                            vertical: kDefaultPadding / 4),
+                        decoration: BoxDecoration(
+                            color: kBlackColor.withValues(alpha: 0.5),
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding / 2)),
                         child: Text(
                           "${widget.game['game_time'].split('T')[0]} ${widget.game['game_time'].split('T')[1].split(".")[0]}",
                           style:
@@ -289,12 +321,16 @@ class _PredictScreenState extends State<PredictScreen> {
                                   ),
                         ),
                       ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
+
+                      ///game stadium section////
                       Container(
-                        color: kBlackColor.withValues(alpha: 0.2),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: kDefaultPadding / 2,
+                            vertical: kDefaultPadding / 4),
+                        decoration: BoxDecoration(
+                            color: kBlackColor.withValues(alpha: 0.5),
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding / 2)),
                         child: Text(
                           widget.game['stadium'].toString().toUpperCase(),
                           style:
@@ -304,16 +340,11 @@ class _PredictScreenState extends State<PredictScreen> {
                                   ),
                         ),
                       ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
-                ),
+
+                ////who will win the cgame section////
                 Padding(
                   padding: EdgeInsets.symmetric(
                       horizontal:
@@ -349,10 +380,12 @@ class _PredictScreenState extends State<PredictScreen> {
                               } else {
                                 if (predicted) {
                                 } else {
-                                  debugPrint("User not logged in...");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please login in...", true));
+                                  // debugPrint("User not logged in...");
+
+                                  Service.showMessage(
+                                      context: context,
+                                      title: "Please login in...",
+                                      error: true);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -409,10 +442,12 @@ class _PredictScreenState extends State<PredictScreen> {
                               } else {
                                 if (predicted) {
                                 } else {
-                                  debugPrint("User not logged in...");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please login in...", true));
+                                  // debugPrint("User not logged in...");
+
+                                  Service.showMessage(
+                                      context: context,
+                                      title: "Please login in...",
+                                      error: true);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -471,10 +506,12 @@ class _PredictScreenState extends State<PredictScreen> {
                               } else {
                                 if (predicted) {
                                 } else {
-                                  debugPrint("User not logged in...");
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          "Please login in...", true));
+                                  // debugPrint("User not logged in...");
+
+                                  Service.showMessage(
+                                      context: context,
+                                      title: "Please login in...",
+                                      error: true);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -521,432 +558,53 @@ class _PredictScreenState extends State<PredictScreen> {
                     ],
                   ),
                 ),
+
+                ////////////score counter section//////////////
+                ScorePredictionWidget(
+                  isPredicted: predicted,
+                  homeTeam: widget.game['home_team'],
+                  awayTeam: widget.game['away_team'],
+                  homeScore: homeScore,
+                  awayScore: awayScore,
+                  onHomeIncrement: () => setState(() => homeScore++),
+                  onHomeDecrement: () => setState(() {
+                    if (homeScore > 0) homeScore--;
+                  }),
+                  onAwayIncrement: () => setState(() => awayScore++),
+                  onAwayDecrement: () => setState(() {
+                    if (awayScore > 0) awayScore--;
+                  }),
+                ),
+
                 SizedBox(
                   height: getProportionateScreenHeight(kDefaultPadding),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "You think the score will be...",
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500, color: kPrimaryColor),
-                      ),
-                      SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding),
-                      ),
-                      Row(
-                        children: [
-                          TeamContainer(
-                            teamName: widget.game['home_team'],
-                          ),
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    homeScore++;
-                                  });
-                                },
-                                child: Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 2.5),
-                                  decoration: BoxDecoration(
-                                    color: kSecondaryColor,
-                                    boxShadow: [boxShadow],
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                      topLeft: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                      padding: EdgeInsets.all(
-                                          getProportionateScreenHeight(
-                                              kDefaultPadding / 1.5)),
-                                      child: Text(
-                                        "+",
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              color: kPrimaryColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      )),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 1,
-                              ),
-                              Container(
-                                color: kSecondaryColor.withValues(alpha: 0.8),
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding * 2.5),
-                                child: Padding(
-                                  padding: EdgeInsets.all(
-                                      getProportionateScreenHeight(
-                                          kDefaultPadding / 2)),
-                                  child: Text(
-                                    homeScore.toString(),
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          color: kPrimaryColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 1,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  if (homeScore > 0) {
-                                    setState(() {
-                                      homeScore--;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 2.5),
-                                  decoration: BoxDecoration(
-                                    color: kSecondaryColor,
-                                    borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                      bottomLeft: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(
-                                        getProportionateScreenHeight(
-                                            kDefaultPadding / 1.5)),
-                                    child: Text(
-                                      "-",
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            color: kPrimaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            width: getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                          Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    awayScore++;
-                                  });
-                                },
-                                child: Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 2.5),
-                                  decoration: BoxDecoration(
-                                    color: kSecondaryColor,
-                                    borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                      topLeft: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                      padding: EdgeInsets.all(
-                                          getProportionateScreenHeight(
-                                              kDefaultPadding / 1.5)),
-                                      child: Text(
-                                        "+",
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge
-                                            ?.copyWith(
-                                              color: kPrimaryColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      )),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 1,
-                              ),
-                              Container(
-                                color: kSecondaryColor.withValues(alpha: 0.8),
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding * 2.5),
-                                child: Padding(
-                                    padding: EdgeInsets.all(
-                                        getProportionateScreenHeight(
-                                            kDefaultPadding / 2)),
-                                    child: Text(
-                                      awayScore.toString(),
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            color: kPrimaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    )),
-                              ),
-                              SizedBox(
-                                height: 1,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  if (awayScore > 0) {
-                                    setState(() {
-                                      awayScore--;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 2.5),
-                                  decoration: BoxDecoration(
-                                    color: kSecondaryColor,
-                                    borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                      bottomLeft: Radius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5),
-                                      ),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(
-                                        getProportionateScreenHeight(
-                                            kDefaultPadding / 1.5)),
-                                    child: Text(
-                                      "-",
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge
-                                          ?.copyWith(
-                                            color: kPrimaryColor,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          TeamContainer(
-                            teamName: widget.game['away_team'],
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
-                ),
+
+                ///winning percenrtage section///
                 if (predicted)
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal:
                           getProportionateScreenWidth(kDefaultPadding / 2),
                     ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              children: [
-                                CustomTag(
-                                  color: Colors.green,
-                                  text: widget.game['home_team'],
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenWidth(
-                                      kDefaultPadding / 4),
-                                ),
-                                Text(
-                                  "${(widget.game['home_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: kPrimaryColor),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                CustomTag(
-                                  color: kGreyColor,
-                                  text: "Draw",
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenWidth(
-                                      kDefaultPadding / 4),
-                                ),
-                                Text(
-                                  "${(widget.game['draw_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: kPrimaryColor),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                CustomTag(
-                                  color: Colors.blue,
-                                  text: widget.game['away_team'],
-                                ),
-                                SizedBox(
-                                  height: getProportionateScreenWidth(
-                                      kDefaultPadding / 4),
-                                ),
-                                Text(
-                                  "${(widget.game['away_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: kPrimaryColor),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height:
-                              getProportionateScreenWidth(kDefaultPadding / 4),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: widget.game['home_win_count'],
-                              child: Container(
-                                height: getProportionateScreenWidth(
-                                    kDefaultPadding * 1.2),
-                                padding: EdgeInsets.all(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 4)),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 3),
-                                    ),
-                                    topLeft: Radius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 3),
-                                    ),
-                                  ),
-                                ),
-                                // child: Text(
-                                //   "${(widget.game['home_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                //   style: Theme.of(context)
-                                //       .textTheme
-                                //       .bodySmall
-                                //       .copyWith(color: kPrimaryColor),
-                                //   textAlign: TextAlign.center,
-                                // ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: widget.game['draw_count'],
-                              child: Container(
-                                height: getProportionateScreenWidth(
-                                    kDefaultPadding * 1.2),
-                                padding: EdgeInsets.all(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 4)),
-                                color: kGreyColor,
-                                // child: Text(
-                                //   "${(widget.game['draw_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                //   style: Theme.of(context)
-                                //       .textTheme
-                                //       .bodySmall
-                                //       .copyWith(color: kPrimaryColor),
-                                //   textAlign: TextAlign.center,
-                                // ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: widget.game['away_win_count'],
-                              child: Container(
-                                height: getProportionateScreenWidth(
-                                    kDefaultPadding * 1.2),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                                    bottomRight: Radius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                                  ),
-                                ),
-                                padding: EdgeInsets.all(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 4)),
-                                // child: Text(
-                                //   "${(widget.game['away_win_count'] / (widget.game['home_win_count'] + widget.game['draw_count'] + widget.game['away_win_count']) * 100).toString().split(".")[0]}%",
-                                //   style: Theme.of(context)
-                                //       .textTheme
-                                //       .bodySmall
-                                //       .copyWith(color: kPrimaryColor),
-                                //   textAlign: TextAlign.center,
-                                // ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                    child: WinPercentageWidget(
+                      homeTeam: widget.game['home_team'],
+                      awayTeam: widget.game['away_team'],
+                      homeWinCount: widget.game['home_win_count'],
+                      drawCount: widget.game['draw_count'],
+                      awayWinCount: widget.game['away_win_count'],
+                      homeColor: Colors.green,
+                      drawColor: Colors.grey,
+                      awayColor: Colors.blue,
+                      padding: getProportionateScreenWidth(kDefaultPadding),
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: kPrimaryColor),
                     ),
                   ),
+
+                ///Submit button section///
                 if (!predicted)
                   Padding(
                     padding: EdgeInsets.symmetric(
@@ -955,32 +613,41 @@ class _PredictScreenState extends State<PredictScreen> {
                     ),
                     child: CustomButton(
                       title: "Submit",
-                      press: () {
-                        if (homeScore == awayScore) {
-                          setState(() {
-                            homeWin = false;
-                            awayWin = false;
-                            draw = true;
-                            widget.game['draw_count']++;
-                          });
-                        } else if (homeScore > awayScore) {
-                          setState(() {
-                            homeWin = true;
-                            awayWin = false;
-                            draw = false;
-                            widget.game['home_win_count']++;
-                          });
-                        } else {
-                          setState(() {
-                            awayWin = true;
-                            homeWin = false;
-                            draw = false;
-                            widget.game['away_win_count']++;
-                          });
-                        }
-                        _predictGame();
-                      },
                       color: kSecondaryColor,
+                      press: () {
+                        if (userData != null) {
+                          if (homeScore == awayScore) {
+                            setState(() {
+                              homeWin = false;
+                              awayWin = false;
+                              draw = true;
+                              widget.game['draw_count']++;
+                            });
+                          } else if (homeScore > awayScore) {
+                            setState(() {
+                              homeWin = true;
+                              awayWin = false;
+                              draw = false;
+                              widget.game['home_win_count']++;
+                            });
+                          } else {
+                            setState(() {
+                              awayWin = true;
+                              homeWin = false;
+                              draw = false;
+                              widget.game['away_win_count']++;
+                            });
+                          }
+                          _predictGame();
+                        } else {
+                          Service.showMessage(
+                              context: context,
+                              title:
+                                  "Please log in to join the prediction and stand a chance to win!",
+                              error: true,
+                              duration: 4);
+                        }
+                      },
                     ),
                   )
               ],
@@ -992,7 +659,8 @@ class _PredictScreenState extends State<PredictScreen> {
   }
 
   Future<dynamic> getPredictions() async {
-    var url = "https://app.zmallapp.com/api/admin/get_prediction_history";
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_prediction_history";
     Map data = {
       "start_date": "",
       "end_date": "",
@@ -1018,9 +686,12 @@ class _PredictScreenState extends State<PredictScreen> {
           setState(() {
             this._isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("Something went wrong!", true, duration: 3),
-          );
+
+          Service.showMessage(
+              context: context,
+              title: "Something went wrong!",
+              error: true,
+              duration: 3);
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -1042,7 +713,8 @@ class _PredictScreenState extends State<PredictScreen> {
   }
 
   Future<dynamic> predictGame() async {
-    var url = "https://app.zmallapp.com/api/admin/predict_game";
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/predict_game";
     Map data = {
       "user_id": userData['user']["_id"],
       "server_token": userData['user']['server_token'],
@@ -1073,9 +745,12 @@ class _PredictScreenState extends State<PredictScreen> {
           setState(() {
             this._isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("Something went wrong!", true, duration: 3),
-          );
+
+          Service.showMessage(
+              context: context,
+              title: "Something went wrong!",
+              error: true,
+              duration: 3);
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -1095,46 +770,259 @@ class _PredictScreenState extends State<PredictScreen> {
     }
   }
 }
-
-class TeamContainer extends StatelessWidget {
-  const TeamContainer({
-    Key? key,
-    required this.teamName,
-  }) : super(key: key);
-
-  final String teamName;
-
-  @override
-  Widget build(BuildContext context) {
-    DateTime euroPredictStart = DateTime(2024, 06, 10);
-    DateTime euroPredictEnd = DateTime(2024, 07, 15);
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            height: getProportionateScreenHeight(kDefaultPadding * 2),
-            width: getProportionateScreenWidth(kDefaultPadding * 2),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                    "images/pl_logos/${teamName.toString().toLowerCase()}.png"),
-                fit: BoxFit.fill,
-              ),
-              shape: BoxShape.rectangle,
-              color: kPrimaryColor,
-              borderRadius:
-                  BorderRadius.circular(getProportionateScreenHeight(5)),
-            ),
-          ),
-          SizedBox(
-            height: getProportionateScreenHeight(kDefaultPadding / 2),
-          ),
-          CustomTag(
-            color: Colors.transparent,
-            text: teamName.toUpperCase(),
-          ),
-        ],
-      ),
-    );
-  }
-}
+////////////old score counter section//////////////
+                // Padding(
+                //   padding: EdgeInsets.symmetric(
+                //     horizontal:
+                //         getProportionateScreenWidth(kDefaultPadding / 2),
+                //   ),
+                //   child: Column(
+                //     children: [
+                //       Text(
+                //         "You think the score will be...",
+                //         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                //             fontWeight: FontWeight.w500, color: kPrimaryColor),
+                //       ),
+                //       SizedBox(
+                //         height: getProportionateScreenHeight(kDefaultPadding),
+                //       ),
+                //       Row(
+                //         children: [
+                //           TeamContainer(
+                //             teamName: widget.game['home_team'],
+                //           ),
+                //           Column(
+                //             children: [
+                //               GestureDetector(
+                //                 onTap: () {
+                //                   setState(() {
+                //                     homeScore++;
+                //                   });
+                //                 },
+                //                 child: Container(
+                //                   width: getProportionateScreenWidth(
+                //                       kDefaultPadding * 2.5),
+                //                   decoration: BoxDecoration(
+                //                     color: kSecondaryColor,
+                //                     boxShadow: [boxShadow],
+                //                     borderRadius: BorderRadius.only(
+                //                       topRight: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                       topLeft: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   child: Padding(
+                //                       padding: EdgeInsets.all(
+                //                           getProportionateScreenHeight(
+                //                               kDefaultPadding / 1.5)),
+                //                       child: Text(
+                //                         "+",
+                //                         textAlign: TextAlign.center,
+                //                         style: Theme.of(context)
+                //                             .textTheme
+                //                             .titleLarge
+                //                             ?.copyWith(
+                //                               color: kPrimaryColor,
+                //                               fontWeight: FontWeight.bold,
+                //                             ),
+                //                       )),
+                //                 ),
+                //               ),
+                //               SizedBox(
+                //                 height: 1,
+                //               ),
+                //               Container(
+                //                 color: kSecondaryColor.withValues(alpha: 0.8),
+                //                 width: getProportionateScreenWidth(
+                //                     kDefaultPadding * 2.5),
+                //                 child: Padding(
+                //                   padding: EdgeInsets.all(
+                //                       getProportionateScreenHeight(
+                //                           kDefaultPadding / 2)),
+                //                   child: Text(
+                //                     homeScore.toString(),
+                //                     textAlign: TextAlign.center,
+                //                     style: Theme.of(context)
+                //                         .textTheme
+                //                         .titleLarge
+                //                         ?.copyWith(
+                //                           color: kPrimaryColor,
+                //                           fontWeight: FontWeight.bold,
+                //                         ),
+                //                   ),
+                //                 ),
+                //               ),
+                //               SizedBox(
+                //                 height: 1,
+                //               ),
+                //               GestureDetector(
+                //                 onTap: () {
+                //                   if (homeScore > 0) {
+                //                     setState(() {
+                //                       homeScore--;
+                //                     });
+                //                   }
+                //                 },
+                //                 child: Container(
+                //                   width: getProportionateScreenWidth(
+                //                       kDefaultPadding * 2.5),
+                //                   decoration: BoxDecoration(
+                //                     color: kSecondaryColor,
+                //                     borderRadius: BorderRadius.only(
+                //                       bottomRight: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                       bottomLeft: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   child: Padding(
+                //                     padding: EdgeInsets.all(
+                //                         getProportionateScreenHeight(
+                //                             kDefaultPadding / 1.5)),
+                //                     child: Text(
+                //                       "-",
+                //                       textAlign: TextAlign.center,
+                //                       style: Theme.of(context)
+                //                           .textTheme
+                //                           .titleLarge
+                //                           ?.copyWith(
+                //                             color: kPrimaryColor,
+                //                             fontWeight: FontWeight.bold,
+                //                           ),
+                //                     ),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //           SizedBox(
+                //             width: getProportionateScreenWidth(kDefaultPadding),
+                //           ),
+                //           Column(
+                //             children: [
+                //               GestureDetector(
+                //                 onTap: () {
+                //                   setState(() {
+                //                     awayScore++;
+                //                   });
+                //                 },
+                //                 child: Container(
+                //                   width: getProportionateScreenWidth(
+                //                       kDefaultPadding * 2.5),
+                //                   decoration: BoxDecoration(
+                //                     color: kSecondaryColor,
+                //                     borderRadius: BorderRadius.only(
+                //                       topRight: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                       topLeft: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   child: Padding(
+                //                       padding: EdgeInsets.all(
+                //                           getProportionateScreenHeight(
+                //                               kDefaultPadding / 1.5)),
+                //                       child: Text(
+                //                         "+",
+                //                         textAlign: TextAlign.center,
+                //                         style: Theme.of(context)
+                //                             .textTheme
+                //                             .titleLarge
+                //                             ?.copyWith(
+                //                               color: kPrimaryColor,
+                //                               fontWeight: FontWeight.bold,
+                //                             ),
+                //                       )),
+                //                 ),
+                //               ),
+                //               SizedBox(
+                //                 height: 1,
+                //               ),
+                //               Container(
+                //                 color: kSecondaryColor.withValues(alpha: 0.8),
+                //                 width: getProportionateScreenWidth(
+                //                     kDefaultPadding * 2.5),
+                //                 child: Padding(
+                //                     padding: EdgeInsets.all(
+                //                         getProportionateScreenHeight(
+                //                             kDefaultPadding / 2)),
+                //                     child: Text(
+                //                       awayScore.toString(),
+                //                       textAlign: TextAlign.center,
+                //                       style: Theme.of(context)
+                //                           .textTheme
+                //                           .titleLarge
+                //                           ?.copyWith(
+                //                             color: kPrimaryColor,
+                //                             fontWeight: FontWeight.bold,
+                //                           ),
+                //                     )),
+                //               ),
+                //               SizedBox(
+                //                 height: 1,
+                //               ),
+                //               GestureDetector(
+                //                 onTap: () {
+                //                   if (awayScore > 0) {
+                //                     setState(() {
+                //                       awayScore--;
+                //                     });
+                //                   }
+                //                 },
+                //                 child: Container(
+                //                   width: getProportionateScreenWidth(
+                //                       kDefaultPadding * 2.5),
+                //                   decoration: BoxDecoration(
+                //                     color: kSecondaryColor,
+                //                     borderRadius: BorderRadius.only(
+                //                       bottomRight: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                       bottomLeft: Radius.circular(
+                //                         getProportionateScreenWidth(
+                //                             kDefaultPadding / 1.5),
+                //                       ),
+                //                     ),
+                //                   ),
+                //                   child: Padding(
+                //                     padding: EdgeInsets.all(
+                //                         getProportionateScreenHeight(
+                //                             kDefaultPadding / 1.5)),
+                //                     child: Text(
+                //                       "-",
+                //                       textAlign: TextAlign.center,
+                //                       style: Theme.of(context)
+                //                           .textTheme
+                //                           .titleLarge
+                //                           ?.copyWith(
+                //                             color: kPrimaryColor,
+                //                             fontWeight: FontWeight.bold,
+                //                           ),
+                //                     ),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //           TeamContainer(
+                //             teamName: widget.game['away_team'],
+                //           ),
+                //         ],
+                //       )
+                //     ],
+                //   ),
+                // ),

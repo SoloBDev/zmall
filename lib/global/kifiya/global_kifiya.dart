@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -14,11 +15,15 @@ import 'package:zmall/kifiya/components/dashen_master_card.dart';
 import 'package:zmall/kifiya/components/kifiya_method_container.dart';
 import 'package:zmall/kifiya/components/telebirr_screen.dart';
 import 'package:zmall/models/cart.dart';
+import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
+import 'package:zmall/widgets/order_status_row.dart';
 
 class GlobalKifiya extends StatefulWidget {
   static String routeName = '/kifiya';
@@ -176,7 +181,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "Faild to create the order! please try again.", true));
     }
   }
@@ -190,7 +195,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     if (data != null && data['success']) {
       debugPrint("Order created successfully");
       ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(("Order successfully created"), true));
+          Service.showMessage1(("Order successfully created"), true));
       await Service.remove('abroad_cart');
       await Service.remove('abroad_aliexpressCart');
       setState(() {
@@ -206,8 +211,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     } else {
       debugPrint("\t\t- Create Order Response");
       // debugPrint(data);
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+          "${errorCodes['${data['error_code']}']}!", true));
       setState(() {
         _loading = false;
         _placeOrder = false;
@@ -242,8 +247,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+          "${errorCodes['${data['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 1));
       // debugPrint("Pay Order Payment : Server token error....");
       // if (data['error_code'] == 999) {
@@ -265,7 +270,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "Payment verification successful!", false,
           duration: 2));
       // _payOrderPayment();
@@ -284,7 +289,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         }
       });
       await useBorsa();
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "${data['error']}! Please complete your payment!", true));
       await Future.delayed(Duration(seconds: 3));
     }
@@ -300,193 +305,207 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         ),
         elevation: 1.0,
       ),
-      body: ModalProgressHUD(
-        inAsyncCall: _loading,
-        progressIndicator: linearProgressIndicator,
-        color: kPrimaryColor,
-        child: paymentResponse != null
-            ? SingleChildScrollView(
-                child: Padding(
+      body: SafeArea(
+        child: ModalProgressHUD(
+          inAsyncCall: _loading,
+          progressIndicator: LinearLoadingIndicator(),
+          color: kPrimaryColor,
+          child: paymentResponse != null
+              ? SingleChildScrollView(
                   padding: EdgeInsets.all(
                       getProportionateScreenWidth(kDefaultPadding)),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "How would you like to pay ብር ${widget.price}?",
-                          style: Theme.of(context).textTheme.titleLarge,
-                          textAlign: TextAlign.center,
+                        OrderStatusRow(
+                          title: "Order Price",
+                          value:
+                              "${widget.price} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                          icon: HeroiconsOutline
+                              .banknotes, // Replace with appropriate icon if needed
                         ),
                         SizedBox(
                             height:
                                 getProportionateScreenHeight(kDefaultPadding)),
-                        CustomTag(
-                            color: kSecondaryColor,
-                            text: "Payment Information"),
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: kPrimaryColor,
+                            border: Border.all(color: kWhiteColor),
                             borderRadius: BorderRadius.circular(
                               getProportionateScreenWidth(kDefaultPadding),
                             ),
                             // boxShadow: [boxShadow],
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              right:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              top:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              bottom: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
-                            child: Column(
-                              children: [
-                                DetailsRow(
-                                    title: "Name",
-                                    subtitle: abroadData != null &&
-                                            abroadData!.abroadName!.isNotEmpty
-                                        ? abroadData!.abroadName!
-                                        : "N/A"),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
-                                DetailsRow(
-                                    title: "Phone",
-                                    subtitle: abroadData != null &&
-                                            abroadData!.abroadPhone!.isNotEmpty
-                                        ? abroadData!.abroadPhone!
-                                        : "N/A"),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
-                                DetailsRow(
-                                    title: "Email",
-                                    subtitle: abroadData != null &&
-                                            abroadData!.abroadEmail!.isNotEmpty
-                                        ? abroadData!.abroadEmail!
-                                        : "N/A"),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
-//                                 TextButton(
-// //                          style: ButtonStyle(
-// //                            backgroundColor:
-// //                                MaterialStateProperty.all(kSecondaryColor),
-// //                          ),
-//                                   onPressed: () {
-//                                     showModalBottomSheet<void>(
-//                                       isScrollControlled: true,
-//                                       context: context,
-//                                       shape: RoundedRectangleBorder(
-//                                         borderRadius: BorderRadius.only(
-//                                             topLeft: Radius.circular(30.0),
-//                                             topRight: Radius.circular(30.0)),
-//                                       ),
-//                                       builder: (BuildContext context) {
-//                                         return Padding(
-//                                           padding:
-//                                               MediaQuery.of(context).viewInsets,
-//                                           child: Container(
-//                                             padding: EdgeInsets.all(
-//                                                 getProportionateScreenHeight(
-//                                                     kDefaultPadding)),
-//                                             child: Wrap(
-//                                               children: <Widget>[
-//                                                 Text(
-//                                                   "Sender Information",
-//                                                   style: Theme.of(context)
-//                                                       .textTheme
-//                                                       .headline5
-//                                                       .copyWith(
-//                                                         fontWeight:
-//                                                             FontWeight.bold,
-//                                                       ),
-//                                                 ),
-//                                                 Container(
-//                                                   height:
-//                                                       getProportionateScreenHeight(
-//                                                           kDefaultPadding),
-//                                                 ),
-//                                                 TextField(
-//                                                   style: TextStyle(
-//                                                       color: kBlackColor),
-//                                                   keyboardType:
-//                                                       TextInputType.text,
-//                                                   onChanged: (val) {
-//                                                     senderName = val;
-//                                                   },
-//                                                   decoration: textFieldInputDecorator
-//                                                       .copyWith(
-//                                                           labelText: senderName !=
-//                                                                       null &&
-//                                                                   senderName
-//                                                                       .isNotEmpty
-//                                                               ? senderName
-//                                                               : "Sender Name"),
-//                                                 ),
-//                                                 Container(
-//                                                   height:
-//                                                       getProportionateScreenHeight(
-//                                                           kDefaultPadding / 2),
-//                                                 ),
-//                                                 CustomButton(
-//                                                   title: "Submit",
-//                                                   color: kSecondaryColor,
-//                                                   press: () async {
-//                                                     if (senderName != null &&
-//                                                         senderName.isNotEmpty &&
-//                                                         senderPhone != null &&
-//                                                         senderPhone
-//                                                             .isNotEmpty) {
-//                                                       setState(() {
-//                                                         abroadData.abroadName =
-//                                                             senderName;
-//                                                       });
-//                                                       // debugPrint(abroadData.toJson());
-//                                                       Service.save(
-//                                                           "abroad_user",
-//                                                           abroadData.toJson());
-//                                                       Navigator.of(context)
-//                                                           .pop();
-//                                                     }
-//                                                   },
-//                                                 ),
-//                                               ],
-//                                             ),
-//                                           ),
-//                                         );
-//                                       },
-//                                     );
-//                                   },
-//                                   child: Text(
-//                                     receiverName.isNotEmpty &&
-//                                             receiverPhone.isNotEmpty
-//                                         ? "Change Details"
-//                                         : "Add Details",
-//                                     style: TextStyle(
-//                                       color: kBlackColor,
-//                                       decoration: TextDecoration.underline,
-//                                       fontSize: getProportionateScreenWidth(
-//                                           kDefaultPadding * .8),
-//                                       fontWeight: FontWeight.w700,
-//                                     ),
-//                                   ),
-//                                 ),
-                              ],
-                            ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                getProportionateScreenWidth(kDefaultPadding),
+                            vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Payment Information",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium!
+                                    .copyWith(
+                                        color: kBlackColor,
+                                        fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding / 2)),
+                              DetailsRow(
+                                  title: "Name",
+                                  subtitle: abroadData != null &&
+                                          abroadData!.abroadName!.isNotEmpty
+                                      ? abroadData!.abroadName!
+                                      : "N/A"),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding / 3)),
+                              DetailsRow(
+                                  title: "Phone",
+                                  subtitle: abroadData != null &&
+                                          abroadData!.abroadPhone!.isNotEmpty
+                                      ? abroadData!.abroadPhone!
+                                      : "N/A"),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding / 3)),
+                              DetailsRow(
+                                  title: "Email",
+                                  subtitle: abroadData != null &&
+                                          abroadData!.abroadEmail!.isNotEmpty
+                                      ? abroadData!.abroadEmail!
+                                      : "N/A"),
+                              SizedBox(
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding / 3)),
+                              //                                 TextButton(
+                              // //                          style: ButtonStyle(
+                              // //                            backgroundColor:
+                              // //                                MaterialStateProperty.all(kSecondaryColor),
+                              // //                          ),
+                              //                                   onPressed: () {
+                              //                                     showModalBottomSheet<void>(
+                              //                                       isScrollControlled: true,
+                              //                                       context: context,
+                              //                                       shape: RoundedRectangleBorder(
+                              //                                         borderRadius: BorderRadius.only(
+                              //                                             topLeft: Radius.circular(30.0),
+                              //                                             topRight: Radius.circular(30.0)),
+                              //                                       ),
+                              //                                       builder: (BuildContext context) {
+                              //                                         return Padding(
+                              //                                           padding:
+                              //                                               MediaQuery.of(context).viewInsets,
+                              //                                           child: Container(
+                              //                                             padding: EdgeInsets.all(
+                              //                                                 getProportionateScreenHeight(
+                              //                                                     kDefaultPadding)),
+                              //                                             child: Wrap(
+                              //                                               children: <Widget>[
+                              //                                                 Text(
+                              //                                                   "Sender Information",
+                              //                                                   style: Theme.of(context)
+                              //                                                       .textTheme
+                              //                                                       .headline5
+                              //                                                       .copyWith(
+                              //                                                         fontWeight:
+                              //                                                             FontWeight.bold,
+                              //                                                       ),
+                              //                                                 ),
+                              //                                                 Container(
+                              //                                                   height:
+                              //                                                       getProportionateScreenHeight(
+                              //                                                           kDefaultPadding),
+                              //                                                 ),
+                              //                                                 TextField(
+                              //                                                   style: TextStyle(
+                              //                                                       color: kBlackColor),
+                              //                                                   keyboardType:
+                              //                                                       TextInputType.text,
+                              //                                                   onChanged: (val) {
+                              //                                                     senderName = val;
+                              //                                                   },
+                              //                                                   decoration: textFieldInputDecorator
+                              //                                                       .copyWith(
+                              //                                                           labelText: senderName !=
+                              //                                                                       null &&
+                              //                                                                   senderName
+                              //                                                                       .isNotEmpty
+                              //                                                               ? senderName
+                              //                                                               : "Sender Name"),
+                              //                                                 ),
+                              //                                                 Container(
+                              //                                                   height:
+                              //                                                       getProportionateScreenHeight(
+                              //                                                           kDefaultPadding / 2),
+                              //                                                 ),
+                              //                                                 CustomButton(
+                              //                                                   title: "Submit",
+                              //                                                   color: kSecondaryColor,
+                              //                                                   press: () async {
+                              //                                                     if (senderName != null &&
+                              //                                                         senderName.isNotEmpty &&
+                              //                                                         senderPhone != null &&
+                              //                                                         senderPhone
+                              //                                                             .isNotEmpty) {
+                              //                                                       setState(() {
+                              //                                                         abroadData.abroadName =
+                              //                                                             senderName;
+                              //                                                       });
+                              //                                                       // debugPrint(abroadData.toJson());
+                              //                                                       Service.save(
+                              //                                                           "abroad_user",
+                              //                                                           abroadData.toJson());
+                              //                                                       Navigator.of(context)
+                              //                                                           .pop();
+                              //                                                     }
+                              //                                                   },
+                              //                                                 ),
+                              //                                               ],
+                              //                                             ),
+                              //                                           ),
+                              //                                         );
+                              //                                       },
+                              //                                     );
+                              //                                   },
+                              //                                   child: Text(
+                              //                                     receiverName.isNotEmpty &&
+                              //                                             receiverPhone.isNotEmpty
+                              //                                         ? "Change Details"
+                              //                                         : "Add Details",
+                              //                                     style: TextStyle(
+                              //                                       color: kBlackColor,
+                              //                                       decoration: TextDecoration.underline,
+                              //                                       fontSize: getProportionateScreenWidth(
+                              //                                           kDefaultPadding * .8),
+                              //                                       fontWeight: FontWeight.w700,
+                              //                                     ),
+                              //                                   ),
+                              //                                 ),
+                            ],
                           ),
                         ),
                         SizedBox(
                             height:
                                 getProportionateScreenHeight(kDefaultPadding)),
-                        CustomTag(
-                            color: kSecondaryColor,
-                            text: "Select Payment Method"),
+                        Text(
+                          "Payment Information",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(
+                                  color: kBlackColor,
+                                  fontWeight: FontWeight.bold),
+                        ),
                         SizedBox(
                             height: getProportionateScreenHeight(
                                 kDefaultPadding / 2)),
@@ -558,19 +577,35 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
-                                                    "Pay Using International Card"),
+                                                  "Pay Using International Card",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleMedium!
+                                                      .copyWith(
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                ),
                                                 content: Wrap(
                                                   children: [
                                                     Text(
-                                                        "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?"),
+                                                      "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?",
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall!
+                                                          .copyWith(
+                                                            color: kBlackColor,
+                                                          ),
+                                                    ),
                                                     Container(
                                                       height:
                                                           getProportionateScreenHeight(
                                                               kDefaultPadding /
                                                                   2),
                                                     ),
-                                                    TextField(
+                                                    CustomTextField(
                                                       style: TextStyle(
                                                           color: kBlackColor),
                                                       keyboardType:
@@ -578,12 +613,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                       onChanged: (val) {
                                                         firstName = val;
                                                       },
-                                                      decoration: textFieldInputDecorator
-                                                          .copyWith(
-                                                              labelText: firstName
-                                                                      .isNotEmpty
-                                                                  ? firstName
-                                                                  : "First Name"),
+                                                      hintText:
+                                                          firstName.isNotEmpty
+                                                              ? firstName
+                                                              : "First Name",
                                                     ),
                                                     Container(
                                                       height:
@@ -591,7 +624,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                               kDefaultPadding /
                                                                   2),
                                                     ),
-                                                    TextField(
+                                                    CustomTextField(
                                                       style: TextStyle(
                                                           color: kBlackColor),
                                                       keyboardType:
@@ -599,12 +632,10 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                       onChanged: (val) {
                                                         lastName = val;
                                                       },
-                                                      decoration: textFieldInputDecorator
-                                                          .copyWith(
-                                                              labelText: lastName
-                                                                      .isNotEmpty
-                                                                  ? lastName
-                                                                  : "Last Name"),
+                                                      hintText:
+                                                          lastName.isNotEmpty
+                                                              ? lastName
+                                                              : "Last Name",
                                                     ),
                                                     Container(
                                                       height:
@@ -612,20 +643,19 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                               kDefaultPadding /
                                                                   2),
                                                     ),
-                                                    TextField(
+                                                    CustomTextField(
                                                       style: TextStyle(
                                                           color: kBlackColor),
                                                       enabled: true,
                                                       keyboardType:
                                                           TextInputType.text,
                                                       onChanged: (val) {},
-                                                      decoration: textFieldInputDecorator.copyWith(
-                                                          labelText: abroadData!
-                                                                  .abroadEmail!
-                                                                  .isNotEmpty
-                                                              ? abroadData!
-                                                                  .abroadEmail
-                                                              : "Email"),
+                                                      hintText: abroadData!
+                                                              .abroadEmail!
+                                                              .isNotEmpty
+                                                          ? abroadData!
+                                                              .abroadEmail
+                                                          : "Email",
                                                     ),
                                                   ],
                                                 ),
@@ -689,7 +719,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             });
                                       } else {
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
+                                            .showSnackBar(Service.showMessage1(
                                                 "Something went wrong! Please try again!",
                                                 true));
                                       }
@@ -732,10 +762,26 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
-                                                    "Pay Using International Card"),
+                                                  "Pay Using International Card",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleMedium!
+                                                      .copyWith(
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                ),
                                                 content: Text(
-                                                    "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?"),
+                                                  "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall!
+                                                      .copyWith(
+                                                        color: kBlackColor,
+                                                      ),
+                                                ),
                                                 actions: [
                                                   TextButton(
                                                     child: Text(
@@ -798,7 +844,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             });
                                       } else {
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
+                                            .showSnackBar(Service.showMessage1(
                                                 "Something went wrong! Please try again!",
                                                 true));
                                       }
@@ -845,10 +891,26 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             context: context,
                                             builder: (context) {
                                               return AlertDialog(
+                                                backgroundColor: kPrimaryColor,
                                                 title: Text(
-                                                    "Pay Using Mastercard"),
+                                                  "Pay Using Mastercard",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleMedium!
+                                                      .copyWith(
+                                                          color: kBlackColor,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                ),
                                                 content: Text(
-                                                    "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Dashen Mastercard?"),
+                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Dashen Mastercard?",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall!
+                                                      .copyWith(
+                                                        color: kBlackColor,
+                                                      ),
+                                                ),
                                                 actions: [
                                                   TextButton(
                                                     child: Text(
@@ -906,7 +968,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             });
                                       } else {
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
+                                            .showSnackBar(Service.showMessage1(
                                                 "Something went wrong! Please try again!",
                                                 true));
                                       }
@@ -914,8 +976,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                               }
 
                               ///*******************************Dashen mastercard*******************************
-                              ///
-                              ///
+
                               else {
                                 return SizedBox.shrink();
                               }
@@ -949,9 +1010,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                       ],
                     ),
                   ),
-                ),
-              )
-            : Container(),
+                )
+              : Container(),
+        ),
       ),
     );
   }
@@ -1269,7 +1330,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           this._loading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
+          Service.showMessage1(
             "Failed to create aliexpress order, please check your internet and try again",
             true,
           ),

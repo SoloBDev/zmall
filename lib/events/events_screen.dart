@@ -184,7 +184,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   Icon(Icons.arrow_back_rounded),
                   GestureDetector(
                     onTap: () {
-                      debugPrint("Purchase history...");
+                      // debugPrint("Purchase history...");
                     },
                     child: Text(
                       "EVENTS",
@@ -644,7 +644,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                   //                                       });
                                   //                                     }
                                   //                                   : () {
-                                  //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage("Minimum order quantity is 1",
+                                  //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Minimum order quantity is 1",
                                   //                                           true));
                                   //                                     },
                                   //                             ),
@@ -832,7 +832,7 @@ class _EventsScreenState extends State<EventsScreen> {
           });
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage(
+              Service.showMessage1(
                   "Something went wrong! Check your internet and try again",
                   true,
                   duration: 3),

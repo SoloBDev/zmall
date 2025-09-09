@@ -5,9 +5,9 @@ import 'package:zmall/size_config.dart';
 
 class CustomLinearProgressIndicator extends StatelessWidget {
   const CustomLinearProgressIndicator({
-    Key? key,
+    super.key,
     this.message = "Loading...",
-  }) : super(key: key);
+  });
 
   final String message;
 

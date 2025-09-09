@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -19,9 +19,11 @@ import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
+import 'package:zmall/widgets/order_status_row.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class Body extends StatefulWidget {
   @override
@@ -29,6 +31,7 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> with TickerProviderStateMixin {
+  bool isLocationServicesEnabled = false;
   Cart? cart;
   AliExpressCart? aliexpressCart;
   bool _loading = true;
@@ -41,7 +44,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   //////////////////newly added
   var storeLocations;
   var storeID;
-  var storeName;
+  String storeName = '';
   var userData;
   var extraItems;
   //double walletBalance = 0.0;
@@ -52,8 +55,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   //bool isCheckout = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _doLocationTask();
     getCart();
     _getStoreExtraItemList();
     getAppKeys();
@@ -167,8 +170,10 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       Service.save('cart', cart!.toJson());
       Service.save('aliexpressCart', aliexpressCart?.toJson());
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
     }
     setState(() {
       _loading = false;
@@ -198,28 +203,61 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   // }
 
   void _requestLocationPermission() async {
-    _permissionStatus = await FlLocation.checkLocationPermission();
-    if (_permissionStatus == LocationPermission.always ||
-        _permissionStatus == LocationPermission.whileInUse) {
-      // Location permission granted, continue with location-related tasks
-      getLocation();
+    // First, check if location services are enabled
+    bool isLocationServicesEnabled = await FlLocation.isLocationServicesEnabled;
+    // debugPrint( ">>>>\n is location on in permition $isLocationServicesEnabled");
+
+    if (isLocationServicesEnabled == true) {
+      // Then check permissions
+      _permissionStatus = await FlLocation.checkLocationPermission();
+      if (_permissionStatus == LocationPermission.always ||
+          _permissionStatus == LocationPermission.whileInUse) {
+        // Location permission granted, continue with location-related tasks
+        getLocation();
+      } else {
+        // Handle permission denial
+
+        Service.showMessage(
+            context: context,
+            title: "Location permission denied. Please enable and try again",
+            error: true);
+        FlLocation.requestLocationPermission();
+      }
     } else {
-      // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable and try again", true));
-      FlLocation.requestLocationPermission();
+      // Location services are disabled
+      Service.showMessage(
+          context: context,
+          title:
+              "Location services are turned off. Please enable them in your device settings.",
+          error: true);
+      return;
     }
   }
 
   void getLocation() async {
-    var currentLocation = await FlLocation.getLocation();
-    if (mounted) {
-      setState(() {
-        latitude = currentLocation.latitude;
-        longitude = currentLocation.longitude;
-      });
-      Provider.of<ZMetaData>(context, listen: false)
-          .setLocation(currentLocation.latitude, currentLocation.longitude);
+    try {
+      var currentLocation = await FlLocation.getLocation(
+        timeLimit: const Duration(seconds: 10), // Add a timeout
+      );
+      if (mounted) {
+        setState(() {
+          latitude = currentLocation.latitude;
+          longitude = currentLocation.longitude;
+        });
+        Provider.of<ZMetaData>(context, listen: false)
+            .setLocation(currentLocation.latitude, currentLocation.longitude);
+      }
+    } catch (e) {
+      // Handle location retrieval errors
+      if (mounted) {
+        Service.showMessage(
+            context: context,
+            title:
+                "Could not get your location. Using default location instead.",
+            error: true);
+        // Here you could explicitly set to use default location
+        // Or provide UI for the user to manually enter location
+      }
     }
   }
 
@@ -228,18 +266,18 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
         _permissionStatus == LocationPermission.always) {
-      if (await FlLocation.isLocationServicesEnabled) {
+      isLocationServicesEnabled = await FlLocation.isLocationServicesEnabled;
+      if (isLocationServicesEnabled == true) {
+        // debugPrint(">>>>>>\n is location on in permition $isLocationServicesEnabled");
         getLocation();
       } else {
-        LocationPermission serviceStatus =
-            await FlLocation.requestLocationPermission();
-        if (serviceStatus == LocationPermission.always ||
-            serviceStatus == LocationPermission.whileInUse) {
-          getLocation();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Location service disabled. Please enable and try again", true));
-        }
+        Service.showMessage(
+          context: context,
+          title:
+              "Location services are turned off. Please enable them in your device settings.",
+          error: true,
+        );
+        _requestLocationPermission();
       }
     } else {
       _requestLocationPermission();
@@ -249,7 +287,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   Future<bool> storeOpen() async {
     bool isStoreOpen = false;
     DateFormat dateFormat = new DateFormat.Hm();
-    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+    DateTime now = DateTime.now().toUtc();
     var appClose = await Service.read('app_close');
     var appOpen = await Service.read('app_open');
     DateTime zmallClose = dateFormat.parse(appClose);
@@ -328,461 +367,683 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     );
 
     Service.save('cart', cart!.toJson());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(Service.showMessage("Item added to cart!", false));
+    // Service.showMessage(
+    //   context: context,
+    //   title: "Item added to cart!",
+    //   error: false,
+    // );
   }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      color: kPrimaryColor,
-      progressIndicator: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SpinKitWave(
-            color: kSecondaryColor,
-            size: getProportionateScreenHeight(kDefaultPadding),
-          ),
-          Text("Checking if items are available..."),
-        ],
-      ),
-      inAsyncCall: _loading,
-      child: cart != null && cart!.items!.length > 0
-          ? Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  ),
-                  decoration: BoxDecoration(
+    return Scaffold(
+      bottomNavigationBar: userData != null &&
+              (cart != null && cart!.items!.length > 0)
+          ? SafeArea(
+              child: Container(
+                width: double.infinity,
+                // height: kDefaultPadding * 4,
+                padding: EdgeInsets.symmetric(
+                  vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+                  // horizontal: getProportionateScreenHeight(kDefaultPadding / 2),
+                ).copyWith(
+                    bottom: getProportionateScreenHeight(kDefaultPadding)),
+                decoration: BoxDecoration(
                     color: kPrimaryColor,
+                    border: Border(top: BorderSide(color: kWhiteColor)),
                     borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(kDefaultPadding),
-                        bottomRight: Radius.circular(kDefaultPadding)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          storeName != null
-                              ? Service.capitalizeFirstLetters(storeName)
-                              : "",
-                          softWrap: true,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
-                        ),
-                      ),
-                      // storeName.toString().toLowerCase() == "aliexpress"
-                      //     ? SizedBox.shrink()
-                      //     :
-                      TextButton(
-                        style: TextButton.styleFrom(
-                            backgroundColor: kWhiteColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.circular(
-                                    kDefaultPadding / 1.5))),
-                        onPressed:
-                            storeName.toString().toLowerCase() == "aliexpress"
-                                ? () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return AliProductListScreen();
-                                    }));
-                                  }
-                                : () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return NotificationStore(
-                                          storeId: cart!.storeId!);
-                                    }));
-                                  },
-                        child: Text(
-                          "Add more?",
-                          style: TextStyle(fontWeight: FontWeight.bold
-                              // decoration: TextDecoration.underline
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Divider(
-                  color: kWhiteColor,
-                  thickness: 1,
-                ),
-                // SizedBox(
-                //     height: getProportionateScreenHeight(kDefaultPadding / 3)),
-                Expanded(
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: cart!.toJson()['items'].length ?? 0,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: kDefaultPadding / 2),
-                    separatorBuilder: (BuildContext context, int index) =>
-                        Container(
-                      height: getProportionateScreenHeight(kDefaultPadding / 3),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = cart!.items?[index];
-                      return item != null
-                          ? Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding / 4),
-                              ),
-                              decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  border:
-                                      Border.all(color: kWhiteColor, width: 2),
-                                  borderRadius:
-                                      BorderRadius.circular(kDefaultPadding)),
-                              child: Row(
-                                children: [
-                                  ImageContainer(url: item.imageURL!),
-                                  SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2)),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      spacing: getProportionateScreenHeight(
-                                          kDefaultPadding / 5),
-                                      children: [
-                                        Text(
-                                          item.itemName!,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: kBlackColor,
-                                          ),
-                                          softWrap: true,
-                                        ),
+                        topLeft: Radius.circular(kDefaultPadding),
+                        topRight: Radius.circular(kDefaultPadding))),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: getProportionateScreenHeight(kDefaultPadding),
+                  // crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //
 
-                                        //
-                                        Text(
-                                          "${Provider.of<ZMetaData>(context, listen: false).currency} ${item.price!.toStringAsFixed(2)}",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleSmall
-                                              ?.copyWith(
-                                                color: kGreyColor,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                        //
-                                        Text(item.noteForItem),
-                                      ],
+                    if (extraItems != null) showExtraItems(),
+                    // Spacer(),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal:
+                            getProportionateScreenWidth(kDefaultPadding),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing:
+                            getProportionateScreenWidth(kDefaultPadding * 1.2),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      // fontSize: 18,
+                                      color: kBlackColor,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ),
-                                  Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          IconButton(
-                                              icon: Icon(
-                                                Icons.remove_circle_outline,
-                                                color: item.quantity != 1
-                                                    ? kSecondaryColor
-                                                    : kGreyColor,
-                                              ),
-                                              onPressed: item.quantity == 1
-                                                  ? () {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(Service
-                                                              .showMessage(
-                                                                  "Minimum order quantity is 1!",
-                                                                  true));
-                                                    }
-                                                  : () {
-                                                      int? currQty =
-                                                          item.quantity;
-                                                      double? unitPrice =
-                                                          item.price! /
-                                                              currQty!;
-                                                      setState(() {
-                                                        item.quantity =
-                                                            currQty - 1;
-                                                        item.price = unitPrice *
-                                                            (currQty - 1);
-                                                        Service.save(
-                                                            'cart', cart); //old
-                                                        // Update aliexpressCart if applicable
-                                                        if (aliexpressCart !=
-                                                                null &&
-                                                            aliexpressCart!.cart
-                                                                    .storeId ==
-                                                                cart!.storeId) {
-                                                          // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
-                                                          aliexpressCart!
-                                                                  .cart
-                                                                  .items![index]
-                                                                  .quantity =
-                                                              currQty - 1;
-                                                          aliexpressCart!
-                                                                  .cart
-                                                                  .items![index]
-                                                                  .price =
-                                                              unitPrice *
-                                                                  (currQty - 1);
-                                                          Service.save(
-                                                              'aliexpressCart',
-                                                              aliexpressCart); // Save updated aliexpressCart
-                                                        }
-                                                      });
-                                                      calculatePrice();
-                                                    }),
-                                          Text(
-                                            "${item.quantity}",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          IconButton(
-                                              icon: Icon(
-                                                Icons.add_circle,
-                                                color: kSecondaryColor,
-                                              ),
-                                              onPressed: () {
-                                                int? currQty = item.quantity;
-                                                double? unitPrice =
-                                                    item.price! / currQty!;
-                                                setState(() {
-                                                  item.quantity = currQty + 1;
-                                                  item.price =
-                                                      unitPrice * (currQty + 1);
-                                                  Service.save(
-                                                      'cart', cart); //old
-                                                  // Update aliexpressCart if applicable
-                                                  if (aliexpressCart != null &&
-                                                      aliexpressCart!
-                                                              .cart.storeId ==
-                                                          cart!.storeId) {
-                                                    // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
-                                                    aliexpressCart!
-                                                        .cart
-                                                        .items![index]
-                                                        .quantity = currQty + 1;
-                                                    aliexpressCart!
-                                                            .cart
-                                                            .items![index]
-                                                            .price =
-                                                        unitPrice *
-                                                            (currQty + 1);
-                                                    Service.save(
-                                                        'aliexpressCart',
-                                                        aliexpressCart); // Save updated aliexpressCart
-                                                  }
-                                                });
-                                                calculatePrice();
-                                              }),
-                                        ],
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            cart?.items?.removeAt(index);
-                                            //Service.save('cart', cart);//old
-                                            //NEW
-                                            Service.save('cart', cart); //old
-                                            if (aliexpressCart != null &&
-                                                aliexpressCart!.cart.storeId ==
-                                                    cart!.storeId) {
-                                              aliexpressCart!.cart.items!
-                                                  .removeAt(index);
-                                              aliexpressCart!.itemIds!
-                                                  .removeAt(index);
-                                              aliexpressCart!.productIds!
-                                                  .removeAt(index);
-                                              Service.save('aliexpressCart',
-                                                  aliexpressCart); //NEW
-                                            }
-                                          });
-                                          calculatePrice();
-                                        },
-                                        child: Text(
-                                          Provider.of<ZLanguage>(context)
-                                              .remove,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyLarge
-                                              ?.copyWith(
-                                                  color: kSecondaryColor),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ],
                               ),
-                            )
-                          : Container();
-                    },
-                  ),
-                ),
+                              Text(
+                                "${Provider.of<ZLanguage>(context).cartTotal}",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: kGreyColor,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          Expanded(
+                            child: CustomButton(
+                              title: Provider.of<ZLanguage>(context).checkout,
+                              press: () async {
+                                //   if (isDonation && !isCheckout) {
+                                //   setState(() {
+                                //     isCheckout = !isCheckout;
+                                //   });
+                                // } else {
 
-///////////////////////////New customization
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    padding: const EdgeInsets.all(kDefaultPadding),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      border: Border(top: BorderSide(color: kWhiteColor)),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(kDefaultPadding * 2),
-                          topRight: Radius.circular(kDefaultPadding * 2)),
-                      // boxShadow: [
-                      //   BoxShadow(
-                      //     color: Colors.grey.withValues(alpha: 0.8),
-                      //     spreadRadius: 8,
-                      //     blurRadius: 3,
-                      //     offset: Offset(0, 7),
-                      //   ),
-                      // ],
-                    ),
-                    child:
-                        //   isCheckout
-                        // ? showDonationView()
-                        // :
-                        Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        //
-                        extraItems != null
-                            ? showExtraItems()
-                            : SizedBox.shrink(),
-                        SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding / 4),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding)),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: getProportionateScreenHeight(
-                                    kDefaultPadding / 3)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "${Provider.of<ZLanguage>(context).cartTotal}: ",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(color: kBlackColor),
-                                ),
-                                Text(
-                                  "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                          color: kBlackColor,
-                                          fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                                if (!isLocationServicesEnabled) {
+                                  Service.showMessage(
+                                    context: context,
+                                    title:
+                                        "Location services are turned off. Please enable them in your device settings.",
+                                    error: true,
+                                  );
+                                  _doLocationTask();
+                                } else {
+                                  DateFormat dateFormat = new DateFormat.Hm();
+                                  DateTime now = DateTime.now().toUtc();
+                                  // .add(Duration(hours: 3));
+                                  var appClose =
+                                      await Service.read('app_close');
+                                  var appOpen = await Service.read('app_open');
+                                  DateTime zmallClose =
+                                      dateFormat.parse(appClose);
+                                  DateTime zmallOpen =
+                                      dateFormat.parse(appOpen);
+
+                                  now = DateTime(now.year, now.month, now.day,
+                                      now.hour, now.minute);
+                                  zmallOpen = new DateTime(
+                                      now.year,
+                                      now.month,
+                                      now.day,
+                                      zmallOpen.hour,
+                                      zmallOpen.minute);
+                                  zmallClose = new DateTime(
+                                      now.year,
+                                      now.month,
+                                      now.day,
+                                      zmallClose.hour,
+                                      zmallClose.minute);
+
+                                  if (now.isAfter(zmallOpen) &&
+                                      now.isBefore(zmallClose)) {
+                                    Navigator.pushNamed(
+                                        context, DeliveryScreen.routeName);
+                                    //   if (isDonation) {
+                                    //   debugPrint('***This is Donation***');
+                                    //   //showDonation();
+                                    // } else {
+                                    //   Navigator.pushNamed(
+                                    //       context, DeliveryScreen.routeName);
+                                    // }
+                                  } else {
+                                    Service.showMessage(
+                                        context: context,
+                                        title:
+                                            "Sorry, we are currently closed. Please comeback soon.",
+                                        error: false,
+                                        duration: 3);
+                                  }
+                                }
+                              },
+                              // },
+                              color: kSecondaryColor,
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding / 4),
-                        ),
-
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding * 2),
-                            vertical:
-                                getProportionateScreenHeight(kDefaultPadding),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : SizedBox.shrink(),
+      body: ModalProgressHUD(
+        color: kPrimaryColor,
+        progressIndicator: LinearLoadingIndicator(
+          title: "Checking...",
+        ),
+        // progressIndicator: Column(
+        //   mainAxisAlignment: MainAxisAlignment.center,
+        //   children: [
+        //     SpinKitWave(
+        //       color: kSecondaryColor,
+        //       size: getProportionateScreenHeight(kDefaultPadding),
+        //     ),
+        //     Text("Checking if items are available..."),
+        //   ],
+        // ),
+        inAsyncCall: _loading,
+        child: cart != null && cart!.items!.length > 0
+            ? Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(
+                      left: getProportionateScreenWidth(kDefaultPadding / 2),
+                      right: getProportionateScreenWidth(kDefaultPadding / 2),
+                      bottom: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    decoration: BoxDecoration(
+                      color: kWhiteColor,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(kDefaultPadding * 1.2),
+                          bottomRight: Radius.circular(kDefaultPadding * 1.2)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (storeName.isNotEmpty)
+                          Expanded(
+                            child: OrderStatusRow(
+                              title: "Store",
+                              iconBackgroundColor: kPrimaryColor,
+                              icon: HeroiconsOutline.buildingStorefront,
+                              fontSize: getProportionateScreenHeight(14),
+                              value: Service.capitalizeFirstLetters(storeName),
+                            ),
                           ),
-                          child: CustomButton(
-                            title: Provider.of<ZLanguage>(context).checkout,
-                            press: () async {
-                              //   if (isDonation && !isCheckout) {
-                              //   setState(() {
-                              //     isCheckout = !isCheckout;
-                              //   });
-                              // } else {
-                              DateFormat dateFormat = new DateFormat.Hm();
-                              DateTime now = DateTime.now()
-                                  .toUtc()
-                                  .add(Duration(hours: 3));
-                              var appClose = await Service.read('app_close');
-                              var appOpen = await Service.read('app_open');
-                              DateTime zmallClose = dateFormat.parse(appClose);
-                              DateTime zmallOpen = dateFormat.parse(appOpen);
-
-                              now = DateTime(now.year, now.month, now.day,
-                                  now.hour, now.minute);
-                              zmallOpen = new DateTime(now.year, now.month,
-                                  now.day, zmallOpen.hour, zmallOpen.minute);
-                              zmallClose = new DateTime(now.year, now.month,
-                                  now.day, zmallClose.hour, zmallClose.minute);
-
-                              if (now.isAfter(zmallOpen) &&
-                                  now.isBefore(zmallClose)) {
-                                Navigator.pushNamed(
-                                    context, DeliveryScreen.routeName);
-                                //   if (isDonation) {
-                                //   debugPrint('***This is Donation***');
-                                //   //showDonation();
-                                // } else {
-                                //   Navigator.pushNamed(
-                                //       context, DeliveryScreen.routeName);
-                                // }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage(
-                                      "Sorry, we are currently closed. Please comeback soon.",
-                                      false,
-                                      duration: 3),
-                                );
-                              }
-                            },
-                            // },
-                            color: kSecondaryColor,
+                        TextButton(
+                          style: TextButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusGeometry.circular(
+                                      kDefaultPadding / 1.5))),
+                          onPressed:
+                              storeName.toString().toLowerCase() == "aliexpress"
+                                  ? () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) {
+                                        return AliProductListScreen();
+                                      }));
+                                    }
+                                  : () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) {
+                                        return NotificationStore(
+                                            storeId: cart!.storeId!);
+                                      }));
+                                    },
+                          child: Text(
+                            "Add more?",
+                            style: TextStyle(fontWeight: FontWeight.bold
+                                // decoration: TextDecoration.underline
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-//////////////////////////////////////////////////
-              ],
-            )
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add_shopping_cart_outlined,
-                    size: getProportionateScreenHeight(kDefaultPadding * 3),
-                    color: kSecondaryColor,
+                  // Divider(
+                  //   color: kWhiteColor,
+                  //   thickness: 1,
+                  // ),
+                  // SizedBox(
+                  //     height: getProportionateScreenHeight(kDefaultPadding / 3)),
+                  Expanded(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: cart!.toJson()['items'].length ?? 0,
+                      padding: EdgeInsets.only(
+                        left: getProportionateScreenWidth(kDefaultPadding / 2),
+                        right: getProportionateScreenWidth(kDefaultPadding / 2),
+                        top: getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      separatorBuilder: (BuildContext context, int index) =>
+                          Container(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 3),
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = cart!.items?[index];
+                        return item != null
+                            ? Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding / 4),
+                                ),
+                                decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                    border: Border.all(
+                                        color: kWhiteColor, width: 2),
+                                    borderRadius:
+                                        BorderRadius.circular(kDefaultPadding)),
+                                child: Row(
+                                  children: [
+                                    ImageContainer(url: item.imageURL!),
+                                    SizedBox(
+                                        width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2)),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        spacing: getProportionateScreenHeight(
+                                            kDefaultPadding / 5),
+                                        children: [
+                                          Text(
+                                            Service.capitalizeFirstLetters(
+                                                item.itemName!),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: kBlackColor,
+                                            ),
+                                            softWrap: true,
+                                          ),
+
+                                          //
+                                          Text(
+                                            "${Provider.of<ZMetaData>(context, listen: false).currency} ${item.price!.toStringAsFixed(2)}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall
+                                                ?.copyWith(
+                                                  color: kGreyColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          //
+                                          Text(item.noteForItem),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                                icon: Icon(
+                                                  Icons.remove_circle_outline,
+                                                  color: item.quantity != 1
+                                                      ? kSecondaryColor
+                                                      : kGreyColor,
+                                                ),
+                                                onPressed: item.quantity == 1
+                                                    ? () {
+                                                        Service.showMessage(
+                                                            context: context,
+                                                            title:
+                                                                "Minimum order quantity is 1!",
+                                                            error: true);
+                                                      }
+                                                    : () {
+                                                        int? currQty =
+                                                            item.quantity;
+                                                        double? unitPrice =
+                                                            item.price! /
+                                                                currQty!;
+                                                        setState(() {
+                                                          item.quantity =
+                                                              currQty - 1;
+                                                          item.price =
+                                                              unitPrice *
+                                                                  (currQty - 1);
+                                                          Service.save('cart',
+                                                              cart); //old
+                                                          // Update aliexpressCart if applicable
+                                                          if (aliexpressCart !=
+                                                                  null &&
+                                                              aliexpressCart!
+                                                                      .cart
+                                                                      .storeId ==
+                                                                  cart!
+                                                                      .storeId) {
+                                                            // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
+                                                            aliexpressCart!
+                                                                    .cart
+                                                                    .items![index]
+                                                                    .quantity =
+                                                                currQty - 1;
+                                                            aliexpressCart!
+                                                                    .cart
+                                                                    .items![index]
+                                                                    .price =
+                                                                unitPrice *
+                                                                    (currQty -
+                                                                        1);
+                                                            Service.save(
+                                                                'aliexpressCart',
+                                                                aliexpressCart); // Save updated aliexpressCart
+                                                          }
+                                                        });
+                                                        calculatePrice();
+                                                      }),
+                                            Text(
+                                              "${item.quantity}",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            IconButton(
+                                                icon: Icon(
+                                                  Icons.add_circle,
+                                                  color: kSecondaryColor,
+                                                ),
+                                                onPressed: () {
+                                                  int? currQty = item.quantity;
+                                                  double? unitPrice =
+                                                      item.price! / currQty!;
+                                                  setState(() {
+                                                    item.quantity = currQty + 1;
+                                                    item.price = unitPrice *
+                                                        (currQty + 1);
+                                                    Service.save(
+                                                        'cart', cart); //old
+                                                    // Update aliexpressCart if applicable
+                                                    if (aliexpressCart !=
+                                                            null &&
+                                                        aliexpressCart!
+                                                                .cart.storeId ==
+                                                            cart!.storeId) {
+                                                      // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .quantity =
+                                                          currQty + 1;
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .items![index]
+                                                              .price =
+                                                          unitPrice *
+                                                              (currQty + 1);
+                                                      Service.save(
+                                                          'aliexpressCart',
+                                                          aliexpressCart); // Save updated aliexpressCart
+                                                    }
+                                                  });
+                                                  calculatePrice();
+                                                }),
+                                          ],
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              cart?.items?.removeAt(index);
+                                              //Service.save('cart', cart);//old
+                                              //NEW
+                                              Service.save('cart', cart); //old
+                                              if (aliexpressCart != null &&
+                                                  aliexpressCart!
+                                                          .cart.storeId ==
+                                                      cart!.storeId) {
+                                                aliexpressCart!.cart.items!
+                                                    .removeAt(index);
+                                                aliexpressCart!.itemIds!
+                                                    .removeAt(index);
+                                                aliexpressCart!.productIds!
+                                                    .removeAt(index);
+                                                Service.save('aliexpressCart',
+                                                    aliexpressCart); //NEW
+                                              }
+                                            });
+                                            calculatePrice();
+                                          },
+                                          child: Text(
+                                            Provider.of<ZLanguage>(context)
+                                                .remove,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge
+                                                ?.copyWith(
+                                                    fontSize: 12,
+                                                    color: kSecondaryColor,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Container();
+                      },
+                    ),
                   ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 3),
-                  ),
-                  Text(
-                    "Empty Basket!",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  )
+
+                  ///////////////////////////New customization
+                  // Align(
+                  //   alignment: Alignment.bottomCenter,
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //         border: Border(top: BorderSide(color: kWhiteColor)),
+                  //         borderRadius: BorderRadius.only(
+                  //             topLeft: Radius.circular(kDefaultPadding),
+                  //             topRight: Radius.circular(kDefaultPadding))),
+                  //     padding: EdgeInsets.symmetric(
+                  //         vertical:
+                  //             getProportionateScreenHeight(kDefaultPadding / 2)),
+                  //     child: Column(
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       spacing:
+                  //           getProportionateScreenHeight(kDefaultPadding / 4),
+                  //       // crossAxisAlignment: CrossAxisAlignment.start,
+                  //       children: [
+                  //         //
+
+                  //         if (extraItems != null) showExtraItems(),
+                  //         // Spacer(),
+                  //         Padding(
+                  //           padding: EdgeInsets.symmetric(
+                  //             horizontal:
+                  //                 getProportionateScreenWidth(kDefaultPadding),
+                  //           ).copyWith(
+                  //               top: getProportionateScreenHeight(
+                  //                   kDefaultPadding / 2)),
+                  //           child: Row(
+                  //             mainAxisSize: MainAxisSize.min,
+                  //             spacing:
+                  //                 getProportionateScreenWidth(kDefaultPadding),
+                  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //             children: [
+                  //               Column(
+                  //                 mainAxisSize: MainAxisSize.min,
+                  //                 mainAxisAlignment:
+                  //                     MainAxisAlignment.spaceBetween,
+                  //                 // crossAxisAlignment: CrossAxisAlignment.start,
+                  //                 children: [
+                  //                   Text(
+                  //                     "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
+                  //                     style: Theme.of(context)
+                  //                         .textTheme
+                  //                         .titleLarge
+                  //                         ?.copyWith(
+                  //                           fontSize: 18,
+                  //                           color: kBlackColor,
+                  //                           fontWeight: FontWeight.bold,
+                  //                         ),
+                  //                   ),
+                  //                   Text(
+                  //                     "${Provider.of<ZLanguage>(context).cartTotal}",
+                  //                     style: Theme.of(context)
+                  //                         .textTheme
+                  //                         .bodySmall
+                  //                         ?.copyWith(
+                  //                           color: kGreyColor,
+                  //                         ),
+                  //                   ),
+                  //                 ],
+                  //               ),
+                  //               Expanded(
+                  //                 child: CustomButton(
+                  //                   title:
+                  //                       Provider.of<ZLanguage>(context).checkout,
+                  //                   press: () async {
+                  //                     //   if (isDonation && !isCheckout) {
+                  //                     //   setState(() {
+                  //                     //     isCheckout = !isCheckout;
+                  //                     //   });
+                  //                     // } else {
+                  //                     DateFormat dateFormat = new DateFormat.Hm();
+                  //                     DateTime now = DateTime.now()
+                  //                         .toUtc();
+                  //                       //  .add(Duration(hours: 3));
+                  //                     var appClose =
+                  //                         await Service.read('app_close');
+                  //                     var appOpen =
+                  //                         await Service.read('app_open');
+                  //                     DateTime zmallClose =
+                  //                         dateFormat.parse(appClose);
+                  //                     DateTime zmallOpen =
+                  //                         dateFormat.parse(appOpen);
+
+                  //                     now = DateTime(now.year, now.month, now.day,
+                  //                         now.hour, now.minute);
+                  //                     zmallOpen = new DateTime(
+                  //                         now.year,
+                  //                         now.month,
+                  //                         now.day,
+                  //                         zmallOpen.hour,
+                  //                         zmallOpen.minute);
+                  //                     zmallClose = new DateTime(
+                  //                         now.year,
+                  //                         now.month,
+                  //                         now.day,
+                  //                         zmallClose.hour,
+                  //                         zmallClose.minute);
+
+                  //                     if (now.isAfter(zmallOpen) &&
+                  //                         now.isBefore(zmallClose)) {
+                  //                       Navigator.pushNamed(
+                  //                           context, DeliveryScreen.routeName);
+                  //                       //   if (isDonation) {
+                  //                       //   debugPrint('***This is Donation***');
+                  //                       //   //showDonation();
+                  //                       // } else {
+                  //                       //   Navigator.pushNamed(
+                  //                       //       context, DeliveryScreen.routeName);
+                  //                       // }
+                  //                     } else {
+                  //                       Service.showMessage(
+                  //                           context: context,
+                  //                           title:
+                  //                               "Sorry, we are currently closed. Please comeback soon.",
+                  //                           error: false,
+                  //                           duration: 3);
+                  //                     }
+                  //                   },
+                  //                   // },
+                  //                   color: kSecondaryColor,
+                  //                 ),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                  //////////////////////////////////////////////////
                 ],
+              )
+            : Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        HeroiconsOutline.shoppingCart,
+                        size: getProportionateScreenHeight(kDefaultPadding * 5),
+                        color: kSecondaryColor.withOpacity(0.8),
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 1.5),
+                      ),
+                      Text(
+                        "Your Basket is Empty!",
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w800, // Very bold
+                              color: kBlackColor,
+                              letterSpacing: 0.5,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      Text(
+                        "Start adding products to your cart to begin your order.",
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: kGreyColor,
+                              height: 1.4,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      // Optional: Add a button to navigate to products/home
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(
+                      //         kDefaultPadding * 2)),
+
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.pushNamedAndRemoveUntil(context, "/start",
+                                (Route<dynamic> route) => false);
+                          },
+                          child: Text(
+                            "Start Shopping",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                    color: kSecondaryColor,
+                                    fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      //  Padding(
+                      // padding: EdgeInsets.symmetric(
+                      //     horizontal: getProportionateScreenWidth(
+                      //         kDefaultPadding / 2)),
+                      // child: CustomButton(
+                      //   title: "Start Shopping",
+                      //   press: () {
+                      //     Navigator.pushNamedAndRemoveUntil(context, "/start",
+                      //         (Route<dynamic> route) => false);
+                      //   },
+                      //   color: kSecondaryColor,
+                      // ),
+                      // ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+      ),
     );
   }
 
@@ -822,12 +1083,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         this._loading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
-              "Couldn't get store detail, check your internet and try again.",
-              true,
-              duration: 3),
-        );
+        Service.showMessage(
+            context: context,
+            title:
+                "Couldn't get store detail, check your internet and try again.",
+            error: true,
+            duration: 3);
       }
       return null;
     }
@@ -860,9 +1121,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           setState(() {
             this._loading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("Something went wrong!", true, duration: 3),
-          );
+
+          Service.showMessage(
+              context: context,
+              title: "Something went wrong!",
+              error: true,
+              duration: 3);
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -888,6 +1152,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         context: context,
         builder: (BuildContext alertContext) {
           return AlertDialog(
+            backgroundColor: kPrimaryColor,
             title: Text(Provider.of<ZLanguage>(context).warning),
             content: Text(Provider.of<ZLanguage>(context).itemsFound),
             actions: [
@@ -934,26 +1199,59 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     return isNull
         ? SizedBox.shrink()
         : Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: getProportionateScreenHeight(kDefaultPadding / 2),
             children: [
-              Text(
-                'Perfect Paring for Your Order!',
-              ),
-              const SizedBox(height: kDefaultPadding),
+              if (extraItems != null)
+                Text(
+                  'Perfect Paring for Your Order!',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: kBlackColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
               Container(
-                height: getProportionateScreenHeight(kDefaultPadding * 8),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(kDefaultPadding)),
+                width: double.infinity,
+                height: MediaQuery.sizeOf(context).height * 0.12,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: extraItems.length,
+                  padding: EdgeInsets.symmetric(
+                    horizontal:
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                    vertical: getProportionateScreenHeight(kDefaultPadding / 4),
+                  ),
+                  separatorBuilder: (BuildContext context, int index) =>
+                      SizedBox(
+                    width: getProportionateScreenWidth(kDefaultPadding / 2),
+                  ),
                   itemBuilder: (context, index) {
                     bool isAppear = cart!.items!.any((element) =>
                         element.toJson()['_id'] == extraItems[index]['_id']);
-
-                    return isAppear
-                        ? SizedBox.shrink()
-                        : Column(
+                    if (isAppear) {
+                      return SizedBox.shrink();
+                    }
+                    return Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: kWhiteColor),
+                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                      padding: EdgeInsets.symmetric(
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding / 2),
+                          vertical: getProportionateScreenHeight(
+                              kDefaultPadding / 3)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing:
+                            getProportionateScreenHeight(kDefaultPadding / 4),
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            spacing: getProportionateScreenHeight(
+                                kDefaultPadding / 3),
                             children: [
+                              /////item image section///
                               CachedNetworkImage(
                                 imageUrl:
                                     "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
@@ -999,123 +1297,138 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 3),
-                              ),
-                              Text(
-                                extraItems[index]['name'],
-                                style: TextStyle(
-                                  fontSize: getProportionateScreenWidth(
-                                      kDefaultPadding * 0.9),
-                                  color: kBlackColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                softWrap: true,
-                              ),
-                              SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 5)),
-                              Text(
-                                "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(
-                                      color: kBlackColor,
-                                    ),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  // Add to cart.....
 
-                                  // debugPrint('id... ${extraItems[index]['_id']}');
-                                  Item item = Item(
-                                    id: extraItems[index]['_id'],
-                                    quantity: 1,
-                                    specification: [],
-                                    noteForItem: "",
-                                    price: _getPrice(extraItems[index]) != null
-                                        ? double.parse(
-                                            _getPrice(extraItems[index]),
-                                          )
-                                        : 0,
-                                    itemName: extraItems[index]['name'],
-                                    imageURL: extraItems[index]['image_url']
-                                                .length >
-                                            0
-                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
-                                        : "https://ibb.co/vkhzjd6",
-                                  );
-                                  // debugPrint('item... $item');
-                                  StoreLocation storeLocation = StoreLocation(
-                                      long: storeLocations[1],
-                                      lat: storeLocations[0]);
-                                  // debugPrint('sLocation... $storeLocation');
-                                  DestinationAddress destination =
-                                      DestinationAddress(
-                                    long: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .longitude,
-                                    lat: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .latitude,
-                                    name: "Current Location",
-                                    note: "User current location",
-                                  );
-                                  // debugPrint('DestinationAddress... $destination');
-                                  if (cart != null && userData != null) {
-                                    if (cart!.storeId! ==
-                                        extraItems[index]['store_id']) {
-                                      setState(() {
-                                        cart!.items!.add(item);
-                                        Service.save('cart', cart)
-                                            .then((value) => calculatePrice())
-                                            .then((value) => ScaffoldMessenger
-                                                    .of(context)
-                                                .showSnackBar(
-                                                    Service.showMessage(
-                                                        "Item added to cart",
-                                                        false)))
-                                            .then((value) => setState(() {}));
-                                      });
-                                    } else {
-                                      _showDialog(
-                                          item,
-                                          destination,
-                                          storeLocation,
-                                          extraItems[index]['store_id']);
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: kBlackColor,
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 4),
+                              //////item name and price section////
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    extraItems[index]['name'],
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenWidth(
+                                          kDefaultPadding * 0.9),
+                                      color: kBlackColor,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    child: Text(
-                                      "${Provider.of<ZLanguage>(context).addToCart}",
+                                    softWrap: true,
+                                  ),
+                                  Text(
+                                    "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(
+                                          color: kGreyColor,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          ///// add to cart button section///
+                          GestureDetector(
+                            onTap: () async {
+                              // Add to cart.....
+
+                              // debugPrint('id... ${extraItems[index]['_id']}');
+                              Item item = Item(
+                                id: extraItems[index]['_id'],
+                                quantity: 1,
+                                specification: [],
+                                noteForItem: "",
+                                price: _getPrice(extraItems[index]) != null
+                                    ? double.parse(
+                                        _getPrice(extraItems[index]),
+                                      )
+                                    : 0,
+                                itemName: extraItems[index]['name'],
+                                imageURL: extraItems[index]['image_url']
+                                            .length >
+                                        0
+                                    ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
+                                    : "https://ibb.co/vkhzjd6",
+                              );
+                              // debugPrint('item... $item');
+                              StoreLocation storeLocation = StoreLocation(
+                                  long: storeLocations[1],
+                                  lat: storeLocations[0]);
+                              // debugPrint('sLocation... $storeLocation');
+                              DestinationAddress destination =
+                                  DestinationAddress(
+                                long: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .longitude,
+                                lat: Provider.of<ZMetaData>(context,
+                                        listen: false)
+                                    .latitude,
+                                name: "Current Location",
+                                note: "User current location",
+                              );
+                              // debugPrint('DestinationAddress... $destination');
+                              if (cart != null && userData != null) {
+                                if (cart!.storeId! ==
+                                    extraItems[index]['store_id']) {
+                                  setState(() {
+                                    cart!.items!.add(item);
+                                    Service.save('cart', cart)
+                                        .then((value) => calculatePrice())
+                                        // .then(
+                                        //   (value) => Service.showMessage(
+                                        //     context: context,
+                                        //     title: "Item added to cart",
+                                        //   ),
+                                        // )
+                                        .then((value) => setState(() {}));
+                                  });
+                                } else {
+                                  _showDialog(item, destination, storeLocation,
+                                      extraItems[index]['store_id']);
+                                }
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: kSecondaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(
+                                      kDefaultPadding / 2)),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding / 2),
+                                  vertical: getProportionateScreenWidth(
+                                      kDefaultPadding / 4),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  spacing: getProportionateScreenWidth(
+                                      kDefaultPadding / 3),
+                                  children: [
+                                    Icon(
+                                        size: 20,
+                                        color: kSecondaryColor,
+                                        Icons.add_shopping_cart_rounded),
+                                    Text(
+                                      " ${Provider.of<ZLanguage>(context, listen: false).addToCart} ",
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
                                           ?.copyWith(
-                                            color: kPrimaryColor,
-                                          ),
+                                              fontSize: 14,
+                                              color: kSecondaryColor,
+                                              fontWeight: FontWeight.bold),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          );
+                            ),
+                          ),
+
+                          ///
+                        ],
+                      ),
+                    );
                   },
-                  separatorBuilder: (BuildContext context, int index) =>
-                      SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
                 ),
               ),
             ],
@@ -1201,8 +1514,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+ ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Network error", true));
           setState(() {
             _loading = false;
           });
@@ -1241,8 +1553,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+ ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Network error", true));
           setState(() {
             _loading = false;
           });

@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -24,6 +23,7 @@ import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
 
 class GlobalHomeScreen extends StatefulWidget {
@@ -64,7 +64,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "Location permission denied. Please enable and try again", true));
       FlLocation.requestLocationPermission();
     }
@@ -96,7 +96,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
               "Location service disabled. Please enable and try again", true));
         }
       }
@@ -107,7 +107,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     CoreServices.registerNotification(context);
     MyApp.messaging.triggerEvent("at_home");
@@ -125,7 +124,9 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
   Future<dynamic> getCategoryList(double longitude, double latitude,
       String countryCode, String countryName) async {
     var url =
-        "https://app.zmallapp.com/api/user/get_delivery_list_for_nearest_city";
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_delivery_list_for_nearest_city";
+
+    //
     Map data = {
       "latitude": latitude,
       "longitude": longitude,
@@ -332,7 +333,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                   } else {
                     // Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage(
+                        Service.showMessage1(
                             "Please add the necessary information", true));
                   }
                 },
@@ -349,7 +350,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
 
     if (data != null && data['success']) {
       if (data['message_flag']) {
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
             "${data['message']} We deliver your order once we resume our service.",
             false,
             duration: 4));
@@ -474,7 +475,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
         child: ModalProgressHUD(
           inAsyncCall: _loading,
           color: kPrimaryColor,
-          progressIndicator: linearProgressIndicator,
+          progressIndicator: LinearLoadingIndicator(),
           child: categories != null
               ? SingleChildScrollView(
                   child: Padding(
@@ -679,6 +680,12 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                 padding: EdgeInsets.only(
                                     bottom: getProportionateScreenHeight(
                                         kDefaultPadding / 2)),
+                                margin: EdgeInsets.symmetric(
+                                  vertical: getProportionateScreenHeight(
+                                      kDefaultPadding / 4),
+                                  horizontal: getProportionateScreenHeight(
+                                      kDefaultPadding / 2),
+                                ),
                                 decoration: BoxDecoration(
                                   color: kPrimaryColor,
                                 ),
@@ -815,70 +822,93 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                           _getPromotionalItems();
                                         });
                                       },
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            child: CachedNetworkImage(
-                                              imageUrl:
-                                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${category['image_url']}",
-                                              // "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[index]['image_url']}",
-                                              imageBuilder:
-                                                  (context, imageProvider) =>
-                                                      Container(
-                                                decoration: BoxDecoration(
-                                                  color: kWhiteColor,
-                                                  image: DecorationImage(
-                                                    fit: BoxFit.contain,
-                                                    image: imageProvider,
+                                      child: Container(
+                                        padding: EdgeInsets.all(
+                                            getProportionateScreenWidth(
+                                                kDefaultPadding / 2)),
+                                        decoration: BoxDecoration(
+                                          color: kPrimaryColor,
+                                          border:
+                                              Border.all(color: kWhiteColor),
+                                          borderRadius: BorderRadius.circular(
+                                              kDefaultPadding),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          spacing: getProportionateScreenHeight(
+                                              kDefaultPadding / 2),
+                                          children: [
+                                            Expanded(
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${category['image_url']}",
+                                                // "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${categories[index]['image_url']}",
+                                                imageBuilder:
+                                                    (context, imageProvider) =>
+                                                        Container(
+                                                  decoration: BoxDecoration(
+                                                    color: kWhiteColor,
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.contain,
+                                                      image: imageProvider,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            kDefaultPadding /
+                                                                1.5),
                                                   ),
                                                 ),
-                                              ),
-                                              placeholder: (context, url) =>
-                                                  Center(
-                                                child: Container(
-                                                  width:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding *
-                                                              3.5),
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding *
-                                                              3.5),
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                            Color>(kWhiteColor),
+                                                placeholder: (context, url) =>
+                                                    Center(
+                                                  child: Container(
+                                                    width:
+                                                        getProportionateScreenWidth(
+                                                            kDefaultPadding *
+                                                                3.5),
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding *
+                                                                3.5),
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                                  Color>(
+                                                              kWhiteColor),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      Container(
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    fit: BoxFit.cover,
-                                                    image: AssetImage(
-                                                        'images/zmall.jpg'),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Container(
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: AssetImage(
+                                                          'images/zmall.jpg'),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          Text(
-                                            category['delivery_name'],
-                                            // categories[index]['delivery_name'],
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
+                                            Text(
+                                              Service.capitalizeFirstLetters(
+                                                  category['delivery_name']),
+                                              // categories[index]['delivery_name'],
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
                                   },

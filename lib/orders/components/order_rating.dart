@@ -50,17 +50,21 @@ class _OrderRatingState extends State<OrderRating> {
         _loading = false;
         responseData = data;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "You have successfully submitted your rating", false),
+
+      Service.showMessage(
+        context: context,
+        title: "You have successfully submitted your rating",
+        error: false,
       );
       Navigator.of(context).pop();
     } else {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');

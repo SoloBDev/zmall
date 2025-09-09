@@ -30,17 +30,21 @@ class _AmoleScreenState extends State<AmoleScreen> {
   var kifiyaGateway;
 
   void _sendOtp() async {
-    if (widget.hisab != null && widget.hisab == 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("Please enter a valid amount", true));
+    if (widget.hisab == 0.0) {
+      Service.showMessage(
+        context: context,
+        title: "Please enter a valid amount",
+        error: true,
+      );
     } else {
       var data = await sendOTP();
       if (data != null && data['success']) {
         setState(() {
           _otpSent = true;
         });
-        ScaffoldMessenger.of(context)
-            .showSnackBar(Service.showMessage("OTP successfully sent!", false));
+
+        Service.showMessage(
+            context: context, title: "OTP successfully sent!", error: false);
       }
     }
   }
@@ -62,8 +66,13 @@ class _AmoleScreenState extends State<AmoleScreen> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("Please enter a valid OTP.", true, duration: 4));
+
+      Service.showMessage(
+        context: context,
+        title: "Please enter a valid OTP.",
+        error: true,
+        duration: 4,
+      );
     }
   }
 
@@ -197,9 +206,12 @@ class _AmoleScreenState extends State<AmoleScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Something went wrong, please check your connection and try again!",
-          true));
+      Service.showMessage(
+        context: context,
+        title:
+            "Something went wrong, please check your connection and try again!",
+        error: true,
+      );
       return null;
     }
   }
@@ -243,10 +255,12 @@ class _AmoleScreenState extends State<AmoleScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
+
+      Service.showMessage(
+        context: context,
+        title:
             "Something went wrong, please check your connection and try again!",
-            true),
+        error: true,
       );
       return null;
     }

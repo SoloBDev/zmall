@@ -49,10 +49,13 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
   void _initTelebirr() async {
     var data = await initTelebirr();
     if (data != null && data['result']['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${data['result']['message']}. Waiting for payment to be completed",
-          false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title:
+            "${data['result']['message']}. Waiting for payment to be completed",
+        error: false,
+        duration: 6,
+      );
       _verifyPayment();
     }
   }
@@ -168,10 +171,11 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     } finally {
@@ -218,9 +222,11 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Checking if payment is made. Please wait a moment...", true),
+
+      Service.showMessage(
+        context: context,
+        title: "Checking if payment is made. Please wait a moment...",
+        error: true,
       );
       return null;
     } finally {

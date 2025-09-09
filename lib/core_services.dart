@@ -62,8 +62,8 @@ class CoreServices {
 
   static Future _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
-    debugPrint("Got a background message");
-    debugPrint("Handling a background message: ${message.messageId}");
+    // debugPrint("Got a background message");
+    // debugPrint("Handling a background message: ${message.messageId}");
   }
 
   static void registerNotification(BuildContext context) async {
@@ -106,7 +106,7 @@ class CoreServices {
             );
           });
         } else {
-          debugPrint('User declined or has not accepted permission');
+          // debugPrint('User declined or has not accepted permission');
         }
       }
     });
@@ -174,6 +174,7 @@ class CoreServices {
     };
 
     var body = json.encode(data);
+    // debugPrint("promotionalItems body $body");
     try {
       http.Response response = await http
           .post(

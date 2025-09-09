@@ -15,7 +15,7 @@ class ChapaScreen extends StatefulWidget {
     required this.phone,
     required this.traceNo,
     required this.orderPaymentId,
-    this.title = "Chapa Payment Gateway",
+    this.title = "Chapa Payment",
     this.isAbroad = false,
   });
   final String url;
@@ -54,9 +54,12 @@ class _ChapaScreenState extends State<ChapaScreen> {
   void _initiateUrl() async {
     var data = await initiateUrl();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Invoice initiated successfully. Loading...", false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "Invoice initiated successfully. Loading...",
+        error: false,
+        duration: 6,
+      );
       setState(() {
         initUrl = data['data']['data']['checkout_url'];
       });
@@ -65,36 +68,42 @@ class _ChapaScreenState extends State<ChapaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _loading
-        ? Scaffold(
-            appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.title,
+          style: TextStyle(color: kBlackColor),
+        ),
+      ),
+      body: _loading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitWave(
+                    color: kSecondaryColor,
+                    size: getProportionateScreenWidth(kDefaultPadding * 2),
+                  ),
+                  SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding)),
+                  Text(
+                    "Connecting to Chapa...",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: kBlackColor.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
               ),
-            ),
-            body: Center(
-              child: SpinKitWave(
-                color: kSecondaryColor,
-                size: getProportionateScreenWidth(kDefaultPadding),
-              ),
-            ),
-          )
-        : Scaffold(
-            appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
-            ),
-            body: InAppWebView(
+            )
+          : InAppWebView(
               initialSettings: settings,
               initialUrlRequest: URLRequest(url: WebUri(initUrl)),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
             ),
-          );
+    );
   }
 
   Future<dynamic> initiateUrl() async {
@@ -143,10 +152,11 @@ class _ChapaScreenState extends State<ChapaScreen> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage(
-            "Something went wrong. Please check your internet connection!",
-            true),
+
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

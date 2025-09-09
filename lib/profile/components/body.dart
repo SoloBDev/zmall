@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/borsa/borsa_screen.dart';
 import 'package:zmall/core_services.dart';
 // import 'package:zmall/favorites/favorites_screen.dart';
@@ -74,8 +76,11 @@ class _BodyState extends State<ProfileScreen> {
           userData = usrData;
           if (userData['user'] != null &&
               !userData['user']['is_phone_number_verified']) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                Service.showMessage("Please verify your phone number!", true));
+            Service.showMessage(
+              context: context,
+              title: "Please verify your phone number!",
+              error: true,
+            );
           }
         });
         Service.save('user', userData);
@@ -121,13 +126,12 @@ class _BodyState extends State<ProfileScreen> {
       await Service.remove('images');
       await Service.remove('p_items');
       await Service.remove('s_items');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          "You have successfully logged out!",
-          style: TextStyle(color: kBlackColor),
-        ),
-        backgroundColor: kPrimaryColor,
-      ));
+
+      Service.showMessage(
+        error: false,
+        context: context,
+        title: "You have successfully logged out!",
+      );
       Navigator.pushReplacementNamed(context, LoginScreen.routeName);
     } else {
       if (responseData['error_code'] != null &&
@@ -138,10 +142,11 @@ class _BodyState extends State<ProfileScreen> {
       setState(() {
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("${errorCodes['${responseData['error_code']}']}"),
-        backgroundColor: kSecondaryColor,
-      ));
+      Service.showMessage(
+        error: true,
+        context: context,
+        title: "${errorCodes['${responseData['error_code']}']}",
+      );
     }
   }
 
@@ -155,8 +160,11 @@ class _BodyState extends State<ProfileScreen> {
     if (deleteUserResponse != null) {
       if (json.decode(deleteUserResponse.body) != null &&
           json.decode(deleteUserResponse.body)['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("User account successfully deleted.", true));
+        Service.showMessage(
+          context: context,
+          title: "User account successfully deleted.",
+          error: true,
+        );
         await Service.saveBool('logged', false);
         await Service.remove('user');
         await Service.remove('cart');
@@ -165,8 +173,11 @@ class _BodyState extends State<ProfileScreen> {
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          errorCodes['${responseData['error_code']}'], true));
+      Service.showMessage(
+        context: context,
+        title: errorCodes['${responseData['error_code']}'],
+        error: true,
+      );
     }
     setState(() {
       isLoading = false;
@@ -177,242 +188,295 @@ class _BodyState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      // backgroundColor: userData == null ? kPrimaryColor : kWhiteColor,
-      backgroundColor: kPrimaryColor,
-      // appBar: AppBar(
-      //   elevation: 0,
-      //   surfaceTintColor: kPrimaryColor,
-      //   actions: [
-      //     TextButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(
-      //               builder: (context) => EditProfile(
-      //                 userData: userData,
-      //               ),
-      //             ),
-      //           ).then((value) => getUser());
-      //         },
-      //         child: Text(
-      //           "Edit",
-      //           style: textTheme.titleMedium!.copyWith(
-      //               color: kSecondaryColor, fontWeight: FontWeight.bold),
-      //         ))
-      //   ],
-      //   title: Text("My ${Provider.of<ZLanguage>(context).profilePage}"),
-      // ),
-      body: userData != null
-          ? SafeArea(
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                    decoration: BoxDecoration(color: kPrimaryColor),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "My ${Provider.of<ZLanguage>(context).profilePage}",
-                          style: Theme.of(context)
-                              .primaryTextTheme
-                              .titleLarge!
-                              .copyWith(
-                                  color: kBlackColor,
-                                  fontWeight: FontWeight.bold),
-                        ),
-
-                        //  textTheme.headlineSmall
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditProfile(
-                                  userData: userData,
+        // backgroundColor: userData == null ? kPrimaryColor : kWhiteColor,
+        backgroundColor: kPrimaryColor,
+        // appBar: AppBar(
+        //   elevation: 0,
+        //   surfaceTintColor: kPrimaryColor,
+        //   actions: [
+        //     TextButton(
+        //         onPressed: () {
+        //           Navigator.push(
+        //             context,
+        //             MaterialPageRoute(
+        //               builder: (context) => EditProfile(
+        //                 userData: userData,
+        //               ),
+        //             ),
+        //           ).then((value) => getUser());
+        //         },
+        //         child: Text(
+        //           "Edit",
+        //           style: textTheme.titleMedium!.copyWith(
+        //               color: kSecondaryColor, fontWeight: FontWeight.bold),
+        //         ))
+        //   ],
+        //   title: Text("My ${Provider.of<ZLanguage>(context).profilePage}"),
+        // ),
+        body:
+            // userData != null ?
+            SafeArea(
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                decoration: BoxDecoration(color: kPrimaryColor),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "My ${Provider.of<ZLanguage>(context).profilePage}",
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .titleLarge!
+                          .copyWith(
+                              color: kBlackColor, fontWeight: FontWeight.bold),
+                    ),
+                    InkWell(
+                      onTap: userData != null
+                          ? () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfile(
+                                    userData: userData,
+                                  ),
                                 ),
-                              ),
-                            ).then((value) => getUser());
-                          },
-                          child: Text(
-                            "Edit",
-                            style: textTheme.titleMedium!.copyWith(
-                                color: kSecondaryColor,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        )
-                      ],
+                              ).then((value) => getUser());
+                            }
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LoginScreen(
+                                    firstRoute: false,
+                                  ),
+                                ),
+                              ).then((value) => getUser());
+                            },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: kDefaultPadding / 1.5,
+                            vertical: kDefaultPadding / 3),
+                        decoration: BoxDecoration(
+                            color: kWhiteColor,
+                            border: Border.all(color: kWhiteColor),
+                            // kBlackColor.withValues(alpha: 0.08)),
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding / 2)),
+                        child: Row(
+                          spacing: kDefaultPadding / 3,
+                          children: [
+                            Text(
+                              userData != null
+                                  ? Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .edit
+                                  : Provider.of<ZLanguage>(context,
+                                          listen: false)
+                                      .login,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Icon(
+                              size: 20,
+                              color: kBlackColor,
+                              userData != null
+                                  ? HeroiconsOutline.pencilSquare
+                                  : HeroiconsOutline.arrowLeftEndOnRectangle,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  /////user info section///
-                  Stack(children: [
-                    ImageContainer(
-                        width: 100,
-                        height: 100,
-                        url:
-                            "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${userData['user']['image_url']}"),
-                    if (userData['user'] != null &&
-                        userData['user']['is_phone_number_verified'])
-                      Positioned(
-                        right: 2,
-                        bottom: 4,
-                        child: Container(
-                          padding: EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: kPrimaryColor,
-                              border: BoxBorder.all(color: kWhiteColor)),
-                          child: Icon(
-                            Icons.verified_outlined,
-                            color: kSecondaryColor,
-                            size: getProportionateScreenWidth(kDefaultPadding),
-                          ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                      bottom: getProportionateScreenHeight(kDefaultPadding)),
+                  child: Column(
+                    children: [
+                      /////user info section///
+                      SizedBox(
+                        width: getProportionateScreenWidth(80),
+                        height: getProportionateScreenHeight(80),
+                        child: Stack(
+                          children: [
+                            ImageContainer(
+                                width: getProportionateScreenWidth(100),
+                                height: getProportionateScreenHeight(100),
+                                shape: BoxShape.circle,
+                                url: userData == null
+                                    ? ''
+                                    : "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${userData['user']['image_url']}"),
+                            if (userData != null &&
+                                userData['user'] != null &&
+                                userData['user']['is_phone_number_verified'])
+                              Positioned(
+                                right: 4,
+                                bottom: 4,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: kWhiteColor,
+                                  ),
+                                  child: Icon(
+                                    HeroiconsSolid.checkBadge,
+                                    color: kSecondaryColor,
+                                    size: getProportionateScreenHeight(17),
+                                  ),
+                                ),
+                              )
+                          ],
                         ),
-                      )
-                  ]),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  Text(
-                    "${userData['user']['first_name']} ${userData['user']['last_name']} ",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    height: kDefaultPadding,
-                  ),
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      Text(
+                        userData == null
+                            ? "Guest User"
+                            : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      if (userData != null)
+                        SizedBox(
+                          height: kDefaultPadding,
+                        ),
 
-                  ///user contact section
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                    child: Row(
-                      spacing: kDefaultPadding,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FlippableCircleIcon(
-                          radius: 20,
-                          frontColor: kGreenColor,
-                          icon: HeroiconsSolid.phone,
-                          label:
-                              "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                        ),
-                        FlippableCircleIcon(
-                          radius: 20,
-                          icon: HeroiconsSolid.envelope,
-                          label: "${userData['user']['email']}",
-                        ),
-                        FlippableCircleIcon(
-                          radius: 20,
-                          frontColor: kSecondaryColor.withValues(alpha: 0.8),
-                          icon: HeroiconsSolid.mapPin,
-                          label: userData['user']['address'] ?? "Addis Ababa",
-                        ),
-                      ],
-                    ),
-                  ),
+                      /////
 
-                  SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding)),
-                  //user status section
-                  userInfo(),
-                  // SizedBox(
-                  //     height:
-                  //         getProportionateScreenHeight(kDefaultPadding / 2)),
+                      /////user info section///
 
-                  /////
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        /////user info section///
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding,
-                              vertical: kDefaultPadding / 2),
-                          child: Column(
-                            spacing: kDefaultPadding / 2,
+                      ///user contact section
+                      if (userData != null)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding:
+                              EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                          child: Row(
+                            spacing: kDefaultPadding,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              LinearPercentIndicator(
-                                animation: true,
-                                lineHeight: getProportionateScreenHeight(
-                                    kDefaultPadding * 0.9),
-                                barRadius: Radius.circular(
-                                  getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
-                                backgroundColor: kWhiteColor,
-                                progressColor: kSecondaryColor,
-                                leading: Text(
-                                  "${quotient}0",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                trailing: Text(
-                                  "${quotient + 1}0",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                percent: (remainder / 10),
+                              FlippableCircleIcon(
+                                radius: 20,
+                                frontColor: kGreenColor,
+                                icon: HeroiconsSolid.phone,
+                                label:
+                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
                               ),
-                              Text(
-                                isRewarded
-                                    ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                    : (10 - remainder) != 1
-                                        ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                        : Provider.of<ZLanguage>(context,
-                                                listen: true)
-                                            .nextOrderCashback,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.black),
+                              FlippableCircleIcon(
+                                radius: 20,
+                                icon: HeroiconsSolid.envelope,
+                                label: "${userData['user']['email']}",
+                              ),
+                              FlippableCircleIcon(
+                                radius: 20,
+                                frontColor:
+                                    kSecondaryColor.withValues(alpha: 0.8),
+                                icon: HeroiconsSolid.mapPin,
+                                label: userData['user']['address'] ??
+                                    "Addis Ababa",
                               ),
                             ],
                           ),
                         ),
 
-                        //phone verification dection
-                        if (userData['user'] != null &&
-                            !userData['user']['is_phone_number_verified'])
-                          _verifyPhoneWidget(textTheme: textTheme),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 8)),
-
-                        ///////actions section
-                        Divider(
-                          thickness: 2,
-                          height: kDefaultPadding / 2,
-                          color: kWhiteColor,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 4)),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // SizedBox(
+                      //     height: getProportionateScreenHeight(kDefaultPadding)),
+                      // //user status section
+                      // userInfo(),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 2)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: kDefaultPadding,
+                            vertical: kDefaultPadding / 2),
+                        child: Column(
+                          spacing: kDefaultPadding / 2,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: kDefaultPadding,
-                                  vertical: kDefaultPadding / 2),
-                              child: Text(
-                                "Actions",
-                                style: textTheme.titleMedium!
-                                    .copyWith(fontWeight: FontWeight.bold),
+                            userInfo(),
+                            LinearPercentIndicator(
+                              animation: true,
+                              lineHeight: getProportionateScreenHeight(
+                                  kDefaultPadding * 0.9),
+                              barRadius: Radius.circular(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
                               ),
+                              backgroundColor: kWhiteColor,
+                              progressColor: kSecondaryColor,
+                              leading: Text(
+                                userData != null ? "${quotient}0" : "00",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: Text(
+                                userData != null ? "${quotient + 1}0" : "10",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              percent:
+                                  userData != null ? (remainder / 10) : 0.1,
                             ),
+                            Text(
+                              userData == null
+                                  // ? "Log in now and enjoy delivery cashbacks!"
+                                  ? "Log in for your chance to win delivery cashbacks on lucky orders!"
+                                  : isRewarded
+                                      ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                      : (10 - remainder) != 1
+                                          ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                          : Provider.of<ZLanguage>(context,
+                                                  listen: true)
+                                              .nextOrderCashback,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      //phone verification dection
+                      if (userData != null &&
+                          userData['user'] != null &&
+                          !userData['user']['is_phone_number_verified'])
+                        _verifyPhoneWidget(textTheme: textTheme),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 8)),
+
+                      ///////actions section
+                      Divider(
+                        thickness: 2,
+                        height: kDefaultPadding / 2,
+                        color: kWhiteColor,
+                      ),
+                      SizedBox(
+                          height: getProportionateScreenHeight(
+                              kDefaultPadding / 4)),
+
+                      if (userData != null)
+                        _userActionCard(
+                          textTheme: textTheme,
+                          title: "Actions",
+                          children: [
                             ProfileListTile(
+                              borderColor: kWhiteColor,
                               icon: Icon(
                                 HeroiconsOutline.wallet,
                               ),
                               title:
                                   Provider.of<ZLanguage>(context, listen: false)
                                       .wallet,
-                              press: () {
+                              onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -422,18 +486,19 @@ class _BodyState extends State<ProfileScreen> {
                                 ).then((value) => getUser());
                               },
                             ),
-                            Divider(
-                              height: 2,
-                              color: kWhiteColor,
-                            ),
+                            // Divider(
+                            //   height: 2,
+                            //   color: kWhiteColor,
+                            // ),
                             ProfileListTile(
+                              borderColor: kWhiteColor,
                               icon: Icon(
                                 HeroiconsOutline.share,
                               ),
                               title:
                                   Provider.of<ZLanguage>(context, listen: false)
                                       .referralCode,
-                              press: () {
+                              onTap: () {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -442,18 +507,19 @@ class _BodyState extends State<ProfileScreen> {
                                                 ['referral_code'])));
                               },
                             ),
-                            Divider(
-                              height: 2,
-                              color: kWhiteColor,
-                            ),
+                            // Divider(
+                            //   height: 2,
+                            //   color: kWhiteColor,
+                            // ),
                             ProfileListTile(
+                              borderColor: kWhiteColor,
                               icon: Icon(
                                 HeroiconsOutline.questionMarkCircle,
                               ),
                               title:
                                   Provider.of<ZLanguage>(context, listen: false)
                                       .help,
-                              press: () {
+                              onTap: () {
                                 Navigator.pushNamed(
                                     context, HelpScreen.routeName);
                               },
@@ -461,75 +527,70 @@ class _BodyState extends State<ProfileScreen> {
                           ],
                         ),
 
-                        // ProfileListTile(
-                        //   icon: Icon(
-                        //     Icons.credit_card,
-                        //     color: kSecondaryColor,
-                        //   ),
-                        //   title: Provider.of<ZLanguage>(context, listen: false).ettaCard,
-                        //   press: () {
-                        //     Navigator.of(context).push(MaterialPageRoute(builder: (context){
-                        //       return LoyaltyCardScreen();
-                        //     }));
-                        //   },
-                        // ),
-                        // SizedBox(height: 1),
-                        // ProfileListTile(
-                        //   icon: Icon(
-                        //     Icons.language,
-                        //     color: kSecondaryColor,
-                        //   ),
-                        //   title: Provider.of<ZLanguage>(context, listen: false)
-                        //       .language,
-                        //   press: () {
-                        //     Navigator.pushNamed(context, SubscribeScreen.routeName);
-                        //   },
-                        // ),
+                      // ProfileListTile(
+                      //   icon: Icon(
+                      //     Icons.credit_card,
+                      //     color: kSecondaryColor,
+                      //   ),
+                      //   title: Provider.of<ZLanguage>(context, listen: false).ettaCard,
+                      //   press: () {
+                      //     Navigator.of(context).push(MaterialPageRoute(builder: (context){
+                      //       return LoyaltyCardScreen();
+                      //     }));
+                      //   },
+                      // ),
+                      // SizedBox(height: 1),
+                      // ProfileListTile(
+                      //   icon: Icon(
+                      //     Icons.language,
+                      //     color: kSecondaryColor,
+                      //   ),
+                      //   title: Provider.of<ZLanguage>(context, listen: false)
+                      //       .language,
+                      //   press: () {
+                      //     Navigator.pushNamed(context, SubscribeScreen.routeName);
+                      //   },
+                      // ),
+                      if (userData != null)
                         Divider(
                           thickness: 2,
                           height: kDefaultPadding / 2,
                           color: kWhiteColor,
                         ),
+
+                      if (userData != null)
                         Padding(
                           padding:
                               const EdgeInsets.only(top: kDefaultPadding / 2),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: _userActionCard(
+                            title: "Security",
+                            textTheme: textTheme,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: kDefaultPadding),
-                                child: Text(
-                                  "Security",
-                                  style: textTheme.titleMedium!
-                                      .copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ),
                               ProfileListTile(
+                                showTrailing: false,
+                                borderColor: kWhiteColor,
                                 icon: Icon(
                                   HeroiconsOutline.arrowLeftStartOnRectangle,
                                 ),
                                 title: Provider.of<ZLanguage>(context,
                                         listen: false)
                                     .logout,
-                                press: () {
+                                onTap: () {
                                   setState(() {
                                     isLoading = true;
                                   });
                                   _showDialog();
                                 },
                               ),
-                              Divider(
-                                height: 2,
-                                color: kWhiteColor,
-                              ),
                               ProfileListTile(
+                                showTrailing: false,
+                                borderColor: kWhiteColor,
                                 titleColor: kSecondaryColor,
                                 icon: Icon(
                                   HeroiconsOutline.trash,
                                 ),
                                 title: "Delete Account?",
-                                press: () {
+                                onTap: () {
                                   showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
@@ -576,118 +637,345 @@ class _BodyState extends State<ProfileScreen> {
                             ],
                           ),
                         ),
+                      if (userData == null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding,
+                              vertical: kDefaultPadding),
+                          child: Column(
+                            spacing: kDefaultPadding,
+                            children: [
+                              // ProfileListTile(
+                              //     borderColor: kWhiteColor,
+                              //     showTrailing: false,
+                              //     icon: Icon(
+                              //       HeroiconsOutline.arrowLeftEndOnRectangle,
+                              //     ),
+                              //     title: Provider.of<ZLanguage>(context,
+                              //             listen: false)
+                              //         .login,
+                              //     onTap: () {
+                              //       Navigator.push(
+                              //         context,
+                              //         MaterialPageRoute(
+                              //           builder: (context) => LoginScreen(
+                              //             firstRoute: false,
+                              //           ),
+                              //         ),
+                              //       ).then((value) => getUser());
+                              //     }),
+                              // Divider(
+                              //   thickness: 2,
+                              //   height: kDefaultPadding / 2,
+                              //   color: kWhiteColor,
+                              // ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: kDefaultPadding,
+                                    vertical: kDefaultPadding / 2),
+                                decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                    border: Border.all(color: kWhiteColor),
+                                    borderRadius:
+                                        BorderRadius.circular(kDefaultPadding)),
+                                child: Column(
+                                  spacing: kDefaultPadding / 4,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Support",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _actionCards(
+                                          onTap: () {
+                                            launchUrl(Uri(
+                                                scheme: 'tel',
+                                                path: '+251967575757'));
+                                          },
+                                          icon: HeroiconsOutline.phone,
+                                          title: "Call Now",
+                                        ),
+                                        _actionCards(
+                                          onTap: () {
+                                            launchUrl(Uri(
+                                                scheme: 'mailto',
+                                                path: "info@zmallshop.com"));
+                                            // launch("mailto:info@zmallshop.com");
+                                          },
+                                          icon: HeroiconsOutline.envelope,
+                                          title: "E-Mail",
+                                        ),
+                                        _actionCards(
+                                          onTap: () {
+                                            // launch("tel:+2518707");
+                                            launchUrl(Uri(
+                                                scheme: 'tel',
+                                                path: '+2518707'));
+                                          },
+                                          icon: Icons.support_agent,
+                                          title: "Call HOTLINE",
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // ProfileListTile(
+                              //   borderColor: kWhiteColor,
+                              //   icon: Icon(
+                              //     HeroiconsOutline.questionMarkCircle,
+                              //   ),
+                              //   title:
+                              //       Provider.of<ZLanguage>(context, listen: false)
+                              //           .help,
+                              //   onTap: () {
+                              //     Navigator.pushNamed(
+                              //         context, HelpScreen.routeName);
+                              //   },
+                              // ),
 
-                        // TextButton(
-                        //     onPressed: () {
-                        //       showDialog(
-                        //         context: context,
-                        //         builder: (BuildContext context) {
-                        //           return AlertDialog(
-                        //             backgroundColor: kPrimaryColor,
-                        //             title: Text("Delete User Account"),
-                        //             content: Text(
-                        //                 "Are you sure you want to delete your account? Once you delete your account you will be able to reactivate within 30 days."),
-                        //             actions: <Widget>[
-                        //               TextButton(
-                        //                 child: Text(
-                        //                   "Think about it!",
-                        //                   style: TextStyle(
-                        //                     color: kSecondaryColor,
-                        //                     fontWeight: FontWeight.bold,
-                        //                   ),
-                        //                 ),
-                        //                 onPressed: () {
-                        //                   Navigator.of(context).pop();
-                        //                   setState(() {
-                        //                     isLoading = false;
-                        //                   });
-                        //                 },
-                        //               ),
-                        //               TextButton(
-                        //                 child: Text(
-                        //                   Provider.of<ZLanguage>(context,
-                        //                           listen: false)
-                        //                       .submit,
-                        //                   style: TextStyle(color: kBlackColor),
-                        //                 ),
-                        //                 onPressed: () {
-                        //                   Navigator.of(context).pop();
-                        //                   deleteUser();
-                        //                 },
-                        //               ),
-                        //             ],
-                        //           );
-                        //         },
-                        //       );
-                        //     },
-                        //     child: Text(
-                        //       "Delete Account?",
-                        //       style:
-                        //           Theme.of(context).textTheme.bodySmall?.copyWith(
-                        //                 color: kGreyColor,
-                        //               ),
-                        //     )),
-                        // isLoading
-                        //     ? SpinKitWave(
-                        //         color: kSecondaryColor,
-                        //         size: getProportionateScreenWidth(kDefaultPadding),
-                        //       )
-                        //     : Padding(
-                        //         padding: EdgeInsets.symmetric(
-                        //             horizontal: getProportionateScreenWidth(
-                        //                 kDefaultPadding)),
-                        //         child: CustomButton(
-                        //           title:
-                        //               Provider.of<ZLanguage>(context, listen: false)
-                        //                   .logout,
-                        //           press: () {
-                        //             setState(() {
-                        //               isLoading = true;
-                        //             });
-                        //             _showDialog();
-                        //           },
-                        //           color: kSecondaryColor,
-                        //         ),
-                        //       ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Spacer(flex: 1),
-                Container(
-                  child: Center(
-                    child: Image.asset('images/login.png'),
-                  ),
-                ),
-                Spacer(flex: 1),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                  child: CustomButton(
-                    title: "LOGIN",
-                    press: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginScreen(
-                            firstRoute: false,
+                              ProfileListTile(
+                                borderColor: kWhiteColor,
+                                icon: Icon(
+                                  // Icons.lock,
+                                  HeroiconsOutline.shieldCheck,
+                                  // color: kSecondaryColor,
+                                ),
+                                title: "Privacy Policy",
+                                onTap: () {
+                                  Service.launchInWebViewOrVC(
+                                      "https://app.zmallshop.com/terms.html");
+                                },
+                              ),
+
+                              ProfileListTile(
+                                borderColor: kWhiteColor,
+                                icon: Icon(
+                                  HeroiconsOutline.clipboardDocumentCheck,
+                                  // Icons.assignment,
+                                  // color: kSecondaryColor,
+                                ),
+                                title: "Terms and Conditions",
+                                onTap: () {
+                                  Service.launchInWebViewOrVC(
+                                      "https://app.zmallshop.com/terms.html");
+                                },
+                              ),
+                              ProfileListTile(
+                                borderColor: kWhiteColor,
+                                icon: Icon(
+                                  FontAwesomeIcons.instagram,
+                                  // color: kSecondaryColor,
+                                ),
+                                title: "Follow us on Instagram",
+                                onTap: () {
+                                  Service.launchInWebViewOrVC(
+                                      "https://www.instagram.com/zmall_delivery/?hl=en");
+                                },
+                              ),
+                              ProfileListTile(
+                                borderColor: kWhiteColor,
+                                icon: Icon(
+                                  Icons.facebook_outlined,
+                                  // color: kSecondaryColor,
+                                ),
+                                title: "Follow us on Facebook",
+                                onTap: () {
+                                  Service.launchInWebViewOrVC(
+                                      "https://www.facebook.com/Zmallshop/");
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                      ).then((value) => getUser());
-                    },
-                    color: kSecondaryColor,
+
+                      // TextButton(
+                      //     onPressed: () {
+                      //       showDialog(
+                      //         context: context,
+                      //         builder: (BuildContext context) {
+                      //           return AlertDialog(
+                      //             backgroundColor: kPrimaryColor,
+                      //             title: Text("Delete User Account"),
+                      //             content: Text(
+                      //                 "Are you sure you want to delete your account? Once you delete your account you will be able to reactivate within 30 days."),
+                      //             actions: <Widget>[
+                      //               TextButton(
+                      //                 child: Text(
+                      //                   "Think about it!",
+                      //                   style: TextStyle(
+                      //                     color: kSecondaryColor,
+                      //                     fontWeight: FontWeight.bold,
+                      //                   ),
+                      //                 ),
+                      //                 onPressed: () {
+                      //                   Navigator.of(context).pop();
+                      //                   setState(() {
+                      //                     isLoading = false;
+                      //                   });
+                      //                 },
+                      //               ),
+                      //               TextButton(
+                      //                 child: Text(
+                      //                   Provider.of<ZLanguage>(context,
+                      //                           listen: false)
+                      //                       .submit,
+                      //                   style: TextStyle(color: kBlackColor),
+                      //                 ),
+                      //                 onPressed: () {
+                      //                   Navigator.of(context).pop();
+                      //                   deleteUser();
+                      //                 },
+                      //               ),
+                      //             ],
+                      //           );
+                      //         },
+                      //       );
+                      //     },
+                      //     child: Text(
+                      //       "Delete Account?",
+                      //       style:
+                      //           Theme.of(context).textTheme.bodySmall?.copyWith(
+                      //                 color: kGreyColor,
+                      //               ),
+                      //     )),
+                      // isLoading
+                      //     ? SpinKitWave(
+                      //         color: kSecondaryColor,
+                      //         size: getProportionateScreenWidth(kDefaultPadding),
+                      //       )
+                      //     : Padding(
+                      //         padding: EdgeInsets.symmetric(
+                      //             horizontal: getProportionateScreenWidth(
+                      //                 kDefaultPadding)),
+                      //         child: CustomButton(
+                      //           title:
+                      //               Provider.of<ZLanguage>(context, listen: false)
+                      //                   .logout,
+                      //           press: () {
+                      //             setState(() {
+                      //               isLoading = true;
+                      //             });
+                      //             _showDialog();
+                      //           },
+                      //           color: kSecondaryColor,
+                      //         ),
+                      //       ),
+                    ],
                   ),
                 ),
-                Spacer(
-                  flex: 2,
-                ),
-              ],
+              ),
+            ],
+          ),
+        )
+        // : Column(
+        //     mainAxisAlignment: MainAxisAlignment.center,
+        //     children: [
+        //       Spacer(flex: 1),
+        //       Container(
+        //         child: Center(
+        //           child: Image.asset('images/login.png'),
+        //         ),
+        //       ),
+        //       Spacer(flex: 1),
+        //       Padding(
+        //         padding: EdgeInsets.symmetric(
+        //             horizontal: getProportionateScreenWidth(kDefaultPadding)),
+        //         child: CustomButton(
+        //           title: "LOGIN",
+        //           press: () {
+        //             Navigator.push(
+        //               context,
+        //               MaterialPageRoute(
+        //                 builder: (context) => LoginScreen(
+        //                   firstRoute: false,
+        //                 ),
+        //               ),
+        //             ).then((value) => getUser());
+        //           },
+        //           color: kSecondaryColor,
+        //         ),
+        //       ),
+        //       Spacer(
+        //         flex: 2,
+        //       ),
+        //     ],
+        //   ),
+        );
+  }
+
+  Widget _actionCards({
+    required String title,
+    required IconData icon,
+    void Function()? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(kDefaultPadding / 1.6),
+      splashColor: kBlackColor.withValues(alpha: 0.1),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: kDefaultPadding, vertical: kDefaultPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: kWhiteColor,
+                //  kBlackColor.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: kBlackColor,
+              ),
             ),
+            SizedBox(height: 4),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: kBlackColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _userActionCard({
+    required String title,
+    required TextTheme textTheme,
+    required List<Widget> children,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+      child: Column(
+        spacing: kDefaultPadding,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Column(spacing: kDefaultPadding / 2, children: children),
+        ],
+      ),
     );
   }
 
@@ -730,7 +1018,9 @@ class _BodyState extends State<ProfileScreen> {
               children: [
                 userInfoCard(
                   icon: HeroiconsOutline.wallet,
-                  value: "${userData['user']['wallet'].toStringAsFixed(2)}",
+                  value: userData != null
+                      ? "${userData['user']['wallet'].toStringAsFixed(2)}"
+                      : "0.0",
                   title: Provider.of<ZLanguage>(context, listen: false).wallet,
                 ),
                 Container(
@@ -740,7 +1030,9 @@ class _BodyState extends State<ProfileScreen> {
                 ),
                 userInfoCard(
                     icon: HeroiconsOutline.share,
-                    value: userData['user']['order_count'].toString(),
+                    value: userData != null
+                        ? userData['user']['order_count'].toString()
+                        : "0",
                     title:
                         "${Provider.of<ZLanguage>(context, listen: false).total} Orders"),
                 Container(
@@ -750,7 +1042,9 @@ class _BodyState extends State<ProfileScreen> {
                 ),
                 userInfoCard(
                   icon: HeroiconsOutline.share,
-                  value: "${userData['user']['total_referrals']}",
+                  value: userData != null
+                      ? "${userData['user']['total_referrals']}"
+                      : "0",
                   title:
                       Provider.of<ZLanguage>(context, listen: false).referral,
                 ),
@@ -854,11 +1148,11 @@ class _BodyState extends State<ProfileScreen> {
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          style: IconButton.styleFrom(
-                              backgroundColor: kWhiteColor),
+                          // style: IconButton.styleFrom(
+                          //     backgroundColor: kWhiteColor),
                           icon: Icon(
                             Icons.cancel_outlined,
-                            color: kSecondaryColor,
+                            color: kBlackColor,
                           ))
                     ],
                   ),
@@ -883,58 +1177,59 @@ class _BodyState extends State<ProfileScreen> {
                       labelText: "OTP",
                       hintText: "Enter the OTP",
                     ),
-                  isLoading
-                      ? SpinKitThreeInOut()
-                      : !isOTPSend
-                          ? CustomButton(
-                              title: "Submit",
-                              color: kSecondaryColor,
-                              press: () async {
-                                generateOtpAtLogin(
-                                        phone: userData['user']['phone'],
-                                        password: _password)
-                                    .then((result) {
-                                  if (result == true) {
-                                    setState(() {
-                                      isOTPSend = true;
-                                    });
+                  !isOTPSend
+                      ? CustomButton(
+                          // isLoading: isLoading,
+                          title: "Submit",
+                          color: kSecondaryColor,
+                          press: () async {
+                            generateOtpAtLogin(
+                                    phone: userData['user']['phone'],
+                                    password: _password)
+                                .then((result) {
+                              if (result == true) {
+                                setState(() {
+                                  isOTPSend = true;
+                                });
+                              }
+                            });
+
+                            // },
+                            // );
+                          })
+                      : CustomButton(
+                          title: "Verify",
+                          // isLoading: isLoading,
+                          color: kSecondaryColor,
+                          press: () async {
+                            _verifyOTP(
+                              code: verificationCode,
+                              phone: userData['user']['phone'],
+                            ).then((result) async {
+                              if (result == true) {
+                                await verificationPhone().then((value) {
+                                  if (value != null && value['success']) {
+                                    getUser();
+                                    Navigator.of(context).pop();
+                                    MyApp.analytics
+                                        .logEvent(name: 'user_phone_verified');
+                                    Service.showMessage(
+                                        context: context,
+                                        title:
+                                            "Phone number verified successfully.",
+                                        error: false);
                                   }
                                 });
 
-                                // },
-                                // );
-                              })
-                          : CustomButton(
-                              title: "Verify",
-                              color: kSecondaryColor,
-                              press: () async {
-                                _verifyOTP(
-                                  code: verificationCode,
-                                  phone: userData['user']['phone'],
-                                ).then((result) async {
-                                  if (result == true) {
-                                    await verificationPhone().then((value) {
-                                      if (value != null && value['success']) {
-                                        getUser();
-                                        Navigator.of(context).pop();
-                                        MyApp.analytics.logEvent(
-                                            name: 'user_phone_verified');
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage(
-                                                "Phone number verified successfully.",
-                                                false));
-                                      }
-                                    });
-
-                                    ////
-                                  } else {
-                                    setState(() {
-                                      errorMessage =
-                                          "Your OTP is incorrect or no longer valid. Please try again.";
-                                    });
-                                  }
+                                ////
+                              } else {
+                                setState(() {
+                                  errorMessage =
+                                      "Your OTP is incorrect or no longer valid. Please try again.";
                                 });
-                              }),
+                              }
+                            });
+                          }),
                   errorMessage.isNotEmpty ? Text(errorMessage) : Container(),
                 ],
               )),
@@ -951,7 +1246,211 @@ class _BodyState extends State<ProfileScreen> {
     // ),
     // );
   }
+  // Profile header with avatar and verification badge
+  // Row(
+  //   spacing: kDefaultPadding,
+  //   crossAxisAlignment: CrossAxisAlignment.start,
+  //   children: [
+  //     // Profile avatar with status indicator
+  //     Stack(
+  //       children: [
+  //         Container(
+  //           width: screenHeight * 0.08,
+  //           height: screenHeight * 0.08,
+  //           decoration: BoxDecoration(
+  //             shape: BoxShape.circle,
+  //             border:
+  //                 Border.all(color: kWhiteColor, width: 3),
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.black.withValues(alpha: 0.2),
+  //                 blurRadius: 10,
+  //                 spreadRadius: 2,
+  //               ),
+  //             ],
+  //           ),
+  //           child: ClipRRect(
+  //             borderRadius: BorderRadius.circular(100),
+  //             child: Container(
+  //               color: kWhiteColor,
+  //               child: Icon(
+  //                 HeroiconsSolid.user,
+  //                 size: 50,
+  //                 color: kSecondaryColor,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //         if (pData != null && pData['is_approved'])
+  //           Positioned(
+  //             bottom: 0,
+  //             right: 0,
+  //             child: Container(
+  //               padding: EdgeInsets.all(2),
+  //               decoration: BoxDecoration(
+  //                 color: kWhiteColor,
+  //                 shape: BoxShape.circle,
+  //                 border: Border.all(
+  //                     color: kWhiteColor, width: 2),
+  //               ),
+  //               child: Icon(
+  //                 HeroiconsSolid.checkBadge,
+  //                 size: 16,
+  //                 color: kGreenColor,
+  //               ),
+  //             ),
+  //           ),
+  //       ],
+  //     ),
 
+  //     // User info
+  //     Expanded(
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           if (pData != null)
+  //             Row(
+  //               mainAxisAlignment:
+  //                   MainAxisAlignment.spaceBetween,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Expanded(
+  //                   child: Text(
+  //                     "${pData['first_name']} ${pData['last_name']}",
+  //                     style: TextStyle(
+  //                       fontSize: 22,
+  //                       fontWeight: FontWeight.bold,
+  //                       color: kPrimaryColor,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 Row(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: [
+  //                     Container(
+  //                       width: 10,
+  //                       height: 10,
+  //                       decoration: BoxDecoration(
+  //                         shape: BoxShape.circle,
+  //                         color: pData['is_online']
+  //                             ? kGreenColor
+  //                             : kErrorColor,
+  //                       ),
+  //                     ),
+  //                     SizedBox(width: 8),
+  //                     Text(
+  //                       pData['is_online']
+  //                           ? "Online"
+  //                           : "Offline",
+  //                       style: TextStyle(
+  //                         color: pData['is_online']
+  //                             ? kGreenColor
+  //                             : kErrorColor,
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //           //phoen section
+  //           SizedBox(height: 8),
+  //           if (pData != null)
+  //             Row(
+  //               children: [
+  //                 Icon(HeroiconsOutline.phone,
+  //                     size: 16,
+  //                     color:
+  //                         kWhiteColor.withValues(alpha: 0.8)),
+  //                 SizedBox(width: 4),
+  //                 Expanded(
+  //                   child: Text(
+  //                     "+251 ${pData['phone']}",
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: kPrimaryColor.withValues(
+  //                           alpha: 0.8),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           SizedBox(height: 5),
+  //           //email section
+  //           if (pData != null)
+  //             Row(
+  //               children: [
+  //                 Icon(HeroiconsOutline.envelope,
+  //                     size: 16,
+  //                     color:
+  //                         kWhiteColor.withValues(alpha: 0.8)),
+  //                 SizedBox(width: 4),
+  //                 Expanded(
+  //                   child: Text(
+  //                     pData['email'],
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: kPrimaryColor.withValues(
+  //                           alpha: 0.8),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           SizedBox(
+  //             height: kDefaultPadding / 2,
+  //           ),
+  //           // Edit profile button
+  //           InkWell(
+  //             onTap: () {
+  //               Navigator.push(
+  //                 context,
+  //                 MaterialPageRoute(
+  //                     builder: (context) => const Profile()),
+  //               );
+  //             },
+  //             child: Container(
+  //               padding: EdgeInsets.symmetric(
+  //                   horizontal: 16, vertical: 8),
+  //               decoration: BoxDecoration(
+  //                 borderRadius: BorderRadius.circular(12),
+  //                 color: kWhiteColor,
+  //                 boxShadow: [
+  //                   BoxShadow(
+  //                     color:
+  //                         Colors.black.withValues(alpha: 0.1),
+  //                     blurRadius: 5,
+  //                     offset: Offset(0, 2),
+  //                   ),
+  //                 ],
+  //               ),
+  //               child: Row(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Icon(
+  //                     HeroiconsOutline.pencilSquare,
+  //                     size: 20,
+  //                     color: kSecondaryColor,
+  //                   ),
+  //                   SizedBox(width: kDefaultPadding),
+  //                   Text(
+  //                     "Edit Profile",
+  //                     style: TextStyle(
+  //                       color: kSecondaryColor,
+  //                       fontSize: 16,
+  //                       fontWeight: FontWeight.bold,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   ],
+  // ),
   void _showDialog() {
     showDialog(
       context: context,
@@ -1023,13 +1522,19 @@ class _BodyState extends State<ProfileScreen> {
       var newResponse = json.decode(response.body);
       if (newResponse != null &&
           (newResponse["success"] != null && newResponse["success"])) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("OTP code sent to your phone...", false));
+        Service.showMessage(
+          context: context,
+          title: "OTP code sent to your phone...",
+          error: false,
+        );
         return true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-            "Failed to send an OTP. Please check your phone and password and try again.",
-            true));
+        Service.showMessage(
+          context: context,
+          error: true,
+          title:
+              "Failed to send an OTP. Please check your phone and password and try again.",
+        );
         return false;
       }
     } catch (e) {
@@ -1084,12 +1589,10 @@ class _BodyState extends State<ProfileScreen> {
     } catch (e) {
       // print(e);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              "Something went wrong! Please check your internet connection!"),
-          backgroundColor: kSecondaryColor,
-        ),
+      Service.showMessage(
+        error: true,
+        context: context,
+        title: "Something went wrong! Please check your internet connection!",
       );
       return false;
     } finally {
@@ -1121,8 +1624,8 @@ class _BodyState extends State<ProfileScreen> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
           setState(() {
             isLoading = false;
           });
@@ -1158,8 +1661,8 @@ class _BodyState extends State<ProfileScreen> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage("Network error", true));
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
           setState(() {
             isLoading = false;
           });

@@ -32,11 +32,13 @@ class CustomBanner extends StatelessWidget {
         // padding:EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
         decoration: BoxDecoration(
           color: kPrimaryColor,
-          border: Border.all(color: kGreyColor.withValues(alpha: 0.1)),
+          border: Border.all(color: kWhiteColor
+              // kGreyColor.withValues(alpha: 0.1)
+              ),
           borderRadius: BorderRadius.circular(
             getProportionateScreenWidth(kDefaultPadding),
           ),
-          boxShadow: [boxShadow],
+          // boxShadow: [boxShadow],
           // image: DecorationImage(
           //   image: isNetworkImage
           //       ? NetworkImage(imageUrl) as ImageProvider<Object>

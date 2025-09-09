@@ -96,12 +96,12 @@ class _GlobalProfileState extends State<GlobalProfile> {
                     await Service.save('abroad_user', abroadData!.toJson());
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage(
+                        Service.showMessage1(
                             "User data successfully updated", false));
                   } else {
                     // Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage(
+                        Service.showMessage1(
                             "Please add the necessary information", true));
                   }
                   // Service.launchInWebViewOrVC("http://onelink.to/vnchst");
@@ -204,7 +204,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                 color: kSecondaryColor,
               ),
               title: "My Orders",
-              press: () {
+              onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return GlobalOrder();
                 }));
@@ -219,7 +219,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                 color: kSecondaryColor,
               ),
               title: "Help",
-              press: () {
+              onTap: () {
                 Navigator.pushNamed(context, HelpScreen.routeName);
               },
             ),
@@ -232,7 +232,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                 color: kSecondaryColor,
               ),
               title: "Follow us on Instagram",
-              press: () {
+              onTap: () {
                 Service.launchInWebViewOrVC(
                     "https://www.instagram.com/zmall_delivery/?hl=en");
               },
@@ -246,7 +246,7 @@ class _GlobalProfileState extends State<GlobalProfile> {
                 color: kSecondaryColor,
               ),
               title: "Follow us on Facebook",
-              press: () {
+              onTap: () {
                 Service.launchInWebViewOrVC(
                     "https://www.facebook.com/Zmallshop/");
               },

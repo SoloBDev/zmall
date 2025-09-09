@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -21,6 +22,7 @@ import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/section_title.dart';
+import 'package:zmall/widgets/shimmer_widget.dart';
 
 import 'components/location_container.dart';
 
@@ -43,10 +45,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   AliExpressCart? aliexpressCart;
   var userData;
   bool _loading = false;
-  bool currSelected = false;
+  bool currSelected =
+      true; //  bool currSelected = false; //for defalut current location
   bool selfPickup = false;
-  int selected = -2;
-  int selectedVehicle = -1;
+  int selected = -1; //  int selected = -2; //for defalut current location
+
+  //for defalut the first vehicle
+  int selectedVehicle = 0; // int selectedVehicle = -1;
   String vehicleId = "";
   var responseData;
   var vehicleList;
@@ -56,31 +61,63 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUser();
     // getLocation();
     getLocations();
   }
 
+  // void _requestLocationPermission() async {
+  //   _permissionStatus = await FlLocation.checkLocationPermission();
+  //   if (_permissionStatus == LocationPermission.always ||
+  //       _permissionStatus == LocationPermission.whileInUse) {
+  //     // Location permission granted, continue with location-related tasks
+  //     getLocation();
+  //   } else {
+  //     // Handle permission denial
+  //     setState(() {
+  //       currSelected = false;
+  //       selfPickup = false;
+  //       selected = -2;
+  //     });
+  //     Service.showMessage(
+  //         context: context,
+  //         title:
+  //             "Location permission denied. Please enable location service from your phone's settings and try again",
+  //         error: true,
+  //         duration: 6);
+  //     FlLocation.requestLocationPermission();
+  //   }
+  // }
   void _requestLocationPermission() async {
-    _permissionStatus = await FlLocation.checkLocationPermission();
-    if (_permissionStatus == LocationPermission.always ||
-        _permissionStatus == LocationPermission.whileInUse) {
-      // Location permission granted, continue with location-related tasks
-      getLocation();
+    // First, check if location services are enabled
+    bool isLocationServicesEnabled = await FlLocation.isLocationServicesEnabled;
+    // debugPrint(  ">\n>>\n>\n>\n>>>>>>\n is location on in permition $isLocationServicesEnabled");
+
+    if (isLocationServicesEnabled == true) {
+      // Then check permissions
+      _permissionStatus = await FlLocation.checkLocationPermission();
+      if (_permissionStatus == LocationPermission.always ||
+          _permissionStatus == LocationPermission.whileInUse) {
+        // Location permission granted, continue with location-related tasks
+        getLocation();
+      } else {
+        // Handle permission denial
+
+        Service.showMessage(
+            context: context,
+            title: "Location permission denied. Please enable and try again",
+            error: true);
+        FlLocation.requestLocationPermission();
+      }
     } else {
-      // Handle permission denial
-      setState(() {
-        currSelected = false;
-        selfPickup = false;
-        selected = -2;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable location service from your phone's settings and try again",
-          true,
-          duration: 6));
-      FlLocation.requestLocationPermission();
+      // Location services are disabled
+      Service.showMessage(
+          context: context,
+          title:
+              "Location services are turned off. Please enable them in your device settings.",
+          error: true);
+      return;
     }
   }
 
@@ -93,13 +130,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       setState(() {
         _loading = false;
         vehicleList = data;
+        // debugPrint("vehicleList $vehicleList");
       });
     } else {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -137,8 +177,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+            context: context,
+            title: "Location service disabled. Please enable and try again",
+            error: true,
+          );
         }
       }
     } else {
@@ -291,8 +334,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     var data = await clearCart(cartId);
     if (data != null && data['success']) {
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -322,8 +367,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         );
       }));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "${errorCodes['${responseData['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${responseData['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (responseData['error_code'] != null &&
           responseData['error_code'] == 999) {
@@ -334,61 +381,127 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     }
   }
 
+  Widget wrapperContainer({
+    required List<Widget> children,
+    double? height,
+    double spacing = kDefaultPadding / 3,
+    double? horizontalMargin,
+  }) {
+    return Container(
+        height: height,
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(
+          horizontal:
+              horizontalMargin ?? getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+        ),
+        child: Column(
+          spacing: getProportionateScreenHeight(spacing),
+          children: children,
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kWhiteColor,
+      backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
           Provider.of<ZLanguage>(context, listen: false).deliveryDetails,
           style: TextStyle(color: kBlackColor),
         ),
-        elevation: 1.0,
+        // elevation: 1.0,
       ),
       body: SafeArea(
         child: ModalProgressHUD(
           color: kPrimaryColor,
           progressIndicator: linearProgressIndicator,
-          inAsyncCall: _loading,
+          inAsyncCall: _loading &&
+              (vehicleList != null && vehicleList['vehicles'].isNotEmpty),
           child: SingleChildScrollView(
             child: userData != null
-                ? Padding(
-                    padding: EdgeInsets.only(
-                        left: getProportionateScreenWidth(kDefaultPadding),
-                        right: getProportionateScreenWidth(kDefaultPadding),
-                        top: getProportionateScreenHeight(kDefaultPadding / 2),
-                        bottom: getProportionateScreenHeight(kDefaultPadding)),
-                    child: Column(
-                      children: [
-                        SectionTitle(
-                          sectionTitle:
-                              Provider.of<ZLanguage>(context, listen: false)
-                                  .deliveryDetails,
-                          subTitle: " ",
-                          press: () {},
-                        ),
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                            borderRadius: BorderRadius.circular(
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                            ),
-                            boxShadow: [boxShadow],
+                ? Column(
+                    children: [
+                      wrapperContainer(
+                        children: [
+                          SectionTitle(
+                            sectionTitle:
+                                Provider.of<ZLanguage>(context, listen: false)
+                                    .deliveryDetails,
+                            subTitle: " ",
+                            onSubTitlePress: () {},
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left:
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              border: Border.all(
+                                  color: kGreyColor.withValues(alpha: 0.1)),
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                    kDefaultPadding / 2),
+                              ),
+                              // boxShadow: [boxShadow],
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
                                   getProportionateScreenWidth(kDefaultPadding),
-                              right:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              top:
-                                  getProportionateScreenHeight(kDefaultPadding),
+                            ).copyWith(
                               bottom: getProportionateScreenHeight(
                                   kDefaultPadding / 2),
                             ),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: getProportionateScreenHeight(
+                                  kDefaultPadding / 8),
                               children: [
+                                /////header/////
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Deliver to",
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: kBlackColor,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    TextButton(
+                                      style: ButtonStyle(
+                                        padding: WidgetStateProperty.all(
+                                          EdgeInsets.only(right: 0, top: 0),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        _showDeliverToBottomSheet();
+                                      },
+                                      child: Row(
+                                        spacing: getProportionateScreenWidth(
+                                            kDefaultPadding / 4),
+                                        children: [
+                                          Text(
+                                            Provider.of<ZLanguage>(context,
+                                                    listen: false)
+                                                .changeDetails,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: kSecondaryColor,
+                                                fontWeight: FontWeight.bold
+                                                // decoration:TextDecoration.underline,
+                                                ),
+                                          ),
+                                          Icon(
+                                            size: 16,
+                                            HeroiconsOutline.pencilSquare,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                ///user detail//
                                 DetailsRow(
                                   title: Provider.of<ZLanguage>(context,
                                           listen: false)
@@ -398,14 +511,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       ? receiverName
                                       : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 0.5,
-                                  color: kGreyColor.withValues(alpha: 0.4),
-                                ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
+
                                 DetailsRow(
                                   title: Provider.of<ZLanguage>(context,
                                           listen: false)
@@ -415,312 +521,220 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} $receiverPhone"
                                       : "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 0.5,
-                                  color: kGreyColor.withValues(alpha: 0.4),
-                                ),
-                                SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
-                                TextButton(
-                                  // style: ButtonStyle(
-                                  //   backgroundColor:
-                                  //       MaterialStateProperty.all(kSecondaryColor),
-                                  // ),
-                                  onPressed: () {
-                                    showModalBottomSheet<void>(
-                                      isScrollControlled: true,
-                                      context: context,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(30.0),
-                                            topRight: Radius.circular(30.0)),
-                                      ),
-                                      builder: (BuildContext context) {
-                                        return Padding(
-                                          padding:
-                                              MediaQuery.of(context).viewInsets,
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal:
-                                                    getProportionateScreenWidth(
-                                                        kDefaultPadding),
-                                                vertical:
-                                                    getProportionateScreenHeight(
-                                                        kDefaultPadding * 2)),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              spacing:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding * 1.5),
-                                              children: <Widget>[
-                                                Text(
-                                                  Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .orderForOthers,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleLarge
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                ),
-                                                CustomTextField(
-                                                    style: TextStyle(
-                                                        color: kBlackColor),
-                                                    keyboardType:
-                                                        TextInputType.text,
-                                                    onChanged: (val) {
-                                                      receiverName = val;
-                                                    },
-                                                    labelText:
-                                                        Provider.of<ZLanguage>(
-                                                                context)
-                                                            .name,
-                                                    hintText:
-                                                        Provider.of<ZLanguage>(
-                                                                context)
-                                                            .name
-                                                    // decoration: textFieldInputDecorator
-                                                    //     .copyWith(
-                                                    //         labelText: Provider.of<
-                                                    //                     ZLanguage>(
-                                                    //                 context)
-                                                    //             .name),
-                                                    ),
-                                                CustomTextField(
-                                                  style: TextStyle(
-                                                      color: kBlackColor),
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  maxLength: 9,
-                                                  onChanged: (val) {
-                                                    receiverPhone = val;
-                                                  },
-                                                  // decoration:
-                                                  //     textFieldInputDecorator
-                                                  //         .copyWith(
-                                                  //   labelText:
-                                                  //       Provider.of<ZLanguage>(
-                                                  //               context,
-                                                  //               listen: false)
-                                                  //           .receiverPhone,
-                                                  //   helperText:
-                                                  //       Provider.of<ZLanguage>(
-                                                  //               context,
-                                                  //               listen: false)
-                                                  //           .startPhone,)
-                                                  labelText:
-                                                      Provider.of<ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .receiverPhone,
-                                                  hintText:
-                                                      Provider.of<ZLanguage>(
-                                                              context,
-                                                              listen: false)
-                                                          .startPhone,
-                                                  prefix: Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
-                                                ),
-                                                SizedBox(
-                                                    height:
-                                                        getProportionateScreenHeight(
-                                                            kDefaultPadding)),
-                                                CustomButton(
-                                                  title: Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .submit,
-                                                  color: kSecondaryColor,
-                                                  press: () async {
-                                                    if (receiverPhone
-                                                                .isNotEmpty &&
-                                                            receiverName
-                                                                .isNotEmpty &&
-                                                            receiverPhone
-                                                                    .substring(
-                                                                        0, 1) ==
-                                                                9.toString() ||
-                                                        receiverPhone.length ==
-                                                            9) {
-                                                      setState(() {
-                                                        isForOthers = true;
-                                                        cart!.userName =
-                                                            receiverName;
-                                                        cart!.phone =
-                                                            receiverPhone;
-                                                        cart!.isForOthers =
-                                                            isForOthers;
-                                                      });
-
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    }
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ).whenComplete(() {
-                                      setState(() {});
-                                    });
-                                  },
-                                  child: Text(
-                                    Provider.of<ZLanguage>(context,
-                                            listen: false)
-                                        .changeDetails,
-                                    style: TextStyle(
-                                      color: kBlackColor,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ),
-                        ),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        SectionTitle(
-                          sectionTitle:
-                              Provider.of<ZLanguage>(context, listen: false)
-                                  .deliveryOptions,
-                          subTitle: " ",
-                          press: () {},
-                        ),
-                        Container(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding * 9),
-                          child: vehicleList != null
-                              ? ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) =>
-                                      VehicleContainer(
-                                        selected: selectedVehicle == index,
-                                        imageUrl: selectedVehicle == index
-                                            ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
-                                            : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
-                                        category: vehicleList['vehicles'][index]
-                                            ['vehicle_name'],
-                                        press: () {
-                                          setState(() {
-                                            if (selectedVehicle != index) {
-                                              selectedVehicle = index;
-                                              vehicleId =
-                                                  vehicleList['vehicles'][index]
-                                                      ['_id'];
-                                            } else {
-                                              selectedVehicle = -1;
-                                            }
-                                          });
-                                        },
-                                      ),
-                                  separatorBuilder:
-                                      (BuildContext context, int index) =>
-                                          SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding / 2),
-                                          ),
-                                  itemCount: vehicleList['vehicles'] != null
-                                      ? vehicleList['vehicles'].length
-                                      : 0)
-                              : SpinKitPianoWave(
-                                  color: kSecondaryColor,
+                        ],
+                      ),
+                      selfPickup
+                          ? SizedBox.shrink()
+                          : wrapperContainer(
+                              horizontalMargin: 0,
+                              height: getProportionateScreenWidth(
+                                  MediaQuery.sizeOf(context).height * 0.14),
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: getProportionateScreenWidth(
+                                        kDefaultPadding),
+                                  ),
+                                  child: SectionTitle(
+                                    sectionTitle: Provider.of<ZLanguage>(
+                                            context,
+                                            listen: false)
+                                        .deliveryOptions,
+                                    subTitle: " ",
+                                    onSubTitlePress: () {},
+                                  ),
                                 ),
-                        ),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        SectionTitle(
-                          sectionTitle:
-                              Provider.of<ZLanguage>(context, listen: false)
-                                  .locations,
-                          subTitle:
-                              Provider.of<ZLanguage>(context, listen: false)
-                                  .addLocation,
-                          press: () {
-                            addLocation();
-                          },
-                        ),
-                        LocationContainer(
-                          title: Provider.of<ZLanguage>(context, listen: false)
-                              .currentLocation,
-                          note: Provider.of<ZLanguage>(context, listen: false)
-                              .useCurrentLocation,
-                          isSelected: currSelected,
-                          press: () async {
-                            setState(() {
-                              currSelected = true;
-                              selfPickup = false;
-                              selected = -1;
-                            });
-                            _doLocationTask();
+                                vehicleList != null &&
+                                        vehicleList['vehicles'].isNotEmpty
+                                    ? Expanded(
+                                        child: ListView.separated(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding)),
+                                          separatorBuilder:
+                                              (BuildContext context,
+                                                      int index) =>
+                                                  SizedBox(
+                                            width: getProportionateScreenWidth(
+                                                kDefaultPadding),
+                                          ),
+                                          itemCount: vehicleList['vehicles'] !=
+                                                  null
+                                              ? vehicleList['vehicles'].length
+                                              : 0,
+                                          itemBuilder: (context, index) =>
+                                              VehicleContainer(
+                                            selected: selectedVehicle == index,
+                                            imageUrl: selectedVehicle == index
+                                                ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
+                                                : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
+                                            category: vehicleList['vehicles']
+                                                [index]['vehicle_name'],
+                                            press: () {
+                                              setState(() {
+                                                if (selectedVehicle != index) {
+                                                  selectedVehicle = index;
+                                                  vehicleId =
+                                                      vehicleList['vehicles']
+                                                          [index]['_id'];
+                                                } else {
+                                                  selectedVehicle = -1;
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      )
+                                    : Expanded(
+                                        child: ListView.separated(
+                                          itemCount: 3,
+                                          scrollDirection: Axis.horizontal,
+                                          separatorBuilder: (context, index) =>
+                                              SizedBox(
+                                            width: getProportionateScreenWidth(
+                                                kDefaultPadding * 2.5),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  getProportionateScreenWidth(
+                                                      kDefaultPadding)),
+                                          itemBuilder: (context, index) {
+                                            return Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              spacing:
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding / 3),
+                                              children: [
+                                                SearchButtonShimmer(
+                                                  width:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding * 5),
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                          kDefaultPadding * 4),
+                                                  borderRadius: kDefaultPadding,
+                                                ),
+                                                SearchButtonShimmer(
+                                                  height: 20,
+                                                  borderRadius: 5,
+                                                  width:
+                                                      getProportionateScreenWidth(
+                                                          kDefaultPadding * 5),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ),
+                              ],
+                            ),
+                      // : Container(
+                      //     height: getProportionateScreenWidth(
+                      //         MediaQuery.sizeOf(context).height * 0.14),
+                      //     child: Expanded(
+                      //       child:
+                      //   ),
+                      // SpinKitPianoWave(
+                      //     color: kSecondaryColor,
+                      //   ),
 
-                            // getLocation();
-                          },
-                        ),
-                        cart!.isLaundryService
-                            ? Container()
-                            : SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 2)),
-                        cart!.isLaundryService
-                            ? Container()
-                            : LocationContainer(
-                                title: Provider.of<ZLanguage>(context,
-                                        listen: false)
-                                    .selfPickup,
-                                note: Provider.of<ZLanguage>(context,
-                                        listen: false)
-                                    .userPickup,
-                                isSelected: selfPickup,
-                                press: () async {
-                                  setState(() {
-                                    currSelected = false;
-                                    selfPickup = true;
-                                    selected = -1;
-                                    selectedVehicle = 0;
-                                    destinationAddress = DestinationAddress(
-                                        name: Provider.of<ZLanguage>(context,
-                                                listen: false)
-                                            .userPickup,
-                                        long: Provider.of<ZMetaData>(context,
-                                                listen: false)
-                                            .longitude,
-                                        lat: Provider.of<ZMetaData>(context,
-                                                listen: false)
-                                            .latitude);
-                                  });
+                      // SizedBox(
+                      //     height:
+                      //         getProportionateScreenHeight(kDefaultPadding)),
 
-                                  // getLocation();
-                                },
-                              ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                        ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: deliveryLocation != null &&
-                                  deliveryLocation!.list!.length > 0
-                              ? deliveryLocation!.list!.length
-                              : 0,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: getProportionateScreenHeight(
-                                    kDefaultPadding / 2),
-                              ),
-                              child: Dismissible(
+                      wrapperContainer(
+                        spacing: kDefaultPadding / 2,
+                        children: [
+                          SectionTitle(
+                            icon: HeroiconsOutline.plusCircle,
+                            subTitleColor: kSecondaryColor,
+                            subTitleFontWeight: FontWeight.bold,
+                            sectionTitle:
+                                Provider.of<ZLanguage>(context, listen: false)
+                                    .locations,
+                            subTitle:
+                                Provider.of<ZLanguage>(context, listen: false)
+                                    .addLocation,
+                            onSubTitlePress: () {
+                              addLocation();
+                            },
+                          ),
+
+                          //////////current loaction//////////////
+                          LocationContainer(
+                            title:
+                                Provider.of<ZLanguage>(context, listen: false)
+                                    .currentLocation,
+                            note: Provider.of<ZLanguage>(context, listen: false)
+                                .useCurrentLocation,
+                            isSelected: currSelected,
+                            press: () async {
+                              setState(() {
+                                currSelected = true;
+                                selfPickup = false;
+                                selected = -1;
+                              });
+                              _doLocationTask();
+
+                              // getLocation();
+                            },
+                          ),
+                          // SizedBox(
+                          //   height: kDefaultPadding / 2,
+                          // ),
+                          //////////self pickup loaction//////////////
+                          if (!cart!.isLaundryService)
+                            LocationContainer(
+                              title:
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .selfPickup,
+                              note:
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .userPickup,
+                              isSelected: selfPickup,
+                              press: () async {
+                                setState(() {
+                                  currSelected = false;
+                                  selfPickup = true;
+                                  selected = -1;
+                                  selectedVehicle = 0;
+                                  destinationAddress = DestinationAddress(
+                                      name: Provider.of<ZLanguage>(context,
+                                              listen: false)
+                                          .userPickup,
+                                      long: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .longitude,
+                                      lat: Provider.of<ZMetaData>(context,
+                                              listen: false)
+                                          .latitude);
+                                });
+                                // getLocation();
+                              },
+                            ),
+                          // SizedBox(
+                          //   height: kDefaultPadding / 2,
+                          // ),
+                          ////////////////other locations//////////
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: deliveryLocation != null &&
+                                    deliveryLocation!.list!.length > 0
+                                ? deliveryLocation!.list!.length
+                                : 0,
+                            separatorBuilder: (context, index) => SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            itemBuilder: (context, index) {
+                              return Dismissible(
                                 background: Container(
                                   color: kSecondaryColor,
                                   child: Row(
@@ -769,148 +783,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   },
                                   isSelected: index == selected,
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                        CustomButton(
-                          title: Provider.of<ZLanguage>(context, listen: false)
-                              .cont,
-                          press: () async {
-                            if (selected != -2 && selectedVehicle != -1
-                                // deliveryLocation == null ||
-                                // deliveryLocation.list.length > selected
-                                ) {
-                              if (currSelected) {
-                                destinationAddress = DestinationAddress(
-                                    name: "Current location",
-                                    long: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .longitude,
-                                    lat: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .latitude);
-                              } else if (selfPickup) {
-                                destinationAddress = DestinationAddress(
-                                    name: "User Pickup",
-                                    long: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .longitude,
-                                    lat: Provider.of<ZMetaData>(context,
-                                            listen: false)
-                                        .latitude);
-                              }
-                              if (destinationAddress != null) {
-                                double storeToCustomerDistance =
-                                    calculateDistance(
-                                        cart!.storeLocation!.lat,
-                                        cart!.storeLocation!.long,
-                                        destinationAddress!.lat,
-                                        destinationAddress!.long);
-
-                                if (selectedVehicle != -1 &&
-                                    vehicleList['vehicles'][selectedVehicle]
-                                                ['vehicle_name']
-                                            .toString()
-                                            .toLowerCase() ==
-                                        "bicycle" &&
-                                    storeToCustomerDistance > 5 &&
-                                    !selfPickup) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage(
-                                          Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .farDeliveryLocation,
-                                          true,
-                                          duration: 5));
-                                } else {
-                                  setState(() {
-                                    cart!.destinationAddress =
-                                        destinationAddress;
-                                    Service.save('cart', cart);
-                                    _loading = true;
-                                  });
-                                  var categoriesResponse =
-                                      await CoreServices.getCategoryList(
-                                          longitude: destinationAddress!.long!,
-                                          latitude: destinationAddress!.lat!,
-                                          countryCode: Provider.of<ZMetaData>(
-                                                  context,
-                                                  listen: false)
-                                              .countryId!,
-                                          countryName: Provider.of<ZMetaData>(
-                                                  context,
-                                                  listen: false)
-                                              .country,
-                                          context: context);
-
-                                  if (categoriesResponse != null &&
-                                      categoriesResponse['success']) {
-                                    _addToCart();
-                                  } else {
-                                    if (categoriesResponse['error_code'] ==
-                                        999) {
-                                      await Service.saveBool('logged', false);
-                                      await Service.remove('user');
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(Service.showMessage(
-                                              "${errorCodes['${categoriesResponse['error_code']}']}",
-                                              true));
-                                      Navigator.pushReplacementNamed(
-                                          context, LoginScreen.routeName);
-                                    } else if (categoriesResponse[
-                                            'error_code'] ==
-                                        813) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(Service.showMessage(
-                                              "Destination address cannot be outside of Addis Ababa",
-                                              true,
-                                              duration: 4));
-                                      setState(() {
-                                        _loading = false;
-                                      });
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(Service.showMessage(
-                                              "${errorCodes['${categoriesResponse['error_code']}']}",
-                                              true));
-                                    }
-                                    setState(() {
-                                      _loading = false;
-                                    });
-                                  }
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please select a delivery address",
-                                        true,
-                                        duration: 4));
-                              }
-
-                              // _addToCart();
-                            } else {
-                              if (selectedVehicle == -1) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please select a delivery option", true,
-                                        duration: 4));
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please select a delivery address",
-                                        true,
-                                        duration: 4));
-                              }
-                            }
-                          },
-                          color: kSecondaryColor,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                      ],
-                    ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   )
                 : Container(
                     child: Center(
@@ -935,7 +813,249 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          width: double.infinity,
+          // height: kDefaultPadding * 4,
+          padding: EdgeInsets.symmetric(
+            vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+            horizontal: getProportionateScreenHeight(kDefaultPadding),
+          ),
+          decoration: BoxDecoration(
+              color: kPrimaryColor,
+              border: Border(top: BorderSide(color: kWhiteColor)),
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kDefaultPadding),
+                  topRight: Radius.circular(kDefaultPadding))),
+          child: CustomButton(
+            title: Provider.of<ZLanguage>(context, listen: false).cont,
+            press: () async {
+              if (selected != -2 && selectedVehicle != -1
+                  // deliveryLocation == null ||
+                  // deliveryLocation.list.length > selected
+                  ) {
+                if (currSelected) {
+                  destinationAddress = DestinationAddress(
+                      name: "Current location",
+                      long: Provider.of<ZMetaData>(context, listen: false)
+                          .longitude,
+                      lat: Provider.of<ZMetaData>(context, listen: false)
+                          .latitude);
+                } else if (selfPickup) {
+                  destinationAddress = DestinationAddress(
+                      name: "User Pickup",
+                      long: Provider.of<ZMetaData>(context, listen: false)
+                          .longitude,
+                      lat: Provider.of<ZMetaData>(context, listen: false)
+                          .latitude);
+                }
+                if (destinationAddress != null) {
+                  double storeToCustomerDistance = calculateDistance(
+                      cart!.storeLocation!.lat,
+                      cart!.storeLocation!.long,
+                      destinationAddress!.lat,
+                      destinationAddress!.long);
+
+                  if (selectedVehicle != -1 &&
+                      vehicleList['vehicles'][selectedVehicle]['vehicle_name']
+                              .toString()
+                              .toLowerCase() ==
+                          "bicycle" &&
+                      storeToCustomerDistance > 5 &&
+                      !selfPickup) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        Service.showMessage1(
+                            Provider.of<ZLanguage>(context, listen: false)
+                                .farDeliveryLocation,
+                            true,
+                            duration: 5));
+                  } else {
+                    setState(() {
+                      cart!.destinationAddress = destinationAddress;
+                      Service.save('cart', cart);
+                      _loading = true;
+                    });
+                    var categoriesResponse = await CoreServices.getCategoryList(
+                        longitude: destinationAddress!.long!,
+                        latitude: destinationAddress!.lat!,
+                        countryCode:
+                            Provider.of<ZMetaData>(context, listen: false)
+                                .countryId!,
+                        countryName:
+                            Provider.of<ZMetaData>(context, listen: false)
+                                .country,
+                        context: context);
+
+                    if (categoriesResponse != null &&
+                        categoriesResponse['success']) {
+                      _addToCart();
+                    } else {
+                      if (categoriesResponse['error_code'] == 999) {
+                        await Service.saveBool('logged', false);
+                        await Service.remove('user');
+
+                        Service.showMessage(
+                            context: context,
+                            title:
+                                "${errorCodes['${categoriesResponse['error_code']}']}",
+                            error: true);
+                        Navigator.pushReplacementNamed(
+                            context, LoginScreen.routeName);
+                      } else if (categoriesResponse['error_code'] == 813) {
+                        Service.showMessage(
+                            context: context,
+                            title:
+                                "Destination address cannot be outside of Addis Ababa",
+                            error: true,
+                            duration: 4);
+                        setState(() {
+                          _loading = false;
+                        });
+                      } else {
+                        Service.showMessage(
+                            context: context,
+                            title:
+                                "${errorCodes['${categoriesResponse['error_code']}']}",
+                            error: true);
+                      }
+                      setState(() {
+                        _loading = false;
+                      });
+                    }
+                  }
+                } else {
+                  Service.showMessage(
+                    context: context,
+                    title: "Please select a delivery address",
+                    error: true,
+                    duration: 4,
+                  );
+                }
+
+                // _addToCart();
+              } else {
+                if (selectedVehicle == -1) {
+                  Service.showMessage(
+                    context: context,
+                    title: "Please select a delivery option",
+                    error: true,
+                    duration: 4,
+                  );
+                } else if (selectedVehicle == -1) {
+                  Service.showMessage(
+                    context: context,
+                    title: "Please select a delivery address",
+                    error: true,
+                    duration: 4,
+                  );
+                }
+              }
+            },
+            color: kSecondaryColor,
+          ),
+        ),
+      ),
     );
+  }
+
+  void _showDeliverToBottomSheet() {
+    showModalBottomSheet<void>(
+        isScrollControlled: true,
+        context: context,
+        backgroundColor: kPrimaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(kDefaultPadding),
+              topRight: Radius.circular(kDefaultPadding)),
+        ),
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+              builder: (BuildContext sheetContext, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext)
+                    .viewInsets
+                    .bottom, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenHeight(kDefaultPadding)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: getProportionateScreenHeight(kDefaultPadding * 1.5),
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          Provider.of<ZLanguage>(context, listen: false)
+                              .orderForOthers,
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: Icon(HeroiconsOutline.xCircle),
+                          color: kSecondaryColor,
+                        )
+                      ],
+                    ),
+                    CustomTextField(
+                        style: TextStyle(color: kBlackColor),
+                        keyboardType: TextInputType.text,
+                        onChanged: (val) {
+                          receiverName = val;
+                        },
+                        labelText: Provider.of<ZLanguage>(context).name,
+                        hintText: "Reciver name"),
+                    CustomTextField(
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.number,
+                      maxLength: 9,
+                      onChanged: (val) {
+                        receiverPhone = val;
+                      },
+                      labelText: Provider.of<ZLanguage>(context, listen: false)
+                          .receiverPhone,
+                      hintText: Provider.of<ZLanguage>(context, listen: false)
+                          .startPhone,
+                      prefix: Text(
+                          "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
+                    ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    CustomButton(
+                      title:
+                          Provider.of<ZLanguage>(context, listen: false).submit,
+                      color: kSecondaryColor,
+                      press: () async {
+                        if (receiverPhone.isNotEmpty &&
+                                receiverName.isNotEmpty &&
+                                receiverPhone.substring(0, 1) == 9.toString() ||
+                            receiverPhone.length == 9) {
+                          setState(() {
+                            isForOthers = true;
+                            cart!.userName = receiverName;
+                            cart!.phone = receiverPhone;
+                            cart!.isForOthers = isForOthers;
+                          });
+
+                          Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        }).whenComplete(() {
+      setState(() {});
+    });
   }
 
   double calculateDistance(lat1, lon1, lat2, lon2) {
@@ -987,7 +1107,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
+          Service.showMessage1(
               "Something went wrong! Check your internet and try again", true,
               duration: 3),
         );
@@ -1044,7 +1164,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage(
+          Service.showMessage1(
               "Something went wrong! Check your internet and try again", true,
               duration: 3),
         );

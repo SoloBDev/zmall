@@ -7,20 +7,23 @@ import 'store_info.dart';
 
 class CustomListTile extends StatelessWidget {
   const CustomListTile({
-    Key? key,
+    super.key,
     required this.press,
     required this.store,
     required this.isOpen,
     this.isAbroad = false,
-  }) : super(key: key);
+    this.isFromPromotional,
+  });
 
   final store;
   final bool? isOpen;
   final VoidCallback? press;
   final bool isAbroad;
+  final bool? isFromPromotional;
 
   @override
   Widget build(BuildContext context) {
+    bool isStoreOpen = isOpen != null && isOpen == true;
     return InkWell(
       onTap: press,
       child: Container(
@@ -39,13 +42,13 @@ class CustomListTile extends StatelessWidget {
                   ImageContainer(
                     url:
                         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${store['image_url']}",
-                    // url: "http://159.65.147.111:8000/${store['image_url']}",
                   ),
                   SizedBox(width: kDefaultPadding * 1.3),
                   StoreInfo(
                     store: store,
-                    isOpen: isOpen!,
+                    isOpen: isStoreOpen,
                     isAbroad: isAbroad,
+                    isFromPromotional: isFromPromotional,
                   )
                 ],
               ),
@@ -104,7 +107,7 @@ class CustomListTile extends StatelessWidget {
 //             child: Row(
 //               children: [
 //                 ImageContainer(
-//                   url: "https://app.zmallapp.com/${store['image_url']}",
+//                   url: "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${store['image_url']}",
 //                   // url: "http://159.65.147.111:8000/${store['image_url']}",
 //                 ),
 //                 SizedBox(width: kDefaultPadding),
@@ -148,7 +151,9 @@ class FavoriteCustomListTile extends StatelessWidget {
             child: Column(
               children: [
                 FavoriteImageContainer(
-                  url: "https://app.zmallapp.com/${store['image_url']}",
+                  url:
+                      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${store['image_url']}",
+                  //  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${store['image_url']}",
                 ),
                 SizedBox(height: kDefaultPadding / 4),
                 FavoriteStoreInfo(

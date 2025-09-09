@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/orders/components/orders_history.dart';
-
 import 'components/body.dart';
 
 class OrdersScreen extends StatelessWidget {
@@ -17,16 +17,21 @@ class OrdersScreen extends StatelessWidget {
           ),
           elevation: 1.0,
           bottom: TabBar(
-            indicatorColor: kSecondaryColor,
             labelColor: kSecondaryColor,
+            indicatorColor: kSecondaryColor,
+            labelStyle: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(fontWeight: FontWeight.bold),
             unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
             unselectedLabelColor: kGreyColor,
+            indicatorAnimation: TabIndicatorAnimation.elastic,
             tabs: [
               Column(
                 children: [
                   Tab(
                     icon: Icon(
-                      Icons.delivery_dining,
+                      HeroiconsOutline.shoppingBag,
                     ),
                   ),
                   Text(
@@ -38,7 +43,7 @@ class OrdersScreen extends StatelessWidget {
                 children: [
                   Tab(
                     icon: Icon(
-                      Icons.history,
+                      HeroiconsOutline.clock,
                     ),
                   ),
                   Text(

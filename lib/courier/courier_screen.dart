@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/courier/components/locations_list.dart';
@@ -14,6 +15,8 @@ import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
 
 class CourierScreen extends StatefulWidget {
@@ -32,8 +35,11 @@ class CourierScreen extends StatefulWidget {
 }
 
 class _CourierScreenState extends State<CourierScreen> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
   final _dropOffController = TextEditingController();
+  final _senderNameController = TextEditingController();
+  final _senderPhoneController = TextEditingController();
   late double latitude, longitude;
   late double destLatitude, destLongitude;
   var userData;
@@ -53,6 +59,9 @@ class _CourierScreenState extends State<CourierScreen> {
             " " +
             userData['user']['last_name'];
         senderPhone = userData['user']['phone'];
+        // Set initial values to controllers
+        _senderNameController.text = senderUser;
+        _senderPhoneController.text = senderPhone;
       });
     }
   }
@@ -79,10 +88,20 @@ class _CourierScreenState extends State<CourierScreen> {
 //  }
 
   void _addCourierToCart() async {
+    // Use controller values, fallback to user data if empty
+    final finalSenderName = _senderNameController.text.isNotEmpty
+        ? _senderNameController.text
+        : (userData['user']['first_name'] +
+            " " +
+            userData['user']['last_name']);
+    final finalSenderPhone = _senderPhoneController.text.isNotEmpty
+        ? _senderPhoneController.text
+        : userData['user']['phone'];
+
     setState(() {
       _loading = true;
     });
-    var data = await addCourierToCart();
+    var data = await addCourierToCart(finalSenderName, finalSenderPhone);
     if (data != null && data['success']) {
       setState(() {
         _loading = false;
@@ -106,8 +125,10 @@ class _CourierScreenState extends State<CourierScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -124,11 +145,54 @@ class _CourierScreenState extends State<CourierScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    _dropOffController.dispose();
+    _senderNameController.dispose();
+    _senderPhoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
       child: Scaffold(
+        bottomNavigationBar: SafeArea(
+          minimum: EdgeInsets.only(
+              left: getProportionateScreenWidth(kDefaultPadding),
+              right: getProportionateScreenWidth(kDefaultPadding),
+              bottom: getProportionateScreenHeight(kDefaultPadding / 2)),
+          child: CustomButton(
+              title: "Continue",
+              press: () {
+                if (_formKey.currentState!.validate()) {
+                  // Also validate the pickup and dropoff addresses
+                  if (_controller.text.isEmpty) {
+                    Service.showMessage(
+                        context: context,
+                        title: "Please enter pickup address!",
+                        error: true);
+                    return;
+                  }
+                  if (_dropOffController.text.isEmpty) {
+                    Service.showMessage(
+                        context: context,
+                        title: "Please enter destination address!",
+                        error: true);
+                    return;
+                  }
+
+                  if (userData['user']['cart_id'] != null) {
+                    // debugPrint("Courier ready....");
+                  }
+
+                  _addCourierToCart();
+                }
+              },
+              color: kSecondaryColor),
+        ),
         appBar: AppBar(
             title: Text(
               "Courier",
@@ -136,529 +200,376 @@ class _CourierScreenState extends State<CourierScreen> {
             ),
             elevation: 0.0,
             backgroundColor: kSecondaryColor,
+            surfaceTintColor: kSecondaryColor,
             iconTheme: IconThemeData(color: kPrimaryColor)),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Container(
-                height: size.height * 0.22,
-                child: Stack(
-                  children: [
-                    Container(
-                      height: size.height * 0.22 -
-                          getProportionateScreenHeight(kDefaultPadding),
-                      padding: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding),
-                      ),
-                      decoration: BoxDecoration(
-                        color: kSecondaryColor,
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                          bottomLeft: Radius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "Courier Delivery",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              Spacer(),
-                              Icon(
-                                Icons.delivery_dining,
-                                color: kPrimaryColor,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 4),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(kDefaultPadding),
-                              ),
-                              // boxShadow: [kDefaultShadow],
-                            ),
-                            child: Center(
-                              child: TextField(
-                                controller: _controller,
-                                keyboardType: TextInputType.text,
-                                style: TextStyle(color: kBlackColor),
-                                readOnly: true,
-                                onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LocationsList(
-                                        title: "Pickup Address",
-                                      ),
-                                    ),
-                                  ).then((dynamic value) {
-                                    if (value != null) {
-                                      DestinationAddress address = value;
-                                      setState(() {
-                                        _controller.text = address.name!;
-                                        longitude = double.parse(
-                                            address.long!.toStringAsFixed(6));
-                                        latitude = double.parse(
-                                            address.lat!.toStringAsFixed(6));
-                                      });
-                                    }
-                                  });
-                                  //                                // generate a new token here
-                                  //                                final sessionToken = Uuid().v4();
-                                  //                                final Suggestion result = await showSearch(
-                                  //                                  context: context,
-                                  //                                  delegate: AddressSearch(sessionToken),
-                                  //                                );
-                                  //                                // This will change the text displayed in the TextField
-                                  //                                if (result != null) {
-                                  //                                  final placeDetails =
-                                  //                                      await PlaceApiProvider(sessionToken)
-                                  //                                          .getPlaceDetailFromId(result.placeId);
-                                  //                                  setState(() {
-                                  //                                    _controller.text = result.description;
-                                  //                                    longitude = placeDetails.longitude;
-                                  //                                    latitude = placeDetails.latitude;
-                                  ////                              _center = LatLng(latitude, longitude);
-                                  //                                  });
-                                  ////                            _mapController.move(_center, 15);
-                                  //                                }
-                                },
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.pin_drop,
-                                    color: kSecondaryColor,
-                                  ),
-                                  hintText: "Pick-up Address",
-                                  hintStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(color: kGreyColor),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding:
-                                      EdgeInsets.only(left: 8.0, top: 16.0),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding)),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 4),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(kDefaultPadding),
-                              ),
-                              // boxShadow: [kDefaultShadow],
-                            ),
-                            child: Center(
-                              child: TextField(
-                                controller: _dropOffController,
-                                keyboardType: TextInputType.text,
-                                style: TextStyle(color: kBlackColor),
-                                readOnly: true,
-                                onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LocationsList(
-                                        title: "Dropoff Address",
-                                      ),
-                                    ),
-                                  ).then((dynamic value) {
-                                    if (value != null) {
-                                      DestinationAddress address = value;
-                                      setState(() {
-                                        _dropOffController.text = address.name!;
-                                        destLatitude = double.parse(
-                                            address.lat!.toStringAsFixed(6));
-                                        destLongitude = double.parse(
-                                            address.long!.toStringAsFixed(6));
-                                      });
-                                    }
-                                  });
-                                  //                                // generate a new token here
-                                  //                                final sessionToken = Uuid().v4();
-                                  //                                final Suggestion result = await showSearch(
-                                  //                                  context: context,
-                                  //                                  delegate: AddressSearch(sessionToken),
-                                  //                                );
-                                  //                                // This will change the text displayed in the TextField
-                                  //                                if (result != null) {
-                                  //                                  final placeDetails =
-                                  //                                      await PlaceApiProvider(sessionToken)
-                                  //                                          .getPlaceDetailFromId(result.placeId);
-                                  //                                  setState(() {
-                                  //                                    _dropOffController.text =
-                                  //                                        result.description;
-                                  //                                    destLongitude = placeDetails.longitude;
-                                  //                                    destLatitude = placeDetails.latitude;
-                                  //                                  });
-                                  //                                }
-                                },
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.pin_drop_outlined,
-                                    color: kSecondaryColor,
-                                  ),
-                                  hintText: "Drop-off Address",
-                                  hintStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(color: kGreyColor),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding:
-                                      EdgeInsets.only(left: 8.0, top: 16.0),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+        body: ModalProgressHUD(
+          color: kPrimaryColor.withValues(alpha: 0.1),
+          inAsyncCall: _loading,
+          progressIndicator: LinearLoadingIndicator(),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Container(
+                  height: size.height * 0.22,
+                  child: Stack(
                     children: [
-                      SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        child: SectionTitle(
-                          sectionTitle: "Sender Information",
-                          subTitle: " ",
-                        ),
-                      ),
                       Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        padding: EdgeInsets.all(
-                          getProportionateScreenWidth(kDefaultPadding),
+                        height: size.height * 0.22 -
+                            getProportionateScreenHeight(kDefaultPadding),
+                        padding: EdgeInsets.symmetric(
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding),
                         ),
                         decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
+                          color: kSecondaryColor,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
+                            bottomLeft: Radius.circular(
+                              getProportionateScreenWidth(kDefaultPadding),
+                            ),
                           ),
-                          // boxShadow: [kDefaultShadow],
                         ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            TextField(
-                              cursorColor: kSecondaryColor,
-                              style: TextStyle(color: kBlackColor),
-                              keyboardType: TextInputType.text,
-                              onChanged: (val) {
-                                senderUser = val;
-                              },
-                              decoration: InputDecoration(
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: kSecondaryColor),
-                                ),
-                                hintText: senderPhone.isNotEmpty
-                                    ? senderUser
-                                    : "Sender Name",
-                              ),
-                            ),
                             SizedBox(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4),
+                                  kDefaultPadding / 2),
                             ),
-                            TextField(
-                              cursorColor: kSecondaryColor,
-                              style: TextStyle(color: kBlackColor),
-                              keyboardType: TextInputType.number,
-                              maxLength: 9,
-                              onChanged: (val) {
-                                senderPhone = val;
-                              },
-                              decoration: InputDecoration(
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: kSecondaryColor),
+                            Row(
+                              children: [
+                                Text(
+                                  "Courier Delivery",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        color: kPrimaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
-                                labelText: senderPhone.isNotEmpty
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).areaCode}$senderPhone"
-                                    : "Sender Phone",
-                                labelStyle: TextStyle(
-                                  color: kGreyColor,
+                                Spacer(),
+                                Icon(
+                                  Icons.delivery_dining,
+                                  color: kPrimaryColor,
                                 ),
-                                prefix: Text(
-                                  "${Provider.of<ZMetaData>(context, listen: false).areaCode}",
-                                  style: TextStyle(color: kGreyColor),
-                                ),
-                              ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        child: SectionTitle(
-                          sectionTitle: "Receiver Information",
-                          subTitle: " ",
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        padding: EdgeInsets.all(
-                          getProportionateScreenWidth(kDefaultPadding),
-                        ),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(kDefaultPadding),
-                          ),
-                          // boxShadow: [kDefaultShadow],
-                        ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
                         child: Column(
                           children: [
-                            TextField(
-                              cursorColor: kSecondaryColor,
-                              style: TextStyle(color: kBlackColor),
-                              keyboardType: TextInputType.number,
-                              maxLength: 9,
-                              onChanged: (val) {
-                                receiverPhone = val;
-                              },
-                              decoration: InputDecoration(
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: kSecondaryColor),
-                                ),
-                                labelText: "Receiver Phone",
-                                labelStyle: TextStyle(
-                                  color: kGreyColor,
-                                ),
-                                prefix: Text(
-                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
-                              ),
-                            ),
-                            SizedBox(
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4),
-                            ),
-                            TextField(
-                              cursorColor: kSecondaryColor,
-                              style: TextStyle(color: kBlackColor),
-                              keyboardType: TextInputType.text,
-                              onChanged: (val) {
-                                receiverName = val;
-                              },
-                              decoration: InputDecoration(
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: kSecondaryColor),
+                                  kDefaultPadding * 4),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
+                                ),
+                                // boxShadow: [kDefaultShadow],
+                              ),
+                              child: Center(
+                                child: TextField(
+                                  controller: _controller,
+                                  keyboardType: TextInputType.text,
+                                  style: TextStyle(color: kBlackColor),
+                                  readOnly: true,
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LocationsList(
+                                          title: "Pickup Address",
+                                        ),
+                                      ),
+                                    ).then((dynamic value) {
+                                      if (value != null) {
+                                        DestinationAddress address = value;
+                                        setState(() {
+                                          _controller.text = address.name!;
+                                          longitude = double.parse(
+                                              address.long!.toStringAsFixed(6));
+                                          latitude = double.parse(
+                                              address.lat!.toStringAsFixed(6));
+                                        });
+                                      }
+                                    });
+                                    //                                // generate a new token here
+                                    //                                final sessionToken = Uuid().v4();
+                                    //                                final Suggestion result = await showSearch(
+                                    //                                  context: context,
+                                    //                                  delegate: AddressSearch(sessionToken),
+                                    //                                );
+                                    //                                // This will change the text displayed in the TextField
+                                    //                                if (result != null) {
+                                    //                                  final placeDetails =
+                                    //                                      await PlaceApiProvider(sessionToken)
+                                    //                                          .getPlaceDetailFromId(result.placeId);
+                                    //                                  setState(() {
+                                    //                                    _controller.text = result.description;
+                                    //                                    longitude = placeDetails.longitude;
+                                    //                                    latitude = placeDetails.latitude;
+                                    ////                              _center = LatLng(latitude, longitude);
+                                    //                                  });
+                                    ////                            _mapController.move(_center, 15);
+                                    //                                }
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.pin_drop,
+                                      color: kSecondaryColor,
+                                    ),
+                                    hintText: "Pick-up Address",
+                                    hintStyle: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(color: kGreyColor),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.only(left: 8.0, top: 16.0),
                                   ),
-                                  labelText: "Receiver Name",
-                                  labelStyle: TextStyle(
-                                    color: kGreyColor,
-                                  )),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                      kDefaultPadding)),
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding * 4),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor,
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
+                                ),
+                                boxShadow: [kDefaultShadow],
+                              ),
+                              child: Center(
+                                child: TextField(
+                                  controller: _dropOffController,
+                                  keyboardType: TextInputType.text,
+                                  style: TextStyle(color: kBlackColor),
+                                  readOnly: true,
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LocationsList(
+                                          title: "Dropoff Address",
+                                        ),
+                                      ),
+                                    ).then((dynamic value) {
+                                      if (value != null) {
+                                        DestinationAddress address = value;
+                                        setState(() {
+                                          _dropOffController.text =
+                                              address.name!;
+                                          destLatitude = double.parse(
+                                              address.lat!.toStringAsFixed(6));
+                                          destLongitude = double.parse(
+                                              address.long!.toStringAsFixed(6));
+                                        });
+                                      }
+                                    });
+                                    //                                // generate a new token here
+                                    //                                final sessionToken = Uuid().v4();
+                                    //                                final Suggestion result = await showSearch(
+                                    //                                  context: context,
+                                    //                                  delegate: AddressSearch(sessionToken),
+                                    //                                );
+                                    //                                // This will change the text displayed in the TextField
+                                    //                                if (result != null) {
+                                    //                                  final placeDetails =
+                                    //                                      await PlaceApiProvider(sessionToken)
+                                    //                                          .getPlaceDetailFromId(result.placeId);
+                                    //                                  setState(() {
+                                    //                                    _dropOffController.text =
+                                    //                                        result.description;
+                                    //                                    destLongitude = placeDetails.longitude;
+                                    //                                    destLatitude = placeDetails.latitude;
+                                    //                                  });
+                                    //                                }
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.pin_drop_outlined,
+                                      color: kSecondaryColor,
+                                    ),
+                                    hintText: "Drop-off Address",
+                                    hintStyle: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(color: kGreyColor),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.only(left: 8.0, top: 16.0),
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        child: SectionTitle(
-                          sectionTitle: "Description",
-                          subTitle: " ",
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
-                        child: TextField(
-                          minLines: 4,
-                          maxLines: null,
-                          cursorColor: kSecondaryColor,
-                          style: TextStyle(color: kBlackColor),
-                          keyboardType: TextInputType.text,
-                          onChanged: (val) {
-                            description = val;
-                          },
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: kPrimaryColor,
-                            hintText: "Document, Key, Electronics, others...",
-                            hintStyle: TextStyle(
-                              color: kGreyColor,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: kWhiteColor),
-                                borderRadius:
-                                    BorderRadius.circular(kDefaultPadding)),
-                            focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: kWhiteColor),
-                                borderRadius:
-                                    BorderRadius.circular(kDefaultPadding)),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 1.5),
-                      ),
-
-                      // SizedBox(
-                      //   height:
-                      //       getProportionateScreenHeight(kDefaultPadding * 2),
-                      // ),
+                      )
                     ],
                   ),
                 ),
-              ),
-              _loading
-                  ? SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenHeight(kDefaultPadding),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.only(
-                          left: getProportionateScreenWidth(kDefaultPadding),
-                          right: getProportionateScreenWidth(kDefaultPadding),
-                          bottom: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      child: CustomButton(
-                          title: "Continue",
-                          press: () {
-                            if (_controller.text != null &&
-                                _controller.text.isNotEmpty &&
-                                _dropOffController.text != null &&
-                                _dropOffController.text.isNotEmpty &&
-                                senderUser.isNotEmpty &&
-                                senderPhone.isNotEmpty &&
-                                senderPhone.length == 9 &&
-                                receiverName.isNotEmpty &&
-                                receiverPhone.isNotEmpty &&
-                                receiverPhone.length == 9 &&
-                                latitude != null &&
-                                longitude != null &&
-                                destLatitude != null &&
-                                destLongitude != null) {
-                              // debugPrint(
-                              //     "Pickup: ${_controller.text}\nDropoff: ${_dropOffController.text}");
-                              if (userData['user']['cart_id'] != null) {
-                                debugPrint("Courier ready....");
-                                //  _clearCart();
-                              }
-
-                              _addCourierToCart();
-                            } else {
-                              if (_controller.text == null ||
-                                  _controller.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter pickup address!", true));
-                              } else if (_dropOffController.text == null ||
-                                  _dropOffController.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter destination address!",
-                                        true));
-                              } else if (senderPhone.isEmpty ||
-                                  senderUser.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter sender information!",
-                                        true));
-                              } else if (receiverPhone.isEmpty ||
-                                  receiverName.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter receiver information!",
-                                        true));
-                              } else if (senderPhone.substring(0, 1) !=
-                                      9.toString() ||
-                                  senderPhone.length != 9) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter a valid sender phone number",
-                                        true));
-                              } else if (receiverPhone.substring(0, 1) !=
-                                      9.toString() ||
-                                  receiverPhone.length != 9) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage(
-                                        "Please enter a valid receiver phone number",
-                                        true));
-                              }
-                            }
-                          },
-                          color: kSecondaryColor),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                      vertical: getProportionateScreenHeight(kDefaultPadding),
                     ),
-            ],
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        spacing:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                        children: [
+                          SectionTitle(
+                            sectionTitle: "Sender Information",
+                            subTitle: " ",
+                          ),
+                          CustomTextField(
+                            cursorColor: kSecondaryColor,
+                            style: TextStyle(color: kBlackColor),
+                            keyboardType: TextInputType.text,
+                            controller: _senderNameController,
+                            onChanged: (val) {
+                              senderUser = val;
+                            },
+                            hintText: "Sender Name (Optional)",
+                          ),
+                          CustomTextField(
+                            cursorColor: kSecondaryColor,
+                            style: TextStyle(color: kBlackColor),
+                            keyboardType: TextInputType.number,
+                            maxLength: 9,
+                            controller: _senderPhoneController,
+                            onChanged: (val) {
+                              senderPhone = val;
+                            },
+                            validator: (val) {
+                              if (val != null && val.isNotEmpty) {
+                                if (val.length != 9) {
+                                  return "Phone number must be 9 digits";
+                                }
+                                if (!val.startsWith('9')) {
+                                  return "Phone number must start with 9";
+                                }
+                              }
+                              return null;
+                            },
+                            hintText: "  Sender Phone (Optional)",
+                            prefix: Text(
+                              "${Provider.of<ZMetaData>(context, listen: false).areaCode}",
+                              style: TextStyle(color: kGreyColor),
+                            ),
+                          ),
+                          SectionTitle(
+                            sectionTitle: "Receiver Information",
+                            subTitle: " ",
+                          ),
+                          CustomTextField(
+                            cursorColor: kSecondaryColor,
+                            style: TextStyle(color: kBlackColor),
+                            keyboardType: TextInputType.text,
+                            onChanged: (val) {
+                              receiverName = val;
+                            },
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "Please enter receiver name";
+                              }
+                              return null;
+                            },
+                            hintText: "Receiver Name",
+                          ),
+                          CustomTextField(
+                            cursorColor: kSecondaryColor,
+                            style: TextStyle(color: kBlackColor),
+                            keyboardType: TextInputType.number,
+                            maxLength: 9,
+                            onChanged: (val) {
+                              receiverPhone = val;
+                            },
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return "Please enter receiver phone";
+                              }
+                              if (val.length != 9) {
+                                return "Phone number must be 9 digits";
+                              }
+                              if (!val.startsWith('9')) {
+                                return "Phone number must start with 9";
+                              }
+                              if (val == senderPhone) {
+                                return "Receiver phone cannot be same as sender's";
+                              }
+                              return null;
+                            },
+                            hintText: "  Receiver Phone",
+                            prefix: Text(
+                                "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
+                          ),
+                          SectionTitle(
+                            sectionTitle: "Description",
+                            subTitle: " ",
+                          ),
+                          CustomTextField(
+                            minLines: 4,
+                            maxLines: null,
+                            cursorColor: kSecondaryColor,
+                            style: TextStyle(color: kBlackColor),
+                            keyboardType: TextInputType.text,
+                            onChanged: (val) {
+                              description = val;
+                            },
+                            // decoration: InputDecoration(
+                            //   filled: true,
+                            //   fillColor: kPrimaryColor,
+                            hintText: "Document, Key, Electronics, others...",
+                            //   hintStyle: TextStyle(
+                            //       color: kGreyColor,
+                            //     ),
+                            //   enabledBorder: OutlineInputBorder(
+                            //       borderSide: BorderSide(color: kWhiteColor),
+                            //       borderRadius:
+                            //           BorderRadius.circular(kDefaultPadding)),
+                            //   focusedBorder: OutlineInputBorder(
+                            //       borderSide: BorderSide(color: kWhiteColor),
+                            //       borderRadius:
+                            //           BorderRadius.circular(kDefaultPadding)),
+                            // ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -714,7 +625,8 @@ class _CourierScreenState extends State<CourierScreen> {
     }
   }
 
-  Future<dynamic> addCourierToCart() async {
+  Future<dynamic> addCourierToCart(
+      String senderName, String senderPhoneNumber) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/add_item_in_cart";
     Map data = {
@@ -745,8 +657,8 @@ class _CourierScreenState extends State<CourierScreen> {
         {
           "user_type": userData['user']['admin_type'],
           "user_details": {
-            "phone": senderPhone,
-            "name": senderUser,
+            "phone": senderPhoneNumber,
+            "name": senderName,
             "country_phone_code":
                 Provider.of<ZMetaData>(context, listen: false).areaCode,
           },

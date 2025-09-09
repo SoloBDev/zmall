@@ -79,8 +79,10 @@ class _LocationsListState extends State<LocationsList> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+          context: context,
+          title: "Location permission denied. Please enable and try again",
+          error: true);
       FlLocation.requestLocationPermission();
     }
   }
@@ -111,8 +113,10 @@ class _LocationsListState extends State<LocationsList> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+              context: context,
+              title: "Location service disabled. Please enable and try again",
+              error: true);
         }
       }
     } else {
@@ -152,7 +156,7 @@ class _LocationsListState extends State<LocationsList> {
                         SectionTitle(
                           sectionTitle: "Locations",
                           subTitle: "",
-                          press: () {
+                          onSubTitlePress: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -229,11 +233,12 @@ class _LocationsListState extends State<LocationsList> {
                                     });
 
                                     // Then show a snackbar.
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(Service.showMessage(
-                                      '${deliveryLocation!.list?[index].name} deleted',
-                                      true,
-                                    ));
+                                    Service.showMessage(
+                                      context: context,
+                                      title:
+                                          '${deliveryLocation!.list?[index].name} deleted',
+                                      error: true,
+                                    );
                                   },
                                   child: LocationContainer(
                                     title: deliveryLocation!.list![index].name!

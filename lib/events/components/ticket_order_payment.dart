@@ -12,6 +12,7 @@ import 'package:zmall/widgets/custom_progress_indicator.dart';
 
 class TicketOrderPayment extends StatefulWidget {
   const TicketOrderPayment({
+    super.key,
     required this.quantity,
     required this.userId,
     required this.serverToken,
@@ -38,14 +39,14 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
   }
 
   void _getTicketInvoice() async {
-    debugPrint("Getting event invoice");
+    // debugPrint("Getting event invoice");
     setState(() {
       _loading = true;
     });
     await getTicketOrderPayment();
 
     if (orderPayment != null && orderPayment['success']) {
-      debugPrint("Successful...");
+      // debugPrint("Successful...");
       // debugPrint(orderPayment);
     } else {
       if (mounted) {
@@ -210,7 +211,7 @@ class _TicketOrderPaymentState extends State<TicketOrderPayment> {
           });
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage(
+              Service.showMessage1(
                   "Something went wrong! Check your internet and try again",
                   true,
                   duration: 3),

@@ -20,6 +20,8 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
+import 'package:zmall/widgets/custom_text_field.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
 
 class GlobalDelivery extends StatefulWidget {
@@ -67,7 +69,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "Location permission denied. Please enable and try again", true));
       FlLocation.requestLocationPermission();
     }
@@ -99,7 +101,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
               "Location service disabled. Please enable and try again", true));
         }
       }
@@ -214,10 +216,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
     setState(() {
       _loading = true;
     });
-    debugPrint("Adding to cart....");
+    // debugPrint("Adding to cart....");
     var data = await addToCart();
     // debugPrint(data);
-    debugPrint("++++++++++++++++++++++++++++++++++");
+    // debugPrint("++++++++++++++++++++++++++++++++++");
     if (responseData != null && responseData['success']) {
       setState(() {
         cart.userId = responseData['order_payment']['user_id'];
@@ -226,7 +228,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       // debugPrint("Cart ID : ${responseData['order_payment']['cart_id']}");
       // debugPrint("Server Token : ${responseData['server_token']}");
       // debugPrint("User ID : \t ${cart.userId}");
-      debugPrint("++++++++++++++++++++++++++++++++++");
+      // debugPrint("++++++++++++++++++++++++++++++++++");
       await Service.save('abroad_cart', cart);
       await Service.save('abroad_aliexpressCart', aliexpressCart);
       await Service.save('cart_id', responseData['order_payment']['cart_id']);
@@ -242,7 +244,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
         );
       }));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
+      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
           "${errorCodes['${responseData['error_code']}']}!", true));
       await Future.delayed(Duration(seconds: 2));
       if (responseData['error_code'] == 999) {
@@ -256,7 +258,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kWhiteColor,
+      // backgroundColor: kWhiteColor,
       appBar: AppBar(
         title: Text(
           "Delivery Details",
@@ -264,532 +266,595 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
         ),
         elevation: 1.0,
       ),
-      body: ModalProgressHUD(
-          color: kPrimaryColor,
-          progressIndicator: linearProgressIndicator,
-          inAsyncCall: _loading,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding / 2)),
-              child: Column(
-                children: [
-                  CustomTag(color: kSecondaryColor, text: "Sender Details"),
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(
-                        getProportionateScreenWidth(kDefaultPadding),
+      body: SafeArea(
+        child: ModalProgressHUD(
+            color: kPrimaryColor,
+            progressIndicator: LinearLoadingIndicator(),
+            inAsyncCall: _loading,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical:
+                        getProportionateScreenHeight(kDefaultPadding / 2)),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        border: Border.all(color: kWhiteColor),
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                        // boxShadow: [boxShadow],
                       ),
-                      // boxShadow: [boxShadow],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: getProportionateScreenWidth(kDefaultPadding),
-                        right: getProportionateScreenWidth(kDefaultPadding),
-                        top: getProportionateScreenHeight(kDefaultPadding),
-                        bottom:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      child: Column(
-                        children: [
-                          DetailsRow(
-                              title: "Name",
-                              subtitle: senderName.isNotEmpty
-                                  ? senderName
-                                  : "Sender Name"),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
-                          DetailsRow(
-                              title: "Phone",
-                              subtitle: senderPhone.isNotEmpty
-                                  ? senderPhone
-                                  : "Sender Phone"),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
-                          TextButton(
-//                          style: ButtonStyle(
-//                            backgroundColor:
-//                                MaterialStateProperty.all(kSecondaryColor),
-//                          ),
-                            onPressed: () {
-                              showModalBottomSheet<void>(
-                                isScrollControlled: true,
-                                context: context,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(30.0),
-                                      topRight: Radius.circular(30.0)),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: getProportionateScreenWidth(kDefaultPadding),
+                          right: getProportionateScreenWidth(kDefaultPadding),
+                          top: getProportionateScreenHeight(kDefaultPadding),
+                          bottom:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Sender Details",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(
+                                          color: kBlackColor,
+                                          fontWeight: FontWeight.bold),
                                 ),
-                                builder: (BuildContext context) {
-                                  return Padding(
-                                    padding: MediaQuery.of(context).viewInsets,
-                                    child: Container(
-                                      padding: EdgeInsets.all(
-                                          getProportionateScreenHeight(
-                                              kDefaultPadding)),
-                                      child: Wrap(
-                                        children: <Widget>[
-                                          Text(
-                                            "Sender Information",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding),
-                                          ),
-                                          TextField(
-                                            style:
-                                                TextStyle(color: kBlackColor),
-                                            keyboardType: TextInputType.text,
-                                            onChanged: (val) {
-                                              senderName = val;
-                                            },
-                                            decoration: textFieldInputDecorator
-                                                .copyWith(
-                                                    labelText:
+                                InkWell(
+                                  onTap: () {
+                                    showModalBottomSheet<void>(
+                                      isScrollControlled: true,
+                                      context: context,
+                                      backgroundColor: kPrimaryColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(kDefaultPadding),
+                                        ),
+                                      ),
+                                      builder: (BuildContext context) {
+                                        return SafeArea(
+                                          child: Padding(
+                                            padding: MediaQuery.of(context)
+                                                .viewInsets,
+                                            child: Container(
+                                              padding: EdgeInsets.all(
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding)),
+                                              child: Wrap(
+                                                children: <Widget>[
+                                                  Text(
+                                                    "Sender Information",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineSmall
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                  Container(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  CustomTextField(
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                    keyboardType:
+                                                        TextInputType.text,
+                                                    onChanged: (val) {
+                                                      senderName = val;
+                                                    },
+                                                    hintText:
                                                         senderName.isNotEmpty
                                                             ? senderName
-                                                            : "Sender Name"),
-                                          ),
-                                          Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding / 2),
-                                          ),
-                                          CustomButton(
-                                            title: "Submit",
-                                            color: kSecondaryColor,
-                                            press: () async {
-                                              if (senderName.isNotEmpty &&
-                                                  senderPhone.isNotEmpty) {
-                                                setState(() {
-                                                  abroadData.abroadName =
-                                                      senderName;
-                                                });
-                                                // debugPrint(abroadData.toJson());
-                                                Service.save("abroad_user",
-                                                    abroadData.toJson());
-                                                Navigator.of(context).pop();
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            child: Text(
-                              receiverName.isNotEmpty &&
-                                      receiverPhone.isNotEmpty
-                                  ? "Change Details"
-                                  : "Add Details",
-                              style: TextStyle(
-                                color: kBlackColor,
-                                decoration: TextDecoration.underline,
-                                fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding * .8),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding)),
-                  CustomTag(color: kSecondaryColor, text: "Receiver Details"),
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(
-                        getProportionateScreenWidth(kDefaultPadding),
-                      ),
-                      // boxShadow: [boxShadow],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: getProportionateScreenWidth(kDefaultPadding),
-                        right: getProportionateScreenWidth(kDefaultPadding),
-                        top: getProportionateScreenHeight(kDefaultPadding),
-                        bottom:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                      ),
-                      child: Column(
-                        children: [
-                          DetailsRow(
-                              title: "Name",
-                              subtitle: receiverName.isNotEmpty
-                                  ? receiverName
-                                  : "Receiver Name"),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
-                          DetailsRow(
-                              title: "Phone",
-                              subtitle: receiverPhone.isNotEmpty
-                                  ? "+251 $receiverPhone"
-                                  : "Receiver Phone"),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
-                          TextButton(
-//
-                            onPressed: () {
-                              showModalBottomSheet<void>(
-                                isScrollControlled: true,
-                                context: context,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(30.0),
-                                      topRight: Radius.circular(30.0)),
-                                ),
-                                builder: (BuildContext context) {
-                                  return Padding(
-                                    padding: MediaQuery.of(context).viewInsets,
-                                    child: Container(
-                                      padding: EdgeInsets.all(
-                                          getProportionateScreenHeight(
-                                              kDefaultPadding)),
-                                      child: Wrap(
-                                        children: <Widget>[
-                                          Text(
-                                            "Order For Others",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding),
-                                          ),
-                                          TextField(
-                                            style:
-                                                TextStyle(color: kBlackColor),
-                                            keyboardType: TextInputType.text,
-                                            onChanged: (val) {
-                                              tempName = val;
-                                            },
-                                            decoration: textFieldInputDecorator
-                                                .copyWith(
-                                                    labelText:
-                                                        receiverName.isNotEmpty
-                                                            ? receiverName
-                                                            : "Receiver Name"),
-                                          ),
-                                          Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding),
-                                          ),
-                                          TextField(
-                                            style:
-                                                TextStyle(color: kBlackColor),
-                                            keyboardType: TextInputType.number,
-                                            maxLength: 9,
-                                            onChanged: (val) {
-                                              tempPhone = val;
-                                              // debugPrint(tempPhone.length);
-                                            },
-                                            decoration: textFieldInputDecorator
-                                                .copyWith(
-                                              labelText:
-                                                  receiverPhone.isNotEmpty
-                                                      ? receiverPhone
-                                                      : "Receiver phone number",
-                                              helperText:
-                                                  "Start phone number with 9..",
-                                              prefix: Text("+251"),
+                                                            : "Sender Name",
+                                                  ),
+                                                  Container(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding /
+                                                                2),
+                                                  ),
+                                                  CustomButton(
+                                                    title: "Submit",
+                                                    color: kSecondaryColor,
+                                                    press: () async {
+                                                      if (senderName
+                                                              .isNotEmpty &&
+                                                          senderPhone
+                                                              .isNotEmpty) {
+                                                        setState(() {
+                                                          abroadData
+                                                                  .abroadName =
+                                                              senderName;
+                                                        });
+                                                        // debugPrint(abroadData.toJson());
+                                                        Service.save(
+                                                            "abroad_user",
+                                                            abroadData
+                                                                .toJson());
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                          Container(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding / 2),
-                                          ),
-                                          receiverError
-                                              ? Text(
-                                                  "Invalid! Please make sure all fields are filled.",
-                                                  style: TextStyle(
-                                                      color: kSecondaryColor),
-                                                )
-                                              : Container(),
-                                          CustomButton(
-                                            title: "Submit",
-                                            color: kSecondaryColor,
-                                            press: () async {
-                                              if (tempPhone.isNotEmpty &&
-                                                  tempName.isNotEmpty &&
-                                                  tempPhone.substring(0, 1) ==
-                                                      9.toString() &&
-                                                  tempPhone.length == 9) {
-                                                setState(() {
-                                                  receiverPhone = tempPhone;
-                                                  receiverName = tempName;
-                                                  isForOthers = true;
-                                                  cart.userName = receiverName;
-                                                  cart.phone = receiverPhone;
-                                                  cart.isForOthers =
-                                                      isForOthers;
-                                                });
-                                                setState(() {
-                                                  receiverError = false;
-                                                });
-                                                receiverInfo['name'] = tempName;
-                                                receiverInfo['phone'] =
-                                                    tempPhone;
-                                                Navigator.of(context).pop();
-                                              } else {
-                                                setState(() {
-                                                  receiverError = true;
-                                                });
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Text(
+                                    receiverName.isNotEmpty &&
+                                            receiverPhone.isNotEmpty
+                                        ? "Change Details"
+                                        : "Add Details",
+                                    style: TextStyle(
+                                      color: kBlackColor,
+                                      decoration: TextDecoration.underline,
+                                      fontSize: getProportionateScreenWidth(
+                                          kDefaultPadding * .8),
+                                      fontWeight: FontWeight.w700,
                                     ),
-                                  );
-                                },
-                              ).whenComplete(() {
-                                setState(() {});
-                              });
-                            },
-                            child: Text(
-                              receiverName.isNotEmpty &&
-                                      receiverPhone.isNotEmpty
-                                  ? "Change Details"
-                                  : "Add Details",
-                              style: TextStyle(
-                                color: kBlackColor,
-                                decoration: TextDecoration.underline,
-                                fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding * .8),
-                                fontWeight: FontWeight.w700,
-                              ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            DetailsRow(
+                                title: "Name",
+                                subtitle: senderName.isNotEmpty
+                                    ? senderName
+                                    : "Sender Name"),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 3)),
+                            DetailsRow(
+                                title: "Phone",
+                                subtitle: senderPhone.isNotEmpty
+                                    ? senderPhone
+                                    : "Sender Phone"),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding)),
-                  SectionTitle(
-                    sectionTitle: "Delivery Locations",
-                    subTitle: "",
-                    press: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            {
-                              return LocationScreen(
-                                currLat: 9.004188,
-                                currLon: 38.768154,
-                              );
-                            }
-                          },
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    // CustomTag(color: kSecondaryColor, text: "Receiver Details"),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        border: Border.all(color: kWhiteColor),
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenWidth(kDefaultPadding),
                         ),
-                      ).then((value) {
-                        getLocations();
-                      });
-                    },
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  deliveryLocation != null && deliveryLocation!.list!.length > 0
-                      ? Container()
-                      : Center(
-                          child: Text(
-                            "There aren't any saved locations.\n Please add new delivery location!",
-                            textAlign: TextAlign.center,
-                          ),
+                        // boxShadow: [boxShadow],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: getProportionateScreenWidth(kDefaultPadding),
+                          right: getProportionateScreenWidth(kDefaultPadding),
+                          top: getProportionateScreenHeight(kDefaultPadding),
+                          bottom:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
                         ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  Container(
-                    child: ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: deliveryLocation != null &&
-                              deliveryLocation!.list!.length > 0
-                          ? deliveryLocation!.list!.length
-                          : 0,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          child: Dismissible(
-                            background: Container(
-                              color: kSecondaryColor,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    color: kPrimaryColor,
-                                    size: getProportionateScreenWidth(
-                                      kDefaultPadding,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Receiver Details",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(
+                                          color: kBlackColor,
+                                          fontWeight: FontWeight.bold),
+                                ),
+                                InkWell(
+                                  //
+                                  onTap: () {
+                                    showModalBottomSheet<void>(
+                                      isScrollControlled: true,
+                                      context: context,
+                                      backgroundColor: kPrimaryColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(kDefaultPadding),
+                                        ),
+                                      ),
+                                      builder: (BuildContext context) {
+                                        return SafeArea(
+                                          child: Padding(
+                                            padding: MediaQuery.of(context)
+                                                .viewInsets,
+                                            child: Container(
+                                              padding: EdgeInsets.all(
+                                                  getProportionateScreenHeight(
+                                                      kDefaultPadding)),
+                                              child: Wrap(
+                                                children: <Widget>[
+                                                  Text(
+                                                    "Order For Others",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineSmall
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                  Container(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  CustomTextField(
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                    keyboardType:
+                                                        TextInputType.text,
+                                                    onChanged: (val) {
+                                                      tempName = val;
+                                                    },
+                                                    hintText:
+                                                        receiverName.isNotEmpty
+                                                            ? receiverName
+                                                            : "Receiver Name",
+                                                  ),
+                                                  Container(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  CustomTextField(
+                                                    style: TextStyle(
+                                                        color: kBlackColor),
+                                                    keyboardType:
+                                                        TextInputType.number,
+                                                    maxLength: 9,
+                                                    onChanged: (val) {
+                                                      tempPhone = val;
+                                                      // debugPrint(tempPhone.length);
+                                                    },
+                                                    hintText: receiverPhone
+                                                            .isNotEmpty
+                                                        ? receiverPhone
+                                                        : " Receiver phone number",
+                                                    helperText:
+                                                        "Start phone number with 9..",
+                                                    prefix: Text("+251"),
+                                                  ),
+                                                  Container(
+                                                    height:
+                                                        getProportionateScreenHeight(
+                                                            kDefaultPadding),
+                                                  ),
+                                                  receiverError
+                                                      ? Text(
+                                                          "Invalid! Please make sure all fields are filled.",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  kSecondaryColor),
+                                                        )
+                                                      : Container(),
+                                                  CustomButton(
+                                                    title: "Submit",
+                                                    color: kSecondaryColor,
+                                                    press: () async {
+                                                      if (tempPhone
+                                                              .isNotEmpty &&
+                                                          tempName.isNotEmpty &&
+                                                          tempPhone.substring(
+                                                                  0, 1) ==
+                                                              9.toString() &&
+                                                          tempPhone.length ==
+                                                              9) {
+                                                        setState(() {
+                                                          receiverPhone =
+                                                              tempPhone;
+                                                          receiverName =
+                                                              tempName;
+                                                          isForOthers = true;
+                                                          cart.userName =
+                                                              receiverName;
+                                                          cart.phone =
+                                                              receiverPhone;
+                                                          cart.isForOthers =
+                                                              isForOthers;
+                                                        });
+                                                        setState(() {
+                                                          receiverError = false;
+                                                        });
+                                                        receiverInfo['name'] =
+                                                            tempName;
+                                                        receiverInfo['phone'] =
+                                                            tempPhone;
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      } else {
+                                                        setState(() {
+                                                          receiverError = true;
+                                                        });
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ).whenComplete(() {
+                                      setState(() {});
+                                    });
+                                  },
+                                  child: Text(
+                                    receiverName.isNotEmpty &&
+                                            receiverPhone.isNotEmpty
+                                        ? "Change Details"
+                                        : "Add Details",
+                                    style: TextStyle(
+                                      color: kBlackColor,
+                                      decoration: TextDecoration.underline,
+                                      fontSize: getProportionateScreenWidth(
+                                          kDefaultPadding * .8),
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding / 2),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            key: Key(
-                                deliveryLocation!.list![index].lat.toString()),
-                            onDismissed: (direction) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(
-                                      '${deliveryLocation!.list![index].name} dismissed')));
-                              setState(() {
-                                deliveryLocation!.list!.removeAt(index);
-                                Service.save(
-                                    'delivery', deliveryLocation!.toJson());
-                              });
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            DetailsRow(
+                                title: "Name",
+                                subtitle: receiverName.isNotEmpty
+                                    ? receiverName
+                                    : "Receiver Name"),
+                            SizedBox(
+                                height: getProportionateScreenHeight(
+                                    kDefaultPadding / 3)),
+                            DetailsRow(
+                                title: "Phone",
+                                subtitle: receiverPhone.isNotEmpty
+                                    ? "+251 $receiverPhone"
+                                    : "Receiver Phone"),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding)),
+                    SectionTitle(
+                      sectionTitle: "Delivery Locations",
+                      subTitle: "",
+                      onSubTitlePress: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              {
+                                return LocationScreen(
+                                  currLat: 9.004188,
+                                  currLon: 38.768154,
+                                );
+                              }
                             },
-                            child: LocationContainer(
-                              title: deliveryLocation!.list![index].name!
-                                  .split(",")[0],
-                              note: deliveryLocation!.list![index].note,
-                              press: () {
-                                setState(() {
-                                  currSelected = false;
-                                  selected = index;
-                                  destinationAddress =
-                                      deliveryLocation!.list![index];
-                                  destinationAddress!.name =
-                                      destinationAddress!.name!;
-                                  // .replaceAll(RegExp(r'[^\w\s]+'), '')
-                                  // .replaceAll(RegExp('\\s+'), ' ');
-                                  destinationAddress!.note =
-                                      destinationAddress!.note!;
-                                  // .replaceAll(RegExp(r'[^\w\s]+'), '')
-                                  // .replaceAll(RegExp('\\s+'), ' ');
-                                });
-                              },
-                              isSelected: index == selected,
-                            ),
                           ),
-                        );
+                        ).then((value) {
+                          getLocations();
+                        });
                       },
                     ),
-                  ),
-                  CustomButton(
-                    title: "Continue",
-                    press: () async {
-                      setState(() {
-                        _loading = true;
-                      });
-
-                      if (destinationAddress != null &&
-                          receiverPhone.isNotEmpty &&
-                          receiverName.isNotEmpty &&
-                          senderName.isNotEmpty) {
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                    deliveryLocation != null &&
+                            deliveryLocation!.list!.length > 0
+                        ? Container()
+                        : Center(
+                            child: Text(
+                              "There aren't any saved locations.\n Please add new delivery location!",
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                    Container(
+                      child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: deliveryLocation != null &&
+                                deliveryLocation!.list!.length > 0
+                            ? deliveryLocation!.list!.length
+                            : 0,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ),
+                            child: Dismissible(
+                              background: Container(
+                                color: kSecondaryColor,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(
+                                      Icons.delete,
+                                      color: kPrimaryColor,
+                                      size: getProportionateScreenWidth(
+                                        kDefaultPadding,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: getProportionateScreenWidth(
+                                          kDefaultPadding / 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              key: Key(deliveryLocation!.list![index].lat
+                                  .toString()),
+                              onDismissed: (direction) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        '${deliveryLocation!.list![index].name} dismissed')));
+                                setState(() {
+                                  deliveryLocation!.list!.removeAt(index);
+                                  Service.save(
+                                      'delivery', deliveryLocation!.toJson());
+                                });
+                              },
+                              child: LocationContainer(
+                                title: deliveryLocation!.list![index].name!
+                                    .split(",")[0],
+                                note: deliveryLocation!.list![index].note,
+                                press: () {
+                                  setState(() {
+                                    currSelected = false;
+                                    selected = index;
+                                    destinationAddress =
+                                        deliveryLocation!.list![index];
+                                    destinationAddress!.name =
+                                        destinationAddress!.name!;
+                                    // .replaceAll(RegExp(r'[^\w\s]+'), '')
+                                    // .replaceAll(RegExp('\\s+'), ' ');
+                                    destinationAddress!.note =
+                                        destinationAddress!.note!;
+                                    // .replaceAll(RegExp(r'[^\w\s]+'), '')
+                                    // .replaceAll(RegExp('\\s+'), ' ');
+                                  });
+                                },
+                                isSelected: index == selected,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    CustomButton(
+                      title: "Continue",
+                      press: () async {
                         setState(() {
-                          cart.destinationAddress = destinationAddress;
-                          cart.abroadData = abroadData;
-                          Service.save('abroad_cart', cart);
-                          Service.save('abroad_aliexpressCart', aliexpressCart);
+                          _loading = true;
                         });
-                        // debugPrint(cart.destinationAddress!.toJson());
-                        debugPrint("Checking if location is in Addis");
-                        var categoriesResponse =
-                            await await CoreServices.getCategoryList(
-                                longitude: destinationAddress!.long!,
-                                latitude: destinationAddress!.lat!,
-                                countryCode: "5b3f76f2022985030cd3a437",
-                                countryName: "Ethiopia",
-                                context: context,
-                                isGlobal: true);
 
-                        if (categoriesResponse != null &&
-                            categoriesResponse['success']) {
-                          // receiverInfo['location'] = GeoPoint(
-                          //     destinationAddress.lat, destinationAddress.long);
-                          // receiverInfo['location_name'] =
-                          //     destinationAddress.name;
-                          // locationInfo['location'] = GeoPoint(
-                          //     destinationAddress.lat, destinationAddress.long);
-                          // locationInfo['name'] = destinationAddress.name;
-                          _addToCart();
-                        } else {
-                          if (categoriesResponse['error_code'] == 813) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage(
+                        if (destinationAddress != null &&
+                            receiverPhone.isNotEmpty &&
+                            receiverName.isNotEmpty &&
+                            senderName.isNotEmpty) {
+                          setState(() {
+                            cart.destinationAddress = destinationAddress;
+                            cart.abroadData = abroadData;
+                            Service.save('abroad_cart', cart);
+                            Service.save(
+                                'abroad_aliexpressCart', aliexpressCart);
+                          });
+                          // debugPrint(cart.destinationAddress!.toJson());
+                          // debugPrint("Checking if location is in Addis");
+                          var categoriesResponse =
+                              await await CoreServices.getCategoryList(
+                                  longitude: destinationAddress!.long!,
+                                  latitude: destinationAddress!.lat!,
+                                  countryCode: "5b3f76f2022985030cd3a437",
+                                  countryName: "Ethiopia",
+                                  context: context,
+                                  isGlobal: true);
+
+                          if (categoriesResponse != null &&
+                              categoriesResponse['success']) {
+                            // receiverInfo['location'] = GeoPoint(
+                            //     destinationAddress.lat, destinationAddress.long);
+                            // receiverInfo['location_name'] =
+                            //     destinationAddress.name;
+                            // locationInfo['location'] = GeoPoint(
+                            //     destinationAddress.lat, destinationAddress.long);
+                            // locationInfo['name'] = destinationAddress.name;
+                            _addToCart();
+                          } else {
+                            if (categoriesResponse['error_code'] != null &&
+                                categoriesResponse['error_code'] == 813) {
+                              Service.showMessage(
+                                context: context,
+                                title:
                                     "Destination address cannot be outside of Addis Ababa",
-                                    true,
+                                error: true,
+                                duration: 4,
+                              );
+                            } else {
+                              // debugPrint(categoriesResponse['error_code']);
+
+                              Service.showMessage(
+                                context: context,
+                                title:
+                                    "${errorCodes['${categoriesResponse['error_code']}']}",
+                                error: true,
+                              );
+                            }
+                          }
+                        } else {
+                          if (senderName.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage1(
+                                    "Please add sender's name", false,
+                                    duration: 4));
+                          } else if (receiverName.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage1(
+                                    "Please add receiver's name", false,
+                                    duration: 4));
+                          } else if (receiverPhone.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage1(
+                                    "Please add receivers phone number", false,
                                     duration: 4));
                           } else {
-                            // debugPrint(categoriesResponse['error_code']);
                             ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage(
-                                    "${errorCodes['${categoriesResponse['error_code']}']}",
-                                    true));
+                                Service.showMessage1(
+                                    "Please select a delivery address", false,
+                                    duration: 4));
                           }
                         }
-                      } else {
-                        if (senderName.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please add sender's name", false,
-                                  duration: 4));
-                        } else if (receiverName.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please add receiver's name", false,
-                                  duration: 4));
-                        } else if (receiverPhone.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please add receivers phone number", false,
-                                  duration: 4));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage(
-                                  "Please select a delivery address", false,
-                                  duration: 4));
-                        }
-                      }
-                      setState(() {
-                        _loading = false;
-                      });
-                    },
-                    color: kSecondaryColor,
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                ],
+                        setState(() {
+                          _loading = false;
+                        });
+                      },
+                      color: kSecondaryColor,
+                    ),
+                    SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                  ],
+                ),
               ),
-            ),
-          )),
+            )),
+      ),
     );
   }
 
@@ -815,9 +880,6 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -829,9 +891,7 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      setState(() {
-        this._loading = false;
-      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -840,6 +900,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
         ),
       );
       return null;
+    } finally {
+      setState(() {
+        this._loading = false;
+      });
     }
   }
 
@@ -869,9 +933,6 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Something went wrong!"),
@@ -884,13 +945,9 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       setState(() {
         this.responseData = json.decode(response.body);
       });
-      // debugPrint("Respp>>>>. ${json.decode(response.body)}");
+
       return json.decode(response.body);
     } catch (e) {
-      // debugPrint("Erorrr>>>>. $e");
-      setState(() {
-        this._loading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Your internet connection is bad!"),
@@ -898,6 +955,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
         ),
       );
       return null;
+    } finally {
+      setState(() {
+        this._loading = false;
+      });
     }
   }
 }

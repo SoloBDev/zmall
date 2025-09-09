@@ -1,20 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import 'package:zmall/constants.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/service.dart';
 import 'package:zmall/size_config.dart';
 import 'package:zmall/tab_screen.dart';
-import 'package:zmall/widgets/custom_back_button.dart';
-import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class OtpScreen extends StatefulWidget {
   static String id = '/otpScreen';
@@ -30,37 +27,35 @@ class OtpScreen extends StatefulWidget {
   final String areaCode;
 
   @override
-  _OtpScreenState createState() => _OtpScreenState();
+  State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen>
-    with SingleTickerProviderStateMixin {
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-
-  //
-  bool _loading = false;
-  final List<TextEditingController> _controllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
-  final List<bool> _fieldFilled = List.generate(6, (_) => false);
-
+    with CodeAutoFill, SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Color?> _borderColorAnimation;
   late Animation<Offset> _shakeAnimation;
 
-  bool _isError = false;
-  String errorMessage = '';
-  String password = '';
-  String phone = '';
+  ////
+  final TextEditingController _otpController = TextEditingController();
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  static const int countdownDuration = 60;
+  late int _remainingSeconds;
+  Timer? _timer;
+  bool _isLoading = false;
+  // String errorMessage = '';
+  // String password = '';
+  // String phone = '';
   var otpResponse;
   var responseData;
+  String otpCode = '';
+  bool isError = false;
 
   @override
   void initState() {
     super.initState();
-    phone = widget.phone;
-    password = widget.password;
-
+    listenForCode(); // Start listening for incoming OTP
+    _startCountdown();
     // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -111,301 +106,303 @@ class _OtpScreenState extends State<OtpScreen>
     _animationController.addListener(() {
       setState(() {});
     });
+
+    // Listen for changes in otpCode
+    _otpController.addListener(_onOtpChanged);
+  }
+
+  void _onOtpChanged() {
+    setState(() {
+      otpCode = _otpController.text;
+    });
   }
 
   @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  // Function to animate field when filled
-  void _animateField(int index) {
+  void codeUpdated() {
     setState(() {
-      _fieldFilled[index] = _controllers[index].text.isNotEmpty;
+      otpCode = code!;
+      _otpController.text = otpCode;
     });
 
-    if (_controllers[index].text.isNotEmpty && !_isError) {
-      // Short animation for individual field
-      _animationController.forward().then((_) {
-        Future.delayed(Duration(milliseconds: 300), () {
-          if (mounted) {
-            _animationController.reverse();
-          }
-        });
-      });
+    if (otpCode.isNotEmpty && otpCode.length == 6) {
+      _verifyOTP(phone: widget.phone, code: otpCode);
     }
+  }
+
+////resend code countdown
+  void _startCountdown() {
+    _remainingSeconds = countdownDuration;
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
+//resend code
+  void _handleResend() async {
+    _otpController.clear();
+    bool isGeneratOtp = await generateOtpAtLogin(
+        phone: widget.phone, password: widget.password);
+    if (isGeneratOtp) {
+      debugPrint("after otp resend");
+      _startCountdown();
+    }
+  }
+
+  // Function to show error animation
+  void _showErrorAnimation() {
+    setState(() {
+      isError = true;
+    });
+
+    _animationController.reset();
+    _animationController.forward();
   }
 
   // Reset error state
   void _resetErrorState() {
-    if (_isError) {
+    if (isError) {
       setState(() {
-        _isError = false;
-        errorMessage = '';
+        isError = false;
+      });
+    }
+  }
+
+  // Handle input of digit from custom keyboard
+  void _handleDigitInput(String digit) {
+    _resetErrorState();
+    if (otpCode.length < 6) {
+      setState(() {
+        otpCode = otpCode + digit;
+        _otpController.text = otpCode;
+      });
+
+      if (otpCode.length == 6) {
+        _verifyOTP(phone: widget.phone, code: otpCode);
+      }
+    }
+  }
+
+  // Handle backspace from custom keyboard
+  void _handleBackspace() {
+    _resetErrorState();
+    if (otpCode.isNotEmpty) {
+      setState(() {
+        otpCode = otpCode.substring(0, otpCode.length - 1);
+        _otpController.text = otpCode;
       });
     }
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    _otpController.dispose();
+    cancel();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    TextTheme textTheme = Theme.of(context).textTheme;
+    // TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Verify Code"),
-        leading: CustomBackButton(),
+        title: Text('Verify OTP'),
       ),
       body: SafeArea(
-        child: ModalProgressHUD(
-          inAsyncCall: _isLoading,
-          progressIndicator: LinearLoadingIndicator(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    vertical: getProportionateScreenHeight(kDefaultPadding * 4),
-                    horizontal: getProportionateScreenWidth(kDefaultPadding)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: getProportionateScreenWidth(kDefaultPadding),
-                  children: [
-                    Text('Enter an OTP', style: textTheme.titleMedium
-                        // TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        bottom: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(kDefaultPadding),
+                  child: Column(
+                    spacing: kDefaultPadding,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(kDefaultPadding / 1.5),
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(kDefaultPadding),
+                            color: kWhiteColor),
+                        child: Icon(
+                          HeroiconsOutline.chatBubbleLeftEllipsis,
+                          size: 40,
+                          color: kBlackColor.withValues(alpha: 0.7),
                         ),
-                    Text(
-                      "An OTP (verification code) has been sent to your phone ${widget.areaCode + widget.phone}.",
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: kGreyColor),
-                    ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 2)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(6, (index) {
-                        return SlideTransition(
-                          position: _isError
-                              ? _shakeAnimation
-                              : Tween<Offset>(
-                                      begin: Offset.zero, end: Offset.zero)
-                                  .animate(_animationController),
-                          child: SizedBox(
-                            width: 50,
-                            child: TextFormField(
-                              maxLength: 1,
-                              readOnly: true,
-                              controller: _controllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              cursorColor: kBlackColor,
-                              autofocus: true,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              decoration: InputDecoration(
-                                counterText: '',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      kDefaultPadding * 0.8),
-                                  borderSide: BorderSide(
-                                    color: _isError
-                                        ? kSecondaryColor
-                                        : _fieldFilled[index]
-                                            ? _borderColorAnimation.value ??
-                                                kGreyColor.withValues(
-                                                    alpha: 0.4)
-                                            : kGreyColor.withValues(alpha: 0.4),
-                                    width: (_fieldFilled[index] || _isError)
-                                        ? 2.0
-                                        : 1.0,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      kDefaultPadding * 0.8),
-                                  borderSide: BorderSide(
-                                    color: _isError
-                                        ? kSecondaryColor
-                                        : _fieldFilled[index]
-                                            ? _borderColorAnimation.value ??
-                                                kGreyColor.withValues(
-                                                    alpha: 0.4)
-                                            : kGreyColor.withValues(alpha: 0.4),
-                                    width: (_fieldFilled[index] || _isError)
-                                        ? 2.0
-                                        : 1.0,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      kDefaultPadding * 0.8),
-                                  borderSide: BorderSide(
-                                    color: _isError
-                                        ? kSecondaryColor
-                                        : _borderColorAnimation.value ??
-                                            kGreyColor.withValues(alpha: 0.4),
-                                    width: 2.0,
-                                  ),
-                                ),
-                                filled: _isError,
-                                fillColor: _isError
-                                    ? kSecondaryColor.withValues(alpha: 0.1)
-                                    : null,
-                              ),
-                              onChanged: (value) {
-                                // Reset error state when user starts typing
-                                _resetErrorState();
-
-                                _animateField(index);
-
-                                if (value.isNotEmpty && index < 5) {
-                                  FocusScope.of(context)
-                                      .requestFocus(_focusNodes[index + 1]);
-                                }
-                                if (value.isEmpty && index > 0) {
-                                  FocusScope.of(context)
-                                      .requestFocus(_focusNodes[index - 1]);
-                                }
-
-                                // Auto verify when all fields are filled
-                                if (index == 5 && value.isNotEmpty) {
-                                  String otp =
-                                      _controllers.map((c) => c.text).join();
-                                  if (otp.length == 6) {
-                                    _verifyOTP(phone: phone, code: otp);
-                                  }
-                                }
-
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                    SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    Text(
-                      errorMessage,
-                      style: textTheme.titleSmall!.copyWith(
-                        fontSize: 14,
-                        color: kSecondaryColor,
                       ),
-                      // style: TextStyle(
-                      //   color: kSecondaryColor,
-                      //   fontWeight:
-                      //       _isError ? FontWeight.bold : FontWeight.normal,
-                      // ),
-                    ),
-                  ],
+                      const SizedBox(height: kDefaultPadding / 2),
+                      Text(
+                        "We have sent the code to the SMS for ${widget.areaCode + widget.phone}.\nPlease enter the code sent to your phone",
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: kDefaultPadding / 2),
+                      SlideTransition(
+                        position: _shakeAnimation,
+                        child: PinFieldAutoFill(
+                          codeLength: 6,
+                          currentCode: otpCode,
+                          controller: _otpController,
+                          decoration: BoxLooseDecoration(
+                            strokeColorBuilder: FixedColorBuilder(
+                              // _otpController.text.isEmpty
+                              // ? kGreyColor
+                              // :
+                              isError
+                                  ? kSecondaryColor
+                                  : kGreyColor.withValues(alpha: 0.3),
+                            ),
+                            bgColorBuilder: FixedColorBuilder(isError
+                                    ? kSecondaryColor.withValues(alpha: 0.18)
+                                    : Colors.transparent
+                                //  kPrimaryColor.withValues(alpha: 0.6),
+                                // kGreenColor.withValues(alpha: 0.18)
+                                // : _otpController.text.isNotEmpty
+                                // ? kGreenColor.withValues(alpha: 0.18)
+                                // : kPrimaryColor.withValues(alpha: 0.6),
+                                ),
+                            // A border width based on error state
+                            strokeWidth: isError ? 2.0 : 1.0,
+                          ),
+                          onCodeChanged: (code) {
+                            // debugPrint("onchnage");
+                            setState(() {
+                              code = _otpController.text;
+                            });
+                            // if (code != null && code.length == 6) {
+
+                            // _verifyOTP(phone: widget.phone, code: code);
+                            // }
+                            // FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                          onCodeSubmitted: (code) {
+                            // debugPrint("onCodeSubmitted");
+                            if (_otpController.text.length == 6) {
+                              _verifyOTP(
+                                  phone: widget.phone,
+                                  code: _otpController.text);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Spacer(),
-              // Number Keyboard
-              Container(
-                padding: EdgeInsets.zero,
-                decoration: BoxDecoration(
-                  color: kGreyColor.withValues(alpha: 0.3),
-                ),
-                child: Column(
-                  children: [
-                    Row(
+            ),
+            ///////////////Resend OTP section///////////////
+            Center(
+              child: _remainingSeconds > 0
+                  ? Text(
+                      "Didn't receive a code? resend in ${_remainingSeconds}s",
+                      style: const TextStyle(
+                          fontSize: 14,
+                          color: kGreyColor,
+                          fontWeight: FontWeight.bold),
+                    )
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: getProportionateScreenWidth(kDefaultPadding),
                       children: [
-                        _numberButton('1'),
-                        _numberButton('2'),
-                        _numberButton('3'),
+                        Text(
+                          "Didn't receive a code?",
+                          style: const TextStyle(
+                              fontSize: 14,
+                              color: kGreyColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        TextButton(
+                            onPressed: _handleResend,
+                            child: Text(
+                              "Resend code",
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: kSecondaryColor,
+                                  fontWeight: FontWeight.bold),
+                            )),
                       ],
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: getProportionateScreenWidth(kDefaultPadding),
-                      children: [
-                        _numberButton('4'),
-                        _numberButton('5'),
-                        _numberButton('6'),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: getProportionateScreenWidth(kDefaultPadding),
-                      children: [
-                        _numberButton('7'),
-                        _numberButton('8'),
-                        _numberButton('9'),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: getProportionateScreenWidth(kDefaultPadding),
-                      children: [
-                        // _numberButton(''),
-                        _nextButton(),
-                        _numberButton('0'),
-                        _backspaceButton(),
-                      ],
-                    ),
-                  ],
-                ),
+            ),
+            ///////////////Number Keyboard section///////////////
+            Container(
+              margin: EdgeInsets.only(top: kDefaultPadding / 2),
+              padding: EdgeInsets.only(bottom: 30),
+              decoration: BoxDecoration(color: kWhiteColor
+                  //  kGreyColor.withValues(alpha: 0.1),
+                  ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      _numberButton('1'),
+                      _numberButton('2'),
+                      _numberButton('3'),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      _numberButton('4'),
+                      _numberButton('5'),
+                      _numberButton('6'),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      _numberButton('7'),
+                      _numberButton('8'),
+                      _numberButton('9'),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      // _numberButton(''),
+                      // _emptySpaceButton(),
+                      _backspaceButton(),
+                      _numberButton('0'),
+                      _submitButton(),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+//////////////////////////////Custom Widget section///////////////////////////////////////////
   Widget _numberButton(String number) {
     return Padding(
       padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
       child: SizedBox(
-        width: getProportionateScreenWidth(kDefaultPadding * 6),
+        width: getProportionateScreenWidth(kDefaultPadding * 7),
         height: getProportionateScreenHeight(kDefaultPadding * 3),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: kWhiteColor,
+            backgroundColor: kPrimaryColor,
             foregroundColor: kBlackColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(kDefaultPadding / 2),
             ),
           ),
-          onPressed: number.isEmpty
-              ? null
-              : () {
-                  // Reset error state when user inputs new numbers
-                  _resetErrorState();
-
-                  for (int i = 0; i < 6; i++) {
-                    if (_controllers[i].text.isEmpty) {
-                      _controllers[i].text = number;
-                      _animateField(i);
-
-                      // Check if this is the last field being filled
-                      if (i == 5) {
-                        String otp = _controllers.map((c) => c.text).join();
-                        if (otp.length == 6) {
-                          _verifyOTP(phone: phone, code: otp);
-                        }
-                      } else if (i < 5) {
-                        FocusScope.of(context).requestFocus(_focusNodes[i + 1]);
-                      }
-                      break;
-                    }
-                  }
-                },
+          onPressed: () => _handleDigitInput(number),
           child: Text(
             number,
             style: const TextStyle(fontSize: 24),
@@ -415,71 +412,32 @@ class _OtpScreenState extends State<OtpScreen>
     );
   }
 
-  Widget _nextButton() {
+  Widget _submitButton() {
     return Padding(
       padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
       child: SizedBox(
-        width: getProportionateScreenWidth(kDefaultPadding * 6),
+        width: getProportionateScreenWidth(kDefaultPadding * 7),
         height: getProportionateScreenHeight(kDefaultPadding * 3),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kWhiteColor,
-                  foregroundColor: kBlackColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(kDefaultPadding / 2),
-                      bottomLeft: Radius.circular(kDefaultPadding / 2),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  // Navigate to previous field
-                  for (int i = 0; i < 6; i++) {
-                    if (_focusNodes[i].hasFocus && i > 0) {
-                      FocusScope.of(context).requestFocus(_focusNodes[i - 1]);
-                      break;
-                    }
-                  }
-                },
-                child: const Icon(
-                  Icons.arrow_back_ios,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kPrimaryColor,
+            foregroundColor: kBlackColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(kDefaultPadding / 2),
+            ),
+          ),
+          onPressed: () {
+            if (otpCode.isNotEmpty && otpCode.length == 6) {
+              _verifyOTP(phone: widget.phone, code: otpCode);
+            }
+          },
+          child: _isLoading
+              ? loadingIndicator(size: 30, color: kSecondaryColor)
+              : const Icon(
+                  size: 26,
+                  HeroiconsOutline.arrowRight,
                   color: kBlackColor,
                 ),
-              ),
-            ),
-            SizedBox(width: 1), // Small divider
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kWhiteColor,
-                  foregroundColor: kBlackColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(kDefaultPadding / 2),
-                      bottomRight: Radius.circular(kDefaultPadding / 2),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  // Navigate to next field
-                  for (int i = 0; i < 5; i++) {
-                    if (_focusNodes[i].hasFocus) {
-                      FocusScope.of(context).requestFocus(_focusNodes[i + 1]);
-                      break;
-                    }
-                  }
-                },
-                child: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: kBlackColor,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -489,30 +447,20 @@ class _OtpScreenState extends State<OtpScreen>
     return Padding(
       padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
       child: SizedBox(
-        width: getProportionateScreenWidth(kDefaultPadding * 6),
+        width: getProportionateScreenWidth(kDefaultPadding * 7),
         height: getProportionateScreenHeight(kDefaultPadding * 3),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: kWhiteColor,
+            backgroundColor: kPrimaryColor,
             foregroundColor: kBlackColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(kDefaultPadding / 2),
             ),
           ),
-          onPressed: () {
-            _resetErrorState();
-
-            for (int i = 5; i >= 0; i--) {
-              if (_controllers[i].text.isNotEmpty) {
-                _controllers[i].clear();
-                _fieldFilled[i] = false;
-                FocusScope.of(context).requestFocus(_focusNodes[i]);
-                break;
-              }
-            }
-          },
+          onPressed: _handleBackspace,
           child: const Icon(
-            Icons.backspace,
+            size: 26,
+            HeroiconsOutline.backspace,
             color: kBlackColor,
           ),
         ),
@@ -520,42 +468,35 @@ class _OtpScreenState extends State<OtpScreen>
     );
   }
 
-  //
-  // /api/user/forgot_password_with_otp"
+//////////////////////////////API Requiest section///////////////////////////////////////////
+  //  /api/user/forgot_password_with_otp"
   void _verifyOTP({required String phone, required String code}) async {
     setState(() {
-      _loading = true;
+      _isLoading = true;
     });
     try {
       var data = await verifyOTP(phone, code);
-      // print("data $data");
-      // if (data != null && data['success']) {
       if (data != null && data["success"] != null && data["success"]) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   Service.showMessage("Password updated successfully", false),
-        // );
-
         _login(
           phone: phone,
-          password: password,
+          password: widget.password,
         );
       } else {
         setState(() {
-          _isError = true;
-          errorMessage =
-              "Your OTP is incorrect or no longer valid. Please try again.";
+          isError = true;
         });
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   Service.showMessage(
-        //       "Failed to verify OTP, please enter a valid OTP", true),
-        // );
-        // Navigator.of(context).pop();
+        _showErrorAnimation();
+        Service.showMessage(
+            context: context,
+            title:
+                "Your OTP is incorrect or no longer valid. Please try again.",
+            error: true);
       }
     } catch (e) {
-      // print("error");
+      _showErrorAnimation();
     } finally {
       setState(() {
-        _loading = false;
+        _isLoading = false;
       });
     }
   }
@@ -563,10 +504,9 @@ class _OtpScreenState extends State<OtpScreen>
   Future<dynamic> verifyOTP(String phone, String code) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/verify_otp";
-    // String token = Uuid().v4();
 
     setState(() {
-      _loading = true;
+      _isLoading = true;
     });
 
     Map data = {
@@ -589,33 +529,30 @@ class _OtpScreenState extends State<OtpScreen>
         Duration(seconds: 10),
         onTimeout: () {
           setState(() {
-            this._loading = false;
+            this._isLoading = false;
           });
           throw TimeoutException("The connection has timed out!");
         },
       );
-      // print(json.decode(response.body)['message']);
+
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              "Something went wrong! Please check your internet connection!"),
-          backgroundColor: kSecondaryColor,
-        ),
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong! Please check your internet connection!",
+        error: true,
       );
       return null;
     } finally {
       setState(() {
-        _loading = false;
+        _isLoading = false;
       });
     }
   }
 
   ////////login//////
-  bool _isLoading = false;
+
+  // get responseData => null;
   void _login({required String phone, required String password}) async {
     var loginResponseData = await login(phone, password, context);
     if (this.responseData != null) {
@@ -665,29 +602,25 @@ class _OtpScreenState extends State<OtpScreen>
           //   Navigator.of(context).pop();
           // }
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(
-            Service.showMessage(
-              "Your account has either been deleted or deactivated. Please reach out to our customer service via email or hotline 8707 to reactivate your account!",
-              true,
-              duration: 8,
-            ),
+          Service.showMessage(
+            context: context,
+            title:
+                "Your account has either been deleted or deactivated. Please reach out to our customer service via email or hotline 8707 to reactivate your account!",
+            error: true,
+            duration: 8,
           );
         }
       } else {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          Service.showMessage(
-            responseData['error_code'] != null
-                ? "${errorCodes['${responseData['error_code']}']}"
-                : responseData['error_description'],
-            false,
-          ),
+
+        Service.showMessage(
+          context: context,
+          title: responseData['error_code'] != null
+              ? "${errorCodes['${responseData['error_code']}']}"
+              : responseData['error_description'],
+          error: false,
         );
       }
     }
@@ -710,11 +643,12 @@ class _OtpScreenState extends State<OtpScreen>
       Map data = {
         "email": phoneNumber,
         "password": password,
-        "app_version": "3.1.4",
+        "app_version": appVersion,
+      
         // TODO: Change the next line before pushing to the App Store
-        "device_type": Platform.isIOS ? 'iOS' : "android",
+        // "device_type": Platform.isIOS ? 'iOS' : "android",
         // "device_type": "android",
-        // "device_type": 'iOS',
+        "device_type": 'iOS',
       };
       var body = json.encode(data);
       http.Response response = await http
@@ -738,8 +672,59 @@ class _OtpScreenState extends State<OtpScreen>
 
       return json.decode(response.body);
     } catch (e) {
-      // print(e);
       return null;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  ///////////////otp authentication/////
+
+  Future<dynamic> generateOtpAtLogin(
+      {required String phone, required String password}) async {
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/generate_otp_at_login";
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      Map data = {
+        "phone": phone,
+        "password": password,
+      };
+      var body = json.encode(data);
+      http.Response response = await http
+          .post(
+        Uri.parse(url),
+        headers: <String, String>{"Content-Type": "application/json"},
+        body: body,
+      )
+          .timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException("The connection has timed out!");
+        },
+      );
+      var newResponse = json.decode(response.body);
+      if (newResponse != null &&
+          (newResponse["success"] != null && newResponse["success"])) {
+        Service.showMessage(
+            context: context,
+            title: "OTP code sent to your phone...",
+            error: false);
+        return true;
+      } else {
+        Service.showMessage(
+            context: context,
+            title:
+                "Failed to send an OTP. Please check your phone and password and try again.",
+            error: true);
+        return false;
+      }
+    } catch (e) {
+      // print(e);
+      return false;
     } finally {
       setState(() {
         _isLoading = false;

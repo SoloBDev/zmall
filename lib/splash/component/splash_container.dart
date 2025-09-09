@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -60,11 +59,12 @@ class _SplashContainerState extends State<SplashContainer> {
         );
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage(
+          Service.showMessage(
+            context: context,
+            title:
                 "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                false,
-                duration: 3),
+            error: false,
+            duration: 3,
           );
         }
       }
@@ -91,7 +91,8 @@ class _SplashContainerState extends State<SplashContainer> {
       var appOpen = await Service.read('app_open');
       for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        DateTime now = DateTime.now().toUtc();
         int weekday;
         if (now.weekday == 7) {
           weekday = 0;
@@ -149,7 +150,8 @@ class _SplashContainerState extends State<SplashContainer> {
     } else {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+      // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+      DateTime now = DateTime.now().toUtc();
       DateFormat dateFormat = new DateFormat.Hm();
       // DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
       // DateTime zmallOpen = DateTime(now.year, now.month, now.day, 09, 00);
@@ -318,8 +320,12 @@ class _SplashContainerState extends State<SplashContainer> {
           setState(() {
             this._loading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage("Something went wrong!", true, duration: 3),
+
+          Service.showMessage(
+            context: context,
+            title: "Something went wrong!",
+            error: true,
+            duration: 3,
           );
           throw TimeoutException("The connection has timed out!");
         },
