@@ -636,6 +636,7 @@ class _OtpScreenState extends State<OtpScreen>
   Future<dynamic> login(String phoneNumber, String password, context) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/login";
+    String deviceType = Platform.isIOS ? 'iOS' : "android";
     setState(() {
       _isLoading = true;
     });
@@ -644,11 +645,11 @@ class _OtpScreenState extends State<OtpScreen>
         "email": phoneNumber,
         "password": password,
         "app_version": appVersion,
-      
-        // TODO: Change the next line before pushing to the App Store
-        // "device_type": Platform.isIOS ? 'iOS' : "android",
+        "device_type": deviceType,
+        //modified
+        //// todo: Change the next line before pushing to the App Store
         // "device_type": "android",
-        "device_type": 'iOS',
+        // "device_type": 'iOS',
       };
       var body = json.encode(data);
       http.Response response = await http

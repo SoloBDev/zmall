@@ -52,7 +52,7 @@ class VehicleContainer extends StatelessWidget {
             Image.asset(
               imageUrl,
               width: getProportionateScreenWidth(kDefaultPadding * 6),
-              height: getProportionateScreenHeight(kDefaultPadding * 4),
+              height: getProportionateScreenHeight(kDefaultPadding * 3),
               fit: BoxFit.cover,
             ),
             Text(
