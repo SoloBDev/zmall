@@ -99,8 +99,7 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
   void storeOpen(List stores) async {
     isOpen.clear();
     DateFormat dateFormat = new DateFormat.Hm();
-    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-    DateTime now = DateTime.now().toUtc();
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
     if (appOpen == null || appClose == null) {
       appOpen = await Service.read('app_open');
       appClose = await Service.read('app_close');
@@ -171,8 +170,7 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
           }
         }
       } else {
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
         DateFormat dateFormat = DateFormat.Hm();
         if (appClose != null) {

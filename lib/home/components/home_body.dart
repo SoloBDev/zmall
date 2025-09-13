@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -102,7 +101,8 @@ class _HomeBodyState extends State<HomeBody> {
   var orderFrom;
   Timer? timer;
   bool _isLocationDialogShown = false;
-  // bool _isUpdateDialogShown = false;
+  // bool _isUpdateScreenShown = false;
+  bool _isUpdateDialogShown = false;
   bool _isMessageDialogShown = false;
   List<bool> isPromotionalItemOpen = [];
   List<bool> isNearbyStoreOpen = [];
@@ -322,7 +322,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void getLocation() async {
-    debugPrint("\t=> \ in getLocation>>>>>");
+    // debugPrint("\t=> \ in getLocation>>>>>");
     var currentLocation = await FlLocation.getLocation();
     if (mounted) {
       setState(() {
@@ -337,7 +337,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void _doLocationTask() async {
-    debugPrint("checking user location");
+    // debugPrint("checking user location");
     LocationPermission _permissionStatus =
         await FlLocation.checkLocationPermission();
     if (_permissionStatus == LocationPermission.whileInUse ||
@@ -380,7 +380,7 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {
@@ -526,54 +526,123 @@ class _HomeBodyState extends State<HomeBody> {
     }
   }
 
-  void getAppKeys() async {
-    var data = await Service.read('ios_app_version');
-    var currentVersion = await Service.read('version');
-    _isClosed = await Service.readBool('is_closed') ??
-        await Service.readBool('is_closed');
-    promptMessage = await Service.read('closed_message');
-    var showUpdateDialog = await Service.readBool('ios_update_dialog');
-    debugPrint("=====================");
-    if (data != null) {
-      if (currentVersion.toString() != data.toString()) {
-        // if (showUpdateDialog && !_isUpdateDialogShown) {
-        //   _isUpdateDialogShown = true;
-        if (showUpdateDialog) {
-          debugPrint("\t=> \tShowing update dialog...");
+  Future<void> getAppKeys() async {
+    try {
+      // Read backend values
+      var data = await Service.read('ios_app_version');
+      var currentVersion = await Service.read('version');
+      // var isClosed = await Service.readBool('is_closed') ?? await Service.readBool('is_closed');
+      // var promptMessage = await Service.read('closed_message');
+      var showUpdateDialog = await Service.readBool('ios_update_dialog');
+
+      // debugPrint("=====================");
+      // debugPrint("Backend version: $data, Current version: $currentVersion");
+
+      if (data != null &&
+          currentVersion.toString() != data.toString() &&
+          showUpdateDialog == true &&
+          !_isUpdateDialogShown) {
+        _isUpdateDialogShown = true;
+
+        // debugPrint("\t=> \tShowing update dialog...");
+
+        if (context.mounted) {
           showDialog(
-            barrierDismissible: false,
             context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                backgroundColor: kPrimaryColor,
-                title: Text("New Version Update"),
-                content: Text(
-                    "We have detected an older version on the App on your phone."),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text(
-                      "Update Now",
-                      style: TextStyle(
-                        color: kSecondaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onPressed: () {
-                      Service.launchInWebViewOrVC("http://onelink.to/vnchst");
-                      Navigator.of(context).pop();
-                    },
+            barrierDismissible: false, // cannot dismiss by tapping outside
+            builder: (BuildContext ctx) {
+              return PopScope(
+                canPop: false, // disable back button
+                child: AlertDialog(
+                  backgroundColor: kPrimaryColor,
+                  title: const Text(
+                    "New Version Update",
+                    style: TextStyle(color: kBlackColor),
                   ),
-                ],
+                  content: const Text(
+                    "Looks like you’re using an older version of the app 🚀. Update now to enjoy the latest features and improvements!",
+                    style: TextStyle(color: kBlackColor),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text(
+                        "Update Now",
+                        style: TextStyle(
+                          color: kSecondaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () {
+                        Service.launchInWebViewOrVC("http://onelink.to/vnchst");
+                        Navigator.of(ctx).pop();
+                        _isUpdateDialogShown = false; // allow again if needed
+                      },
+                    ),
+                  ],
+                ),
               );
             },
           );
         }
       }
-    }
-    if (mounted) {
-      setState(() {});
+
+      // If you need UI refresh after the check
+      if (context.mounted) {
+        (context as Element).markNeedsBuild();
+      }
+    } catch (e) {
+      // debugPrint("Error while checking for update: $e\n$st");
     }
   }
+
+  // void getAppKeys() async {
+  //   var data = await Service.read('ios_app_version');
+  //   var currentVersion = await Service.read('version');
+  //   _isClosed = await Service.readBool('is_closed') ??
+  //       await Service.readBool('is_closed');
+  //   promptMessage = await Service.read('closed_message');
+  //   var showUpdateDialog = await Service.readBool('ios_update_dialog');
+  //   debugPrint("=====================");
+  //   if (data != null) {
+  //     if (currentVersion.toString() != data.toString()) {
+  //       // if (showUpdateDialog && !_isUpdateDialogShown) {
+  //       //   _isUpdateDialogShown = true;
+  //       if (showUpdateDialog) {
+  //         debugPrint("\t=> \tShowing update dialog...");
+  //         showDialog(
+  //           barrierDismissible: false,
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               backgroundColor: kPrimaryColor,
+  //               title: Text("New Version Update"),
+  //               content: Text(
+  //                   "We have detected an older version on the App on your phone."),
+  //               actions: <Widget>[
+  //                 TextButton(
+  //                   child: Text(
+  //                     "Update Now",
+  //                     style: TextStyle(
+  //                       color: kSecondaryColor,
+  //                       fontWeight: FontWeight.bold,
+  //                     ),
+  //                   ),
+  //                   onPressed: () {
+  //                     Service.launchInWebViewOrVC("http://onelink.to/vnchst");
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //       }
+  //     }
+  //   }
+  //   if (mounted) {
+  //     setState(() {});
+  //   }
+  // }
 
   void _getPromotionalItems() async {
     setState(() {
@@ -638,6 +707,7 @@ class _HomeBodyState extends State<HomeBody> {
         });
         getLocalPromotionalStores();
       }
+      // debugPrint( "promotionalStores ${promotionalStores["promotional_stores"][1]}");
     } else {
       setState(() {
         _loading = false;
@@ -792,8 +862,7 @@ class _HomeBodyState extends State<HomeBody> {
       var appOpen = await Service.read('app_open');
       for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         int weekday;
         if (now.weekday == 7) {
           weekday = 0;
@@ -856,8 +925,7 @@ class _HomeBodyState extends State<HomeBody> {
     } else {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateTime now = DateTime.now().toUtc();
+      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
       DateFormat dateFormat = new DateFormat.Hm();
       // DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
       // DateTime zmallOpen = DateTime(now.year, now.month, now.day, 09, 00);

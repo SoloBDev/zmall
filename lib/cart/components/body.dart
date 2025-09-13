@@ -287,8 +287,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   Future<bool> storeOpen() async {
     bool isStoreOpen = false;
     DateFormat dateFormat = new DateFormat.Hm();
-    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-    DateTime now = DateTime.now().toUtc();
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
     var appClose = await Service.read('app_close');
     var appOpen = await Service.read('app_open');
     DateTime zmallClose = dateFormat.parse(appClose);
@@ -463,8 +462,9 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                   _doLocationTask();
                                 } else {
                                   DateFormat dateFormat = new DateFormat.Hm();
-                                  DateTime now = DateTime.now().toUtc();
-                                  // .add(Duration(hours: 3));
+                                  DateTime now = DateTime.now()
+                                      .toUtc()
+                                      .add(Duration(hours: 3));
                                   var appClose =
                                       await Service.read('app_close');
                                   var appOpen = await Service.read('app_open');
@@ -907,7 +907,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                   //                     DateFormat dateFormat = new DateFormat.Hm();
                   //                     DateTime now = DateTime.now()
                   //                         .toUtc();
-                  //                       //  .add(Duration(hours: 3));
+                  //                       .add(Duration(hours: 3));
                   //                     var appClose =
                   //                         await Service.read('app_close');
                   //                     var appOpen =

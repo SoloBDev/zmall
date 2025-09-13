@@ -100,8 +100,7 @@ class _BodyState extends State<Body> {
   void storeOpen(List stores) async {
     isOpen.clear();
     DateFormat dateFormat = new DateFormat.Hm();
-    // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-    DateTime now = DateTime.now().toUtc();
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
     if (appOpen == null || appClose == null) {
       // debugPrint("Couldn't find app open-close time...fetching is locally");
       appOpen = await Service.read('app_open');
@@ -113,7 +112,7 @@ class _BodyState extends State<Body> {
       if (store['store_time'] != null && store['store_time'].length != 0) {
         for (var i = 0; i < store['store_time'].length; i++) {
           DateFormat dateFormat = new DateFormat.Hm();
-          // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
           int weekday;
           if (now.weekday == 7) {
             weekday = 0;
@@ -156,7 +155,7 @@ class _BodyState extends State<Body> {
         // debugPrint(store['store_time']);
         DateTime zmallOpen = dateFormat.parse("09:00");
         DateTime zmallClose = dateFormat.parse("21:00");
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
 
         zmallClose = DateTime(
             now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
@@ -579,7 +578,7 @@ class _BodyState extends State<Body> {
   }
 
   void storeClicked(dynamic store) async {
-    String now = DateTime.now().toUtc().toIso8601String();
+    String now = DateTime.now().toUtc().add(Duration(hours: 3)).toString();
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/add_user_and_store";
     Map data = {

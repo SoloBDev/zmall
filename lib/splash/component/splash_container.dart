@@ -11,7 +11,7 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
 import 'package:zmall/service.dart';
 import 'package:http/http.dart' as http;
-import '../../constants.dart';
+import 'package:zmall/constants.dart';
 import 'skip_button.dart';
 
 class SplashContainer extends StatefulWidget {
@@ -91,8 +91,7 @@ class _SplashContainerState extends State<SplashContainer> {
       var appOpen = await Service.read('app_open');
       for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         int weekday;
         if (now.weekday == 7) {
           weekday = 0;
@@ -150,8 +149,7 @@ class _SplashContainerState extends State<SplashContainer> {
     } else {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateTime now = DateTime.now().toUtc();
+      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
       DateFormat dateFormat = new DateFormat.Hm();
       // DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
       // DateTime zmallOpen = DateTime(now.year, now.month, now.day, 09, 00);

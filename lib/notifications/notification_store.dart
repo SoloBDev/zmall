@@ -138,8 +138,7 @@ class _NotificationStoreState extends State<NotificationStore> {
       var appOpen = await Service.read('app_open');
       for (var i = 0; i < store['store_time'].length; i++) {
         DateFormat dateFormat = new DateFormat.Hm();
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         int weekday;
         if (now.weekday == 7) {
           weekday = 0;
@@ -192,8 +191,7 @@ class _NotificationStoreState extends State<NotificationStore> {
     } else {
       var appClose = await Service.read('app_close');
       var appOpen = await Service.read('app_open');
-      // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateTime now = DateTime.now().toUtc();
+      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
       DateFormat dateFormat = new DateFormat.Hm();
       DateTime zmallClose = dateFormat.parse(appClose);
       DateTime zmallOpen = dateFormat.parse(appOpen);

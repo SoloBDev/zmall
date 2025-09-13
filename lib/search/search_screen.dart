@@ -168,8 +168,7 @@ class _SearchScreenState extends State<SearchScreen>
       if (store['store_time'] != null && store['store_time'].length != 0) {
         for (var i = 0; i < store['store_time'].length; i++) {
           DateFormat dateFormat = new DateFormat.Hm();
-          // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-          DateTime now = DateTime.now().toUtc();
+          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
           int weekday;
           if (now.weekday == 7) {
             weekday = 0;
@@ -229,8 +228,7 @@ class _SearchScreenState extends State<SearchScreen>
           }
         }
       } else {
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
         DateFormat dateFormat = DateFormat.Hm();
         if (appClose != null) {

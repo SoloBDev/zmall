@@ -103,8 +103,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       if (store['store_time'] != null && store['store_time'].length != 0) {
         for (var i = 0; i < store['store_time'].length; i++) {
           DateFormat dateFormat = new DateFormat.Hm();
-          // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-          DateTime now = DateTime.now().toUtc();
+          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
           int weekday;
           if (now.weekday == 7) {
             weekday = 0;
@@ -145,9 +144,7 @@ class FavoritesScreenState extends State<FavoritesScreen> {
       } else {
         DateFormat dateFormat = DateFormat.Hm();
         DateTime zmallClose = dateFormat.parse("21:00");
-        // DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime now = DateTime.now().toUtc();
-
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
         zmallClose = DateTime(
             now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
         now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
