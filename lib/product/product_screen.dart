@@ -95,7 +95,7 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {
@@ -112,7 +112,7 @@ class _ProductScreenState extends State<ProductScreen> {
       });
       getUser();
     } else {
-      debugPrint("No logged user found");
+      // debugPrint("No logged user found");
     }
   }
 
@@ -717,8 +717,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                     'store_id']);
                                                           }
                                                         } else {
-                                                          debugPrint(
-                                                              "User not logged in...");
+                                                          // debugPrint(  "User not logged in...");
                                                           Service.showMessage(
                                                             context: context,
                                                             title:
@@ -740,8 +739,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                         }
                                                       } else {
                                                         if (userData != null) {
-                                                          debugPrint(
-                                                              "Empty cart! Adding new item.");
+                                                          // debugPrint(  "Empty cart! Adding new item.");
                                                           addToCart(
                                                               item,
                                                               destination,
@@ -754,8 +752,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                           //         context)
                                                           //     .pop();
                                                         } else {
-                                                          debugPrint(
-                                                              "User not logged in...");
+                                                          // debugPrint( "User not logged in...");
                                                           Service.showMessage(
                                                             context: context,
                                                             title:
@@ -1176,8 +1173,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                             products[index]['items'][idx]['store_id']);
                                                                       }
                                                                     } else {
-                                                                      debugPrint(
-                                                                          "User not logged in...");
+                                                                      // debugPrint(  "User not logged in...");
                                                                       Service
                                                                           .showMessage(
                                                                         context:
@@ -1203,8 +1199,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                   } else {
                                                                     if (userData !=
                                                                         null) {
-                                                                      debugPrint(
-                                                                          "Empty cart! Adding new item.");
+                                                                      // debugPrint( "Empty cart! Adding new item.");
                                                                       addToCart(
                                                                           item,
                                                                           destination,
@@ -1217,8 +1212,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                       //         context)
                                                                       //     .pop();
                                                                     } else {
-                                                                      debugPrint(
-                                                                          "User not logged in...");
+                                                                      // debugPrint( "User not logged in...");
                                                                       Service.showMessage(
                                                                           context:
                                                                               context,

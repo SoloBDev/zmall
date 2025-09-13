@@ -68,7 +68,7 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
             children: [
               GestureDetector(
                 onTap: () {
-                  debugPrint("English selected...");
+                  // debugPrint("English selected...");
                   setState(() {
                     _isLoading = true;
                   });
@@ -90,7 +90,7 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  debugPrint("Chinese Selected");
+                  // debugPrint("Chinese Selected");
                   setState(() {
                     _isLoading = true;
                   });

@@ -113,7 +113,7 @@ class _ProviderLocationState extends State<ProviderLocation> {
 
   void getCurrentLocation() async {
     try {
-      debugPrint("getting provider location....");
+      // debugPrint("getting provider location....");
       var location = await getProviderLocation();
       if (location != null && location['success']) {
         Uint8List imageData = await getMarker(true);

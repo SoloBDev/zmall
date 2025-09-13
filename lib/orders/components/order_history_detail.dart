@@ -108,7 +108,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
   }
 
   void _getDetails() async {
-    debugPrint("Fetching order detail");
+    // debugPrint("Fetching order detail");
     var data = await getDetail();
     if (data != null) {
       setState(() {

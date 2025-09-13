@@ -24,7 +24,7 @@ class _GlobalReportState extends State<GlobalReport> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    debugPrint("Logging ecommerce purchase");
+    // debugPrint("Logging ecommerce purchase");
     MyApp.analytics
         .logPurchase(
             currency: 'ETB',

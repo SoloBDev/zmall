@@ -310,7 +310,7 @@ class BodyState extends State<Body> {
       });
       getUser();
     } else {
-      debugPrint("No logged user found");
+      // debugPrint("No logged user found");
     }
   }
 
@@ -653,7 +653,7 @@ class BodyState extends State<Body> {
     return Container(
       child: CustomListTile(
         press: () {
-          debugPrint("Navigate to store....");
+          // debugPrint("Navigate to store....");
           try {
             if (stores[index]['store_count'] > 1) {
               Navigator.push(
@@ -877,7 +877,7 @@ class BodyState extends State<Body> {
         },
         body: body,
       );
-      debugPrint("Store clicked");
+      // debugPrint("Store clicked");
     } catch (e) {
       // debugPrint(e);
     }

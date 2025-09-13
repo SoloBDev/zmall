@@ -150,7 +150,7 @@ class _OtpScreenState extends State<OtpScreen>
     bool isGeneratOtp = await generateOtpAtLogin(
         phone: widget.phone, password: widget.password);
     if (isGeneratOtp) {
-      debugPrint("after otp resend");
+      // debugPrint("after otp resend");
       _startCountdown();
     }
   }

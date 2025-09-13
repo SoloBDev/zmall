@@ -221,7 +221,7 @@ class _SplashContainerState extends State<SplashContainer> {
     if (data != null) {
       if (currentVersion.toString() != data.toString()) {
         if (showUpdateDialog) {
-          debugPrint("\t=> \tShowing update dialog...");
+          // debugPrint("\t=> \tShowing update dialog...");
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -260,15 +260,15 @@ class _SplashContainerState extends State<SplashContainer> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        debugPrint("Launch ad url");
+        // debugPrint("Launch ad url");
         CoreServices.saveAdClick(widget.adId);
         if (widget.urlLink.split("/")[0] == "item") {
           //TODO: Redirect to notification item
-          debugPrint("Redirect to notification item");
+          // debugPrint("Redirect to notification item");
           _getItemInformation(widget.urlLink.split("/")[1]);
         } else if (widget.urlLink.split("/")[0] == "store") {
           //TODO: Redirect to notification store
-          debugPrint("Redirect to notification store");
+          // debugPrint("Redirect to notification store");
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(

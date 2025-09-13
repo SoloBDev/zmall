@@ -413,7 +413,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     MyApp.messaging.triggerEvent("at_home");
     FirebaseMessaging.instance.subscribeToTopic("abroad");
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint("Opened by notification");
+      // debugPrint("Opened by notification");
       MyApp.analytics.logEvent(name: "notification_open");
     });
     getAbroadUser();
@@ -934,7 +934,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                           CustomButton(
                             title: "Retry",
                             press: () {
-                              debugPrint("retry....");
+                              // debugPrint("retry....");
                               checkAbroad();
                             },
                             color: kSecondaryColor,

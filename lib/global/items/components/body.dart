@@ -715,7 +715,7 @@ class _BodyState extends State<Body> {
                                         item, destination, storeLocation);
                                   }
                                 } else {
-                                  debugPrint("Empty cart! Adding new item.");
+                                  // debugPrint("Empty cart! Adding new item.");
                                   addToCart(item, destination, storeLocation);
                                   Navigator.of(context).pop();
                                 }

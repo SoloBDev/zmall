@@ -150,7 +150,7 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
     }; */
 
     var body = json.encode(data);
-    debugPrint("body $body");
+    // debugPrint("body $body");
     try {
       http.Response response = await http
           .post(

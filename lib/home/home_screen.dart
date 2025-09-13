@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Cart? cart;
 
   void getCart() async {
-    debugPrint("Fetching data");
+    // debugPrint("Fetching data");
     var data = await Service.read('cart');
     if (data != null) {
       setState(() {

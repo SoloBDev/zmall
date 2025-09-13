@@ -51,7 +51,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   int selected = -1; //  int selected = -2; //for defalut current location
 
   //for defalut the first vehicle
-  int selectedVehicle = 0; // int selectedVehicle = -1;
+  int selectedVehicle = -1;
   String vehicleId = "";
   var responseData;
   var vehicleList;
@@ -130,7 +130,16 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       setState(() {
         _loading = false;
         vehicleList = data;
-        // debugPrint("vehicleList $vehicleList");
+        // debugPrint("selectedVehicle before $selectedVehicle");
+        // debugPrint("selected vehicle id  before ${vehicleId}");
+        selectedVehicle = vehicleList['vehicles'] != null &&
+                vehicleList['vehicles'].isNotEmpty
+            ? 0
+            : -1;
+
+        vehicleId = vehicleList['vehicles'][selectedVehicle]['_id'];
+        // debugPrint("selectedVehicle after $selectedVehicle");
+        // debugPrint("selected vehicle id  after ${vehicleId}");
       });
     } else {
       setState(() {
@@ -582,6 +591,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                   vehicleId =
                                                       vehicleList['vehicles']
                                                           [index]['_id'];
+                                                  // debugPrint("selected vehicle id ontap $vehicleId");
                                                 } else {
                                                   selectedVehicle = -1;
                                                 }

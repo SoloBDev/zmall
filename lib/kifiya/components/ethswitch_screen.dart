@@ -94,7 +94,7 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
               initialSettings: settings,
               initialUrlRequest: URLRequest(url: WebUri(initUrl)),
               shouldOverrideUrlLoading: (controller, navigationAction) async {
-                debugPrint("Navigating to: ${navigationAction.request.url}");
+                // debugPrint("Navigating to: ${navigationAction.request.url}");
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
               onLoadStart: (controller, url) {
