@@ -5,27 +5,29 @@ import 'package:zmall/size_config.dart';
 import 'package:encrypt/encrypt.dart' as Encrypt;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-//unknown
-//const BASE_URL = "https://tele.zmallapp.com";
+// unknown
+// const BASE_URL = "https://tele.zmallapp.com";
+// Ethiopia old production
+// const BASE_URL = "https://app.zmallapp.com"; //Eth production
+// const BASE_URL = "http://159.65.147.111:8000"; //cloudocean server
 
 // south sudan production
 const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // const BASE_URL_JUBA = "http://196.189.124.241:8000"; //Juba Production
 
-//south sudan test
+// south sudan test
 // const BASE_URL_JUBA = "http://167.172.180.220:7000"; //test
 
-//Ethiopia production
-// const BASE_URL = "https://app.zmallapp.com"; //Eth production
-// const BASE_URL = "http://159.65.147.111:8000"; //cloudocean server
+// Ethiopia production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
-const BASE_URL = "https://app.zmall.et"; //Eth new domain
+const BASE_URL = "https://app.zmall.et"; //Eth new domain1225
+
 
 // Ethiopia test
 // const BASE_URL = "https://test.zmallapp.com"; //test
 //
-const String appVersion = "3.2.0"; // "3.1.4",
+const String appVersion = "3.2.1"; // "3.2.0",// "3.1.4",
 const kPrimaryColor = Colors.white;
 const kWhiteColor = Color(0xFFF3F4F8);
 const kYellowColor = Color(0xFFF7EA00);

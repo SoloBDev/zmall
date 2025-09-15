@@ -16,6 +16,9 @@
 		<string>ZMall</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
+		<!-- MinimumOSVersion -->
+		<key>MinimumOSVersion</key>
+		<string>15.0</string>
 		<key>CFBundleShortVersionString</key>
 		<string>$(MARKETING_VERSION)</string>
 		<key>CFBundleSignature</key>
