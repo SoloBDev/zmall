@@ -284,7 +284,7 @@ class _BodyState extends State<Body> {
                   // textFontSize:
                   //     getProportionateScreenWidth(kDefaultPadding),
                   title:
-                      "${Provider.of<ZLanguage>(context).addToCart}    ${price!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                      "${Provider.of<ZLanguage>(context).addToCart} ${price!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                   press: clearedRequired && price != 0
                       ? () async {
                           await Service.remove('images');

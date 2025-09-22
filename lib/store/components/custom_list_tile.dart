@@ -31,7 +31,8 @@ class CustomListTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: kPrimaryColor,
           borderRadius: BorderRadius.circular(kDefaultPadding),
-          border: Border.all(color: kBlackColor.withValues(alpha: 0.08)),
+          border: Border.all(color: kBlackColor.withValues(alpha: 0.06)),
+          // border: Border.all(color: kBlackColor.withValues(alpha: 0.08)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

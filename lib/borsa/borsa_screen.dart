@@ -218,10 +218,17 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             ),
                             SizedBox(height: 16),
                             Text(
-                              "Transaction history not found!",
+                              "No wallet history found!",
                               style: TextStyle(
                                 color: kGreyColor,
                                 fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              "Add funds to your wallet",
+                              style: TextStyle(
+                                color: kGreyColor.withValues(alpha: 0.6),
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -231,7 +238,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
             ),
 
           if (responseData != null &&
-              responseData['wallet_history'].length == 0)
+              (responseData['wallet_history'] != null &&
+                  responseData['wallet_history'].length == 0))
             SliverToBoxAdapter(
               child: Center(
                 child: Column(
@@ -256,7 +264,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
           // Transactions List
           if (responseData != null &&
-              responseData['wallet_history'].length != 0)
+              (responseData['wallet_history'] != null &&
+                  responseData['wallet_history'].length == 0))
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 childCount: 1,

@@ -5,13 +5,13 @@ import 'package:zmall/size_config.dart';
 
 class CustomBanner extends StatelessWidget {
   const CustomBanner({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.press,
     required this.subtitle,
     required this.title,
     this.isNetworkImage = false,
-  }) : super(key: key);
+  });
 
   final String imageUrl;
   final String title;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
+import 'package:zmall/size_config.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({
@@ -46,9 +47,10 @@ class CustomButton extends StatelessWidget {
                         title,
                         style: TextStyle(
                           color: titleColor ?? kPrimaryColor,
-                          fontSize: 16,
+                          fontSize: getProportionateScreenWidth(
+                              kDefaultPadding / 1.1),
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 2.0,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],
@@ -57,9 +59,10 @@ class CustomButton extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: titleColor ?? kPrimaryColor,
-                      fontSize: 16,
+                      fontSize:
+                          getProportionateScreenWidth(kDefaultPadding / 1.1),
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
+                      letterSpacing: 1.5,
                     ),
                   ),
             // isLoading != null && isLoading!

@@ -1,3 +1,4 @@
+///updated
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/constants.dart';
@@ -6,7 +7,7 @@ import 'package:zmall/size_config.dart';
 
 class StoresCard extends StatelessWidget {
   const StoresCard({
-    super.key,
+    Key? key,
     required this.imageUrl,
     required this.storeName,
     required this.deliveryType,
@@ -16,9 +17,7 @@ class StoresCard extends StatelessWidget {
     required this.ratingCount,
     this.featuredTag = "",
     this.isFeatured = false,
-    this.isStoreOpened,
-    // this.isPromotional = false,
-  });
+  }) : super(key: key);
 
   final String imageUrl;
   final String storeName;
@@ -26,287 +25,526 @@ class StoresCard extends StatelessWidget {
   final String distance, rating, ratingCount, featuredTag;
   final GestureTapCallback press;
   final bool isFeatured;
-  final bool? isStoreOpened;
-  // final bool isPromotional;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: press, child: featuredStoresCard(context),
-      // isFeatured ? featuredStoresCard(context) : nearbyStoresCard(context),
-    );
-  }
-
-  // Blurred details section for promotional stores
-  Widget _buildPromotionalDetailsSection(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(
-          getProportionateScreenWidth(kDefaultPadding / 2),
-        ),
-        bottomRight: Radius.circular(
-          getProportionateScreenWidth(kDefaultPadding / 2),
-        ),
-      ),
-      // child: BackdropFilter(
-      //   filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+      onTap: press,
       child: Container(
-        width: double.infinity,
-        color: kBlackColor.withValues(alpha: 0.8),
-        padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
-          vertical: getProportionateScreenHeight(kDefaultPadding / 3),
-        ),
-        child: _buildDetailsContent(context, true),
-      ),
-      // ),
-    );
-  }
-
-  // Common details content with different styling based on whether it's promotional
-  Widget _buildDetailsContent(BuildContext context, bool isPromotionalStyle) {
-    final textColor = isPromotionalStyle ? kWhiteColor : kBlackColor;
-    final iconColor = isPromotionalStyle ? kWhiteColor : kGreyColor;
-    final dotColor =
-        isPromotionalStyle ? kWhiteColor : kGreyColor.withValues(alpha: 0.6);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          maxLines: 1,
-          Service.capitalizeFirstLetters(storeName),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-              color: textColor,
-              overflow: TextOverflow.ellipsis),
-        ),
-        // store delivery type
-        Text(
-          Service.capitalizeFirstLetters(deliveryType),
-          style: TextStyle(
-            fontSize: 10,
-            color: kPrimaryColor,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        //store rating and distance
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            //store rating
-            Row(
-              spacing: 2,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.star_rounded,
-                  color: Colors.amber,
-                  size: getProportionateScreenWidth(kDefaultPadding * 0.9),
-                ),
-                Text(
-                  "$rating ($ratingCount)",
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: iconColor,
-                      ),
-                ),
-              ],
-            ),
-
-            ///dot separator
-            Container(
-              width: 5,
-              height: kDefaultPadding / 1.2,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: dotColor,
-              ),
-            ),
-
-            //store distance
-            Row(
-              spacing: 2,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.social_distance_rounded,
-                  color: iconColor,
-                  size: getProportionateScreenWidth(kDefaultPadding * 0.9),
-                ),
-                Text(
-                  "$distance KM",
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: iconColor,
-                      ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  ///nearbay store card
-  Widget featuredStoresCard(BuildContext context) {
-    // final constants = Constants(context: context);
-
-    return Container(
-      width: getProportionateScreenWidth(kDefaultPadding * 12),
-      // width: isFeatured
-      //     ? getProportionateScreenWidth(kDefaultPadding * 12)
-      //     : MediaQuery.sizeOf(context).width * 1.0,
-      decoration: BoxDecoration(
-        color: kPrimaryColor,
-        border: Border.all(color: kWhiteColor),
-        borderRadius: BorderRadius.circular(kDefaultPadding),
-        boxShadow: [
-          BoxShadow(
-            color: kBlackColor.withValues(alpha: 0.08),
-            spreadRadius: 0,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-          getProportionateScreenWidth(kDefaultPadding / 2),
+        // width: getProportionateScreenWidth(kDefaultPadding * 12),
+        width: getProportionateScreenWidth(kDefaultPadding * 11),
+        decoration: BoxDecoration(
+          color: kPrimaryColor,
+          // border: Border.all(
+          //   color: kWhiteColor,
+          // ),
+          border: Border.all(color: kBlackColor.withValues(alpha: 0.06)),
+          borderRadius: BorderRadius.circular(
+              getProportionateScreenWidth(kDefaultPadding / 2)),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: kBlackColor.withValues(alpha: 0.08),
+          //     spreadRadius: 0,
+          //     blurRadius: 8,
+          //     offset: Offset(0, 4),
+          //   ),
+          // ],
         ),
         child: Stack(
           children: [
-            // Conditional full-size background image for promotional stores
-            if (isFeatured)
-              Positioned.fill(
-                // width: double.infinity,
-                // height: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.fill,
-                        image: imageProvider,
-                      ),
-                    ),
-                  ),
-                  placeholder: (context, url) => Center(
-                    child: Container(
-                      width: getProportionateScreenWidth(kDefaultPadding * 5),
-                      height: getProportionateScreenHeight(kDefaultPadding * 5),
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: AssetImage('images/trending.png'),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-            // Content column
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Image container - standard for non-promotional, transparent for promotional
                 Container(
                   width: double.infinity,
-                  height: getProportionateScreenHeight(kDefaultPadding * 7),
-                  decoration: isFeatured
-                      ? null
-                      : BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
-                            topLeft: Radius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
+                  height: getProportionateScreenHeight(kDefaultPadding * 6.0),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                      topLeft: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                      topLeft: Radius.circular(
+                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: imageProvider,
                           ),
                         ),
-                  child: isFeatured
-                      ? null
-                      : ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
-                            topLeft: Radius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2)),
-                          ),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            imageBuilder: (context, imageProvider) => Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: imageProvider,
-                                ),
-                              ),
-                            ),
-                            placeholder: (context, url) => Center(
-                              child: Container(
-                                width: getProportionateScreenWidth(
-                                    kDefaultPadding * 5),
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding * 5),
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.transparent,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage('images/trending.png'),
-                                ),
-                              ),
+                      ),
+                      placeholder: (context, url) => Center(
+                        child: Container(
+                          width:
+                              getProportionateScreenWidth(kDefaultPadding * 5),
+                          height:
+                              getProportionateScreenHeight(kDefaultPadding * 5),
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.transparent,
                             ),
                           ),
                         ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage('images/trending.png'),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: getProportionateScreenWidth(kDefaultPadding / 2),
+                    right: getProportionateScreenWidth(kDefaultPadding / 2),
+                    bottom: getProportionateScreenHeight(kDefaultPadding / 3),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        maxLines: 1,
+                        Service.capitalizeFirstLetters(storeName),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: kBlackColor,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          //store rating and distance
 
-                // Details section - with blurred background for promotional, regular for standard
-                _buildPromotionalDetailsSection(context)
+                          Row(
+                            spacing: 2,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                color: Colors.amber,
+                                size: getProportionateScreenWidth(
+                                    kDefaultPadding * 0.9),
+                              ),
+                              Text(
+                                "$rating",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: kBlackColor,
+                                    ),
+                              ),
+                              Text(
+                                "($ratingCount)",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.normal,
+                                      color: kGreyColor,
+                                    ),
+                              ),
+                            ],
+                          ),
+                          //store distance
+                          // Row(
+                          //   spacing: 2,
+                          //   mainAxisAlignment: MainAxisAlignment.start,
+                          //   children: [
+                          //     Icon(
+                          //       Icons.social_distance_rounded,
+                          //       color: kGreyColor,
+                          //       size: getProportionateScreenWidth(
+                          //           kDefaultPadding * 0.9),
+                          //     ),
+                          //     Text(
+                          //       "$distance KM",
+                          //       style: Theme.of(context)
+                          //           .textTheme
+                          //           .labelSmall
+                          //           ?.copyWith(
+                          //             // fontWeight: FontWeight.w500,
+                          //             color: kGreyColor,
+                          //           ),
+                          //     ),
+                          //   ],
+                          // ),
 
-                // isFeatured
-                //     ? _buildPromotionalDetailsSection(context)
-                // : _buildStandardDetailsSection(context),
+                          ///dot separator
+
+                          Container(
+                            width: 5,
+                            height: kDefaultPadding / 1.2,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: kGreyColor.withValues(alpha: 0.6),
+                            ),
+                          ),
+
+                          ///store delivery type
+                          Text(
+                            Service.capitalizeFirstLetters(deliveryType),
+                            // Service.capitalizeFirstLetters(storeName),
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: kBlackColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
-
-            // Featured tag
-            // if (isFeatured)
-            Positioned(
-              right: -3,
-              top: -3,
-              child: Container(
-                height: getProportionateScreenWidth(kDefaultPadding * 4),
-                width: getProportionateScreenWidth(kDefaultPadding * 4),
-                child: Center(
-                    child: Image.asset("images/store_tags/$featuredTag.png")),
-              ),
-            )
+            if (isFeatured)
+              Positioned(
+                right: -1,
+                top: -3,
+                child: Container(
+                  height: getProportionateScreenWidth(kDefaultPadding * 3),
+                  width: getProportionateScreenWidth(kDefaultPadding * 3),
+                  //
+                  child: Center(
+                      child: Image.asset("images/store_tags/$featuredTag.png")),
+                ),
+              )
           ],
         ),
       ),
     );
   }
 }
+
+// with transparent overlay for featured stores
+// import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:flutter/material.dart';
+// import 'package:zmall/constants.dart';
+// import 'package:zmall/service.dart';
+// import 'package:zmall/size_config.dart';
+
+// class StoresCard extends StatelessWidget {
+//   const StoresCard({
+//     super.key,
+//     required this.imageUrl,
+//     required this.storeName,
+//     required this.deliveryType,
+//     required this.distance,
+//     required this.press,
+//     required this.rating,
+//     required this.ratingCount,
+//     this.featuredTag = "",
+//     this.isFeatured = false,
+//     this.isStoreOpened,
+//     // this.isPromotional = false,
+//   });
+
+//   final String imageUrl;
+//   final String storeName;
+//   final String deliveryType;
+//   final String distance, rating, ratingCount, featuredTag;
+//   final GestureTapCallback press;
+//   final bool isFeatured;
+//   final bool? isStoreOpened;
+//   // final bool isPromotional;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: press, child: featuredStoresCard(context),
+//       // isFeatured ? featuredStoresCard(context) : nearbyStoresCard(context),
+//     );
+//   }
+
+//   // Blurred details section for promotional stores
+//   Widget _buildPromotionalDetailsSection(BuildContext context) {
+//     return ClipRRect(
+//       borderRadius: BorderRadius.only(
+//         bottomLeft: Radius.circular(
+//           getProportionateScreenWidth(kDefaultPadding / 2),
+//         ),
+//         bottomRight: Radius.circular(
+//           getProportionateScreenWidth(kDefaultPadding / 2),
+//         ),
+//       ),
+//       // child: BackdropFilter(
+//       //   filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+//       child: Container(
+//         width: double.infinity,
+//         color: kBlackColor.withValues(alpha: 0.8),
+//         padding: EdgeInsets.symmetric(
+//           horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+//           vertical: getProportionateScreenHeight(kDefaultPadding / 3),
+//         ),
+//         child: _buildDetailsContent(context, true),
+//       ),
+//       // ),
+//     );
+//   }
+
+//   // Common details content with different styling based on whether it's promotional
+//   Widget _buildDetailsContent(BuildContext context, bool isPromotionalStyle) {
+//     final textColor = isPromotionalStyle ? kWhiteColor : kBlackColor;
+//     final iconColor = isPromotionalStyle ? kWhiteColor : kGreyColor;
+//     final dotColor =
+//         isPromotionalStyle ? kWhiteColor : kGreyColor.withValues(alpha: 0.6);
+
+//     return Column(
+//       mainAxisSize: MainAxisSize.min,
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(
+//           maxLines: 1,
+//           Service.capitalizeFirstLetters(storeName),
+//           style: Theme.of(context).textTheme.labelLarge?.copyWith(
+//               fontWeight: FontWeight.w900,
+//               color: textColor,
+//               overflow: TextOverflow.ellipsis),
+//         ),
+//         // store delivery type
+//         Text(
+//           Service.capitalizeFirstLetters(deliveryType),
+//           style: TextStyle(
+//             fontSize: 10,
+//             color: kPrimaryColor,
+//             fontWeight: FontWeight.w600,
+//           ),
+//         ),
+//         //store rating and distance
+//         Row(
+//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//           children: [
+//             //store rating
+//             Row(
+//               spacing: 2,
+//               mainAxisAlignment: MainAxisAlignment.start,
+//               children: [
+//                 Icon(
+//                   Icons.star_rounded,
+//                   color: Colors.amber,
+//                   size: getProportionateScreenWidth(kDefaultPadding * 0.9),
+//                 ),
+//                 Text(
+//                   "$rating ($ratingCount)",
+//                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
+//                         color: iconColor,
+//                       ),
+//                 ),
+//               ],
+//             ),
+
+//             ///dot separator
+//             Container(
+//               width: 5,
+//               height: kDefaultPadding / 1.2,
+//               decoration: BoxDecoration(
+//                 shape: BoxShape.circle,
+//                 color: dotColor,
+//               ),
+//             ),
+
+//             //store distance
+//             Row(
+//               spacing: 2,
+//               mainAxisAlignment: MainAxisAlignment.start,
+//               children: [
+//                 Icon(
+//                   Icons.social_distance_rounded,
+//                   color: iconColor,
+//                   size: getProportionateScreenWidth(kDefaultPadding * 0.9),
+//                 ),
+//                 Text(
+//                   "$distance KM",
+//                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
+//                         color: iconColor,
+//                       ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ],
+//     );
+//   }
+
+//   ///nearbay store card
+//   Widget featuredStoresCard(BuildContext context) {
+//     // final constants = Constants(context: context);
+
+//     return Container(
+//       width: getProportionateScreenWidth(kDefaultPadding * 12),
+//       // width: isFeatured
+//       //     ? getProportionateScreenWidth(kDefaultPadding * 12)
+//       //     : MediaQuery.sizeOf(context).width * 1.0,
+//       decoration: BoxDecoration(
+//         color: kPrimaryColor,
+//         border: Border.all(color: kWhiteColor),
+//         borderRadius: BorderRadius.circular(kDefaultPadding),
+//         boxShadow: [
+//           BoxShadow(
+//             color: kBlackColor.withValues(alpha: 0.08),
+//             spreadRadius: 0,
+//             blurRadius: 8,
+//             offset: Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: ClipRRect(
+//         borderRadius: BorderRadius.circular(
+//           getProportionateScreenWidth(kDefaultPadding / 2),
+//         ),
+//         child: Stack(
+//           children: [
+//             // Conditional full-size background image for promotional stores
+//             if (isFeatured)
+//               Positioned.fill(
+//                 // width: double.infinity,
+//                 // height: double.infinity,
+//                 child: CachedNetworkImage(
+//                   imageUrl: imageUrl,
+//                   imageBuilder: (context, imageProvider) => Container(
+//                     decoration: BoxDecoration(
+//                       image: DecorationImage(
+//                         fit: BoxFit.fill,
+//                         image: imageProvider,
+//                       ),
+//                     ),
+//                   ),
+//                   placeholder: (context, url) => Center(
+//                     child: Container(
+//                       width: getProportionateScreenWidth(kDefaultPadding * 5),
+//                       height: getProportionateScreenHeight(kDefaultPadding * 5),
+//                       child: CircularProgressIndicator(
+//                         valueColor: AlwaysStoppedAnimation<Color>(
+//                           Colors.transparent,
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                   errorWidget: (context, url, error) => Container(
+//                     decoration: BoxDecoration(
+//                       image: DecorationImage(
+//                         fit: BoxFit.cover,
+//                         image: AssetImage('images/trending.png'),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+
+//             // Content column
+//             Column(
+//               mainAxisSize: MainAxisSize.min,
+//               children: [
+//                 // Image container - standard for non-promotional, transparent for promotional
+//                 Container(
+//                   width: double.infinity,
+//                   height: getProportionateScreenHeight(kDefaultPadding * 7),
+//                   decoration: isFeatured
+//                       ? null
+//                       : BoxDecoration(
+//                           color: kPrimaryColor,
+//                           borderRadius: BorderRadius.only(
+//                             topRight: Radius.circular(
+//                                 getProportionateScreenWidth(
+//                                     kDefaultPadding / 2)),
+//                             topLeft: Radius.circular(
+//                                 getProportionateScreenWidth(
+//                                     kDefaultPadding / 2)),
+//                           ),
+//                         ),
+//                   child: isFeatured
+//                       ? null
+//                       : ClipRRect(
+//                           borderRadius: BorderRadius.only(
+//                             topRight: Radius.circular(
+//                                 getProportionateScreenWidth(
+//                                     kDefaultPadding / 2)),
+//                             topLeft: Radius.circular(
+//                                 getProportionateScreenWidth(
+//                                     kDefaultPadding / 2)),
+//                           ),
+//                           child: CachedNetworkImage(
+//                             imageUrl: imageUrl,
+//                             imageBuilder: (context, imageProvider) => Container(
+//                               decoration: BoxDecoration(
+//                                 image: DecorationImage(
+//                                   fit: BoxFit.cover,
+//                                   image: imageProvider,
+//                                 ),
+//                               ),
+//                             ),
+//                             placeholder: (context, url) => Center(
+//                               child: Container(
+//                                 width: getProportionateScreenWidth(
+//                                     kDefaultPadding * 5),
+//                                 height: getProportionateScreenHeight(
+//                                     kDefaultPadding * 5),
+//                                 child: CircularProgressIndicator(
+//                                   valueColor: AlwaysStoppedAnimation<Color>(
+//                                     Colors.transparent,
+//                                   ),
+//                                 ),
+//                               ),
+//                             ),
+//                             errorWidget: (context, url, error) => Container(
+//                               decoration: BoxDecoration(
+//                                 image: DecorationImage(
+//                                   fit: BoxFit.cover,
+//                                   image: AssetImage('images/trending.png'),
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+//                 ),
+
+//                 // Details section - with blurred background for promotional, regular for standard
+//                 _buildPromotionalDetailsSection(context)
+
+//                 // isFeatured
+//                 //     ? _buildPromotionalDetailsSection(context)
+//                 // : _buildStandardDetailsSection(context),
+//               ],
+//             ),
+
+//             // Featured tag
+//             // if (isFeatured)
+//             Positioned(
+//               right: -3,
+//               top: -3,
+//               child: Container(
+//                 height: getProportionateScreenWidth(kDefaultPadding * 4),
+//                 width: getProportionateScreenWidth(kDefaultPadding * 4),
+//                 child: Center(
+//                     child: Image.asset("images/store_tags/$featuredTag.png")),
+//               ),
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 ///nearby store card
 // Widget nearbyStoresCard(BuildContext context) {
@@ -503,275 +741,6 @@ class StoresCard extends StatelessWidget {
 //     ),
 //   );
 // }
-
-
-///updated 
-// // import 'package:cached_network_image/cached_network_image.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:zmall/constants.dart';
-// // import 'package:zmall/service.dart';
-// // import 'package:zmall/size_config.dart';
-
-// // class StoresCard extends StatelessWidget {
-// //   const StoresCard({
-// //     Key? key,
-// //     required this.imageUrl,
-// //     required this.storeName,
-// //     required this.deliveryType,
-// //     required this.distance,
-// //     required this.press,
-// //     required this.rating,
-// //     required this.ratingCount,
-// //     this.featuredTag = "",
-// //     this.isFeatured = false,
-// //   }) : super(key: key);
-
-// //   final String imageUrl;
-// //   final String storeName;
-// //   final String deliveryType;
-// //   final String distance, rating, ratingCount, featuredTag;
-// //   final GestureTapCallback press;
-// //   final bool isFeatured;
-
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     return GestureDetector(
-// //       onTap: press,
-// //       child: Container(
-// //         width: getProportionateScreenWidth(kDefaultPadding * 12),
-// //         decoration: BoxDecoration(
-// //           color: kPrimaryColor,
-// //           border: Border.all(color: kWhiteColor),
-// //           borderRadius: BorderRadius.circular(kDefaultPadding),
-// //           boxShadow: [
-// //             BoxShadow(
-// //               color: kBlackColor.withValues(
-// //                   alpha: 0.08), // Subtle shadow for depth
-// //               spreadRadius: 0,
-// //               blurRadius: 8,
-// //               offset: Offset(0, 4), // positions the shadow slightly below
-// //             ),
-// //           ],
-// //         ),
-// //         child: ClipRRect(
-// //           borderRadius: BorderRadius.circular(
-// //             getProportionateScreenWidth(kDefaultPadding / 2),
-// //           ),
-
-// //           // borderRadius: BorderRadius.only(
-// //           //   topRight: Radius.circular(
-// //           //     getProportionateScreenWidth(kDefaultPadding / 2),
-// //           //   ),
-// //           //   topLeft: Radius.circular(
-// //           //     getProportionateScreenWidth(kDefaultPadding / 2),
-// //           //   ),
-// //           // ),
-// //           child: Stack(
-// //             children: [
-// //               Column(
-// //                 mainAxisSize: MainAxisSize.min,
-// //                 children: [
-// //                   Container(
-// //                     width: double.infinity,
-// //                     height: getProportionateScreenHeight(kDefaultPadding * 8),
-// //                     decoration: BoxDecoration(
-// //                       color: kPrimaryColor,
-// //                       borderRadius: BorderRadius.only(
-// //                         topRight: Radius.circular(
-// //                             getProportionateScreenWidth(kDefaultPadding / 2)),
-// //                         topLeft: Radius.circular(
-// //                             getProportionateScreenWidth(kDefaultPadding / 2)),
-// //                       ),
-// //                     ),
-// //                     child: ClipRRect(
-// //                       borderRadius: BorderRadius.only(
-// //                         topRight: Radius.circular(
-// //                             getProportionateScreenWidth(kDefaultPadding / 2)),
-// //                         topLeft: Radius.circular(
-// //                             getProportionateScreenWidth(kDefaultPadding / 2)),
-// //                       ),
-// //                       child: CachedNetworkImage(
-// //                         imageUrl: imageUrl,
-// //                         imageBuilder: (context, imageProvider) => Container(
-// //                           decoration: BoxDecoration(
-// //                             image: DecorationImage(
-// //                               fit: BoxFit.cover,
-// //                               image: imageProvider,
-// //                             ),
-// //                           ),
-// //                         ),
-// //                         placeholder: (context, url) => Center(
-// //                           child: Container(
-// //                             width: getProportionateScreenWidth(
-// //                                 kDefaultPadding * 5),
-// //                             height: getProportionateScreenHeight(
-// //                                 kDefaultPadding * 5),
-// //                             child: CircularProgressIndicator(
-// //                               valueColor: AlwaysStoppedAnimation<Color>(
-// //                                 Colors.transparent,
-// //                               ),
-// //                             ),
-// //                           ),
-// //                         ),
-// //                         errorWidget: (context, url, error) => Container(
-// //                           decoration: BoxDecoration(
-// //                             image: DecorationImage(
-// //                               fit: BoxFit.cover,
-// //                               image: AssetImage('images/trending.png'),
-// //                             ),
-// //                           ),
-// //                         ),
-// //                       ),
-// //                     ),
-// //                   ),
-// //                   Container(
-// //                     width: double.infinity,
-// //                     color: kPrimaryColor,
-// //                     padding: EdgeInsets.symmetric(
-// //                       horizontal:
-// //                           getProportionateScreenWidth(kDefaultPadding / 2),
-// //                       vertical:
-// //                           getProportionateScreenHeight(kDefaultPadding / 3),
-// //                     ),
-// //                     child: Column(
-// //                       mainAxisSize: MainAxisSize.min,
-// //                       crossAxisAlignment: CrossAxisAlignment.start,
-// //                       children: [
-// //                         Text(
-// //                           maxLines: 1,
-// //                           Service.capitalizeFirstLetters(storeName),
-// //                           style: Theme.of(context)
-// //                               .textTheme
-// //                               .labelLarge
-// //                               ?.copyWith(
-// //                                   fontWeight: FontWeight.w900,
-// //                                   color: kBlackColor,
-// //                                   overflow: TextOverflow.ellipsis),
-// //                         ),
-// //                         Row(
-// //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-// //                           children: [],
-// //                         ),
-// //                         Row(
-// //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-// //                           children: [
-// //                             //store rating and distance
-
-// //                             Column(
-// //                               mainAxisSize: MainAxisSize.min,
-// //                               children: [
-// //                                 ///store rating
-// //                                 Row(
-// //                                   spacing: 2,
-// //                                   mainAxisAlignment: MainAxisAlignment.start,
-// //                                   children: [
-// //                                     Icon(
-// //                                       Icons.star_rounded,
-// //                                       color: Colors.amber,
-// //                                       size: getProportionateScreenWidth(
-// //                                           kDefaultPadding * 0.9),
-// //                                     ),
-// //                                     Text(
-// //                                       "$rating ($ratingCount)",
-// //                                       style: Theme.of(context)
-// //                                           .textTheme
-// //                                           .labelSmall
-// //                                           ?.copyWith(
-// //                                             // fontWeight: FontWeight.w500,
-// //                                             color: kGreyColor,
-// //                                           ),
-// //                                     ),
-// //                                   ],
-// //                                 ),
-
-// //                                 //store distance
-// //                                 Row(
-// //                                   spacing: 2,
-// //                                   mainAxisAlignment: MainAxisAlignment.start,
-// //                                   children: [
-// //                                     Icon(
-// //                                       Icons.social_distance_rounded,
-// //                                       color: kGreyColor,
-// //                                       size: getProportionateScreenWidth(
-// //                                           kDefaultPadding * 0.9),
-// //                                     ),
-// //                                     Text(
-// //                                       "$distance KM",
-// //                                       style: Theme.of(context)
-// //                                           .textTheme
-// //                                           .labelSmall
-// //                                           ?.copyWith(
-// //                                             // fontWeight: FontWeight.w500,
-// //                                             color: kGreyColor,
-// //                                           ),
-// //                                     ),
-// //                                   ],
-// //                                 ),
-// //                               ],
-// //                             ),
-
-// //                             ///dot separator
-
-// //                             Container(
-// //                               width: 5,
-// //                               height: kDefaultPadding / 1.2,
-// //                               decoration: BoxDecoration(
-// //                                 shape: BoxShape.circle,
-// //                                 color: kGreyColor.withValues(alpha: 0.6),
-// //                               ),
-// //                             ),
-
-// //                             ///store delivery type
-// //                             Container(
-// //                               padding: EdgeInsets.symmetric(
-// //                                 horizontal: getProportionateScreenWidth(
-// //                                     kDefaultPadding / 3),
-// //                                 vertical: getProportionateScreenHeight(
-// //                                     kDefaultPadding / 6),
-// //                               ),
-// //                               decoration: BoxDecoration(
-// //                                 color: kWhiteColor,
-// //                                 borderRadius:
-// //                                     BorderRadius.circular(kDefaultPadding),
-// //                               ),
-// //                               child: Text(
-// //                                 Service.capitalizeFirstLetters(deliveryType),
-// //                                 // Service.capitalizeFirstLetters(storeName),
-// //                                 maxLines: 1,
-// //                                 style: TextStyle(
-// //                                   fontSize: 10,
-// //                                   color: kBlackColor,
-// //                                   fontWeight: FontWeight.w500,
-// //                                 ),
-// //                               ),
-// //                             ),
-// //                           ],
-// //                         ),
-// //                       ],
-// //                     ),
-// //                   )
-// //                 ],
-// //               ),
-// //               if (isFeatured)
-// //                 Positioned(
-// //                   right: -3,
-// //                   top: -3,
-// //                   child: Container(
-// //                     height: getProportionateScreenWidth(kDefaultPadding * 4),
-// //                     width: getProportionateScreenWidth(kDefaultPadding * 4),
-// //                     //
-// //                     child: Center(
-// //                         child:
-// //                             Image.asset("images/store_tags/$featuredTag.png")),
-// //                   ),
-// //                 )
-// //             ],
-// //           ),
-// //         ),
-// //       ),
-// //     );
-// //   }
-// // }
 
 /////old
 // // // import 'package:cached_network_image/cached_network_image.dart';
