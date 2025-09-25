@@ -1275,7 +1275,7 @@ class _HomeBodyState extends State<HomeBody> {
                     .then((value) => getCart());
               },
               style: IconButton.styleFrom(
-                  backgroundColor: kWhiteColor,
+                  // backgroundColor: kWhiteColor,
                   padding: EdgeInsets.all(
                       getProportionateScreenWidth(kDefaultPadding / 1.5)),
                   shape: RoundedRectangleBorder(
@@ -1308,157 +1308,159 @@ class _HomeBodyState extends State<HomeBody> {
                   slivers: [
                     SliverToBoxAdapter(
                       child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal:
+                              getProportionateScreenWidth(kDefaultPadding),
+                          vertical:
+                              getProportionateScreenHeight(kDefaultPadding / 2),
+                        ),
                         decoration: BoxDecoration(
                           color: kPrimaryColor,
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 4),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            spacing: getProportionateScreenHeight(
-                                kDefaultPadding / 3),
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    userData != null
-                                        ? "${Provider.of<ZLanguage>(context, listen: true).hello}, ${userData['user']['first_name']}"
-                                        : "${Provider.of<ZLanguage>(context, listen: true).hello}, ${Provider.of<ZLanguage>(context, listen: true).guest}",
-                                    // "Delivery Done Right",
-                                    style: TextStyle(
-                                      fontSize: getProportionateScreenHeight(
-                                        kDefaultPadding * 1.15,
-                                      ),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing:
+                              getProportionateScreenHeight(kDefaultPadding / 3),
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
                                   userData != null
-                                      ? Text(
-                                          isRewarded
-                                              ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                              : (10 - remainder) != 1
-                                                  ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                                  : Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: true)
-                                                      .nextOrderCashback,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleSmall
-                                              ?.copyWith(
-                                                  color: kBlackColor.withValues(
-                                                      alpha: 0.8)),
-                                        )
-                                      : Text(
-                                          "Log in for your chance to win delivery cashbacks!"),
-                                ],
-                              ),
-
-                              LinearPercentIndicator(
-                                animation: true,
-                                lineHeight: getProportionateScreenHeight(
-                                    kDefaultPadding),
-                                barRadius: Radius.circular(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding)),
-                                backgroundColor: kBlackColor,
-                                progressColor: kSecondaryColor,
-                                center: Text(
-                                  userData != null
-                                      ? "$orderCount/${quotient + 1}0"
-                                      : "0/10",
+                                      ? "${Provider.of<ZLanguage>(context, listen: true).hello}, ${userData['user']['first_name']}"
+                                      : "${Provider.of<ZLanguage>(context, listen: true).hello}, ${Provider.of<ZLanguage>(context, listen: true).guest}",
+                                  // "Delivery Done Right",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: kPrimaryColor,
+                                      .labelLarge!
+                                      .copyWith(
+                                        color: kBlackColor,
+                                        fontSize: getProportionateScreenHeight(
+                                            kDefaultPadding),
+                                        fontWeight: Platform.isIOS
+                                            ? FontWeight.bold
+                                            : FontWeight.w800,
                                       ),
                                 ),
-                                percent:
-                                    userData != null ? (remainder / 10) : 0.1,
-                              ),
+                                userData != null
+                                    ? Text(
+                                        isRewarded
+                                            ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                            : (10 - remainder) != 1
+                                                ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                                                : Provider.of<ZLanguage>(
+                                                        context,
+                                                        listen: true)
+                                                    .nextOrderCashback,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                                color: kBlackColor.withValues(
+                                                    alpha: 0.8)),
+                                      )
+                                    : Text(
+                                        "Log in for your chance to win delivery cashbacks!"),
+                              ],
+                            ),
 
-                              /////search section
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  top: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                  bottom: getProportionateScreenHeight(
-                                      kDefaultPadding / 8),
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return SearchScreen(
-                                            cityId: responseData['city']
-                                                ['_id']!,
-                                            categories: categories!,
-                                            latitude: Provider.of<ZMetaData>(
-                                                    context,
-                                                    listen: false)
-                                                .latitude,
-                                            longitude: Provider.of<ZMetaData>(
-                                                    context,
-                                                    listen: false)
-                                                .longitude,
-                                          );
-                                        },
+                            LinearPercentIndicator(
+                              animation: true,
+                              lineHeight:
+                                  getProportionateScreenHeight(kDefaultPadding),
+                              barRadius: Radius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding)),
+                              backgroundColor: kBlackColor,
+                              progressColor: kSecondaryColor,
+                              center: Text(
+                                userData != null
+                                    ? "$orderCount/${quotient + 1}0"
+                                    : "0/10",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: kPrimaryColor,
+                                    ),
+                              ),
+                              percent:
+                                  userData != null ? (remainder / 10) : 0.1,
+                            ),
+
+                            /////search section
+                            Padding(
+                              padding: EdgeInsets.only(
+                                top: getProportionateScreenHeight(
+                                    kDefaultPadding / 2),
+                                bottom: getProportionateScreenHeight(
+                                    userData != null
+                                        ? kDefaultPadding / 4
+                                        : kDefaultFontSize),
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return SearchScreen(
+                                          cityId: responseData['city']['_id']!,
+                                          categories: categories!,
+                                          latitude: Provider.of<ZMetaData>(
+                                                  context,
+                                                  listen: false)
+                                              .latitude,
+                                          longitude: Provider.of<ZMetaData>(
+                                                  context,
+                                                  listen: false)
+                                              .longitude,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(20)),
+                                    // borderRadius: BorderRadius.circular(
+                                    //     getProportionateScreenWidth(
+                                    //         kDefaultPadding / 1.3)),
+                                    color: kWhiteColor,
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: getProportionateScreenWidth(20),
+                                  ),
+                                  height: getProportionateScreenHeight(
+                                      kDefaultPadding * 2.8),
+                                  // getProportionateScreenHeight(
+                                  // kDefaultPadding * 3),
+                                  alignment: Alignment.centerLeft,
+                                  child: Row(
+                                    spacing: getProportionateScreenWidth(
+                                        kDefaultPadding),
+                                    children: [
+                                      Icon(
+                                        FontAwesomeIcons.magnifyingGlass,
+                                        color:
+                                            kGreyColor.withValues(alpha: 0.8),
+                                        size: getProportionateScreenHeight(
+                                            kDefaultPadding),
                                       ),
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                          getProportionateScreenWidth(20)),
-                                      // borderRadius: BorderRadius.circular(
-                                      //     getProportionateScreenWidth(
-                                      //         kDefaultPadding / 1.3)),
-                                      color: kWhiteColor,
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal:
-                                          getProportionateScreenWidth(20),
-                                    ),
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding * 2.8),
-                                    // getProportionateScreenHeight(
-                                    // kDefaultPadding * 3),
-                                    alignment: Alignment.centerLeft,
-                                    child: Row(
-                                      spacing: getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                      children: [
-                                        Icon(
-                                          FontAwesomeIcons.magnifyingGlass,
-                                          color:
-                                              kGreyColor.withValues(alpha: 0.8),
-                                          size: getProportionateScreenHeight(
-                                              kDefaultPadding),
-                                        ),
-                                        Text("Looking for something?",
-                                            // Provider.of<ZLanguage>(context) .search,
-                                            style: TextStyle(
-                                              color: kGreyColor.withValues(
-                                                  alpha: 0.8),
-                                            )),
-                                      ],
-                                    ),
+                                      Text("Looking for something?",
+                                          // Provider.of<ZLanguage>(context) .search,
+                                          style: TextStyle(
+                                            color: kGreyColor.withValues(
+                                                alpha: 0.8),
+                                          )),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -1496,7 +1498,7 @@ class _HomeBodyState extends State<HomeBody> {
                                   ),
                                   Container(
                                     height: getProportionateScreenHeight(
-                                        kDefaultPadding * 10),
+                                        kDefaultPadding * 9),
                                     width: double.infinity,
                                     child: ListView.separated(
                                       scrollDirection: Axis.horizontal,
@@ -1685,7 +1687,7 @@ class _HomeBodyState extends State<HomeBody> {
                                   ),
                                   Container(
                                     height: getProportionateScreenHeight(
-                                        kDefaultPadding * 9),
+                                        kDefaultPadding * 8),
                                     width: double.infinity,
                                     child: ListView.separated(
                                       scrollDirection: Axis.horizontal,

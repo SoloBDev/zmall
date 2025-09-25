@@ -7,7 +7,7 @@ import 'package:zmall/size_config.dart';
 
 class StoresCard extends StatelessWidget {
   const StoresCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.storeName,
     required this.deliveryType,
@@ -17,7 +17,7 @@ class StoresCard extends StatelessWidget {
     required this.ratingCount,
     this.featuredTag = "",
     this.isFeatured = false,
-  }) : super(key: key);
+  });
 
   final String imageUrl;
   final String storeName;
@@ -57,7 +57,7 @@ class StoresCard extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: getProportionateScreenHeight(kDefaultPadding * 6.0),
+                  height: getProportionateScreenHeight(kDefaultPadding * 5.0),
                   decoration: BoxDecoration(
                     color: kPrimaryColor,
                     borderRadius: BorderRadius.only(

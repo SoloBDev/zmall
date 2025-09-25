@@ -458,6 +458,8 @@ class _EditProfileState extends State<EditProfile> {
   String oldPassword = "";
   String newPassword = "";
   String confirmPassword = "";
+  bool showOldPassword = false;
+  bool showNewPassword = false;
   void _showChangePasswordBottomSheet() {
     bool _isLoadingButton = false;
     final _formKey = GlobalKey<FormState>();
@@ -526,6 +528,7 @@ class _EditProfileState extends State<EditProfile> {
                           height: getProportionateScreenHeight(
                               kDefaultPadding / 2)),
                       CustomTextField(
+                        obscureText: !showOldPassword,
                         hintText: "Enter your old password",
                         onChanged: (val) {
                           oldPassword = val;
@@ -536,6 +539,17 @@ class _EditProfileState extends State<EditProfile> {
                           }
                           return null;
                         },
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              sheetSetState(() {
+                                showOldPassword = !showOldPassword;
+                              });
+                            },
+                            icon: Icon(
+                              showOldPassword
+                                  ? HeroiconsOutline.eyeSlash
+                                  : HeroiconsOutline.eye,
+                            )),
                       ),
                       SizedBox(
                           height:
@@ -548,6 +562,7 @@ class _EditProfileState extends State<EditProfile> {
                           height: getProportionateScreenHeight(
                               kDefaultPadding / 2)),
                       CustomTextField(
+                        obscureText: !showNewPassword,
                         hintText: "Enter your new password",
                         keyboardType: TextInputType.emailAddress,
                         onChanged: (val) {
@@ -561,6 +576,17 @@ class _EditProfileState extends State<EditProfile> {
                           }
                           return null;
                         },
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              sheetSetState(() {
+                                showNewPassword = !showNewPassword;
+                              });
+                            },
+                            icon: Icon(
+                              showNewPassword
+                                  ? HeroiconsOutline.eyeSlash
+                                  : HeroiconsOutline.eye,
+                            )),
                       ),
                       SizedBox(
                           height:
@@ -573,15 +599,12 @@ class _EditProfileState extends State<EditProfile> {
                           height: getProportionateScreenHeight(
                               kDefaultPadding / 2)),
                       CustomTextField(
-                        // label: 'Address',
-                        // initialValue: '',
                         hintText: "Confirm your new password",
                         onChanged: (val) {
                           sheetSetState(() {
                             confirmPassword = val;
                           });
                         },
-
                         suffixIcon: newPassword.isNotEmpty &&
                                 newPassword == confirmPassword
                             ? Icon(

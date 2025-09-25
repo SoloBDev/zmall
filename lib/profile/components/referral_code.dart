@@ -56,7 +56,7 @@ class ReferralScreen extends StatelessWidget {
                         child: Icon(
                           HeroiconsOutline.share,
                           size:
-                              getProportionateScreenWidth(kDefaultPadding * 3),
+                              getProportionateScreenWidth(kDefaultPadding * 2),
                         ),
                       ),
                       SizedBox(
@@ -90,14 +90,25 @@ class ReferralScreen extends StatelessWidget {
                       // SizedBox(
                       //     height: getProportionateScreenHeight(
                       //         kDefaultPadding / 2)),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 10),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
+                      Center(
+                        child: InkWell(
+                          onTap: () {
+                            Clipboard.setData(
+                                    new ClipboardData(text: referralCode))
+                                .then((_) {
+                              Service.showMessage(
+                                  context: context,
+                                  title: "Referral code copied to clipboard",
+                                  error: false);
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical:
+                                  getProportionateScreenHeight(kDefaultPadding),
+                            ),
                             decoration: BoxDecoration(
                               color: kPrimaryColor,
                               borderRadius: BorderRadius.circular(
@@ -109,68 +120,32 @@ class ReferralScreen extends StatelessWidget {
                               ),
                               // boxShadow: [boxShadow],
                             ),
-                            child: Center(
-                              child: Text(
-                                referralCode,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  referralCode,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                ),
+                                SizedBox(
+                                    width: getProportionateScreenWidth(
+                                        kDefaultPadding / 2)),
+                                Icon(
+                                  Icons.copy,
+                                  size: getProportionateScreenWidth(
+                                      kDefaultPadding),
+                                  color: kBlackColor,
+                                ),
+                              ],
                             ),
                           ),
-                          Container(
-                            alignment: Alignment.center,
-                            width: getProportionateScreenWidth(
-                                kDefaultPadding * 10),
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding * 3),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              border: Border.all(
-                                color: kWhiteColor,
-                              ),
-                              // boxShadow: [boxShadow],
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                Clipboard.setData(
-                                        new ClipboardData(text: referralCode))
-                                    .then((_) {
-                                  Service.showMessage(
-                                      context: context,
-                                      title:
-                                          "Referral code copied to clipboard",
-                                      error: false);
-                                });
-                              },
-                              child: Row(
-                                spacing: kDefaultPadding,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.copy),
-                                  Text(
-                                    "Copy Code",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          // fontStyle: FontStyle.italic,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),

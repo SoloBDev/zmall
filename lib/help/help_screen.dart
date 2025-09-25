@@ -19,7 +19,7 @@ class HelpScreen extends StatelessWidget {
       body: Padding(
         padding: EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
         child: Column(
-          spacing: kDefaultPadding / 2,
+          spacing: getProportionateScreenHeight(kDefaultPadding),
           children: [
             Container(
               padding: EdgeInsets.symmetric(
@@ -70,86 +70,91 @@ class HelpScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // ProfileListTile(
-            //   icon: Icon(
-            //     // Icons.call,
-            //     HeroiconsOutline.phone,
-            //     color: kSecondaryColor,
-            //   ),
-            //   title: "Call Now",
-            //   onTap: () {
-            //     // launch("tel:+251967575757");
-            //     launchUrl(Uri(scheme: 'tel', path: '+251967575757'));
-            //   },
-            // ),
-            // ProfileListTile(
-            //   icon: Icon(
-            //     // Icons.email,
-            //     HeroiconsOutline.envelope,
-            //     color: kSecondaryColor,
-            //   ),
-            //   title: "E-Mail",
-            //   onTap: () {
-            //     launchUrl(Uri(scheme: 'mailto', path: "info@zmallshop.com"));
-            //     // launch("mailto:info@zmallshop.com");
-            //   },
-            // ),
-            // ProfileListTile(
-            //   icon: Icon(
-            //     Icons.support_agent,
-            //     color: kSecondaryColor,
-            //   ),
-            //   title: "Call HOTLINE",
-            //   onTap: () {
-            //     // launch("tel:+2518707");
-            //     launchUrl(Uri(scheme: 'tel', path: '+2518707'));
-            //   },
-            // ),
-            ProfileListTile(
-              icon: Icon(
-                // Icons.lock,
-                HeroiconsOutline.shieldCheck,
-                color: kSecondaryColor,
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+              decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  border: Border.all(color: kWhiteColor),
+                  borderRadius: BorderRadius.circular(kDefaultPadding)),
+              child: Column(
+                spacing: getProportionateScreenHeight(kDefaultPadding),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Policy & Terms",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  ProfileListTile(
+                    icon: Icon(
+                      // Icons.lock,
+                      HeroiconsOutline.shieldCheck,
+                      color: kBlackColor,
+                    ),
+                    title: "Privacy Policy",
+                    onTap: () {
+                      Service.launchInWebViewOrVC(
+                          "https://app.zmallshop.com/terms.html");
+                    },
+                  ),
+                  ProfileListTile(
+                    icon: Icon(
+                      HeroiconsOutline.clipboardDocumentCheck,
+                      // Icons.assignment,
+                      color: kBlackColor,
+                    ),
+                    title: "Terms and Conditions",
+                    onTap: () {
+                      Service.launchInWebViewOrVC(
+                          "https://app.zmallshop.com/terms.html");
+                    },
+                  ),
+                ],
               ),
-              title: "Privacy Policy",
-              onTap: () {
-                Service.launchInWebViewOrVC(
-                    "https://app.zmallshop.com/terms.html");
-              },
             ),
-            ProfileListTile(
-              icon: Icon(
-                HeroiconsOutline.clipboardDocumentCheck,
-                // Icons.assignment,
-                color: kSecondaryColor,
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+              decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  border: Border.all(color: kWhiteColor),
+                  borderRadius: BorderRadius.circular(kDefaultPadding)),
+              child: Column(
+                spacing: getProportionateScreenHeight(kDefaultPadding),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Social Media",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  ProfileListTile(
+                    icon: Icon(
+                      FontAwesomeIcons.instagram,
+                      color: kBlackColor,
+                    ),
+                    title: "Follow us on Instagram",
+                    onTap: () {
+                      Service.launchInWebViewOrVC(
+                          "https://www.instagram.com/zmall_delivery/?hl=en");
+                    },
+                  ),
+                  ProfileListTile(
+                    icon: Icon(
+                      Icons.facebook_outlined,
+                      color: kBlackColor,
+                    ),
+                    title: "Follow us on Facebook",
+                    onTap: () {
+                      Service.launchInWebViewOrVC(
+                          "https://www.facebook.com/Zmallshop/");
+                    },
+                  ),
+                ],
               ),
-              title: "Terms and Conditions",
-              onTap: () {
-                Service.launchInWebViewOrVC(
-                    "https://app.zmallshop.com/terms.html");
-              },
-            ),
-            ProfileListTile(
-              icon: Icon(
-                FontAwesomeIcons.instagram,
-                color: kSecondaryColor,
-              ),
-              title: "Follow us on Instagram",
-              onTap: () {
-                Service.launchInWebViewOrVC(
-                    "https://www.instagram.com/zmall_delivery/?hl=en");
-              },
-            ),
-            ProfileListTile(
-              icon: Icon(
-                Icons.facebook_outlined,
-                color: kSecondaryColor,
-              ),
-              title: "Follow us on Facebook",
-              onTap: () {
-                Service.launchInWebViewOrVC(
-                    "https://www.facebook.com/Zmallshop/");
-              },
             ),
           ],
         ),
@@ -179,7 +184,7 @@ class HelpScreen extends StatelessWidget {
                 //  kBlackColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 20, color: kSecondaryColor
+              child: Icon(icon, size: 20, color: kBlackColor
                   //  kBlackColor,
                   ),
             ),

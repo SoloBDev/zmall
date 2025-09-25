@@ -281,8 +281,7 @@ class _BodyState extends State<Body> {
                   titleColor: clearedRequired && price != 0
                       ? kPrimaryColor
                       : kBlackColor,
-                  // textFontSize:
-                  //     getProportionateScreenWidth(kDefaultPadding),
+                  // textFontSize: getProportionateScreenWidth(kDefaultPadding),
                   title:
                       "${Provider.of<ZLanguage>(context).addToCart} ${price!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                   press: clearedRequired && price != 0

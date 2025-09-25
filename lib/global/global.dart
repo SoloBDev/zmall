@@ -440,96 +440,110 @@ class _GlobalScreenState extends State<GlobalScreen> {
   }) {
     showModalBottomSheet(
         context: context,
-        showDragHandle: true,
+        isScrollControlled: true,
         backgroundColor: kPrimaryColor,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(kDefaultPadding)),
-        builder: (context) {
-          return SafeArea(
-            minimum: MediaQuery.of(context).viewInsets,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
-              decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadiusGeometry.circular(kDefaultPadding)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (builder) {
+          return StatefulBuilder(builder: (context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context)
+                    .viewInsets
+                    .bottom, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: MediaQuery.of(context).viewInsets,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: kDefaultPadding,
+                      vertical: kDefaultPadding / 2),
+                  decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      borderRadius:
+                          BorderRadiusGeometry.circular(kDefaultPadding)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Account Verification",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Account Verification",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          InkWell(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Icon(HeroiconsOutline.xCircle),
+                          )
+                        ],
                       ),
-                      InkWell(
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Icon(HeroiconsOutline.xCircle),
+                      Text(
+                        "Please enter the one time pin(OTP) sent to your email.",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(
+                        height:
+                            getProportionateScreenHeight(kDefaultPadding * 2),
+                      ),
+                      CustomTextField(
+                        controller: _codeController,
+                        hintText: "Enter an OTP",
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      CustomButton(
+                        title: "Confirm",
+                        color: kSecondaryColor,
+                        press: () async {
+                          final code = _codeController.text.trim();
+
+                          if (code == smsCode) {
+                            await Service.saveBool('is_global', true);
+                            await Service.save(
+                                'global_user_id', phoneWithCountryCode);
+                            AbroadData abroadData = AbroadData(
+                                abroadEmail: email,
+                                abroadPhone: phoneWithCountryCode,
+                                abroadName: "$firstName $lastName");
+                            await Service.save("abroad_user", abroadData);
+                            Navigator.of(context).pop();
+                            setState(() {
+                              _loading = true;
+                            });
+
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => GlobalHome()));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                Service.showMessage1(
+                                    ("Error while verifying phone number. Please try again"),
+                                    true));
+                            setState(() {
+                              _loading = false;
+                            });
+                            Navigator.of(context).pop();
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoginScreen()));
+                          }
+                        },
                       )
                     ],
                   ),
-                  Text(
-                    "Please enter the one time pin(OTP) sent to your email.",
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding * 2),
-                  ),
-                  CustomTextField(
-                    controller: _codeController,
-                    hintText: "Enter an OTP",
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  CustomButton(
-                    title: "Confirm",
-                    color: kSecondaryColor,
-                    press: () async {
-                      final code = _codeController.text.trim();
-
-                      if (code == smsCode) {
-                        await Service.saveBool('is_global', true);
-                        await Service.save(
-                            'global_user_id', phoneWithCountryCode);
-                        AbroadData abroadData = AbroadData(
-                            abroadEmail: email,
-                            abroadPhone: phoneWithCountryCode,
-                            abroadName: "$firstName $lastName");
-                        await Service.save("abroad_user", abroadData);
-                        Navigator.of(context).pop();
-                        setState(() {
-                          _loading = true;
-                        });
-
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => GlobalHome()));
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            Service.showMessage1(
-                                ("Error while verifying phone number. Please try again"),
-                                true));
-                        setState(() {
-                          _loading = false;
-                        });
-                        Navigator.of(context).pop();
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen()));
-                      }
-                    },
-                  )
-                ],
+                ),
               ),
-            ),
-          );
+            );
+          });
         });
   }
 

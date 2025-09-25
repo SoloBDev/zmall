@@ -15,8 +15,8 @@ class CategoryCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width = getProportionateScreenWidth(kDefaultPadding * 3.5);
-    double height = getProportionateScreenHeight(kDefaultPadding * 3);
+    double width = getProportionateScreenWidth(kDefaultPadding * 3.3);
+    double height = getProportionateScreenHeight(kDefaultPadding * 2.8);
     BorderRadiusGeometry borderRadius = BorderRadius.circular(
       getProportionateScreenWidth(kDefaultPadding / 1.5),
     );
@@ -86,9 +86,9 @@ class CategoryCardWidget extends StatelessWidget {
                   // .bodyMedium
                   .bodySmall
                   ?.copyWith(
-                    color: kGreyColor,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      color: kGreyColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: getProportionateScreenWidth(10)),
             ),
           ],
         ),

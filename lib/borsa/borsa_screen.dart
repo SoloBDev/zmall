@@ -238,8 +238,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
             ),
 
           if (responseData != null &&
-              (responseData['wallet_history'] != null &&
-                  responseData['wallet_history'].length == 0))
+              responseData['wallet_history'] != null &&
+              responseData['wallet_history'].length == 0)
             SliverToBoxAdapter(
               child: Center(
                 child: Column(
@@ -264,8 +264,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
           // Transactions List
           if (responseData != null &&
-              (responseData['wallet_history'] != null &&
-                  responseData['wallet_history'].length == 0))
+              responseData['wallet_history'] != null &&
+              responseData['wallet_history'].length != 0)
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 childCount: 1,
@@ -303,142 +303,175 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return SafeArea(
-              minimum: EdgeInsets.only(
-                  left: getProportionateScreenWidth(kDefaultPadding),
-                  right: getProportionateScreenWidth(kDefaultPadding),
-                  top: getProportionateScreenHeight(kDefaultPadding / 2)),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(kDefaultPadding)),
-                ),
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: getProportionateScreenHeight(kDefaultPadding),
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context)
+                    .viewInsets
+                    .bottom, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.only(
+                    left: getProportionateScreenWidth(kDefaultPadding),
+                    right: getProportionateScreenWidth(kDefaultPadding),
+                    top: getProportionateScreenHeight(kDefaultPadding / 2)),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(kDefaultPadding)),
+                  ),
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: getProportionateScreenHeight(kDefaultPadding),
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Add to Wallet",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                              ),
+                              // if (showPayments)
+                              Text("Add $topUpAmount to Wallet",
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium),
+                            ],
+                          ),
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: Icon(
+                                Icons.cancel_outlined,
+                                color: kBlackColor.withValues(alpha: 0.5),
+                              ),
+                              // style: IconButton.styleFrom(
+                              //     backgroundColor: kWhiteColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Form(
+                        key: topupFormKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing:
+                              getProportionateScreenHeight(kDefaultPadding),
                           children: [
-                            Text(
-                              "Add to Wallet",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium!
-                                  .copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+                            CustomTextField(
+                              keyboardType: TextInputType.numberWithOptions(
+                                  decimal: true),
+                              onChanged: (val) {
+                                setState(() {
+                                  // Safely parse to double, default to 0.0 if empty
+                                  topUpAmount =
+                                      double.tryParse(val)!.ceilToDouble();
+                                });
+                              },
+                              hintText: "Enter the amount to topup",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Please enter the amount";
+                                }
+
+                                // Try parsing the value
+                                final double? price = double.tryParse(value);
+
+                                if (price == null) {
+                                  return "Invalid number entered.";
+                                }
+
+                                if (price < 100.0) {
+                                  final currency = Provider.of<ZMetaData>(
+                                          context,
+                                          listen: false)
+                                      .currency;
+                                  // return "The minimum amount you can add is 1 $currency.";
+                                  return "The minimum amount you can add is 100 $currency.";
+                                }
+                                if (price == 0.0) {
+                                  return "Amount cannot be zero.";
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(
+                              height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
                             ),
                             // if (showPayments)
-                            Text("Add $topUpAmount to Wallet",
+                            Text("Continue topup",
                                 style: Theme.of(context).textTheme.bodyMedium),
-                          ],
-                        ),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: Icon(
-                              Icons.cancel_outlined,
-                              color: kBlackColor.withValues(alpha: 0.5),
-                            ),
-                            // style: IconButton.styleFrom(
-                            //     backgroundColor: kWhiteColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Form(
-                      key: topupFormKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: getProportionateScreenHeight(kDefaultPadding),
-                        children: [
-                          CustomTextField(
-                            keyboardType:
-                                TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (val) {
-                              setState(() {
-                                // Safely parse to double, default to 0.0 if empty
-                                topUpAmount =
-                                    double.tryParse(val)!.ceilToDouble();
-                              });
-                            },
-                            hintText: "Enter the amount to topup",
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Please enter the amount";
-                              }
+                            // if (showPayments)
+                            PaymentCard(
+                              title: "Telebirr InApp",
+                              subtitle: "Pay with mobile app",
+                              imageUrl: "images/telebirr.png",
+                              onPressed: () {
+                                if (topupFormKey.currentState!.validate()) {
+                                  _getKifiyaGateway();
 
-                              // Try parsing the value
-                              final double? price = double.tryParse(value);
+                                  if (kifiyaGateway != null &&
+                                      kifiyaGateway['success'] &&
+                                      kifiyaGateway['payment_gateway'] !=
+                                          null) {
+                                    final telebirrId = getPaymentMethodIdByName(
+                                        "Telebirr inapp");
 
-                              if (price == null) {
-                                return "Invalid number entered.";
-                              }
-
-                              if (price < 100.0) {
-                                final currency = Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .currency;
-                                // return "The minimum amount you can add is 1 $currency.";
-                                return "The minimum amount you can add is 100 $currency.";
-                              }
-                              if (price == 0.0) {
-                                return "Amount cannot be zero.";
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ),
-                          // if (showPayments)
-                          Text("Continue topup",
-                              style: Theme.of(context).textTheme.bodyMedium),
-                          // if (showPayments)
-                          PaymentCard(
-                            title: "Telebirr InApp",
-                            subtitle: "Pay with mobile app",
-                            imageUrl: "images/telebirr.png",
-                            onPressed: () {
-                              if (topupFormKey.currentState!.validate()) {
-                                _getKifiyaGateway();
-
-                                if (kifiyaGateway != null &&
-                                    kifiyaGateway['success'] &&
-                                    kifiyaGateway['payment_gateway'] != null) {
-                                  final telebirrId = getPaymentMethodIdByName(
-                                      "Telebirr inapp");
-
-                                  setState(() {
-                                    paymentId = telebirrId;
-                                  });
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return TopupPaymentInApp(
-                                        amount: topUpAmount,
-                                        context: context,
-                                        traceNo: uniqueId,
-                                        phone: userData['user']['phone'],
-                                      );
-                                    }),
-                                  ).then((value) async {
-                                    if (value != null) {
-                                      if (value == false) {
+                                    setState(() {
+                                      paymentId = telebirrId;
+                                    });
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) {
+                                        return TopupPaymentInApp(
+                                          amount: topUpAmount,
+                                          context: context,
+                                          traceNo: uniqueId,
+                                          phone: userData['user']['phone'],
+                                        );
+                                      }),
+                                    ).then((value) async {
+                                      if (value != null) {
+                                        if (value == false) {
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                            setState(() {
+                                              topUpAmount = 0.0;
+                                            });
+                                          });
+                                          Navigator.of(context).pop();
+                                          Service.showMessage(
+                                            error: true,
+                                            context: context,
+                                            title:
+                                                "Faild to topup wallet amount. Please try again!.",
+                                          );
+                                        } else if ((value['code'] != null &&
+                                                value['code'] == 0) ||
+                                            (value['status'] != null &&
+                                                value['status']
+                                                        .toString()
+                                                        .toLowerCase() ==
+                                                    "success")) {
+                                          _addToWallet();
+                                        }
+                                      } else {
                                         WidgetsBinding.instance
                                             .addPostFrameCallback((_) {
                                           setState(() {
@@ -446,63 +479,41 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                           });
                                         });
                                         Navigator.of(context).pop();
-                                        Service.showMessage(
-                                          error: true,
-                                          context: context,
-                                          title:
-                                              "Faild to topup wallet amount. Please try again!.",
-                                        );
-                                      } else if ((value['code'] != null &&
-                                              value['code'] == 0) ||
-                                          (value['status'] != null &&
-                                              value['status']
-                                                      .toString()
-                                                      .toLowerCase() ==
-                                                  "success")) {
-                                        _addToWallet();
-                                      }
-                                    } else {
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                        setState(() {
-                                          topUpAmount = 0.0;
-                                        });
-                                      });
-                                      Navigator.of(context).pop();
 
-                                      Future.delayed(
-                                          Duration(milliseconds: 100), () {
-                                        if (mounted) {
-                                          Service.showMessage(
-                                            error: true,
-                                            context: context,
-                                            title:
-                                                "Faild to topup wallet amount. Please try again!.",
-                                          );
-                                        }
-                                      });
-                                    }
-                                  });
+                                        Future.delayed(
+                                            Duration(milliseconds: 100), () {
+                                          if (mounted) {
+                                            Service.showMessage(
+                                              error: true,
+                                              context: context,
+                                              title:
+                                                  "Faild to topup wallet amount. Please try again!.",
+                                            );
+                                          }
+                                        });
+                                      }
+                                    });
+                                  }
                                 }
-                              }
-                            },
-                          ),
-                          // if (!showPayments && amountController.text.isNotEmpty)
-                          //   CustomButton(
-                          //     title: "Submit",
-                          //     isLoading: isLoading,
-                          //     press: () async {
-                          //       if (topupFormKey.currentState!.validate()) {
-                          //         setState(() {
-                          //           showPayments = true;
-                          //         });
-                          //       }
-                          //     },
-                          //   ),
-                        ],
-                      ),
-                    )
-                  ],
+                              },
+                            ),
+                            // if (!showPayments && amountController.text.isNotEmpty)
+                            //   CustomButton(
+                            //     title: "Submit",
+                            //     isLoading: isLoading,
+                            //     press: () async {
+                            //       if (topupFormKey.currentState!.validate()) {
+                            //         setState(() {
+                            //           showPayments = true;
+                            //         });
+                            //       }
+                            //     },
+                            //   ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             );
@@ -1153,7 +1164,6 @@ class _BorsaScreenState extends State<BorsaScreen> {
       );
 
       responseData = json.decode(response.body);
-
       return json.decode(response.body);
     } catch (e) {
       return null;

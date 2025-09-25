@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:zmall/home/home_screen.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/orders/orders_screen.dart';
-import 'package:zmall/profile/components/body.dart';
+import 'package:zmall/profile/profile_screen.dart';
 import 'constants.dart';
 
 class TabScreen extends StatefulWidget {
