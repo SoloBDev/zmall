@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/orders/components/orders_history.dart';
 import 'components/body.dart';
 

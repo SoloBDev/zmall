@@ -1,8 +1,8 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/utils/size_config.dart';
 
 // ignore: must_be_immutable
 class CustomTextField extends StatelessWidget {

@@ -1,9 +1,9 @@
 ///updated
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class StoresCard extends StatelessWidget {
   const StoresCard({

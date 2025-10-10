@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/language.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class CustomSearchBar extends StatelessWidget {
   final String? hintText;

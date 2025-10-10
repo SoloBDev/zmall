@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class HelpScreen extends StatelessWidget {
   static String routeName = '/help';
@@ -14,16 +14,19 @@ class HelpScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text("Help"),
+        title: Text(
+          "Help & Support",
+        ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
         child: Column(
           spacing: getProportionateScreenHeight(kDefaultPadding),
           children: [
             Container(
               padding: EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding)),
               decoration: BoxDecoration(
                   color: kPrimaryColor,
                   border: Border.all(color: kWhiteColor),
@@ -45,8 +48,9 @@ class HelpScreen extends StatelessWidget {
                         onTap: () {
                           launchUrl(Uri(scheme: 'tel', path: '+251967575757'));
                         },
-                        icon: HeroiconsOutline.phone,
                         title: "Call Now",
+                        iconColor: kGreenColor,
+                        icon: HeroiconsSolid.phone,
                       ),
                       _actionCards(
                         onTap: () {
@@ -54,16 +58,16 @@ class HelpScreen extends StatelessWidget {
                               scheme: 'mailto', path: "info@zmallshop.com"));
                           // launch("mailto:info@zmallshop.com");
                         },
-                        icon: HeroiconsOutline.envelope,
                         title: "E-Mail",
+                        iconColor: Colors.redAccent,
+                        icon: HeroiconsSolid.envelope,
                       ),
                       _actionCards(
                         onTap: () {
-                          // launch("tel:+2518707");
                           launchUrl(Uri(scheme: 'tel', path: '+2518707'));
                         },
-                        icon: Icons.support_agent,
-                        title: "Call HOTLINE",
+                        icon: Icons.support_agent_rounded,
+                        title: "HOTLINE",
                       ),
                     ],
                   ),
@@ -72,55 +76,14 @@ class HelpScreen extends StatelessWidget {
             ),
             Container(
               padding: EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
-              decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  border: Border.all(color: kWhiteColor),
-                  borderRadius: BorderRadius.circular(kDefaultPadding)),
-              child: Column(
-                spacing: getProportionateScreenHeight(kDefaultPadding),
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Policy & Terms",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  ProfileListTile(
-                    icon: Icon(
-                      // Icons.lock,
-                      HeroiconsOutline.shieldCheck,
-                      color: kBlackColor,
-                    ),
-                    title: "Privacy Policy",
-                    onTap: () {
-                      Service.launchInWebViewOrVC(
-                          "https://app.zmallshop.com/terms.html");
-                    },
-                  ),
-                  ProfileListTile(
-                    icon: Icon(
-                      HeroiconsOutline.clipboardDocumentCheck,
-                      // Icons.assignment,
-                      color: kBlackColor,
-                    ),
-                    title: "Terms and Conditions",
-                    onTap: () {
-                      Service.launchInWebViewOrVC(
-                          "https://app.zmallshop.com/terms.html");
-                    },
-                  ),
-                ],
+                horizontal: getProportionateScreenWidth(kDefaultPadding),
+                vertical: getProportionateScreenHeight(kDefaultPadding),
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
               decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  border: Border.all(color: kWhiteColor),
-                  borderRadius: BorderRadius.circular(kDefaultPadding)),
+                color: kPrimaryColor,
+                border: Border.all(color: kWhiteColor),
+                borderRadius: BorderRadius.circular(kDefaultPadding),
+              ),
               child: Column(
                 spacing: getProportionateScreenHeight(kDefaultPadding),
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,30 +94,126 @@ class HelpScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  ProfileListTile(
-                    icon: Icon(
-                      FontAwesomeIcons.instagram,
-                      color: kBlackColor,
-                    ),
-                    title: "Follow us on Instagram",
-                    onTap: () {
-                      Service.launchInWebViewOrVC(
-                          "https://www.instagram.com/zmall_delivery/?hl=en");
-                    },
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      //Instagram
+                      _actionCards(
+                        icon: FontAwesomeIcons.instagram,
+                        iconColor: Colors.redAccent,
+                        title: "Instagram",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://www.instagram.com/zmall_delivery/?hl=en",
+                          );
+                        },
+                      ),
+
+                      //YouTube
+                      // _actionCards(
+                      //   icon: FontAwesomeIcons.youtube,
+                      //   iconColor: Colors.redAccent,
+                      //   title: "YouTube",
+                      //   onTap: () {
+                      //     Service.launchInWebViewOrVC(
+                      //       "https://www.youtube.com/@zoorya_et",
+                      //     );
+                      //   },
+                      // ),https://www.zmalldelivery.com
+                      //Tiktok
+                      _actionCards(
+                        icon: FontAwesomeIcons.tiktok,
+                        iconColor: kBlackColor,
+                        title: "Tiktok",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://www.tiktok.com/@zmall_delivery",
+                          );
+                        },
+                      ),
+                      //Facebook
+                      _actionCards(
+                        icon: FontAwesomeIcons.facebookF,
+                        iconColor: Colors.blue,
+                        title: "Facebook",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://www.facebook.com/Zmallshop/",
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  ProfileListTile(
-                    icon: Icon(
-                      Icons.facebook_outlined,
-                      color: kBlackColor,
-                    ),
-                    title: "Follow us on Facebook",
-                    onTap: () {
-                      Service.launchInWebViewOrVC(
-                          "https://www.facebook.com/Zmallshop/");
-                    },
+
+                  //
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // spacing: getProportionateScreenWidth(kDefaultPadding / 4),
+                    children: [
+                      //LinkedIn
+                      _actionCards(
+                        icon: FontAwesomeIcons.linkedin,
+                        iconColor: Colors.blue,
+                        title: "LinkedIn",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://www.linkedin.com/company/zmall/",
+                          );
+                        },
+                      ),
+                      //X
+                      //Follow us on
+                      _actionCards(
+                        icon: FontAwesomeIcons.xTwitter,
+                        iconColor: kBlackColor,
+                        title: "X",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://x.com/Zmall_Delivery",
+                          );
+                        },
+                      ),
+                      //Website
+                      _actionCards(
+                        icon: HeroiconsOutline.globeAlt,
+                        iconColor: Colors.blue,
+                        title: "Website",
+                        onTap: () {
+                          Service.launchInWebViewOrVC(
+                            "https://www.zmalldelivery.com",
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
+            ),
+            ProfileListTile(
+              icon: Icon(
+                // Icons.lock,
+                HeroiconsOutline.shieldCheck,
+                color: kBlackColor,
+              ),
+              title: "Privacy Policy",
+              onTap: () {
+                Service.launchInWebViewOrVC(
+                    "https://app.zmallshop.com/terms.html");
+              },
+            ),
+            ProfileListTile(
+              icon: Icon(
+                HeroiconsOutline.clipboardDocumentCheck,
+                // Icons.assignment,
+                color: kBlackColor,
+              ),
+              title: "Terms and Conditions",
+              onTap: () {
+                Service.launchInWebViewOrVC(
+                    "https://app.zmallshop.com/terms.html");
+              },
             ),
           ],
         ),
@@ -166,6 +225,7 @@ class HelpScreen extends StatelessWidget {
     required String title,
     required IconData icon,
     void Function()? onTap,
+    Color iconColor = kBlackColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -184,7 +244,7 @@ class HelpScreen extends StatelessWidget {
                 //  kBlackColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 20, color: kBlackColor
+              child: Icon(icon, size: 20, color: iconColor
                   //  kBlackColor,
                   ),
             ),
@@ -204,3 +264,45 @@ class HelpScreen extends StatelessWidget {
     );
   }
 }
+ // Container(
+            //   padding: EdgeInsets.symmetric(
+            //       horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
+            //   decoration: BoxDecoration(
+            //       color: kPrimaryColor,
+            //       border: Border.all(color: kWhiteColor),
+            //       borderRadius: BorderRadius.circular(kDefaultPadding)),
+            //   child: Column(
+            //     spacing: getProportionateScreenHeight(kDefaultPadding),
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         "Social Media",
+            //         style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //       ),
+            //       ProfileListTile(
+            //         icon: Icon(
+            //           FontAwesomeIcons.instagram,
+            //           color: kBlackColor,
+            //         ),
+            //         title: "Follow us on Instagram",
+            //         onTap: () {
+            //           Service.launchInWebViewOrVC(
+            //               "https://www.instagram.com/zmall_delivery/?hl=en");
+            //         },
+            //       ),
+            //       ProfileListTile(
+            //         icon: Icon(
+            //           Icons.facebook_outlined,
+            //           color: kBlackColor,
+            //         ),
+            //         title: "Follow us on Facebook",
+            //         onTap: () {
+            //           Service.launchInWebViewOrVC(
+            //               "https://www.facebook.com/Zmallshop/");
+            //         },
+            //       ),
+            //     ],
+            //   ),
+            // ),

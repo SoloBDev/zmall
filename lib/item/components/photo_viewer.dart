@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/metadata.dart';
 
 class PhotoViewer extends StatefulWidget {

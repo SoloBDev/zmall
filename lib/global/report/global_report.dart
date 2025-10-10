@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/home_page/global_home.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/cart.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class GlobalReport extends StatefulWidget {
   const GlobalReport({required this.price, required this.orderPaymentUniqueId});

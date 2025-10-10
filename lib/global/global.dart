@@ -4,13 +4,13 @@ import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'home_page/global_home.dart';
@@ -523,10 +523,12 @@ class _GlobalScreenState extends State<GlobalScreen> {
                                 MaterialPageRoute(
                                     builder: (context) => GlobalHome()));
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage1(
-                                    ("Error while verifying phone number. Please try again"),
-                                    true));
+                            Service.showMessage(
+                              context: context,
+                              title:
+                                  "Error while verifying phone number. Please try again",
+                              error: true,
+                            );
                             setState(() {
                               _loading = false;
                             });

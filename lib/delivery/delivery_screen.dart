@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/checkout/checkout_screen.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/delivery/components/vehicle_container.dart';
 import 'package:zmall/location/location_screen.dart';
@@ -18,8 +18,8 @@ import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/section_title.dart';
 import 'package:zmall/widgets/shimmer_widget.dart';
@@ -873,12 +873,13 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           "bicycle" &&
                       storeToCustomerDistance > 5 &&
                       !selfPickup) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage1(
-                            Provider.of<ZLanguage>(context, listen: false)
-                                .farDeliveryLocation,
-                            true,
-                            duration: 5));
+                    Service.showMessage(
+                      context: context,
+                      title: Provider.of<ZLanguage>(context, listen: false)
+                          .farDeliveryLocation,
+                      error: true,
+                      duration: 5,
+                    );
                   } else {
                     setState(() {
                       cart!.destinationAddress = destinationAddress;
@@ -1116,10 +1117,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         this._loading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage1(
-              "Something went wrong! Check your internet and try again", true,
-              duration: 3),
+        Service.showMessage(
+          context: context,
+          title: "Something went wrong! Check your internet and try again",
+          error: true,
+          duration: 3,
         );
       }
 
@@ -1173,10 +1175,11 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         this._loading = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage1(
-              "Something went wrong! Check your internet and try again", true,
-              duration: 3),
+        Service.showMessage(
+          context: context,
+          title: "Something went wrong! Check your internet and try again",
+          error: true,
+          duration: 3,
         );
       }
       return null;

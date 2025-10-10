@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 
 import 'components/body.dart';
 

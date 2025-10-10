@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/utils/size_config.dart';
 
 Color baseColor = Colors.grey[300]!; // Color(0xff3a3a3a);
 Color highlightColor = Colors.grey[100]!; // Color(0xff4a4a4a);

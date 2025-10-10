@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 
 class CyberSource extends StatefulWidget {
   const CyberSource({required this.url});

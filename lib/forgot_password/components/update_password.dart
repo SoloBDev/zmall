@@ -4,13 +4,13 @@ import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/register/components/custom_suffix_icon.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 
 class UpdatePasswordScreen extends StatefulWidget {

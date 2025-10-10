@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/services/service.dart';
 
 class ZLanguage extends ChangeNotifier {
   String password = "Password";

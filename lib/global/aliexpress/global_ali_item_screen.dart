@@ -9,14 +9,14 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
 import 'package:zmall/aliexpress/model/ali_model_class.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/global/cart/global_cart.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class GlobalAliItemScreen extends StatefulWidget {
   final int productId;
@@ -119,8 +119,12 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
           setState(() {
             isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage1("Error loading item detail ", true));
+
+          Service.showMessage(
+            context: context,
+            title: "Error loading item detail ",
+            error: true,
+          );
         }
       }
     } catch (e) {
@@ -174,8 +178,11 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+        context: context,
+        title: "Location permission denied. Please enable and try again",
+        error: true,
+      );
       FlLocation.requestLocationPermission();
     }
   }
@@ -207,8 +214,11 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+            context: context,
+            title: "Location service disabled. Please enable and try again",
+            error: true,
+          );
         }
       }
     } else {
@@ -251,8 +261,11 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
     );
     Service.save('abroad_cart', cart!.toJson());
     Service.save('abroad_aliexpressCart', aliexpressCart!.toJson());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(Service.showMessage1("Item added to cart!", false));
+    Service.showMessage(
+      context: context,
+      title: "Item added to cart!",
+      error: false,
+    );
     getCart();
   }
 
@@ -541,16 +554,23 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
     return InkWell(
       onTap: () async {
         if (!isInStock) {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-              "Sorry, this item is currently out of stock.", true,
-              duration: 5));
+          Service.showMessage(
+            context: context,
+            title: "Sorry, this item is currently out of stock.",
+            error: true,
+            duration: 5,
+          );
           return;
         }
 
         if (abroadData == null) {
           // debugPrint("User not logged in...");
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage1("Please login in...", true));
+
+          Service.showMessage(
+            context: context,
+            title: "Please login in...",
+            error: true,
+          );
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -630,14 +650,18 @@ class _AliItemScreenState extends State<GlobalAliItemScreen> {
               Service.save('abroad_cart', aliexpressCart!.cart);
               Service.save('abroad_aliexpressCart', aliexpressCart!.toJson());
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                Service.showMessage1("Item added to cart", false),
+              Service.showMessage(
+                context: context,
+                title: "Item added to cart",
+                error: false,
               );
               getCart();
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage1("Selected item is already in cart", true),
+            Service.showMessage(
+              context: context,
+              title: "Selected item is already in cart",
+              error: true,
             );
           }
         });

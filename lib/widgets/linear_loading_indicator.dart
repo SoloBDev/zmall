@@ -1,37 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class LinearLoadingIndicator extends StatelessWidget {
   final String? title;
-  const LinearLoadingIndicator({super.key, this.title});
+  final double? width;
+  final double? height;
+  final Color? backgroundColor;
+  final double? fontSize;
+  const LinearLoadingIndicator({
+    super.key,
+    this.title,
+    this.width,
+    this.height,
+    this.backgroundColor,
+    this.fontSize,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Container(
-        height: kDefaultPadding * 5,
-        width: kDefaultPadding * 5,
+        height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
+        width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
         decoration: BoxDecoration(
-            color: kGreyColor.withValues(alpha: 0.8),
+            color: backgroundColor ?? kGreyColor.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SpinKitWave(
-              color: kSecondaryColor,
-              size: getProportionateScreenWidth(kDefaultPadding),
-            ),
-            SizedBox(height: kDefaultPadding / 2),
-            Text(title ?? "Loading...",
-                style: Theme.of(context)
-                    .textTheme
-                    .labelLarge!
-                    .copyWith(color: kPrimaryColor)
-                // TextStyle(color: kPrimaryColor),
-                ),
-          ],
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+            children: [
+              SpinKitWave(
+                color: kSecondaryColor,
+                size: getProportionateScreenWidth(kDefaultPadding),
+              ),
+              Text(title ?? "Loading...",
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                      color: kPrimaryColor, fontSize: fontSize ?? 14)),
+            ],
+          ),
         ),
       ),
     );

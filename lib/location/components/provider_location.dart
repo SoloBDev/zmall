@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:http/http.dart' as http;
 
 class ProviderLocation extends StatefulWidget {

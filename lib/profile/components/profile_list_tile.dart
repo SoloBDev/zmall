@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class ProfileListTile extends StatelessWidget {
   const ProfileListTile({
@@ -13,6 +13,8 @@ class ProfileListTile extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.showTrailing = true,
+    this.trailing,
+    this.margin,
   });
 
   final Icon icon;
@@ -21,7 +23,8 @@ class ProfileListTile extends StatelessWidget {
   final Color? titleColor;
   final Color? borderColor;
   final bool showTrailing;
-
+  final Widget? trailing;
+  final EdgeInsetsGeometry? margin;
   final GestureTapCallback onTap;
 
   @override
@@ -31,6 +34,7 @@ class ProfileListTile extends StatelessWidget {
         vertical: 0,
         horizontal: getProportionateScreenHeight(kDefaultPadding / 8),
       ),
+      margin: margin,
       decoration: BoxDecoration(
           color: titleColor != null
               ? titleColor!.withValues(alpha: 0.1)
@@ -57,12 +61,20 @@ class ProfileListTile extends StatelessWidget {
               ),
         ),
         tileColor: kPrimaryColor,
-        trailing: showTrailing
-            ? Icon(
-                size: 18,
-                HeroiconsSolid.chevronRight,
-                color: titleColor ?? kBlackColor)
-            : null,
+        // trailing: showTrailing
+        //     ? Icon(
+        //         size: 18,
+        //         HeroiconsSolid.chevronRight,
+        //         color: titleColor ?? kBlackColor)
+        //     : null,
+        trailing: trailing ??
+            (showTrailing
+                ? Icon(
+                    size: 18,
+                    HeroiconsSolid.chevronRight,
+                    color: titleColor ?? kBlackColor,
+                  )
+                : null),
         onTap: onTap,
         leadingAndTrailingTextStyle: TextStyle(
           fontSize: 10,

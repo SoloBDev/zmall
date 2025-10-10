@@ -9,12 +9,12 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zmall/borsa/components/payment_card.dart';
 import 'package:zmall/borsa/topup_kifiya/inapp_topup_payment.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/order_status_row.dart';
 import 'package:zmall/widgets/sliver_appbar_delegate.dart';
@@ -22,10 +22,7 @@ import 'package:zmall/widgets/sliver_appbar_delegate.dart';
 class BorsaScreen extends StatefulWidget {
   static String routeName = '/borsa';
 
-  const BorsaScreen({
-    super.key,
-    @required this.userData,
-  });
+  const BorsaScreen({super.key, @required this.userData});
 
   final userData;
 
@@ -93,15 +90,19 @@ class _BorsaScreenState extends State<BorsaScreen> {
       });
       if (responseData['error_code'] != null &&
           errorCodes['${responseData['error_code']}'] != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("${errorCodes['${responseData['error_code']}']}"),
-          backgroundColor: kSecondaryColor,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${errorCodes['${responseData['error_code']}']}"),
+            backgroundColor: kSecondaryColor,
+          ),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("No wallet transaction history"),
-          backgroundColor: kSecondaryColor,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("No wallet transaction history"),
+            backgroundColor: kSecondaryColor,
+          ),
+        );
       }
     }
   }
@@ -125,33 +126,31 @@ class _BorsaScreenState extends State<BorsaScreen> {
       ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: _balanceCardUIOne(textTheme: textTheme),
-          ),
+          SliverToBoxAdapter(child: _zWalletCard(textTheme: textTheme)),
 
           // Transactions Section
           SliverPersistentHeader(
             pinned: true,
             delegate: SliverAppBarDelegate(
-              minHeight: 90,
-              maxHeight: 90,
+              minHeight: getProportionateScreenWidth(80),
+              maxHeight: getProportionateScreenWidth(80),
               child: Container(
                 color: kPrimaryColor,
                 padding: EdgeInsets.symmetric(
                   horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenWidth(kDefaultPadding / 2),
+                  vertical: getProportionateScreenHeight(kDefaultPadding / 4),
                 ),
                 child: Column(
-                  spacing: kDefaultPadding / 2,
+                  spacing: getProportionateScreenHeight(kDefaultPadding / 2),
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Section Title
                     Text(
                       "Transactions",
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: kBlackColor,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: kBlackColor,
+                      ),
                     ),
 
                     // Filter Chips
@@ -160,29 +159,37 @@ class _BorsaScreenState extends State<BorsaScreen> {
                       child: Row(
                         children: [
                           _buildFilterChip(
-                              "All",
-                              HeroiconsOutline.arrowPathRoundedSquare,
-                              selectedFilter == "All", () {
-                            setState(() {
-                              selectedFilter = "All";
-                            });
-                          }),
+                            "All",
+                            HeroiconsOutline.arrowPathRoundedSquare,
+                            selectedFilter == "All",
+                            () {
+                              setState(() {
+                                selectedFilter = "All";
+                              });
+                            },
+                          ),
                           SizedBox(width: 12),
                           _buildFilterChip(
-                              "Received",
-                              HeroiconsOutline.arrowDown,
-                              selectedFilter == "Received", () {
-                            setState(() {
-                              selectedFilter = "Received";
-                            });
-                          }),
+                            "Received",
+                            HeroiconsOutline.arrowDown,
+                            selectedFilter == "Received",
+                            () {
+                              setState(() {
+                                selectedFilter = "Received";
+                              });
+                            },
+                          ),
                           SizedBox(width: 12),
-                          _buildFilterChip("Sent", HeroiconsOutline.arrowUp,
-                              selectedFilter == "Sent", () {
-                            setState(() {
-                              selectedFilter = "Sent";
-                            });
-                          }),
+                          _buildFilterChip(
+                            "Sent",
+                            HeroiconsOutline.arrowUp,
+                            selectedFilter == "Sent",
+                            () {
+                              setState(() {
+                                selectedFilter = "Sent";
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -196,8 +203,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
               child: isLoading
                   ? Center(
                       child: Padding(
-                        padding:
-                            const EdgeInsets.only(top: kDefaultPadding * 2),
+                        padding: const EdgeInsets.only(
+                          top: kDefaultPadding * 2,
+                        ),
                         child: SpinKitWave(
                           color: kSecondaryColor,
                           size: getProportionateScreenWidth(kDefaultPadding),
@@ -206,8 +214,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
                     )
                   : Center(
                       child: Padding(
-                        padding:
-                            const EdgeInsets.only(top: kDefaultPadding * 2),
+                        padding: const EdgeInsets.only(
+                          top: kDefaultPadding * 2,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -219,10 +228,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             SizedBox(height: 16),
                             Text(
                               "No wallet history found!",
-                              style: TextStyle(
-                                color: kGreyColor,
-                                fontSize: 16,
-                              ),
+                              style: TextStyle(color: kGreyColor, fontSize: 16),
                             ),
                             Text(
                               "Add funds to your wallet",
@@ -252,10 +258,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                     SizedBox(height: 16),
                     Text(
                       "No wallet transactions yet!",
-                      style: TextStyle(
-                        color: kGreyColor,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: kGreyColor, fontSize: 16),
                     ),
                   ],
                 ),
@@ -267,15 +270,15 @@ class _BorsaScreenState extends State<BorsaScreen> {
               responseData['wallet_history'] != null &&
               responseData['wallet_history'].length != 0)
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                childCount: 1,
-                (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: kDefaultPadding),
-                    child: _buildTransactionsList(),
-                  );
-                },
-              ),
+              delegate: SliverChildBuilderDelegate(childCount: 1, (
+                BuildContext context,
+                int index,
+              ) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: kDefaultPadding),
+                  child: _buildTransactionsList(),
+                );
+              }),
             ),
         ],
       ),
@@ -292,33 +295,38 @@ class _BorsaScreenState extends State<BorsaScreen> {
       showDragHandle: true,
       backgroundColor: kPrimaryColor,
       constraints: BoxConstraints(
-          minHeight: MediaQuery.sizeOf(context).height * 0.55,
-          maxHeight: MediaQuery.sizeOf(context).height * 1.0),
+        minHeight: MediaQuery.sizeOf(context).height * 0.55,
+        maxHeight: MediaQuery.sizeOf(context).height * 1.0,
+      ),
       builder: (BuildContext context) {
         // var uuid = Uuid();
         // String uniqueId = uuid.v4().substring(0, 10);
         var uuid = Uuid();
-        String uniqueId =
-            uuid.v4().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').substring(0, 10);
+        String uniqueId = uuid
+            .v4()
+            .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+            .substring(0, 10);
 
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context)
-                    .viewInsets
-                    .bottom, // Adjust for keyboard
+                bottom: MediaQuery.of(
+                  context,
+                ).viewInsets.bottom, // Adjust for keyboard
               ),
               child: SafeArea(
                 minimum: EdgeInsets.only(
-                    left: getProportionateScreenWidth(kDefaultPadding),
-                    right: getProportionateScreenWidth(kDefaultPadding),
-                    top: getProportionateScreenHeight(kDefaultPadding / 2)),
+                  left: getProportionateScreenWidth(kDefaultPadding),
+                  right: getProportionateScreenWidth(kDefaultPadding),
+                  top: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(kDefaultPadding)),
+                      top: Radius.circular(kDefaultPadding),
+                    ),
                   ),
                   padding: EdgeInsets.only(
                     bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -337,18 +345,17 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             children: [
                               Text(
                                 "Add to Wallet",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium!
+                                style: Theme.of(context).textTheme.titleMedium!
                                     .copyWith(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
                               ),
                               // if (showPayments)
-                              Text("Add $topUpAmount to Wallet",
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium),
+                              Text(
+                                "Add $topUpAmount to Wallet",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                             ],
                           ),
                           Align(
@@ -370,17 +377,20 @@ class _BorsaScreenState extends State<BorsaScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing:
-                              getProportionateScreenHeight(kDefaultPadding),
+                          spacing: getProportionateScreenHeight(
+                            kDefaultPadding,
+                          ),
                           children: [
                             CustomTextField(
                               keyboardType: TextInputType.numberWithOptions(
-                                  decimal: true),
+                                decimal: true,
+                              ),
                               onChanged: (val) {
                                 setState(() {
                                   // Safely parse to double, default to 0.0 if empty
-                                  topUpAmount =
-                                      double.tryParse(val)!.ceilToDouble();
+                                  topUpAmount = double.tryParse(
+                                    val,
+                                  )!.ceilToDouble();
                                 });
                               },
                               hintText: "Enter the amount to topup",
@@ -398,9 +408,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
                                 if (price < 100.0) {
                                   final currency = Provider.of<ZMetaData>(
-                                          context,
-                                          listen: false)
-                                      .currency;
+                                    context,
+                                    listen: false,
+                                  ).currency;
                                   // return "The minimum amount you can add is 1 $currency.";
                                   return "The minimum amount you can add is 100 $currency.";
                                 }
@@ -412,11 +422,14 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             ),
                             SizedBox(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                             ),
                             // if (showPayments)
-                            Text("Continue topup",
-                                style: Theme.of(context).textTheme.bodyMedium),
+                            Text(
+                              "Continue topup",
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                             // if (showPayments)
                             PaymentCard(
                               title: "Telebirr InApp",
@@ -431,30 +444,33 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       kifiyaGateway['payment_gateway'] !=
                                           null) {
                                     final telebirrId = getPaymentMethodIdByName(
-                                        "Telebirr inapp");
+                                      "Telebirr inapp",
+                                    );
 
                                     setState(() {
                                       paymentId = telebirrId;
                                     });
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) {
-                                        return TopupPaymentInApp(
-                                          amount: topUpAmount,
-                                          context: context,
-                                          traceNo: uniqueId,
-                                          phone: userData['user']['phone'],
-                                        );
-                                      }),
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return TopupPaymentInApp(
+                                            amount: topUpAmount,
+                                            context: context,
+                                            traceNo: uniqueId,
+                                            phone: userData['user']['phone'],
+                                          );
+                                        },
+                                      ),
                                     ).then((value) async {
                                       if (value != null) {
                                         if (value == false) {
                                           WidgetsBinding.instance
                                               .addPostFrameCallback((_) {
-                                            setState(() {
-                                              topUpAmount = 0.0;
-                                            });
-                                          });
+                                                setState(() {
+                                                  topUpAmount = 0.0;
+                                                });
+                                              });
                                           Navigator.of(context).pop();
                                           Service.showMessage(
                                             error: true,
@@ -474,23 +490,25 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                       } else {
                                         WidgetsBinding.instance
                                             .addPostFrameCallback((_) {
-                                          setState(() {
-                                            topUpAmount = 0.0;
-                                          });
-                                        });
+                                              setState(() {
+                                                topUpAmount = 0.0;
+                                              });
+                                            });
                                         Navigator.of(context).pop();
 
                                         Future.delayed(
-                                            Duration(milliseconds: 100), () {
-                                          if (mounted) {
-                                            Service.showMessage(
-                                              error: true,
-                                              context: context,
-                                              title:
-                                                  "Faild to topup wallet amount. Please try again!.",
-                                            );
-                                          }
-                                        });
+                                          Duration(milliseconds: 100),
+                                          () {
+                                            if (mounted) {
+                                              Service.showMessage(
+                                                error: true,
+                                                context: context,
+                                                title:
+                                                    "Faild to topup wallet amount. Please try again!.",
+                                              );
+                                            }
+                                          },
+                                        );
                                       }
                                     });
                                   }
@@ -511,7 +529,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             //   ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -537,11 +555,13 @@ class _BorsaScreenState extends State<BorsaScreen> {
       width: double.infinity,
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-          vertical: getProportionateScreenHeight(kDefaultPadding)),
+        horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+        vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+      ),
       decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12)),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: InkWell(
         onTap: onTap,
         child: OrderStatusRow(
@@ -551,30 +571,37 @@ class _BorsaScreenState extends State<BorsaScreen> {
           iconColor: color,
           textColor: kWhiteColor,
           iconBackgroundColor: color.withValues(alpha: 0.1),
-          fontSize: getProportionateScreenWidth(kDefaultPadding),
+          fontSize: getProportionateScreenWidth(14),
         ),
       ),
     );
   }
 
   Widget _buildFilterChip(
-      String label, IconData icon, bool isSelected, VoidCallback onTap) {
+    String label,
+    IconData icon,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     Color color = label.toLowerCase() == "sent"
         ? kSecondaryColor
         : label.toLowerCase() == "received"
-            ? kGreenColor
-            : kGreyColor;
+        ? kGreenColor
+        : kGreyColor;
     return InkWell(
       onTap: onTap,
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: 0.18)
               // kSecondaryColor.withValues(alpha: 0.18)
               : Colors.white,
-          borderRadius: BorderRadius.circular(kDefaultPadding * 1.5),
+          borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isSelected ? kPrimaryColor : Colors.grey[300]!,
             width: 1,
@@ -590,13 +617,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
                 ],
         ),
         child: Row(
-          spacing: kDefaultPadding / 2,
+          spacing: getProportionateScreenWidth(kDefaultPadding / 2),
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: color,
-            ),
+            Icon(icon, size: 18, color: color),
             Text(
               label,
               style: TextStyle(
@@ -628,9 +651,10 @@ class _BorsaScreenState extends State<BorsaScreen> {
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: filteredTransactions.length,
-      separatorBuilder: (context, idx) => SizedBox(height: kDefaultPadding / 2),
+      separatorBuilder: (context, idx) =>
+          SizedBox(height: getProportionateScreenWidth(kDefaultPadding / 2)),
       padding: EdgeInsets.symmetric(
-        vertical: getProportionateScreenWidth(kDefaultPadding),
+        // vertical: getProportionateScreenWidth(kDefaultPadding / 2),
         horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
       ),
       itemBuilder: (context, idx) {
@@ -652,12 +676,18 @@ class _BorsaScreenState extends State<BorsaScreen> {
             ],
           ),
           child: ListTile(
-            contentPadding: EdgeInsets.all(kDefaultPadding),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: getProportionateScreenWidth(kDefaultPadding / 1.5),
+              vertical: 0,
+            ),
             leading: Container(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(
+                getProportionateScreenWidth(kDefaultPadding / 2),
+              ),
               decoration: BoxDecoration(
-                color: (isDeposit ? kGreenColor : kSecondaryColor)
-                    .withValues(alpha: 0.1),
+                color: (isDeposit ? kGreenColor : kSecondaryColor).withValues(
+                  alpha: 0.1,
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -678,49 +708,37 @@ class _BorsaScreenState extends State<BorsaScreen> {
                 color: kBlackColor,
               ),
             ),
-            subtitle: Padding(
-              padding: EdgeInsets.only(top: kDefaultPadding / 4),
-              child: Text(
-                "${transaction['updated_at'].split("T")[0]} ${transaction['updated_at'].split("T")[1].split('.')[0]}",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: kGreyColor,
-                ),
-              ),
+            subtitle: Text(
+              "${transaction['updated_at'].split("T")[0]} ${transaction['updated_at'].split("T")[1].split('.')[0]}",
+              style: TextStyle(fontSize: 12, color: kGreyColor),
             ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: isDeposit ? "+ " : "- ",
+            trailing: RichText(
+              text: TextSpan(
+                text: isDeposit ? "+ " : "- ",
+                style: TextStyle(
+                  color: isDeposit ? kGreenColor : kSecondaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+                children: <TextSpan>[
+                  TextSpan(
+                    text:
+                        "${Provider.of<ZMetaData>(context, listen: false).currency} ",
+                    style: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 12,
+                    ),
+                  ),
+                  TextSpan(
+                    text: transaction['from_amount'].toStringAsFixed(2),
                     style: TextStyle(
                       color: isDeposit ? kGreenColor : kSecondaryColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text:
-                            "${Provider.of<ZMetaData>(context, listen: false).currency} ",
-                        style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 14,
-                        ),
-                      ),
-                      TextSpan(
-                        text: transaction['from_amount'].toStringAsFixed(2),
-                        style: TextStyle(
-                          color: isDeposit ? kGreenColor : kSecondaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -730,25 +748,28 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
   void _showTransferBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        backgroundColor: kPrimaryColor,
-        constraints: BoxConstraints(
-            minHeight: MediaQuery.sizeOf(context).height * 0.55,
-            maxHeight: MediaQuery.sizeOf(context).height * 1.0),
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: kPrimaryColor,
+      constraints: BoxConstraints(
+        minHeight: MediaQuery.sizeOf(context).height * 0.55,
+        maxHeight: MediaQuery.sizeOf(context).height * 1.0,
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
             return SafeArea(
               minimum: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding / 2)),
+                horizontal: getProportionateScreenWidth(kDefaultPadding),
+                vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(kDefaultPadding)),
+                    top: Radius.circular(kDefaultPadding),
+                  ),
                 ),
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -763,16 +784,16 @@ class _BorsaScreenState extends State<BorsaScreen> {
                       children: [
                         Text(
                           "Transfer",
-                          style:
-                              Theme.of(context).textTheme.titleMedium!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                         ),
                         InkWell(
                           onTap: () => Navigator.of(context).pop(),
                           child: Icon(HeroiconsOutline.xCircle),
-                        )
+                        ),
                       ],
                     ),
 
@@ -788,23 +809,24 @@ class _BorsaScreenState extends State<BorsaScreen> {
                         payeePhone = val;
                       },
                       // decoration: textFieldInputDecorator.copyWith(
-                      hintText: "Receiver phone number",
+                      hintText: "Enter receiver number",
                       helperText: "Start phone number with 9..",
                       // hintText: "...",
-                      prefix: Text(
-                          "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
+                      // prefix: Text(
+                      //     "${Provider.of<ZMetaData>(context, listen: false).areaCode}"),
                       // ),
                     ),
 
                     //
                     CustomTextField(
-                      keyboardType:
-                          TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       onChanged: (val) {
                         transferAmount = val;
                       },
                       // labelText: "Amount",
-                      hintText: "Enter the amount to send",
+                      hintText: "Enter amount",
                     ),
 
                     //
@@ -852,10 +874,11 @@ class _BorsaScreenState extends State<BorsaScreen> {
                               _getTransactions();
 
                               Service.showMessage(
-                                  context: context,
-                                  title: "Transfer successful",
-                                  error: false,
-                                  duration: 5);
+                                context: context,
+                                title: "Transfer successful",
+                                error: false,
+                                duration: 5,
+                              );
                               setState(() {
                                 transferLoading = false;
                               });
@@ -865,7 +888,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
                                 await Service.saveBool('logged', false);
                                 await Service.remove('user');
                                 Navigator.pushReplacementNamed(
-                                    context, LoginScreen.routeName);
+                                  context,
+                                  LoginScreen.routeName,
+                                );
                               }
                               setState(() {
                                 transferLoading = false;
@@ -874,7 +899,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                      "${errorCodes['${data['error_code']}']}"),
+                                    "${errorCodes['${data['error_code']}']}",
+                                  ),
                                   backgroundColor: kSecondaryColor,
                                 ),
                               );
@@ -898,8 +924,10 @@ class _BorsaScreenState extends State<BorsaScreen> {
                 ),
               ),
             );
-          });
-        }).whenComplete(() {
+          },
+        );
+      },
+    ).whenComplete(() {
       setState(() {
         payeePhone = '';
         transferAmount = '0.00';
@@ -911,17 +939,16 @@ class _BorsaScreenState extends State<BorsaScreen> {
 
   //
   bool _isBalanceVisible = false;
-  Widget _balanceCardUIOne({
-    required TextTheme textTheme,
-  }) {
+  Widget _zWalletCard({required TextTheme textTheme}) {
     return Container(
       margin: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-          vertical: getProportionateScreenHeight(kDefaultPadding)),
-      // height: getProportionateScreenHeight(215),
+        horizontal: getProportionateScreenWidth(kDefaultPadding),
+        vertical: getProportionateScreenHeight(kDefaultPadding),
+      ),
 
+      // height: getProportionateScreenHeight(215),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(kDefaultPadding),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -937,7 +964,8 @@ class _BorsaScreenState extends State<BorsaScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(
-                    getProportionateScreenWidth(kDefaultPadding)),
+                  getProportionateScreenWidth(kDefaultPadding),
+                ),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -954,8 +982,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
           // Card content
           Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: getProportionateScreenWidth(kDefaultPadding),
-                vertical: getProportionateScreenHeight(kDefaultPadding)),
+              horizontal: getProportionateScreenWidth(kDefaultPadding),
+              vertical: getProportionateScreenHeight(kDefaultPadding),
+            ),
             child: Column(
               // spacing: 4,
               mainAxisSize: MainAxisSize.min,
@@ -973,7 +1002,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                           "Quick Pay",
                           style: textTheme.labelLarge!.copyWith(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
                           ),
@@ -982,7 +1011,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                           "Z-WALLET CARD",
                           style: textTheme.bodyMedium!.copyWith(
                             color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 2,
                           ),
@@ -999,15 +1028,23 @@ class _BorsaScreenState extends State<BorsaScreen> {
                       },
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: kDefaultPadding / 2,
-                            vertical: kDefaultPadding / 2),
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding / 2.5,
+                          ),
+                          vertical: getProportionateScreenHeight(
+                            kDefaultPadding / 2.5,
+                          ),
+                        ),
                         decoration: BoxDecoration(
                           color: kWhiteColor.withValues(alpha: 0.2),
-                          borderRadius:
-                              BorderRadius.circular(kDefaultPadding / 2),
+                          borderRadius: BorderRadius.circular(
+                            kDefaultPadding / 2,
+                          ),
                         ),
                         child: Row(
-                          spacing: kDefaultPadding / 4,
+                          spacing: getProportionateScreenWidth(
+                            kDefaultPadding / 4,
+                          ),
                           children: [
                             Text(
                               _isBalanceVisible ? "Hide" : "Show",
@@ -1026,10 +1063,10 @@ class _BorsaScreenState extends State<BorsaScreen> {
                     ),
                   ],
                 ),
-                //
 
+                //
                 SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding),
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
                 ),
 
                 //Middle section//balance and name
@@ -1045,21 +1082,25 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${currentBalance.toStringAsFixed(2)}"
                             : "**** **** ****",
                         style: textTheme.labelLarge!.copyWith(
-                            color: kWhiteColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            fontStyle: _isBalanceVisible
-                                ? FontStyle.italic
-                                : FontStyle.normal),
+                          color: kWhiteColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontStyle: _isBalanceVisible
+                              ? FontStyle.italic
+                              : FontStyle.normal,
+                        ),
                       ),
 
                       // name
                       Text(
-                          "${widget.userData['user']['first_name'] ?? ''} ${widget.userData['user']['last_name'] ?? ''}"
-                              .trim()
-                              .toUpperCase(),
-                          style: textTheme.labelLarge!
-                              .copyWith(color: kWhiteColor, fontSize: 16)),
+                        "${widget.userData['user']['first_name'] ?? ''} ${widget.userData['user']['last_name'] ?? ''}"
+                            .trim()
+                            .toUpperCase(),
+                        style: textTheme.labelLarge!.copyWith(
+                          color: kWhiteColor,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1067,10 +1108,10 @@ class _BorsaScreenState extends State<BorsaScreen> {
                 ////////////////////////////////////////////////
 
                 // Spacer(),
-                Divider(
-                  color: kWhiteColor.withValues(alpha: 0.2),
+                Divider(color: kWhiteColor.withValues(alpha: 0.2)),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
                 ),
-
                 ////bottom section ///
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1146,22 +1187,25 @@ class _BorsaScreenState extends State<BorsaScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          Service.showMessage(
-              context: context, title: "Network error", error: true);
+            Duration(seconds: 10),
+            onTimeout: () {
+              Service.showMessage(
+                context: context,
+                title: "Network error",
+                error: true,
+              );
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       responseData = json.decode(response.body);
       return json.decode(response.body);
@@ -1185,22 +1229,25 @@ class _BorsaScreenState extends State<BorsaScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          Service.showMessage(
-              context: context, title: "Network error", error: true);
+            Duration(seconds: 10),
+            onTimeout: () {
+              Service.showMessage(
+                context: context,
+                title: "Network error",
+                error: true,
+              );
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return json.decode(response.body);
     } catch (e) {
       return null;
@@ -1225,22 +1272,25 @@ class _BorsaScreenState extends State<BorsaScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          Service.showMessage(
-              context: context, title: "Network error", error: true);
+            Duration(seconds: 10),
+            onTimeout: () {
+              Service.showMessage(
+                context: context,
+                title: "Network error",
+                error: true,
+              );
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return json.decode(response.body);
     } catch (e) {
       return null;
@@ -1317,27 +1367,27 @@ class _BorsaScreenState extends State<BorsaScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this.isLoading = false;
-          });
-          Service.showMessage(
-            error: true,
-            context: context,
-            title: "Something went wrong!",
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this.isLoading = false;
+              });
+              Service.showMessage(
+                error: true,
+                context: context,
+                title: "Something went wrong!",
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       return json.decode(response.body);
     } catch (e) {
       Service.showMessage(
@@ -1404,19 +1454,19 @@ class _BorsaScreenState extends State<BorsaScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       return json.decode(response.body);
     } catch (e) {
@@ -1474,24 +1524,19 @@ class CustomCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  iconData,
-                  color: textColor,
-                ),
+                Icon(iconData, color: textColor),
                 Spacer(),
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(color: textColor, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 5)),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: textColor),
-                )
+                  height: getProportionateScreenHeight(kDefaultPadding / 5),
+                ),
+                Text(subtitle, style: TextStyle(color: textColor)),
               ],
             ),
           ),

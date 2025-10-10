@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zmall/models/cart.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/services/service.dart';
 import 'components/home_body.dart';
 
 class HomeScreen extends StatefulWidget {

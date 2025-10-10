@@ -1,21 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/courier/components/locations_list.dart';
 import 'package:zmall/courier_checkout/courier_checkout_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/custom_progress_indicator.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
@@ -127,8 +125,11 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -177,8 +178,11 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -218,8 +222,11 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
           "schedule_start", isSchedule ? _scheduledDate.toString() : null);
       _getVehicleList();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -1222,8 +1229,10 @@ class _LunchHomeScreenState extends State<LunchHomeScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage1("Please check your internet connection", true),
+      Service.showMessage(
+        context: context,
+        title: "Please check your internet connection",
+        error: true,
       );
       return null;
     }

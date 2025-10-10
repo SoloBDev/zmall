@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/delivery/global_delivery.dart';
 import 'package:zmall/models/cart.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
 
 class Body extends StatefulWidget {
@@ -170,12 +170,11 @@ class _BodyState extends State<Body> {
                                                         .quantity ==
                                                     1
                                                 ? () {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(Service
-                                                            .showMessage1(
-                                                                "Minimum order quantity is 1!",
-                                                                true));
+                                                    Service.showMessage(
+                                                        context: context,
+                                                        title:
+                                                            "Minimum order quantity is 1!",
+                                                        error: true);
                                                   }
                                                 : () {
                                                     int currQty = cart!

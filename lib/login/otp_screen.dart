@@ -9,11 +9,14 @@ import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:sms_autofill/sms_autofill.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/models/biometric_credential.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
-import 'package:zmall/tab_screen.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/services/biometric_services/biometric_credentials_manager.dart';
+import 'package:zmall/services/biometric_services/biometric_service.dart';
+import 'package:zmall/utils/size_config.dart';
+import 'package:zmall/utils/tab_screen.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -54,6 +57,7 @@ class _OtpScreenState extends State<OtpScreen>
   String otpCode = '';
   bool isError = false;
   bool hasVerified = false; // Add flag to prevent multiple verifications
+  bool _rememberMe = true; // Remember me checkbox state
 
   @override
   void initState() {
@@ -228,7 +232,7 @@ class _OtpScreenState extends State<OtpScreen>
       cancel(); // Cancel the CodeAutoFill mixin
       SmsAutoFill().unregisterListener();
     } catch (e) {
-      print('Error disposing SMS listener: $e');
+      // print('Error disposing SMS listener: $e');
     }
     _timer?.cancel();
     super.dispose();
@@ -372,6 +376,36 @@ class _OtpScreenState extends State<OtpScreen>
                               )),
                         ],
                       ),
+              ),
+              const SizedBox(height: kDefaultPadding),
+              ///////////////Remember Me Checkbox///////////////
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _rememberMe,
+                      onChanged: (value) {
+                        setState(() {
+                          _rememberMe = value ?? true;
+                        });
+                      },
+                      activeColor: kSecondaryColor,
+                      side:
+                          BorderSide(color: kGreyColor.withValues(alpha: 0.5)),
+                    ),
+                    Expanded(
+                      child: Text(
+                        "Remember me for quick login",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: kGreyColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               ///////////////Number Keyboard section///////////////
               // Container(
@@ -608,7 +642,7 @@ class _OtpScreenState extends State<OtpScreen>
     if (this.responseData != null) {
       if (loginResponseData['success']) {
         if (loginResponseData['user']['is_approved']) {
-          Future.delayed(Duration(milliseconds: 300), () {
+          Future.delayed(Duration(milliseconds: 300), () async {
             Service.save('user', responseData);
             Service.saveBool('logged', true);
 
@@ -631,18 +665,42 @@ class _OtpScreenState extends State<OtpScreen>
                 listen: false,
               ).country.replaceAll(' ', ''),
             );
+
+            // Save account to multi-account storage if remember me is checked
+            if (_rememberMe) {
+              // print('Remember me is checked - saving account');
+              // Build user name from available fields
+              final firstName = loginResponseData['user']['first_name'] ?? '';
+              final lastName = loginResponseData['user']['last_name'] ?? '';
+              final userName = (firstName.isNotEmpty || lastName.isNotEmpty)
+                  ? '$firstName $lastName'.trim()
+                  : (loginResponseData['user']['name'] ?? phone);
+
+              // print('User name to save: $userName');
+              await _saveAccountAndPromptBiometric(
+                phone: phone,
+                password: password,
+                userName: userName,
+              );
+              // print('Account saved successfully');
+            } else {
+              // print('Remember me is NOT checked - skipping save');
+            }
+
             // Update index before navigation
             // Provider.of<BottomNavigationState>(
             //   context,
             //   listen: false,
             // ).updateSelectedIndex(0);
 
-            // Then navigate
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              TabScreen.routeName,
-              (Route<dynamic> route) => false,
-            );
+            // Navigate - ensure context is still valid
+            if (mounted && context.mounted) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                TabScreen.routeName,
+                (Route<dynamic> route) => false,
+              );
+            }
             // if (widget.firstRoute) {
             //   Navigator.pushNamedAndRemoveUntil(
             //     context,
@@ -782,6 +840,43 @@ class _OtpScreenState extends State<OtpScreen>
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  /// Save account to multi-account storage
+  Future<void> _saveAccountAndPromptBiometric({
+    required String phone,
+    required String password,
+    required String userName,
+  }) async {
+    try {
+      // print('Checking for existing account: $phone');
+      // Check if account already exists with biometric enabled
+      final existingAccount =
+          await BiometricCredentialsManager.getAccount(phone);
+
+      if (existingAccount != null && existingAccount.biometricEnabled) {
+        // print('Account exists with biometric - updating');
+        // Account already has biometric - just update timestamp and user name
+        await BiometricCredentialsManager.updateLastUsed(phone);
+        await BiometricCredentialsManager.updateUserName(phone, userName);
+        // print('Account updated');
+        return;
+      }
+
+      // print('Saving new account for $userName ($phone)');
+      // Save account without biometric (user can enable it later in profile)
+      final credential = BiometricCredential(
+        phone: phone,
+        password: password,
+        biometricEnabled: false,
+        userName: userName,
+        lastUsed: DateTime.now(),
+      );
+      await BiometricCredentialsManager.saveAccount(credential);
+      // print('Account saved to storage');
+    } catch (e) {
+      // print('Error saving account: $e');
     }
   }
 }
@@ -1731,7 +1826,6 @@ class _OtpScreenState extends State<OtpScreen>
 //   }
 // }
 
-
 // /////old working code with android autofill, note: ios is not verified yet////
 // // import 'dart:async';
 // // import 'dart:convert';
@@ -2468,3 +2562,83 @@ class _OtpScreenState extends State<OtpScreen>
 // //     }
 // //   }
 // // }
+
+  /// Prompt user to enable biometric authentication
+  // Future<void> _promptBiometricSetup(String phone, String password) async {
+  //   // Check if biometric is available and not already enabled
+  //   final isAvailable = await BiometricService.isBiometricAvailable();
+  //   final isEnabled = await Service.isBiometricEnabled();
+
+  //   if (!isAvailable || isEnabled) return;
+
+  //   final biometricName = await BiometricService.getBiometricTypeName();
+
+  //   // Show dialog to ask user if they want to enable biometric
+  //   if (mounted) {
+  //     await showDialog(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           backgroundColor: kPrimaryColor,
+  //           title: Text("Enable $biometricName?"),
+  //           content: Text(
+  //             "Would you like to enable $biometricName for quick and secure login?",
+  //           ),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: Text(
+  //                 "Not Now",
+  //                 style: TextStyle(color: kGreyColor),
+  //               ),
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //             ),
+  //             TextButton(
+  //               child: Text(
+  //                 "Enable",
+  //                 style: TextStyle(
+  //                   color: kSecondaryColor,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               onPressed: () async {
+  //                 Navigator.of(context).pop();
+
+  //                 // Test biometric authentication
+  //                 final result = await BiometricService.authenticate(
+  //                   localizedReason:
+  //                       'Authenticate to enable $biometricName login',
+  //                 );
+
+  //                 if (result.success) {
+  //                   // Save credentials
+  //                   await Service.saveBiometricCredentials(
+  //                     phone: phone,
+  //                     password: password,
+  //                   );
+  //                   await Service.enableBiometric();
+
+  //                   if (mounted) {
+  //                     Service.showMessage(
+  //                       context: context,
+  //                       title: "$biometricName login enabled successfully!",
+  //                       error: false,
+  //                     );
+  //                   }
+  //                 } else if (result.errorMessage != null && mounted) {
+  //                   Service.showMessage(
+  //                     context: context,
+  //                     title: result.errorMessage!,
+  //                     error: true,
+  //                   );
+  //                 }
+  //               },
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }

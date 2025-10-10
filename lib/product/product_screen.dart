@@ -7,15 +7,15 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/cart/cart_screen.dart';
 import 'package:zmall/comments/review_screen.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/item/item_screen.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
 import 'package:zmall/widgets/custom_search_bar.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
@@ -1256,17 +1256,17 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                               3),
                                                               decoration:
                                                                   BoxDecoration(
-                                                                color: kSecondaryColor
-                                                                    .withValues(
-                                                                        alpha:
-                                                                            0.1),
-                                                                border:
-                                                                    Border.all(
-                                                                  color: kSecondaryColor
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.1),
-                                                                ),
+                                                                // color: kSecondaryColor
+                                                                //     .withValues(
+                                                                //         alpha:
+                                                                //             0.1),
+                                                                // border:
+                                                                //     Border.all(
+                                                                //   color: kSecondaryColor
+                                                                //       .withValues(
+                                                                //           alpha:
+                                                                //               0.1),
+                                                                // ),
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
@@ -1276,17 +1276,20 @@ class _ProductScreenState extends State<ProductScreen> {
                                                                 ),
                                                               ),
                                                               child: Row(
+                                                                spacing:
+                                                                    getProportionateScreenWidth(
+                                                                        kDefaultPadding /
+                                                                            4),
                                                                 children: [
                                                                   Icon(
-                                                                    size: 18,
-                                                                    Icons
-                                                                        .add_shopping_cart_outlined,
+                                                                    size: 14,
+                                                                    HeroiconsOutline
+                                                                        .plus,
                                                                     color:
                                                                         kSecondaryColor,
                                                                   ),
                                                                   Text(
                                                                     "Add",
-                                                                    // "${Provider.of<ZLanguage>(context).addToCart} >>",
                                                                     style:
                                                                         TextStyle(
                                                                       fontSize:

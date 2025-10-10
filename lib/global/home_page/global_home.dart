@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/global/cart/global_cart.dart';
 import 'package:zmall/global/home_page/components/global_home_screen.dart';
 import 'package:zmall/global/profile/global_profile.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class GlobalHome extends StatefulWidget {
   static String routeName = '/global_home';

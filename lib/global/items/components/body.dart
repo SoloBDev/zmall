@@ -3,22 +3,22 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/item/components/photo_viewer.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
 
 class Body extends StatefulWidget {
   const Body({
-    Key? key,
+    super.key,
     required this.item,
     required this.location,
     required this.isOpen,
-  }) : super(key: key);
+  });
 
   final isOpen;
   final item;
@@ -152,8 +152,11 @@ class _BodyState extends State<Body> {
     );
 
     Service.save('abroad_cart', cart!.toJson());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(Service.showMessage1("Item added to cart!", false));
+    Service.showMessage(
+      context: context,
+      title: "Item added to cart!",
+      error: false,
+    );
   }
 
   @override
@@ -703,10 +706,10 @@ class _BodyState extends State<Body> {
                                     setState(() {
                                       cart!.items!.add(item);
                                       Service.save('abroad_cart', cart);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        Service.showMessage1(
-                                            "Item added to cart", false),
+                                      Service.showMessage(
+                                        context: context,
+                                        title: "Item added to cart",
+                                        error: false,
                                       );
                                       Navigator.of(context).pop();
                                     });
@@ -721,10 +724,12 @@ class _BodyState extends State<Body> {
                                 }
                               }
                             : () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    Service.showMessage1(
-                                        "Make sure to select required specifications!",
-                                        true));
+                                Service.showMessage(
+                                  context: context,
+                                  title:
+                                      "Make sure to select required specifications!",
+                                  error: true,
+                                );
                               },
                         color: clearedRequired && price != 0
                             ? kSecondaryColor
@@ -765,9 +770,11 @@ class _BodyState extends State<Body> {
                                   });
                                 }
                               : () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage1(
-                                          "Minimum order quantity is 1", true));
+                                  Service.showMessage(
+                                    context: context,
+                                    title: "Minimum order quantity is 1",
+                                    error: true,
+                                  );
                                 },
                         ),
                         Container(

@@ -7,13 +7,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/events/components/description_row.dart';
 import 'package:zmall/kifiya/components/event_santim.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_progress_indicator.dart';
 
 class EventsScreen extends StatefulWidget {
@@ -644,7 +644,7 @@ class _EventsScreenState extends State<EventsScreen> {
                                   //                                       });
                                   //                                     }
                                   //                                   : () {
-                                  //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Minimum order quantity is 1",
+                                  //                                       ScaffoldMessenger.of(context).showSnackBar(Service.showMessage("Minimum order quantity is 1",
                                   //                                           true));
                                   //                                     },
                                   //                             ),
@@ -831,11 +831,11 @@ class _EventsScreenState extends State<EventsScreen> {
             this._loading = false;
           });
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              Service.showMessage1(
-                  "Something went wrong! Check your internet and try again",
-                  true,
-                  duration: 3),
+            Service.showMessage(
+              context: context,
+              title: "Something went wrong! Check your internet and try again",
+              error: true,
+              duration: 3,
             );
           }
 

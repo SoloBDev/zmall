@@ -5,14 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/location/components/provider_location.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
 import 'package:zmall/widgets/order_status_row.dart';
 
@@ -54,8 +54,10 @@ class _CourierDetailState extends State<CourierDetail> {
         providerId = orderStatus['provider_id'];
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true);
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
@@ -70,10 +72,11 @@ class _CourierDetailState extends State<CourierDetail> {
     });
     var data = await userCancelOrder();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage1(
-            "We're sad but you've successfully canceled your order.", false,
-            duration: 5),
+      Service.showMessage(
+        context: context,
+        title: "We're sad but you've successfully canceled your order.",
+        error: false,
+        duration: 5,
       );
       Navigator.of(context).pop();
     } else {
@@ -119,8 +122,11 @@ class _CourierDetailState extends State<CourierDetail> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
@@ -884,8 +890,8 @@ class _CourierDetailState extends State<CourierDetail> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(Service.showMessage1("Network error", true));
+          Service.showMessage(
+              context: context, title: "Network error", error: true);
           setState(() {
             _loading = false;
           });

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/checkout/checkout_screen.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/report/global_report.dart';
 import 'package:zmall/kifiya/components/cyber_source.dart';
@@ -15,12 +15,9 @@ import 'package:zmall/kifiya/components/dashen_master_card.dart';
 import 'package:zmall/kifiya/components/kifiya_method_container.dart';
 import 'package:zmall/kifiya/components/telebirr_screen.dart';
 import 'package:zmall/models/cart.dart';
-import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/custom_tag.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/order_status_row.dart';
@@ -181,8 +178,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "Faild to create the order! please try again.", true));
+      Service.showMessage(
+        context: context,
+        title: "Faild to create the order! please try again.",
+        error: true,
+      );
     }
   }
 
@@ -194,8 +194,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     var data = await createOrder(orderIds: orderIds);
     if (data != null && data['success']) {
       // debugPrint("Order created successfully");
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage1(("Order successfully created"), true));
+      Service.showMessage(
+        context: context,
+        title: "Order successfully created",
+        error: true,
+      );
       await Service.remove('abroad_cart');
       await Service.remove('abroad_aliexpressCart');
       setState(() {
@@ -211,8 +214,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     } else {
       // debugPrint("\t\t- Create Order Response");
       // debugPrint(data);
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       setState(() {
         _loading = false;
         _placeOrder = false;
@@ -247,8 +253,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${data['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 1));
       // debugPrint("Pay Order Payment : Server token error....");
       // if (data['error_code'] == 999) {
@@ -270,9 +279,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "Payment verification successful!", false,
-          duration: 2));
+      Service.showMessage(
+        context: context,
+        title: "Payment verification successful!",
+        error: false,
+        duration: 2,
+      );
       // _payOrderPayment();
       // _createOrder(); //this was before aliexpress
       aliexpressCart != null && aliexpressCart!.cart.storeId == cart!.storeId
@@ -289,8 +301,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         }
       });
       await useBorsa();
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${data['error']}! Please complete your payment!", true));
+      Service.showMessage(
+        context: context,
+        title: "${data['error']}! Please complete your payment!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 3));
     }
   }
@@ -559,8 +574,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             paymentResponse['payment_gateway']
                                                 [index]['_id'];
                                       });
-                                      var cartId =
-                                          await Service.read("cart_id");
+                                      // var cartId =  await Service.read("cart_id");
                                       // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
                                       // debugPrint(
@@ -718,10 +732,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage1(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                       }
                                     });
                               } else if (paymentResponse['payment_gateway']
@@ -744,8 +760,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             paymentResponse['payment_gateway']
                                                 [index]['_id'];
                                       });
-                                      var cartId =
-                                          await Service.read("cart_id");
+                                      // var cartId =  await Service.read("cart_id");
                                       // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
                                       // debugPrint(
@@ -843,10 +858,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage1(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                       }
                                     });
                               }
@@ -872,8 +889,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                             paymentResponse['payment_gateway']
                                                 [index]['_id'];
                                       });
-                                      var cartId =
-                                          await Service.read("cart_id");
+                                      // var cartId = await Service.read("cart_id");
                                       // debugPrint(
                                       //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
                                       // debugPrint(
@@ -903,7 +919,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                               FontWeight.bold),
                                                 ),
                                                 content: Text(
-                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price!.toStringAsFixed(2)} using Dashen Mastercard?",
+                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price.toStringAsFixed(2)} using Dashen Mastercard?",
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .bodySmall!
@@ -967,10 +983,12 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                               );
                                             });
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(Service.showMessage1(
-                                                "Something went wrong! Please try again!",
-                                                true));
+                                        Service.showMessage(
+                                          context: context,
+                                          title:
+                                              "Something went wrong! Please try again!",
+                                          error: true,
+                                        );
                                       }
                                     });
                               }
@@ -1329,11 +1347,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         setState(() {
           this._loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage1(
-            "Failed to create aliexpress order, please check your internet and try again",
-            true,
-          ),
+        Service.showMessage(
+          context: context,
+          title:
+              "Failed to create aliexpress order, please check your internet and try again",
+          error: true,
         );
         return null;
       }

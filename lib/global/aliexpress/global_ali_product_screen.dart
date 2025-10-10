@@ -7,13 +7,13 @@ import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/aliexpress/model/ali_model_class.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/global/aliexpress/global_ali_item_screen.dart';
 import 'package:zmall/global/cart/global_cart.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class GlobalAliProductListScreen extends StatefulWidget {
   const GlobalAliProductListScreen({

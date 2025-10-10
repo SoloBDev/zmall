@@ -6,15 +6,15 @@ import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/register/components/custom_suffix_icon.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 
@@ -64,7 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (data != null) {
       setState(() {
         appVersion = data;
-        debugPrint("App Version: $appVersion");
+        // debugPrint("App Version: $appVersion");
       });
     }
   }
@@ -131,32 +131,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
         bottomNavigationBar:
             _isCollapsed && (_formKey.currentState!.validate() && _isSelected)
                 ? SizedBox.shrink()
-                : SizedBox(
-                    height: 50,
-                    child: SafeArea(
-                      child: Row(
-                        spacing: kDefaultPadding / 2,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Already have an account?",
+                : SafeArea(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Already have an account?",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: kBlackColor),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            Provider.of<ZLanguage>(context).login,
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontWeight: FontWeight.bold,
+                                color: kSecondaryColor),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              Provider.of<ZLanguage>(context).login,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: kSecondaryColor),
-                            ),
-                          )
-                        ],
-                      ),
+                        )
+                      ],
                     ),
                   ),
         appBar: AppBar(
@@ -168,145 +163,148 @@ class _RegisterScreenState extends State<RegisterScreen> {
             "Create an Account",
           ),
         ),
-        body: ModalProgressHUD(
-          inAsyncCall: _loading,
-          progressIndicator: LinearLoadingIndicator(),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding),
-                    vertical: getProportionateScreenWidth(kDefaultPadding),
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      spacing: kDefaultPadding * 1.5,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: getProportionateScreenHeight(
-                              kDefaultPadding / 1.5),
-                          children: [
-                            Text(
-                              "User Info",
-                              style: titleStyle,
-                            ),
-                            buildFirstNameFormField(),
-                            buildLastNameFormField(),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: getProportionateScreenHeight(
-                              kDefaultPadding / 1.5),
-                          children: [
-                            Text(
-                              "Contact Info",
-                              style: titleStyle,
-                            ),
-                            buildEmailFormField(),
-                            buildPhoneNumberFormField(),
-                          ],
-                        ),
-                        Column(
+        body: SafeArea(
+          child: ModalProgressHUD(
+            inAsyncCall: _loading,
+            progressIndicator: LinearLoadingIndicator(),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: SafeArea(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                      vertical: getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        spacing: kDefaultPadding * 1.5,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: getProportionateScreenHeight(
                                 kDefaultPadding / 1.5),
                             children: [
                               Text(
-                                "Security",
+                                "User Info",
                                 style: titleStyle,
                               ),
-                              buildPasswordFormField(),
-                              buildConformPassFormField(),
-                              Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Checkbox.adaptive(
-                                      value: _isSelected,
-                                      fillColor: WidgetStateProperty
-                                          .resolveWith<Color>((
-                                        states,
-                                      ) {
-                                        if (states
-                                            .contains(WidgetState.selected)) {
-                                          return kSecondaryColor;
-                                        }
-                                        return kWhiteColor;
-                                      }),
-                                      side: BorderSide(
-                                        color:
-                                            kBlackColor.withValues(alpha: 0.4),
-                                        width: 2,
-                                      ),
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          _isSelected = value ?? false;
-                                        });
-                                      },
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            "By continuing your confirm that you agree with our",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall),
-                                        InkWell(
-                                          onTap: () {
-                                            Service.launchInWebViewOrVC(
-                                                "https://app.zmallshop.com/terms.html");
-                                          },
-                                          child: Text(
-                                            "Terms & Conditions",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: kSecondaryColor,
-                                                ),
-                                            softWrap: true,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ]),
-                            ]),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 8),
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                          ).copyWith(
-                              bottom:
-                                  getProportionateScreenWidth(kDefaultPadding)),
-                          child: CustomButton(
-                            title: "Complete",
-                            color: _isSelected
-                                ? kSecondaryColor
-                                : kSecondaryColor.withValues(alpha: 0.7),
-                            press: !_isSelected
-                                ? () {}
-                                : () {
-                                    if (_formKey.currentState!.validate() &&
-                                        _isSelected) {
-                                      _formKey.currentState!.save();
-                                      // if all are valid then go to success screen
-                                      _register();
-                                    }
-                                  },
+                              buildFirstNameFormField(),
+                              buildLastNameFormField(),
+                            ],
                           ),
-                        ),
-                      ],
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: getProportionateScreenHeight(
+                                kDefaultPadding / 1.5),
+                            children: [
+                              Text(
+                                "Contact Info",
+                                style: titleStyle,
+                              ),
+                              buildEmailFormField(),
+                              buildPhoneNumberFormField(),
+                            ],
+                          ),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: getProportionateScreenHeight(
+                                  kDefaultPadding / 1.5),
+                              children: [
+                                Text(
+                                  "Security",
+                                  style: titleStyle,
+                                ),
+                                buildPasswordFormField(),
+                                buildConformPassFormField(),
+                                Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Checkbox.adaptive(
+                                        value: _isSelected,
+                                        fillColor: WidgetStateProperty
+                                            .resolveWith<Color>((
+                                          states,
+                                        ) {
+                                          if (states
+                                              .contains(WidgetState.selected)) {
+                                            return kSecondaryColor;
+                                          }
+                                          return kWhiteColor;
+                                        }),
+                                        side: BorderSide(
+                                          color: kBlackColor.withValues(
+                                              alpha: 0.4),
+                                          width: 2,
+                                        ),
+                                        onChanged: (bool? value) {
+                                          setState(() {
+                                            _isSelected = value ?? false;
+                                          });
+                                        },
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              "By continuing your confirm that you agree with our",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall),
+                                          InkWell(
+                                            onTap: () {
+                                              Service.launchInWebViewOrVC(
+                                                  "https://app.zmallshop.com/terms.html");
+                                            },
+                                            child: Text(
+                                              "Terms & Conditions",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: kSecondaryColor,
+                                                  ),
+                                              softWrap: true,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ]),
+                              ]),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 8),
+                              vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2),
+                            ).copyWith(
+                                bottom: getProportionateScreenWidth(
+                                    kDefaultPadding)),
+                            child: CustomButton(
+                              title: "Complete",
+                              color: _isSelected
+                                  ? kSecondaryColor
+                                  : kSecondaryColor.withValues(alpha: 0.7),
+                              press: !_isSelected
+                                  ? () {}
+                                  : () {
+                                      if (_formKey.currentState!.validate() &&
+                                          _isSelected) {
+                                        _formKey.currentState!.save();
+                                        // if all are valid then go to success screen
+                                        _register();
+                                      }
+                                    },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

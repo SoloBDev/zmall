@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/kifiya/kifiya_screen.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/order_status_row.dart';
 import 'package:zmall/courier_checkout/components/checkout_detail_row.dart';
 

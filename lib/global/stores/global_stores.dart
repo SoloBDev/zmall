@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/service.dart';
 
 import 'components/body.dart';
 

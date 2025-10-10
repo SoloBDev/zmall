@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/store/components/image_container.dart';
 import 'store_info.dart';

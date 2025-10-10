@@ -6,7 +6,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/borsa/borsa_screen.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/main.dart';
@@ -15,15 +15,21 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/profile/components/edit_profile.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
 import 'package:zmall/profile/components/referral_code.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/services/biometric_services/biometric_service.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/models/biometric_credential.dart';
+import 'package:zmall/services/biometric_services/biometric_credentials_manager.dart';
+import 'package:zmall/utils/size_config.dart';
+import 'package:zmall/login/components/saved_accounts_bottom_sheet.dart';
+import 'package:zmall/utils/tab_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/store/components/image_container.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
+import 'package:zmall/widgets/linear_loading_indicator.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -45,15 +51,64 @@ class _BodyState extends State<Body> {
   int quotient = 0;
   bool isRewarded = false;
 
+  // Biometric state
+  bool _isBiometricAvailable = false;
+  bool _isBiometricEnabled = false;
+  String _biometricType = 'Biometric';
+
+  // Saved accounts state
+  int _savedAccountsCount = 0;
+
   @override
   void initState() {
     super.initState();
     getUser();
+    _checkBiometricStatus();
+    _loadSavedAccountsCount();
+  }
+
+  /// Load saved accounts count (excluding current account)
+  Future<void> _loadSavedAccountsCount() async {
+    final accounts = await BiometricCredentialsManager.getSavedAccounts();
+    final currentPhone = userData != null ? userData['user']['phone'] : null;
+
+    // Count only accounts that are NOT the current account
+    final otherAccountsCount = currentPhone != null
+        ? accounts.where((acc) => acc.phone != currentPhone).length
+        : accounts.length;
+
+    if (mounted) {
+      setState(() {
+        _savedAccountsCount = otherAccountsCount;
+      });
+    }
+  }
+
+  /// Check biometric availability and status
+  void _checkBiometricStatus() async {
+    final isAvailable = await BiometricService.isBiometricAvailable();
+    final biometricName = await BiometricService.getBiometricTypeName();
+
+    // Check if current user has biometric enabled in multi-account system
+    bool isEnabled = false;
+    if (userData != null && userData['user'] != null) {
+      final phone = userData['user']['phone'];
+      final account = await BiometricCredentialsManager.getAccount(phone);
+      isEnabled = account?.biometricEnabled ?? false;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isBiometricAvailable = isAvailable;
+        _isBiometricEnabled = isEnabled;
+        _biometricType = biometricName;
+      });
+    }
   }
 
   void getUser() async {
     var data = await Service.read('user');
-    if (data != null) {
+    if (data != null && mounted) {
       setState(() {
         userData = data;
       });
@@ -68,18 +123,20 @@ class _BodyState extends State<Body> {
       // }
       var usrData = await userDetails();
       if (usrData != null && usrData['success']) {
-        setState(() {
-          userData = usrData;
-          if (userData['user'] != null &&
-              !userData['user']['is_phone_number_verified']) {
-            Service.showMessage(
-              context: context,
-              title: "Please verify your phone number!",
-              error: true,
-            );
-          }
-        });
-        Service.save('user', userData);
+        if (mounted) {
+          setState(() {
+            userData = usrData;
+            if (userData['user'] != null &&
+                !userData['user']['is_phone_number_verified']) {
+              Service.showMessage(
+                context: context,
+                title: "Please verify your phone number!",
+                error: true,
+              );
+            }
+          });
+          Service.save('user', userData);
+        }
       }
       getData();
     }
@@ -123,6 +180,9 @@ class _BodyState extends State<Body> {
       await Service.remove('p_items');
       await Service.remove('s_items');
 
+      // Clear biometric credentials and disable biometric on logout
+      await Service.disableBiometric();
+
       Service.showMessage(
         error: false,
         context: context,
@@ -135,9 +195,11 @@ class _BodyState extends State<Body> {
         await CoreServices.clearCache();
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
       Service.showMessage(
         error: true,
         context: context,
@@ -175,707 +237,675 @@ class _BodyState extends State<Body> {
         error: true,
       );
     }
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  /// Toggle biometric authentication
+  Future<void> _toggleBiometric(bool value) async {
+    final phone = userData['user']['phone'];
+    final userName = userData['user']['name'];
+
+    final result = await BiometricService.authenticate(
+      localizedReason: 'Authenticate to disable $_biometricType login',
+    );
+
+    if (result.success) {
+      await BiometricCredentialsManager.updateBiometricStatus(phone, value);
+      // final account = await BiometricCredentialsManager.getAccount(phone);
+      if (mounted) {
+        setState(() {
+          _isBiometricEnabled = value;
+        });
+
+        if (_isBiometricEnabled) {
+          await BiometricCredentialsManager.updateUserName(phone, userName);
+          await BiometricCredentialsManager.updateLastUsed(phone);
+        }
+      }
+    }
+  }
+
+  /// Show switch account bottom sheet
+  Future<void> _showSwitchAccountSheet() async {
+    final currentPhone = userData != null ? userData['user']['phone'] : null;
+
+    await showSavedAccountsBottomSheet(
+      context: context,
+      onAccountSelected: _switchToAccount,
+      currentUserPhone: currentPhone,
+    );
+
+    // Reload account count in case user deleted an account
+    await _loadSavedAccountsCount();
+  }
+
+  /// Switch to selected account
+  Future<void> _switchToAccount(BiometricCredential account) async {
+    try {
+      // Check if switching to same account
+      if (userData != null && userData['user']['phone'] == account.phone) {
+        Navigator.of(context).pop(); // Dismiss bottom sheet
+        Service.showMessage(
+          context: context,
+          title: "Already logged in as ${account.displayName}",
+          error: false,
+        );
+        return;
+      }
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: LinearLoadingIndicator(
+              title: 'Switching account...',
+              fontSize: 12,
+            ),
+          );
+        },
+      );
+
+      // Step 1: Logout current user
+      if (userData != null) {
+        await signOut(
+            userData['user']['_id'], userData['user']['server_token']);
+      }
+
+      // Step 2: Clear current session data
+      await Service.saveBool('logged', false);
+      await Service.remove('user');
+      await Service.remove('cart');
+      await Service.remove('aliexpressCart');
+      await Service.remove('images');
+      await Service.remove('p_items');
+      await Service.remove('s_items');
+
+      // Step 3: Authenticate with biometric if enabled
+      if (account.biometricEnabled) {
+        final authResult = await BiometricService.authenticate(
+          localizedReason: 'Authenticate to login as ${account.displayName}',
+        );
+
+        if (!authResult.success) {
+          // Dismiss loading dialog
+          if (mounted && context.mounted) {
+            Navigator.of(context).pop();
+          }
+
+          if (authResult.errorMessage != null) {
+            Service.showMessage(
+              context: context,
+              title: authResult.errorMessage!,
+              error: true,
+            );
+          }
+
+          // Navigate back to login screen
+          if (mounted && context.mounted) {
+            Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+          }
+          return;
+        }
+      }
+
+      // Step 4: Login to selected account
+      final loginResponse = await Service.biometricLogin(
+        phoneNumber: account.phone,
+        password: account.password,
+        context: context,
+        appVersion: appVersion,
+      );
+
+      if (loginResponse != null && loginResponse['success']) {
+        // Update last used timestamp
+        await BiometricCredentialsManager.updateLastUsed(account.phone);
+
+        // Save user data (Service.save will encode it)
+        await Service.save('user', loginResponse);
+        await Service.saveBool('logged', true);
+
+        // Dismiss loading dialog and show success dialog
+        if (mounted && context.mounted) {
+          Navigator.of(context).pop(); // Dismiss loading dialog
+
+          // Auto-dismiss after 1.5 seconds and navigate
+          Future.delayed(Duration(milliseconds: 1000), () {
+            if (mounted && context.mounted) {
+              Navigator.of(context).pop(); // Dismiss success dialog
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                TabScreen.routeName,
+                (Route<dynamic> route) => false,
+              );
+            }
+          });
+          // Show success dialog (non-blocking)
+          Service.showMessage(
+              context: context,
+              title: "Successfully Switched to ${account.displayName}!",
+              error: false);
+        }
+      } else {
+        // Dismiss loading dialog
+        if (mounted && context.mounted) {
+          Navigator.of(context).pop();
+        }
+
+        Service.showMessage(
+          context: context,
+          title: "Failed to login. Please try again.",
+          error: true,
+        );
+
+        // Navigate back to login screen
+        if (mounted && context.mounted) {
+          Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+        }
+      }
+    } catch (e) {
+      // print('Error switching account: $e');
+
+      // Dismiss loading dialog
+      if (mounted && context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      Service.showMessage(
+        context: context,
+        title: "Failed to switch account. Please try again.",
+        error: true,
+      );
+
+      // Navigate back to login screen
+      if (mounted && context.mounted) {
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
-        // backgroundColor: userData == null ? kPrimaryColor : kWhiteColor,
-        backgroundColor: kPrimaryColor,
-        body:
-            // userData != null ?
-            SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    bottom: getProportionateScreenHeight(kDefaultPadding),
-                    top: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  child: Column(
+      // backgroundColor: userData == null ? kPrimaryColor : kWhiteColor,
+      backgroundColor: kPrimaryColor,
+      body:
+          // userData != null ?
+          SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: getProportionateScreenHeight(kDefaultPadding),
+          top: MediaQuery.of(context).padding.top + kDefaultPadding,
+        ),
+        child: Column(
+          spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+          children: [
+            //profile image
+            SizedBox(
+              width: getProportionateScreenWidth(80),
+              height: getProportionateScreenHeight(80),
+              child: Stack(
+                children: [
+                  ImageContainer(
+                      width: getProportionateScreenWidth(100),
+                      height: getProportionateScreenHeight(100),
+                      shape: BoxShape.circle,
+                      url: userData == null
+                          ? ''
+                          : "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${userData['user']['image_url']}"),
+                  if (userData != null &&
+                      userData['user'] != null &&
+                      userData['user']['is_phone_number_verified'])
+                    Positioned(
+                      right: 4,
+                      bottom: 4,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: kWhiteColor,
+                        ),
+                        child: Icon(
+                          HeroiconsSolid.checkBadge,
+                          color: kSecondaryColor,
+                          size: getProportionateScreenHeight(17),
+                        ),
+                      ),
+                    )
+                ],
+              ),
+            ),
+
+            //user profile and edit icon
+            userData != null
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    spacing: getProportionateScreenWidth(kDefaultPadding),
                     children: [
-                      /////user info section///
-                      SizedBox(
-                        width: getProportionateScreenWidth(80),
-                        height: getProportionateScreenHeight(80),
-                        child: Stack(
+                      Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            ImageContainer(
-                                width: getProportionateScreenWidth(100),
-                                height: getProportionateScreenHeight(100),
-                                shape: BoxShape.circle,
-                                url: userData == null
-                                    ? ''
-                                    : "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${userData['user']['image_url']}"),
-                            if (userData != null &&
-                                userData['user'] != null &&
-                                userData['user']['is_phone_number_verified'])
-                              Positioned(
-                                right: 4,
-                                bottom: 4,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: kWhiteColor,
-                                  ),
-                                  child: Icon(
-                                    HeroiconsSolid.checkBadge,
-                                    color: kSecondaryColor,
-                                    size: getProportionateScreenHeight(17),
-                                  ),
-                                ),
-                              )
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      Text(
-                        userData == null
-                            ? "Guest User"
-                            : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      if (userData != null)
-                        SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding / 4),
-                        ),
-
-                      /////
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: getProportionateScreenWidth(kDefaultPadding),
-                        children: [
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                if (userData != null)
-                                  Text(
-                                    "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                                  ),
-                                if (userData != null)
-                                  Text(
-                                    "${userData['user']['email']}",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ]),
-                          if (userData != null)
-                            InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditProfile(
-                                      userData: userData,
-                                    ),
-                                  ),
-                                ).then((value) => getUser());
-                              },
-                              child: Icon(
-                                  size: 20,
-                                  color: kBlackColor,
-                                  HeroiconsOutline.pencilSquare),
-                            ),
-                        ],
-                      ),
-
-                      // InkWell(
-                      //   onTap: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //         builder: (context) => EditProfile(
-                      //           userData: userData,
-                      //         ),
-                      //       ),
-                      //     ).then((value) => getUser());
-                      //   },
-                      //   child: Container(
-                      //     padding: EdgeInsets.symmetric(
-                      //         horizontal: kDefaultPadding / 1.5,
-                      //         vertical: kDefaultPadding / 3),
-                      //     decoration: BoxDecoration(
-                      //         color: kWhiteColor,
-                      //         border: Border.all(color: kWhiteColor),
-                      //         // kBlackColor.withValues(alpha: 0.08)),
-                      //         borderRadius:
-                      //             BorderRadius.circular(kDefaultPadding / 2)),
-                      //     child: Row(
-                      //       spacing: kDefaultPadding / 3,
-                      //       mainAxisSize: MainAxisSize.min,
-                      //       children: [
-                      //         Text(
-                      //           Provider.of<ZLanguage>(context, listen: false)
-                      //               .edit,
-                      //           style: TextStyle(fontWeight: FontWeight.bold),
-                      //         ),
-                      //         Icon(
-                      //             size: 20,
-                      //             color: kBlackColor,
-                      //             HeroiconsOutline.pencilSquare),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                      /////user info section///
-                      // if (userData != null)
-                      //   Row(
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     spacing:
-                      //         getProportionateScreenWidth(kDefaultPadding / 2),
-                      //     children: [
-                      //       Column(
-                      //         mainAxisSize: MainAxisSize.min,
-                      //         children: [
-                      //           Text(
-                      //             "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                      //           ),
-                      //           Text(
-                      //             "${userData['user']['email']}",
-                      //             overflow: TextOverflow.ellipsis,
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       InkWell(
-                      //         onTap: () {
-                      //           Navigator.push(
-                      //             context,
-                      //             MaterialPageRoute(
-                      //               builder: (context) => EditProfile(
-                      //                 userData: userData,
-                      //               ),
-                      //             ),
-                      //           ).then((value) => getUser());
-                      //         },
-                      //         child: Container(
-                      //           padding: EdgeInsets.symmetric(
-                      //               horizontal: kDefaultPadding / 1.5,
-                      //               vertical: kDefaultPadding / 3),
-                      //           decoration: BoxDecoration(
-                      //               color: kWhiteColor,
-                      //               border: Border.all(color: kWhiteColor),
-                      //               // kBlackColor.withValues(alpha: 0.08)),
-                      //               borderRadius: BorderRadius.circular(
-                      //                   kDefaultPadding / 2)),
-                      //           child: Row(
-                      //             spacing: kDefaultPadding / 3,
-                      //             mainAxisSize: MainAxisSize.min,
-                      //             children: [
-                      //               Text(
-                      //                 Provider.of<ZLanguage>(context,
-                      //                         listen: false)
-                      //                     .edit,
-                      //                 style: TextStyle(
-                      //                     fontWeight: FontWeight.bold),
-                      //               ),
-                      //               Icon(
-                      //                   size: 20,
-                      //                   color: kBlackColor,
-                      //                   HeroiconsOutline.pencilSquare),
-                      //             ],
-                      //           ),
-                      //         ),
-                      //       ),
-                      //   ],
-                      // ),
-
-                      ///user contact section
-                      // if (userData != null)
-                      //   SingleChildScrollView(
-                      //     scrollDirection: Axis.horizontal,
-                      //     padding:
-                      //         EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                      //     child: Row(
-                      //       spacing: kDefaultPadding,
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         FlippableCircleIcon(
-                      //           radius: 20,
-                      //           frontColor: kGreenColor,
-                      //           icon: HeroiconsSolid.phone,
-                      //           label:
-                      //               "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
-                      //         ),
-                      //         FlippableCircleIcon(
-                      //           radius: 20,
-                      //           icon: HeroiconsSolid.envelope,
-                      //           label: "${userData['user']['email']}",
-                      //         ),
-                      //         FlippableCircleIcon(
-                      //           radius: 20,
-                      //           frontColor:
-                      //               kSecondaryColor.withValues(alpha: 0.8),
-                      //           icon: HeroiconsSolid.mapPin,
-                      //           label: userData['user']['address'] ??
-                      //               "Addis Ababa",
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-
-                      // SizedBox(
-                      //     height: getProportionateScreenHeight(kDefaultPadding)),
-                      // //user status section
-                      // userInfo(),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: kDefaultPadding,
-                            vertical: kDefaultPadding / 2),
-                        child: Column(
-                          spacing: kDefaultPadding / 2,
-                          children: [
-                            userInfo(),
-                            LinearPercentIndicator(
-                              animation: true,
-                              lineHeight: getProportionateScreenHeight(
-                                  kDefaultPadding * 0.9),
-                              barRadius: Radius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
-                              ),
-                              backgroundColor: kWhiteColor,
-                              progressColor: kSecondaryColor,
-                              leading: Text(
-                                userData != null ? "${quotient}0" : "00",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: Text(
-                                userData != null ? "${quotient + 1}0" : "10",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              percent:
-                                  userData != null ? (remainder / 10) : 0.1,
-                            ),
                             Text(
-                              userData == null
-                                  // ? "Log in now and enjoy delivery cashbacks!"
-                                  ? "Log in for your chance to win delivery cashbacks on lucky orders!"
-                                  : isRewarded
-                                      ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                      : (10 - remainder) != 1
-                                          ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
-                                          : Provider.of<ZLanguage>(context,
-                                                  listen: true)
-                                              .nextOrderCashback,
+                              "${userData['user']['first_name']} ${userData['user']['last_name']} ",
                               style: Theme.of(context)
                                   .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: Colors.black),
+                                  .titleLarge
+                                  ?.copyWith(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      //phone verification dection
-                      if (userData != null &&
-                          userData['user'] != null &&
-                          !userData['user']['is_phone_number_verified'])
-                        _verifyPhoneWidget(textTheme: textTheme),
-                      // SizedBox(
-                      //     height: getProportionateScreenHeight(
-                      //         kDefaultPadding / 8)),
-
-                      ///////actions section
-                      // Divider(
-                      //   thickness: 2,
-                      //   height: kDefaultPadding / 2,
-                      //   color: kWhiteColor,
-                      // ),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-
-                      if (userData != null)
-                        _userActionCard(
-                          textTheme: textTheme,
-                          title: "Actions",
-                          children: [
-                            ProfileListTile(
-                              borderColor: kWhiteColor,
-                              icon: Icon(
-                                HeroiconsOutline.wallet,
-                              ),
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .wallet,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        BorsaScreen(userData: userData),
-                                  ),
-                                ).then((value) => getUser());
-                              },
-                            ),
-
-                            ProfileListTile(
-                              borderColor: kWhiteColor,
-                              icon: Icon(
-                                HeroiconsOutline.share,
-                              ),
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .referralCode,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ReferralScreen(
-                                        referralCode: userData['user']
-                                            ['referral_code']),
-                                  ),
-                                );
-                              },
-                            ),
-
-                            ProfileListTile(
-                              borderColor: kWhiteColor,
-                              icon: Icon(
-                                HeroiconsOutline.questionMarkCircle,
-                              ),
-                              title:
-                                  "${Provider.of<ZLanguage>(context, listen: false).help} & Support",
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  HelpScreen.routeName,
-                                );
-                              },
-                            ),
-                            //   ],
-                            // ),
                             SizedBox(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                  kDefaultPadding / 4),
                             ),
-                            // ProfileListTile(
-                            //   icon: Icon(
-                            //     Icons.credit_card,
-                            //     color: kSecondaryColor,
-                            //   ),
-                            //   title: Provider.of<ZLanguage>(context, listen: false).ettaCard,
-                            //   press: () {
-                            //     Navigator.of(context).push(MaterialPageRoute(builder: (context){
-                            //       return LoyaltyCardScreen();
-                            //     }));
-                            //   },
-                            // ),
-                            // SizedBox(height: 1),
-                            // ProfileListTile(
-                            //   icon: Icon(
-                            //     Icons.language,
-                            //     color: kSecondaryColor,
-                            //   ),
-                            //   title: Provider.of<ZLanguage>(context, listen: false)
-                            //       .language,
-                            //   press: () {
-                            //     Navigator.pushNamed(context, SubscribeScreen.routeName);
-                            //   },
-                            // ),
-                            // if (userData != null)
-                            //   Divider(
-                            //     thickness: 2,
-                            //     height: kDefaultPadding / 2,
-                            //     color: kWhiteColor,
-                            //   ),
+                            Text(
+                              "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
+                            ),
+                            Text(
+                              "${userData['user']['email']}",
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ]),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditProfile(
+                                userData: userData,
+                              ),
+                            ),
+                          ).then((value) => getUser());
+                        },
+                        child: Icon(
+                            size: 20,
+                            color: kBlackColor,
+                            HeroiconsOutline.pencilSquare),
+                      ),
+                    ],
+                  )
+                : Text(
+                    "Guest User",
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
 
-                            // if (userData != null)
-                            //   Padding(
-                            //     padding: EdgeInsets.symmetric(
-                            //         vertical: getProportionateScreenHeight(
-                            //             kDefaultPadding)),
-                            //     child: _userActionCard(
-                            //       title: "Security",
-                            //       textTheme: textTheme,
-                            //       children: [
-                            ProfileListTile(
-                              showTrailing: false,
-                              borderColor: kWhiteColor,
-                              icon: Icon(
-                                HeroiconsOutline.arrowLeftStartOnRectangle,
-                              ),
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .logout,
-                              onTap: () {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                _showDialog();
-                              },
-                            ),
-                            ProfileListTile(
-                              showTrailing: false,
-                              borderColor: kWhiteColor,
-                              titleColor: kSecondaryColor,
-                              icon: Icon(
-                                HeroiconsOutline.trash,
-                              ),
-                              title: "Delete Account?",
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      backgroundColor: kPrimaryColor,
-                                      title: Text("Delete User Account"),
-                                      content: Text(
-                                          "Are you sure you want to delete your account? Once you delete your account you will be able to reactivate within 30 days."),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          child: Text(
-                                            "Think about it!",
-                                            style: TextStyle(
-                                              color: kSecondaryColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                          },
-                                        ),
-                                        TextButton(
-                                          child: Text(
-                                            Provider.of<ZLanguage>(context,
-                                                    listen: false)
-                                                .submit,
-                                            style:
-                                                TextStyle(color: kBlackColor),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            deleteUser();
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ],
+            //user info card
+            Column(
+              children: [
+                userInfo(),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                      vertical:
+                          getProportionateScreenHeight(kDefaultPadding / 2)),
+                  child: LinearPercentIndicator(
+                    animation: true,
+                    lineHeight:
+                        getProportionateScreenHeight(kDefaultPadding * 0.9),
+                    barRadius: Radius.circular(
+                      getProportionateScreenWidth(kDefaultPadding / 2),
+                    ),
+                    backgroundColor: kWhiteColor,
+                    progressColor: kSecondaryColor,
+                    leading: Text(
+                      userData != null ? "${quotient}0" : "00",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: Text(
+                      userData != null ? "${quotient + 1}0" : "10",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    percent: userData != null ? (remainder / 10) : 0.1,
+                  ),
+                ),
+                Text(
+                  userData == null
+                      // ? "Log in now and enjoy delivery cashbacks!"
+                      ? "Log in for your chance to win delivery cashbacks on lucky orders!"
+                      : isRewarded
+                          ? "${Provider.of<ZLanguage>(context, listen: true).youAre} 9 ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                          : (10 - remainder) != 1
+                              ? "${Provider.of<ZLanguage>(context, listen: true).youAre} ${10 - remainder} ${Provider.of<ZLanguage>(context, listen: true).ordersAway}"
+                              : Provider.of<ZLanguage>(context, listen: true)
+                                  .nextOrderCashback,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.black),
+                ),
+              ],
+            ),
+
+            //phone verification dection
+            if (userData != null &&
+                userData['user'] != null &&
+                !userData['user']['is_phone_number_verified'])
+              _verifyPhoneWidget(textTheme: textTheme),
+
+            if (userData != null)
+              _userActionCard(
+                textTheme: textTheme,
+                title: "Account",
+                children: [
+                  // 1. Financial Section
+                  ProfileListTile(
+                    borderColor: kWhiteColor,
+                    icon: Icon(HeroiconsOutline.wallet),
+                    title:
+                        Provider.of<ZLanguage>(context, listen: false).wallet,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BorsaScreen(userData: userData),
                         ),
-                      // ),
-                      if (userData == null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding,
-                              vertical: kDefaultPadding),
-                          child: Column(
-                            spacing: kDefaultPadding,
-                            children: [
-                              ProfileListTile(
-                                  borderColor: kWhiteColor,
-                                  // showTrailing: false,
-                                  icon: Icon(
-                                    HeroiconsOutline.arrowLeftEndOnRectangle,
+                      ).then((value) => getUser());
+                    },
+                  ),
+
+                  // 2. Security Section
+                  if (_isBiometricAvailable)
+                    ProfileListTile(
+                      borderColor: kWhiteColor,
+                      icon: const Icon(HeroiconsOutline.fingerPrint),
+                      title: "Biometric Login",
+                      onTap: () {},
+                      trailing: Switch(
+                        value: _isBiometricEnabled,
+                        onChanged: (value) async {
+                          await _toggleBiometric(value);
+                        },
+                        activeTrackColor: kSecondaryColor,
+                      ),
+                      margin: EdgeInsets.only(
+                        top: getProportionateScreenHeight(kDefaultPadding / 2),
+                        bottom: getProportionateScreenHeight(
+                            // _savedAccountsCount > 0 ? kDefaultPadding / 2 : 0),
+                            _savedAccountsCount > 0 ? 0 : kDefaultPadding / 2),
+                      ),
+                    ),
+                  if (_savedAccountsCount > 0)
+                    ProfileListTile(
+                      borderColor: kWhiteColor,
+                      icon: Icon(HeroiconsOutline.arrowsRightLeft),
+                      margin: EdgeInsets.only(
+                        bottom:
+                            getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
+                      title: "Switch Account",
+                      onTap: _showSwitchAccountSheet,
+                      trailing: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: kSecondaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '$_savedAccountsCount',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: kWhiteColor,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // 3. Promotional Section
+                  ProfileListTile(
+                    borderColor: kWhiteColor,
+                    icon: Icon(HeroiconsOutline.share),
+                    title: Provider.of<ZLanguage>(context, listen: false)
+                        .referralCode,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReferralScreen(
+                              referralCode: userData['user']['referral_code']),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // 4. Support Section
+                  ProfileListTile(
+                    borderColor: kWhiteColor,
+                    icon: Icon(HeroiconsOutline.questionMarkCircle),
+                    title:
+                        "${Provider.of<ZLanguage>(context, listen: false).help} & Support",
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        HelpScreen.routeName,
+                      );
+                    },
+                  ),
+
+                  // 5. Account Management Section
+                  ProfileListTile(
+                    showTrailing: false,
+                    borderColor: kWhiteColor,
+                    icon: Icon(HeroiconsOutline.arrowLeftStartOnRectangle),
+                    title:
+                        Provider.of<ZLanguage>(context, listen: false).logout,
+                    onTap: () {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      _showDialog();
+                    },
+                    margin: EdgeInsets.only(
+                      top: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                  ),
+                  ProfileListTile(
+                    showTrailing: false,
+                    borderColor: kWhiteColor,
+                    titleColor: kSecondaryColor,
+                    icon: Icon(HeroiconsOutline.trash),
+                    title: "Delete Account?",
+                    margin: EdgeInsets.only(
+                      bottom: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: kPrimaryColor,
+                            title: Text("Delete User Account"),
+                            content: Text(
+                                "Are you sure you want to delete your account? Once you delete your account you will be able to reactivate within 30 days."),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text(
+                                  "Think about it!",
+                                  style: TextStyle(
+                                    color: kSecondaryColor,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  title: Provider.of<ZLanguage>(context,
-                                          listen: false)
-                                      .login,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => LoginScreen(
-                                          firstRoute: false,
-                                        ),
-                                      ),
-                                    ).then((value) => getUser());
-                                  }),
-                              // Divider(
-                              //   thickness: 2,
-                              //   height: kDefaultPadding / 2,
-                              //   color: kWhiteColor,
-                              // ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: kDefaultPadding,
-                                    vertical: kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                    color: kPrimaryColor,
-                                    border: Border.all(color: kWhiteColor),
-                                    borderRadius:
-                                        BorderRadius.circular(kDefaultPadding)),
-                                child: Column(
-                                  spacing: kDefaultPadding / 4,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Support",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        _actionCards(
-                                          onTap: () {
-                                            launchUrl(Uri(
-                                                scheme: 'tel',
-                                                path: '+251967575757'));
-                                          },
-                                          icon: HeroiconsOutline.phone,
-                                          title: "Call Now",
-                                        ),
-                                        _actionCards(
-                                          onTap: () {
-                                            launchUrl(Uri(
-                                                scheme: 'mailto',
-                                                path: "info@zmallshop.com"));
-                                            // launch("mailto:info@zmallshop.com");
-                                          },
-                                          icon: HeroiconsOutline.envelope,
-                                          title: "E-Mail",
-                                        ),
-                                        _actionCards(
-                                          onTap: () {
-                                            // launch("tel:+2518707");
-                                            launchUrl(Uri(
-                                                scheme: 'tel',
-                                                path: '+2518707'));
-                                          },
-                                          icon: Icons.support_agent,
-                                          title: "Call HOTLINE",
-                                        ),
-                                      ],
-                                    ),
-                                  ],
                                 ),
-                              ),
-                              // ProfileListTile(
-                              //   borderColor: kWhiteColor,
-                              //   icon: Icon(
-                              //     HeroiconsOutline.questionMarkCircle,
-                              //   ),
-                              //   title:
-                              //       Provider.of<ZLanguage>(context, listen: false)
-                              //           .help,
-                              //   onTap: () {
-                              //     Navigator.pushNamed(
-                              //         context, HelpScreen.routeName);
-                              //   },
-                              // ),
-
-                              ProfileListTile(
-                                borderColor: kWhiteColor,
-                                icon: Icon(
-                                  // Icons.lock,
-                                  HeroiconsOutline.shieldCheck,
-                                  // color: kSecondaryColor,
-                                ),
-                                title: "Privacy Policy",
-                                onTap: () {
-                                  Service.launchInWebViewOrVC(
-                                      "https://app.zmallshop.com/terms.html");
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
                                 },
                               ),
-
-                              ProfileListTile(
-                                borderColor: kWhiteColor,
-                                icon: Icon(
-                                  HeroiconsOutline.clipboardDocumentCheck,
-                                  // Icons.assignment,
-                                  // color: kSecondaryColor,
+                              TextButton(
+                                child: Text(
+                                  Provider.of<ZLanguage>(context, listen: false)
+                                      .submit,
+                                  style: TextStyle(color: kBlackColor),
                                 ),
-                                title: "Terms and Conditions",
-                                onTap: () {
-                                  Service.launchInWebViewOrVC(
-                                      "https://app.zmallshop.com/terms.html");
-                                },
-                              ),
-                              ProfileListTile(
-                                borderColor: kWhiteColor,
-                                icon: Icon(
-                                  FontAwesomeIcons.instagram,
-                                  // color: kSecondaryColor,
-                                ),
-                                title: "Follow us on Instagram",
-                                onTap: () {
-                                  Service.launchInWebViewOrVC(
-                                      "https://www.instagram.com/zmall_delivery/?hl=en");
-                                },
-                              ),
-                              ProfileListTile(
-                                borderColor: kWhiteColor,
-                                icon: Icon(
-                                  Icons.facebook_outlined,
-                                  // color: kSecondaryColor,
-                                ),
-                                title: "Follow us on Facebook",
-                                onTap: () {
-                                  Service.launchInWebViewOrVC(
-                                      "https://www.facebook.com/Zmallshop/");
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  deleteUser();
                                 },
                               ),
                             ],
-                          ),
-                        ),
-                    ],
+                          );
+                        },
+                      );
+                    },
                   ),
+                ],
+              ),
+
+            //Guest user section
+            if (userData == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: kDefaultPadding, vertical: kDefaultPadding),
+                child: Column(
+                  spacing: kDefaultPadding,
+                  children: [
+                    // 1. Authentication Section
+                    ProfileListTile(
+                      borderColor: kWhiteColor,
+                      icon: Icon(HeroiconsOutline.arrowLeftEndOnRectangle),
+                      title:
+                          Provider.of<ZLanguage>(context, listen: false).login,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(
+                              firstRoute: false,
+                            ),
+                          ),
+                        ).then((value) => getUser());
+                      },
+                    ),
+
+                    // 2. Support Section
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: kDefaultPadding,
+                          vertical: kDefaultPadding / 2),
+                      decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          border: Border.all(color: kWhiteColor),
+                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                      child: Column(
+                        spacing: kDefaultPadding / 4,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Quick Support",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _actionCards(
+                                onTap: () {
+                                  launchUrl(Uri(
+                                      scheme: 'tel', path: '+251967575757'));
+                                },
+                                icon: HeroiconsOutline.phone,
+                                title: "Call Now",
+                              ),
+                              _actionCards(
+                                onTap: () {
+                                  launchUrl(Uri(
+                                      scheme: 'mailto',
+                                      path: "info@zmallshop.com"));
+                                },
+                                icon: HeroiconsOutline.envelope,
+                                title: "E-Mail",
+                              ),
+                              _actionCards(
+                                onTap: () {
+                                  launchUrl(
+                                      Uri(scheme: 'tel', path: '+2518707'));
+                                },
+                                icon: Icons.support_agent,
+                                title: "Call HOTLINE",
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 3. Support Section
+                    ProfileListTile(
+                      borderColor: kWhiteColor,
+                      icon: Icon(HeroiconsOutline.questionMarkCircle),
+                      title:
+                          "${Provider.of<ZLanguage>(context, listen: false).help} & Support",
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          HelpScreen.routeName,
+                        );
+                      },
+                    ),
+                    // // Legal Section
+                    // ProfileListTile(
+                    //   borderColor: kWhiteColor,
+                    //   icon: Icon(HeroiconsOutline.shieldCheck),
+                    //   title: "Privacy Policy",
+                    //   onTap: () {
+                    //     Service.launchInWebViewOrVC(
+                    //         "https://app.zmallshop.com/terms.html");
+                    //   },
+                    // ),
+                    // ProfileListTile(
+                    //   borderColor: kWhiteColor,
+                    //   icon: Icon(HeroiconsOutline.clipboardDocumentCheck),
+                    //   title: "Terms and Conditions",
+                    //   onTap: () {
+                    //     Service.launchInWebViewOrVC(
+                    //         "https://app.zmallshop.com/terms.html");
+                    //   },
+                    // ),
+
+                    // // Social Media Section
+                    // ProfileListTile(
+                    //   borderColor: kWhiteColor,
+                    //   icon: Icon(FontAwesomeIcons.instagram),
+                    //   title: "Follow us on Instagram",
+                    //   onTap: () {
+                    //     Service.launchInWebViewOrVC(
+                    //         "https://www.instagram.com/zmall_delivery/?hl=en");
+                    //   },
+                    // ),
+                    // ProfileListTile(
+                    //   borderColor: kWhiteColor,
+                    //   icon: Icon(Icons.facebook_outlined),
+                    //   title: "Follow us on Facebook",
+                    //   onTap: () {
+                    //     Service.launchInWebViewOrVC(
+                    //         "https://www.facebook.com/Zmallshop/");
+                    //   },
+                    // ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        )
-        // : Column(
-        //     mainAxisAlignment: MainAxisAlignment.center,
-        //     children: [
-        //       Spacer(flex: 1),
-        //       Container(
-        //         child: Center(
-        //           child: Image.asset('images/login.png'),
-        //         ),
-        //       ),
-        //       Spacer(flex: 1),
-        //       Padding(
-        //         padding: EdgeInsets.symmetric(
-        //             horizontal: getProportionateScreenWidth(kDefaultPadding)),
-        //         child: CustomButton(
-        //           title: "LOGIN",
-        //           press: () {
-        //             Navigator.push(
-        //               context,
-        //               MaterialPageRoute(
-        //                 builder: (context) => LoginScreen(
-        //                   firstRoute: false,
-        //                 ),
-        //               ),
-        //             ).then((value) => getUser());
-        //           },
-        //           color: kSecondaryColor,
-        //         ),
-        //       ),
-        //       Spacer(
-        //         flex: 2,
-        //       ),
-        //     ],
-        //   ),
-        );
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _actionCards({
@@ -955,8 +985,11 @@ class _BodyState extends State<Body> {
     );
   }
 
-  Widget userInfoCard(
-      {required String title, required String value, required IconData icon}) {
+  Widget userInfoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: kDefaultPadding, vertical: kDefaultPadding / 2),
@@ -985,12 +1018,15 @@ class _BodyState extends State<Body> {
 
   Widget userInfo() {
     return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: getProportionateScreenWidth(kDefaultPadding),
+      ),
       child: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 userInfoCard(
                   icon: HeroiconsOutline.wallet,
@@ -1026,10 +1062,7 @@ class _BodyState extends State<Body> {
                 ),
               ],
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: kDefaultPadding),
-              child: Divider(color: kWhiteColor, thickness: 2),
-            )
+            Divider(color: kWhiteColor, thickness: 2)
           ],
         ),
       ),
@@ -1222,15 +1255,6 @@ class _BodyState extends State<Body> {
             );
           });
         });
-    // },
-    // child: Text(
-    //   "Verify Phone?",
-    //   style: Theme.of(context)
-    //       .textTheme
-    //       .bodySmall
-    //       ?.copyWith(color: kSecondaryColor),
-    // ),
-    // );
   }
   // Profile header with avatar and verification badge
   // Row(
@@ -1744,3 +1768,75 @@ class _BodyState extends State<Body> {
     }
   }
 }
+// if (enable) {
+    //   // Enable biometric
+    //   if (userData == null) {
+    //     Service.showMessage(
+    //       context: context,
+    //       title: "Please login first to enable $_biometricType",
+    //       error: true,
+    //     );
+    //     return;
+    //   }
+
+    //   final result = await BiometricService.authenticate(
+    //     localizedReason: 'Authenticate to enable $_biometricType login',
+    //   );
+
+    //   if (result.success) {
+    //     final phone = userData['user']['phone'];
+    //     final userName = userData['user']['name'];
+
+    //     await BiometricCredentialsManager.updateBiometricStatus(phone, true);
+    //     await BiometricCredentialsManager.updateUserName(phone, userName);
+    //     await BiometricCredentialsManager.updateLastUsed(phone);
+    //     // final account = await BiometricCredentialsManager.getAccount(phone);
+
+    //     if (mounted) {
+    //       // setState(() => _isBiometricEnabled = true);
+    //       setState(() {
+    //         _isBiometricEnabled = true;
+    //         // _isBiometricEnabled = account?.biometricEnabled ?? true;
+    //       });
+
+    //       Service.showMessage(
+    //         context: context,
+    //         title: "$_biometricType login enabled successfully!",
+    //         error: false,
+    //       );
+    //     }
+    //   } else if (result.errorMessage != null) {
+    //     if (mounted) {
+    //       Service.showMessage(
+    //         context: context,
+    //         title: result.errorMessage!,
+    //         error: true,
+    //       );
+    //     }
+    //   }
+    // } else {
+    //   // Disable biometric
+    //   final phone = userData['user']['phone'];
+    //   final result = await BiometricService.authenticate(
+    //     localizedReason: 'Authenticate to disable $_biometricType login',
+    //   );
+
+    //   if (result.success) {
+    //     await BiometricCredentialsManager.updateBiometricStatus(phone, false);
+    //     final account = await BiometricCredentialsManager.getAccount(phone);
+
+    //     if (mounted) {
+    //       setState(() {
+    //         _isBiometricEnabled = account?.biometricEnabled ?? false;
+    //       });
+
+    //       if (!_isBiometricEnabled) {
+    //         Service.showMessage(
+    //           context: context,
+    //           title: "$_biometricType login disabled",
+    //           error: false,
+    //         );
+    //       }
+    //     }
+    //   }
+    // }

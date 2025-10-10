@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/order/global_order.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
 
 class GlobalProfile extends StatefulWidget {
@@ -27,7 +27,6 @@ class _GlobalProfileState extends State<GlobalProfile> {
   bool isLoading = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getAbroadUser();
   }
@@ -95,14 +94,18 @@ class _GlobalProfileState extends State<GlobalProfile> {
                     // debugPrint(abroadData!.toJson());
                     await Service.save('abroad_user', abroadData!.toJson());
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage1(
-                            "User data successfully updated", false));
+                    Service.showMessage(
+                      context: context,
+                      title: "User data successfully updated",
+                      error: false,
+                    );
                   } else {
                     // Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage1(
-                            "Please add the necessary information", true));
+                    Service.showMessage(
+                      context: context,
+                      title: "Please add the necessary information",
+                      error: true,
+                    );
                   }
                   // Service.launchInWebViewOrVC("http://onelink.to/vnchst");
                 },

@@ -1,5 +1,5 @@
 import 'package:heroicons_flutter/heroicons_flutter.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/world_cup/my_prediction.dart';
 import 'package:zmall/world_cup/available_games.dart';

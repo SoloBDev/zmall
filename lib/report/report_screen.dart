@@ -2,11 +2,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class ReportScreen extends StatefulWidget {
   static String routeName = '/report';

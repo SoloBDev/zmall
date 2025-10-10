@@ -4,10 +4,10 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class CbeUssd extends StatefulWidget {
   const CbeUssd({
@@ -49,14 +49,20 @@ class _CbeUssdState extends State<CbeUssd> {
   void _initPayment() async {
     var data = await initPayment();
     if (data != null && data['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${data['message']}. Waiting for payment to be completed", false,
-          duration: 6));
+      Service.showMessage(
+        context: context,
+        title: "${data['message']}. Waiting for payment to be completed",
+        error: false,
+        duration: 6,
+      );
       _verifyPayment();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${data['message']}. Please try other payment methods", true,
-          duration: 4));
+      Service.showMessage(
+        context: context,
+        title: "${data['message']}. Please try other payment methods",
+        error: true,
+        duration: 4,
+      );
       await Future.delayed(Duration(seconds: 3))
           .then((value) => Navigator.pop(context));
     }
@@ -166,10 +172,10 @@ class _CbeUssdState extends State<CbeUssd> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage1(
-            "Something went wrong. Please check your internet connection!",
-            true),
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }
@@ -220,10 +226,10 @@ class _CbeUssdState extends State<CbeUssd> {
       setState(() {
         this._loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        Service.showMessage1(
-            "Something went wrong. Please check your internet connection!",
-            true),
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
       );
       return null;
     }

@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/item/item_screen.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/services/service.dart';
 import 'package:http/http.dart' as http;
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'skip_button.dart';
 
 class SplashContainer extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class PaymentCard extends StatelessWidget {
   final String title;

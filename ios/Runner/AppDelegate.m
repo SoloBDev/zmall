@@ -11,8 +11,12 @@
     [GMSServices provideAPIKey:@"AIzaSyDAgZScAJfUHxahi_n4OpuI8HrTHVlirJk"];
 
     [GeneratedPluginRegistrant registerWithRegistry:self];
-    FlutterViewController *controller = (FlutterViewController *)self.window.rootViewController;
-    self.channel = [FlutterMethodChannel methodChannelWithName:@"telebirrInAppSdkChannel" binaryMessenger:controller.binaryMessenger];
+
+    // Use FlutterPluginRegistry API instead of accessing window.rootViewController
+    NSObject<FlutterPluginRegistrar>* registrar =
+        [self registrarForPlugin:@"TelebirrInAppSdkPlugin"];
+    self.channel = [FlutterMethodChannel methodChannelWithName:@"telebirrInAppSdkChannel"
+                                               binaryMessenger:registrar.messenger];
 
     __weak typeof(self) weakSelf = self;
     [self.channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {

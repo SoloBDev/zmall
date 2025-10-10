@@ -5,10 +5,10 @@ description: Zmall E-commerce App
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 3.2.1+333
+version: 3.2.2+334
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -21,7 +21,7 @@ dependencies:
   shimmer:
   flutter_spinkit:
   # shared_preferences:
-  shared_preferences:
+  shared_preferences: ^2.5.3
   url_launcher: ^6.0.3
   # mobile_scanner:
   # qr_code_scanner:
@@ -64,6 +64,8 @@ dependencies:
   #
   sms_autofill:
   # flutter_animate:
+  local_auth: ^2.3.0
+  flutter_secure_storage: ^9.2.2
 
 module:
   androidX: true

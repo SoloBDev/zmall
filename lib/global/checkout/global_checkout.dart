@@ -9,14 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/checkout/checkout_screen.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/kifiya/global_kifiya.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_tag.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 
@@ -125,8 +125,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       //   });
       // }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${promoCodeData['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${promoCodeData['error_code']}']}!",
+        error: true,
+      );
     }
   }
 
@@ -159,8 +162,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
         promoCodeApplied = true;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${promoCodeData['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${promoCodeData['error_code']}']}!",
+        error: true,
+      );
     }
   }
 
@@ -172,8 +178,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
     if (responseData != null && responseData['success']) {
       // debugPrint("Cart invoice generated");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${responseData['error_code']}']}!", true));
+      Service.showMessage(
+        context: context,
+        title: "${errorCodes['${responseData['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       // if (responseData['error_code'] == 999) {
       //   await Service.saveBool('logged', false);
@@ -245,12 +254,12 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                             }
                             getCart();
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage1(
-                                "Store only accepts scheduled orders. Please schedule your order!",
-                                false,
-                                duration: 5,
-                              ),
+                            Service.showMessage(
+                              context: context,
+                              title:
+                                  "Store only accepts scheduled orders. Please schedule your order!",
+                              error: false,
+                              duration: 5,
                             );
                             setState(() {
                               this.orderAsap = false;
@@ -313,12 +322,12 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 ),
                                 onPressed: () async {
                                   if (!cart!.isOpen) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage1(
-                                        "As the store is closed it only allows next day booking",
-                                        false,
-                                        duration: 5,
-                                      ),
+                                    Service.showMessage(
+                                      context: context,
+                                      title:
+                                          "As the store is closed it only allows next day booking",
+                                      error: false,
+                                      duration: 5,
                                     );
                                     await Future.delayed(Duration(seconds: 3));
                                   }
@@ -493,9 +502,10 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                               TextButton(
                                 onPressed: () {
                                   if (promoCodeApplied) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      Service.showMessage1(
-                                          "Promo Code already applied!", true),
+                                    Service.showMessage(
+                                      context: context,
+                                      title: "Promo Code already applied!",
+                                      error: true,
                                     );
                                     setState(() {});
                                   } else {
@@ -594,12 +604,12 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                             Navigator.of(
                                                                     context)
                                                                 .pop();
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(Service
-                                                                    .showMessage1(
-                                                                        "Promo Code cannot be empty!",
-                                                                        false));
+                                                            Service.showMessage(
+                                                              context: context,
+                                                              title:
+                                                                  "Promo Code cannot be empty!",
+                                                              error: false,
+                                                            );
                                                           }
                                                         },
                                                       ),
@@ -1062,12 +1072,11 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                               ),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              Service.showMessage1(
-                                "Please select date & time for schedule",
-                                false,
-                                duration: 5,
-                              ),
+                            Service.showMessage(
+                              context: context,
+                              title: "Please select date & time for schedule",
+                              error: false,
+                              duration: 5,
                             );
                           }
                         } else {

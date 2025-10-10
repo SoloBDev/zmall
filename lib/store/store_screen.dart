@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/map_view/map_view.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/services/service.dart';
 import 'package:zmall/widgets/open_close_status_card.dart';
 import 'components/body.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/service.dart';
 import 'package:zmall/world_cup/components/logo_container.dart';
 
 class MatchRow extends StatelessWidget {

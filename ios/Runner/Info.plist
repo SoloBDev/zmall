@@ -91,6 +91,8 @@
 		</dict>
 		<key>NSCameraUsageDescription</key>
 		<string>ZMall needs camera access to scan QR codes</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>ZMall uses Face ID to provide secure and convenient login to your account</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>Zmall needs access to location to get nearby restaurants when open and in the
 			background.</string>

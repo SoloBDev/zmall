@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:zmall/global/global.dart';
 import 'package:zmall/global/home_page/global_home.dart';
 import 'package:zmall/login/login_screen.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/tab_screen.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/tab_screen.dart';
 
 class SkipButton extends StatelessWidget {
   const SkipButton({

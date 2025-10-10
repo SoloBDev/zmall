@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/checkout/checkout_screen.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/delivery/components/location_container.dart';
 import 'package:zmall/global/checkout/global_checkout.dart';
@@ -17,9 +17,8 @@ import 'package:zmall/location/location_screen.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
-import 'package:zmall/widgets/custom_tag.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
@@ -69,8 +68,11 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+        context: context,
+        title: "Location permission denied. Please enable and try again",
+        error: true,
+      );
       FlLocation.requestLocationPermission();
     }
   }
@@ -101,8 +103,11 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+            context: context,
+            title: "Location service disabled. Please enable and try again",
+            error: true,
+          );
         }
       }
     } else {
@@ -244,8 +249,10 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
         );
       }));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "${errorCodes['${responseData['error_code']}']}!", true));
+      Service.showMessage(
+          context: context,
+          title: "${errorCodes['${responseData['error_code']}']}!",
+          error: true);
       await Future.delayed(Duration(seconds: 2));
       if (responseData['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -820,25 +827,33 @@ class _GlobalDeliveryState extends State<GlobalDelivery> {
                           }
                         } else {
                           if (senderName.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage1(
-                                    "Please add sender's name", false,
-                                    duration: 4));
+                            Service.showMessage(
+                              context: context,
+                              title: "Please add sender's name",
+                              error: false,
+                              duration: 4,
+                            );
                           } else if (receiverName.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage1(
-                                    "Please add receiver's name", false,
-                                    duration: 4));
+                            Service.showMessage(
+                              context: context,
+                              title: "Please add receiver's name",
+                              error: false,
+                              duration: 4,
+                            );
                           } else if (receiverPhone.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage1(
-                                    "Please add receivers phone number", false,
-                                    duration: 4));
+                            Service.showMessage(
+                              context: context,
+                              title: "Please add receivers phone number",
+                              error: false,
+                              duration: 4,
+                            );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                Service.showMessage1(
-                                    "Please select a delivery address", false,
-                                    duration: 4));
+                            Service.showMessage(
+                              context: context,
+                              title: "Please select a delivery address",
+                              error: false,
+                              duration: 4,
+                            );
                           }
                         }
                         setState(() {

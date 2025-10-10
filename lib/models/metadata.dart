@@ -1,7 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/service.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/service.dart';
 
 class ZMetaData extends ChangeNotifier {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;

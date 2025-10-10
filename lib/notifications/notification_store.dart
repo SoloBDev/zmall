@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/item/item_screen.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/shimmer_widget.dart';
@@ -392,10 +392,12 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                   },
                                                 ),
                                               ).then((value) => getCart())
-                                            : ScaffoldMessenger.of(context)
-                                                .showSnackBar(Service.showMessage1(
+                                            : Service.showMessage(
+                                                context: context,
+                                                title:
                                                     "Sorry the store is closed at this time!",
-                                                    true));
+                                                error: true,
+                                              );
                                       },
                                       child: Column(
                                         children: [
@@ -538,11 +540,15 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                       ).then(
                                                                         (value) =>
                                                                             getCart())
-                                                                    : ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage1(
+                                                                    : Service
+                                                                        .showMessage(
+                                                                        context:
+                                                                            context,
+                                                                        title:
                                                                             "Sorry the store is closed at this time!",
-                                                                            true));
+                                                                        error:
+                                                                            true,
+                                                                      );
                                                               } else {
                                                                 //TD: Add to cart.....
 
@@ -644,11 +650,15 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                     }
                                                                   } else {
                                                                     // debugPrint( "User not logged in...");
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage1(
-                                                                            "Please login in...",
-                                                                            true));
+                                                                    Service
+                                                                        .showMessage(
+                                                                      context:
+                                                                          context,
+                                                                      title:
+                                                                          "Please login in...",
+                                                                      error:
+                                                                          true,
+                                                                    );
                                                                     Navigator
                                                                         .push(
                                                                       context,
@@ -680,11 +690,15 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                     //     .pop();
                                                                   } else {
                                                                     // debugPrint( "User not logged in...");
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(Service.showMessage1(
-                                                                            "Please login in...",
-                                                                            true));
+                                                                    Service
+                                                                        .showMessage(
+                                                                      context:
+                                                                          context,
+                                                                      title:
+                                                                          "Please login in...",
+                                                                      error:
+                                                                          true,
+                                                                    );
                                                                     Navigator
                                                                         .push(
                                                                       context,
@@ -845,8 +859,11 @@ class _NotificationStoreState extends State<NotificationStore> {
           setState(() {
             this._loading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            Service.showMessage1("Something went wrong!", true, duration: 3),
+          Service.showMessage(
+            context: context,
+            title: "Something went wrong!",
+            error: true,
+            duration: 3,
           );
           throw TimeoutException("The connection has timed out!");
         },

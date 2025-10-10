@@ -4,15 +4,14 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/forgot_password/components/update_password.dart';
 import 'package:zmall/login/login_screen.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_text_field.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -223,10 +222,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           color: kSecondaryColor,
                           press: () {
                             if (!_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  Service.showMessage1(
-                                      "Please enter a valid phone number",
-                                      false));
+                              Service.showMessage(
+                                context: context,
+                                title: "Please enter a valid phone number",
+                                error: false,
+                              );
                             } else {
                               sendOTP(_phone).then(
                                 (success) {
@@ -272,8 +272,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     if (response != null &&
         response["success"] != null &&
         response["success"]) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          Service.showMessage1("OTP code sent to your phone...", false));
+      Service.showMessage(
+          context: context,
+          title: "OTP code sent to your phone...",
+          error: false);
       setState(() {
         success = true;
       });
@@ -589,7 +591,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   //             });
 //   //       },
 //   //       codeAutoRetrievalTimeout: (String verificationId) {
-//   //         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+//   //         ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
 //   //             ("Error while verifying phone number. Please try again"), true));
 //   //         setState(() {
 //   //           _loading = false;
@@ -601,7 +603,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 //   // }
 
 //   Future<bool> sendOTP(phone, email, otp) async {
-//     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
+//     ScaffoldMessenger.of(context).showSnackBar(Service.showMessage(
 //         "OTP code sent to your phone or email...", false,
 //         duration: 6));
 //     var response = await verificationSms(phone, email, otp);

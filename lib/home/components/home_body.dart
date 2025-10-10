@@ -16,9 +16,9 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/aliexpress/ali_product_screen.dart';
 import 'package:zmall/cart/cart_screen.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/courier/courier_screen.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/events/events_screen.dart';
@@ -38,8 +38,8 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
 import 'package:zmall/product/product_screen.dart';
 import 'package:zmall/search/search_screen.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/custom_list_tile.dart';
 import 'package:zmall/store/store_screen.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
@@ -97,6 +97,7 @@ class _HomeBodyState extends State<HomeBody> {
   var userLastOrder;
   var userLocation;
   var userOrderStatus;
+  Timer? _locationTimer;
   var orderTo;
   var orderFrom;
   Timer? timer;
@@ -165,6 +166,14 @@ class _HomeBodyState extends State<HomeBody> {
       });
   }
 
+  @override
+  void dispose() {
+    timer?.cancel();
+    _locationTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   ////////////////newly added
   void _startTimer() async {
     if (userLastOrder != null) {
@@ -177,10 +186,14 @@ class _HomeBodyState extends State<HomeBody> {
           !_isLocationDialogShown) {
         _isLocationDialogShown = true;
 
-        Timer.periodic(const Duration(seconds: 30), (timer) {
+        _locationTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
           if (timer.tick > 1) {
             timer.cancel();
           } else {
+            if (!mounted) {
+              timer.cancel();
+              return;
+            }
             showDialog(
               context: context,
               barrierDismissible: Platform.isIOS ? true : false,
@@ -198,8 +211,8 @@ class _HomeBodyState extends State<HomeBody> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        _startTimer();
                         Navigator.of(context).pop();
+                        _startTimer();
                       },
                       child: Text(
                         'OK',
@@ -219,24 +232,30 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   void _getUserOrder() async {
-    setState(() {
-      _loading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _loading = true;
+      });
+    }
     var data = await getOrders();
     if (data != null && data['success']) {
-      setState(() {
-        _loading = false;
-        userLastOrder = data['order_list'][0];
-        userOrderStatus = userLastOrder['order_status'];
-        userLocation = userLastOrder['destination_addresses'][0]['location'];
-        orderTo =
-            userLastOrder['destination_addresses'][0]['user_details']['name'];
-        _startTimer();
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          userLastOrder = data['order_list'][0];
+          userOrderStatus = userLastOrder['order_status'];
+          userLocation = userLastOrder['destination_addresses'][0]['location'];
+          orderTo =
+              userLastOrder['destination_addresses'][0]['user_details']['name'];
+          _startTimer();
+        });
+      }
     } else {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
       // ScaffoldMessenger.of(context).showSnackBar(
       //     Service.showMessage("${errorCodes['${data['error_code']}']}!", true));
     }
@@ -439,16 +458,20 @@ class _HomeBodyState extends State<HomeBody> {
     var data = await CoreServices.getUserDetail(userId, serverToken, context);
 
     if (data != null && data['success']) {
-      setState(() {
-        _loading = false;
-        userData = data;
-        Service.save('user', userData);
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          userData = data;
+          Service.save('user', userData);
+        });
+      }
     } else {
-      setState(() {
-        _loading = false;
-      });
-      if (data['error_code'] == 999) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+      if (data != null && data['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Service.showMessage(
@@ -489,17 +512,19 @@ class _HomeBodyState extends State<HomeBody> {
   void _getAppKeys() async {
     var data = await CoreServices.appKeys(context);
     if (data != null && data['success']) {
-      setState(() {
-        Service.saveBool("is_closed", data['message_flag']);
-        Service.save("closed_message", data['message']);
-        Service.save("ios_app_version", data['ios_user_app_version_code']);
-        Service.saveBool(
-            "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
-        Service.saveBool(
-            "ios_force_update", data['is_ios_user_app_force_update']);
-        Service.save('app_close', data['app_close']);
-        Service.save('app_open', data['app_open']);
-      });
+      if (mounted) {
+        setState(() {
+          Service.saveBool("is_closed", data['message_flag']);
+          Service.save("closed_message", data['message']);
+          Service.save("ios_app_version", data['ios_user_app_version_code']);
+          Service.saveBool(
+              "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+          Service.saveBool(
+              "ios_force_update", data['is_ios_user_app_force_update']);
+          Service.save('app_close', data['app_close']);
+          Service.save('app_open', data['app_open']);
+        });
+      }
       if (data['message_flag'] && !_isMessageDialogShown) {
         _isMessageDialogShown = true;
         showSimpleNotification(
@@ -1019,12 +1044,14 @@ class _HomeBodyState extends State<HomeBody> {
       });
       checkLaundryCategory(categories);
     } else {
-      if (responseData['error_code'] != null &&
+      if (responseData != null &&
+          responseData['error_code'] != null &&
           responseData['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-      } else if (responseData['error_code'] != null &&
+      } else if (responseData != null &&
+          responseData['error_code'] != null &&
           responseData['error_code'] == 813) {
         String country = Provider.of<ZMetaData>(context, listen: false).country;
         if (country == "Ethiopia") {
@@ -1050,7 +1077,7 @@ class _HomeBodyState extends State<HomeBody> {
                   ));
         }
       } else {
-        if (mounted) {
+        if (mounted && responseData != null) {
           Service.showMessage(
             context: context,
             title: "${errorCodes['${responseData['error_code']}']}",
@@ -1086,13 +1113,13 @@ class _HomeBodyState extends State<HomeBody> {
       services = servicesData['deliveries'];
       // debugPrint("\t=> \tGet Services Completed");
     } else {
-      if (mounted) {
+      if (mounted && responseData != null) {
         Service.showMessage(
             context: context,
             title: "${errorCodes['${responseData['error_code']}']}",
             error: true);
       }
-      if (servicesData['error_code'] == 999) {
+      if (servicesData != null && servicesData['error_code'] == 999) {
         await Service.saveBool('logged', false);
         await Service.remove('user');
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
@@ -1135,12 +1162,6 @@ class _HomeBodyState extends State<HomeBody> {
     //     );
     //   },
     // );
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
   }
 
   int getServiceIndex(String serviceName) {
@@ -2414,10 +2435,10 @@ class _HomeBodyState extends State<HomeBody> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      setState(() {
-        _loading = false;
-      });
       if (mounted) {
+        setState(() {
+          _loading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -2465,10 +2486,10 @@ class _HomeBodyState extends State<HomeBody> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      setState(() {
-        _loading = false;
-      });
       if (mounted) {
+        setState(() {
+          _loading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -2616,15 +2637,17 @@ class _HomeBodyState extends State<HomeBody> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
-          );
+          if (mounted) {
+            setState(() {
+              this._loading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Something went wrong!"),
+                backgroundColor: kSecondaryColor,
+              ),
+            );
+          }
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -2635,15 +2658,17 @@ class _HomeBodyState extends State<HomeBody> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      setState(() {
-        this._loading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Your internet connection is bad!"),
-          backgroundColor: kSecondaryColor,
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          this._loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Your internet connection is bad!"),
+            backgroundColor: kSecondaryColor,
+          ),
+        );
+      }
       return null;
     }
   }

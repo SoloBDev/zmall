@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class SpecialOfferCard extends StatelessWidget {
   const SpecialOfferCard({
@@ -45,7 +45,8 @@ class SpecialOfferCard extends StatelessWidget {
           // border: Border.all(color: kWhiteColor),
           border: Border.all(color: kBlackColor.withValues(alpha: 0.06)),
           borderRadius: BorderRadius.circular(
-              getProportionateScreenWidth(kDefaultPadding / 2)),
+            getProportionateScreenWidth(kDefaultPadding / 2),
+          ),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(
@@ -58,8 +59,9 @@ class SpecialOfferCard extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding * 6.0),
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding * 6.0,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(
                           getProportionateScreenWidth(kDefaultPadding / 2),
@@ -79,12 +81,15 @@ class SpecialOfferCard extends StatelessWidget {
                         placeholder: (context, url) => Center(
                           child: Container(
                             width: getProportionateScreenWidth(
-                                kDefaultPadding * 3.5),
+                              kDefaultPadding * 3.5,
+                            ),
                             height: getProportionateScreenHeight(
-                                kDefaultPadding * 3.5),
+                              kDefaultPadding * 3.5,
+                            ),
                             child: CircularProgressIndicator(
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(kWhiteColor),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                kWhiteColor,
+                              ),
                             ),
                           ),
                         ),
@@ -113,12 +118,12 @@ class SpecialOfferCard extends StatelessWidget {
                         Text(
                           itemName,
                           maxLines: 1,
-                          style:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    color: kBlackColor,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                color: kBlackColor,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                         ),
                         Row(
                           spacing: kDefaultPadding / 2,
@@ -128,9 +133,7 @@ class SpecialOfferCard extends StatelessWidget {
                               Text(
                                 "$originalPrice",
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: kGreyColor,
                                       fontWeight: FontWeight.w100,
@@ -140,32 +143,31 @@ class SpecialOfferCard extends StatelessWidget {
                                       fontSize: getProportionateScreenWidth(9),
                                     ),
                               ),
-                            Text(
-                              "${newPrice}${Provider.of<ZMetaData>(context, listen: false).currency}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
+                            Flexible(
+                              child: Text(
+                                "${newPrice}${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
                                       color: kBlackColor,
                                       fontWeight: FontWeight.bold,
                                       overflow: TextOverflow.ellipsis,
-                                      fontSize:
-                                          getProportionateScreenWidth(11)),
+                                      fontSize: getProportionateScreenWidth(11),
+                                    ),
+                              ),
                             ),
                           ],
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(kDefaultPadding),
+                            borderRadius: BorderRadius.circular(
+                              kDefaultPadding,
+                            ),
                           ),
                           child: InkWell(
                             onTap: storePress,
                             child: Text(
                               Service.capitalizeFirstLetters(storeName),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
+                              style: Theme.of(context).textTheme.labelSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: kGreyColor,
@@ -176,7 +178,7 @@ class SpecialOfferCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
               if (isDiscounted || specialOffer.isNotEmpty)
@@ -190,11 +192,12 @@ class SpecialOfferCard extends StatelessWidget {
                     ),
                     height: getProportionateScreenHeight(kDefaultPadding * 1.5),
                     decoration: BoxDecoration(
-                        color: kWhiteColor,
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(kDefaultPadding / 1.2),
-                          topRight: Radius.circular(kDefaultPadding / 1.2),
-                        )),
+                      color: kWhiteColor,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(kDefaultPadding / 1.2),
+                        topRight: Radius.circular(kDefaultPadding / 1.2),
+                      ),
+                    ),
                     child: Container(
                       height: getProportionateScreenHeight(kDefaultPadding),
                       padding: EdgeInsets.only(
@@ -209,26 +212,27 @@ class SpecialOfferCard extends StatelessWidget {
                       //       getProportionateScreenHeight(kDefaultPadding / 7),
                       // ),
                       decoration: BoxDecoration(
-                          color: kSecondaryColor,
-                          // .withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(kDefaultPadding / 1.6),
-                            topRight: Radius.circular(kDefaultPadding / 2),
-                          )),
+                        color: kSecondaryColor,
+                        // .withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(kDefaultPadding / 1.6),
+                          topRight: Radius.circular(kDefaultPadding / 2),
+                        ),
+                      ),
                       child: Center(
                         child: Text(
                           specialOffer.isNotEmpty
                               ? specialOffer
                               : "${(100.00 - (double.parse(newPrice) / double.parse(originalPrice) * 100)).toStringAsFixed(0)}% Off",
                           // : "${(100.00 - (double.parse(newPrice) / double.parse(originalPrice) * 100)).toStringAsFixed(0)}% ${Provider.of<ZLanguage>(context, listen: true).discount}",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
+                          style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(
-                                  color: kPrimaryColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: getProportionateScreenWidth(
-                                      kDefaultPadding / 1.6)),
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: getProportionateScreenWidth(
+                                  kDefaultPadding / 1.6,
+                                ),
+                              ),
                         ),
                       ),
                     ),
@@ -247,11 +251,12 @@ class SpecialOfferCard extends StatelessWidget {
                     child: Text(
                       "Store\nClosed",
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding / 1.2),
-                            color: kPrimaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontSize: getProportionateScreenWidth(
+                          kDefaultPadding / 1.2,
+                        ),
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

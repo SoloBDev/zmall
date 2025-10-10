@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/store/components/image_container.dart';
 
 class GlobalActiveOrders extends StatefulWidget {
@@ -24,7 +24,6 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getAbroadUser();
   }
@@ -41,8 +40,11 @@ class _GlobalActiveOrdersState extends State<GlobalActiveOrders> {
         setState(() {
           _loading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-            "${errorCodes['${data['error_code']}']}!", true));
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true,
+        );
       }
     }
     await Future.delayed(Duration(seconds: 7));

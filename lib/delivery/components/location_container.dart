@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zmall/constants.dart';
+import 'package:zmall/utils/constants.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
 

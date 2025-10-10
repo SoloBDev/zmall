@@ -10,8 +10,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:zmall/constants.dart';
-import 'package:zmall/core_services.dart';
+import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/global/aliexpress/global_ali_product_screen.dart';
 import 'package:zmall/global/items/global_items.dart';
@@ -21,8 +21,8 @@ import 'package:zmall/home/components/offer_card.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/service.dart';
-import 'package:zmall/size_config.dart';
+import 'package:zmall/services/service.dart';
+import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/section_title.dart';
 
@@ -64,8 +64,11 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-          "Location permission denied. Please enable and try again", true));
+      Service.showMessage(
+        context: context,
+        title: "Location permission denied. Please enable and try again",
+        error: true,
+      );
       FlLocation.requestLocationPermission();
     }
   }
@@ -96,8 +99,11 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-              "Location service disabled. Please enable and try again", true));
+          Service.showMessage(
+            context: context,
+            title: "Location service disabled. Please enable and try again",
+            error: true,
+          );
         }
       }
     } else {
@@ -112,7 +118,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     MyApp.messaging.triggerEvent("at_home");
     FirebaseMessaging.instance.subscribeToTopic("abroad");
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint("Opened by notification");
+      // debugPrint("Opened by notification");
       MyApp.analytics.logEvent(name: "notification_open");
     });
     getAbroadUser();
@@ -332,9 +338,12 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                     // }
                   } else {
                     // Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        Service.showMessage1(
-                            "Please add the necessary information", true));
+
+                    Service.showMessage(
+                      context: context,
+                      title: "Please add the necessary information",
+                      error: true,
+                    );
                   }
                 },
               ),
@@ -350,10 +359,13 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
 
     if (data != null && data['success']) {
       if (data['message_flag']) {
-        ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1(
-            "${data['message']} We deliver your order once we resume our service.",
-            false,
-            duration: 4));
+        Service.showMessage(
+          context: context,
+          title:
+              "${data['message']} We deliver your order once we resume our service.",
+          error: false,
+          duration: 4,
+        );
       }
       Service.saveBool("is_closed", false);
       Service.save("closed_message", data['message']);
