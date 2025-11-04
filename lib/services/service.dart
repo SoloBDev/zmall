@@ -16,9 +16,7 @@ import '../utils/constants.dart';
 class Service {
   // Secure storage instance for sensitive data
   static const _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
   // Keys for biometric authentication
@@ -44,28 +42,28 @@ class Service {
     bool? error,
     int duration = 2,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: error == null
-          ? kGreyColor
-          : error
-              ? kSecondaryColor
-              : kGreenColor,
-      content: Text(
-        title!,
-        style: TextStyle(
-          fontSize: 15,
-          color: kPrimaryColor,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: error == null
+            ? kGreyColor
+            : error
+            ? kSecondaryColor
+            : kGreenColor,
+        content: Text(
+          title!,
+          style: TextStyle(fontSize: 15, color: kPrimaryColor),
+        ),
+        duration: Duration(seconds: duration),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(kDefaultPadding),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding),
         ),
       ),
-      duration: Duration(seconds: duration),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(kDefaultPadding),
-      ),
-      padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-          vertical: getProportionateScreenHeight(kDefaultPadding)),
-    ));
+    );
   }
 
   static Future<bool> isConnected(context) async {
@@ -76,13 +74,17 @@ class Service {
       }
     } on SocketException catch (_) {
       showMessage(
-          context: context,
-          title: "Check your internet connection",
-          error: true);
+        context: context,
+        title: "Check your internet connection",
+        error: true,
+      );
       return false;
     }
     showMessage(
-        context: context, title: "Check your internet connection", error: true);
+      context: context,
+      title: "Check your internet connection",
+      error: true,
+    );
     return false;
   }
 
@@ -140,19 +142,19 @@ class Service {
     try {
       final response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        const Duration(seconds: 20),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            const Duration(seconds: 20),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return response;
     } catch (e) {
       return null;
@@ -161,17 +163,23 @@ class Service {
   /////////////////////newly added
 
   static double calculateDistance(
-      double lat1, double lon1, double lat2, double lon2) {
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const double earthRadius = 6371; // Earth's radius in kilometers
 
     // double dLat = _degreesToRadians(lat2 - lat1);
     double dLon = _degreesToRadians(lon2 - lon1);
 
-    double distance = acos(
-            sin(_degreesToRadians(lat1)) * sin(_degreesToRadians(lat2)) +
-                cos(_degreesToRadians(lat1)) *
-                    cos(_degreesToRadians(lat2)) *
-                    cos(dLon)) *
+    double distance =
+        acos(
+          sin(_degreesToRadians(lat1)) * sin(_degreesToRadians(lat2)) +
+              cos(_degreesToRadians(lat1)) *
+                  cos(_degreesToRadians(lat2)) *
+                  cos(dLon),
+        ) *
         earthRadius;
 
     // Return the distance in kilometers
@@ -192,15 +200,19 @@ class Service {
     List<String> parts = input.split(',');
 
     // Capitalize each part and preserve commas and spaces
-    String result = parts.map((part) {
-      List<String> words = part.trim().split(RegExp(r'\s+'));
-      return words
-          .map((word) => word.trim().isEmpty
-              ? word.trim()
-              : word.trim().substring(0, 1).toUpperCase() +
-                  word.trim().substring(1))
-          .join(' ');
-    }).join(', ');
+    String result = parts
+        .map((part) {
+          List<String> words = part.trim().split(RegExp(r'\s+'));
+          return words
+              .map(
+                (word) => word.trim().isEmpty
+                    ? word.trim()
+                    : word.trim().substring(0, 1).toUpperCase() +
+                          word.trim().substring(1),
+              )
+              .join(' ');
+        })
+        .join(', ');
 
     // Remove any duplicated values
     result = result.trim().replaceAll(RegExp(r'\s*,+\s*'), ', ');
@@ -283,19 +295,19 @@ class Service {
       var body = json.encode(data);
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       return json.decode(response.body);
     } catch (e) {

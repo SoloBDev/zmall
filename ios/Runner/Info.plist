@@ -57,7 +57,7 @@
 					<string>app-1-362956281866-ios-4653b7a0c64f4f10</string>
 				</array>
 			</dict>
-			<!-- Add the new URL scheme for the payment SDK -->
+			<!-- Add the new URL scheme for the telebirr payment SDK -->
 			<dict>
 				<key>CFBundleTypeRole</key>
 				<string>Editor</string>
@@ -68,7 +68,17 @@
 					<string>zmallreturn</string>
 				</array>
 			</dict>
-			<!-- Close the new URL scheme for the payment SDK -->
+			<!-- Close the new URL scheme for the telebirr payment SDK -->
+			<!-- Facebook URL Scheme -->
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>fb1050203588837738</string>
+				</array>
+			</dict>
+			<!-- Close Facebook URL Scheme -->
 		</array>
 		<key>CFBundleVersion</key>
 		<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -128,5 +138,14 @@
 		<true />
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true />
+		<!-- Facebook App Events Configuration -->
+		<key>FacebookAppID</key>
+		<string>1050203588837738</string>
+		<key>FacebookClientToken</key>
+		<string>3167abc63899705752c31bea73fae744</string>
+		<key>FacebookDisplayName</key>
+		<string>ZMall</string>
+		<!--Close
+		Facebook App Events Configuration -->
 	</dict>
 </plist>

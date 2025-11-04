@@ -14,7 +14,6 @@ import 'package:zmall/models/biometric_credential.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/services/service.dart';
 import 'package:zmall/services/biometric_services/biometric_credentials_manager.dart';
-import 'package:zmall/services/biometric_services/biometric_service.dart';
 import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/utils/tab_screen.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
@@ -71,44 +70,58 @@ class _OtpScreenState extends State<OtpScreen>
     );
 
     // Create border color animation
-    _borderColorAnimation = ColorTween(
-      begin: kGreyColor.withValues(alpha: 0.4),
-      end: Colors.green,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Interval(0.0, 1.0, curve: Curves.easeInOut),
-      ),
-    );
+    _borderColorAnimation =
+        ColorTween(
+          begin: kGreyColor.withValues(alpha: 0.4),
+          end: Colors.green,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(0.0, 1.0, curve: Curves.easeInOut),
+          ),
+        );
 
     // Create shake animation
-    _shakeAnimation = TweenSequence<Offset>([
-      TweenSequenceItem(
-        tween: Tween<Offset>(begin: Offset.zero, end: Offset(0.05, 0.0)),
-        weight: 1.0,
-      ),
-      TweenSequenceItem(
-        tween: Tween<Offset>(begin: Offset(0.05, 0.0), end: Offset(-0.05, 0.0)),
-        weight: 2.0,
-      ),
-      TweenSequenceItem(
-        tween: Tween<Offset>(begin: Offset(-0.05, 0.0), end: Offset(0.05, 0.0)),
-        weight: 2.0,
-      ),
-      TweenSequenceItem(
-        tween: Tween<Offset>(begin: Offset(0.05, 0.0), end: Offset(-0.05, 0.0)),
-        weight: 2.0,
-      ),
-      TweenSequenceItem(
-        tween: Tween<Offset>(begin: Offset(-0.05, 0.0), end: Offset(0.0, 0.0)),
-        weight: 1.0,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Interval(0.0, 0.7, curve: Curves.easeInOut),
-      ),
-    );
+    _shakeAnimation =
+        TweenSequence<Offset>([
+          TweenSequenceItem(
+            tween: Tween<Offset>(begin: Offset.zero, end: Offset(0.05, 0.0)),
+            weight: 1.0,
+          ),
+          TweenSequenceItem(
+            tween: Tween<Offset>(
+              begin: Offset(0.05, 0.0),
+              end: Offset(-0.05, 0.0),
+            ),
+            weight: 2.0,
+          ),
+          TweenSequenceItem(
+            tween: Tween<Offset>(
+              begin: Offset(-0.05, 0.0),
+              end: Offset(0.05, 0.0),
+            ),
+            weight: 2.0,
+          ),
+          TweenSequenceItem(
+            tween: Tween<Offset>(
+              begin: Offset(0.05, 0.0),
+              end: Offset(-0.05, 0.0),
+            ),
+            weight: 2.0,
+          ),
+          TweenSequenceItem(
+            tween: Tween<Offset>(
+              begin: Offset(-0.05, 0.0),
+              end: Offset(0.0, 0.0),
+            ),
+            weight: 1.0,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(0.0, 0.7, curve: Curves.easeInOut),
+          ),
+        );
 
     // Add listener to rebuild widget when animation value changes
     _animationController.addListener(() {
@@ -143,7 +156,7 @@ class _OtpScreenState extends State<OtpScreen>
     }
   }
 
-////resend code countdown
+  ////resend code countdown
   void _startCountdown() {
     _remainingSeconds = countdownDuration;
     _timer?.cancel();
@@ -158,7 +171,7 @@ class _OtpScreenState extends State<OtpScreen>
     });
   }
 
-//resend code
+  //resend code
   void _handleResend() async {
     _otpController.clear();
     setState(() {
@@ -168,7 +181,9 @@ class _OtpScreenState extends State<OtpScreen>
     });
 
     bool isGeneratOtp = await generateOtpAtLogin(
-        phone: widget.phone, password: widget.password);
+      phone: widget.phone,
+      password: widget.password,
+    );
     if (isGeneratOtp) {
       // Re-listen for new OTP
       listenForCode();
@@ -242,9 +257,7 @@ class _OtpScreenState extends State<OtpScreen>
   Widget build(BuildContext context) {
     // TextTheme textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Verify OTP'),
-      ),
+      appBar: AppBar(title: Text('Verify OTP')),
       body: ModalProgressHUD(
         inAsyncCall: _isLoading,
         color: kPrimaryColor,
@@ -257,7 +270,8 @@ class _OtpScreenState extends State<OtpScreen>
               Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding)),
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   child: Column(
                     spacing: getProportionateScreenHeight(kDefaultPadding),
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -265,9 +279,9 @@ class _OtpScreenState extends State<OtpScreen>
                       Container(
                         padding: EdgeInsets.all(kDefaultPadding / 1.5),
                         decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(kDefaultPadding),
-                            color: kWhiteColor),
+                          borderRadius: BorderRadius.circular(kDefaultPadding),
+                          color: kWhiteColor,
+                        ),
                         child: Icon(
                           HeroiconsOutline.chatBubbleLeftEllipsis,
                           size: 40,
@@ -295,9 +309,11 @@ class _OtpScreenState extends State<OtpScreen>
                                   ? kSecondaryColor
                                   : kGreyColor.withValues(alpha: 0.3),
                             ),
-                            bgColorBuilder: FixedColorBuilder(isError
-                                ? kSecondaryColor.withValues(alpha: 0.18)
-                                : Colors.transparent),
+                            bgColorBuilder: FixedColorBuilder(
+                              isError
+                                  ? kSecondaryColor.withValues(alpha: 0.18)
+                                  : Colors.transparent,
+                            ),
                             // A border width based on error state
                             strokeWidth: isError ? 2.0 : 1.0,
                           ),
@@ -351,9 +367,10 @@ class _OtpScreenState extends State<OtpScreen>
                     ? Text(
                         "Didn't receive a code? resend in ${_remainingSeconds}s",
                         style: const TextStyle(
-                            fontSize: 14,
-                            color: kGreyColor,
-                            fontWeight: FontWeight.bold),
+                          fontSize: 14,
+                          color: kGreyColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -361,27 +378,31 @@ class _OtpScreenState extends State<OtpScreen>
                           Text(
                             "Didn't receive a code?",
                             style: const TextStyle(
-                                fontSize: 14,
-                                color: kGreyColor,
-                                fontWeight: FontWeight.bold),
+                              fontSize: 14,
+                              color: kGreyColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           TextButton(
-                              onPressed: _handleResend,
-                              child: Text(
-                                "Resend code",
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: kSecondaryColor,
-                                    fontWeight: FontWeight.bold),
-                              )),
+                            onPressed: _handleResend,
+                            child: Text(
+                              "Resend code",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: kSecondaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
               ),
               const SizedBox(height: kDefaultPadding),
               ///////////////Remember Me Checkbox///////////////
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: kDefaultPadding,
+                ),
                 child: Row(
                   children: [
                     Checkbox(
@@ -392,16 +413,14 @@ class _OtpScreenState extends State<OtpScreen>
                         });
                       },
                       activeColor: kSecondaryColor,
-                      side:
-                          BorderSide(color: kGreyColor.withValues(alpha: 0.5)),
+                      side: BorderSide(
+                        color: kGreyColor.withValues(alpha: 0.5),
+                      ),
                     ),
                     Expanded(
                       child: Text(
                         "Remember me for quick login",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: kGreyColor,
-                        ),
+                        style: TextStyle(fontSize: 14, color: kGreyColor),
                       ),
                     ),
                   ],
@@ -464,7 +483,7 @@ class _OtpScreenState extends State<OtpScreen>
     );
   }
 
-//////////////////////////////Custom Widget section///////////////////////////////////////////
+  //////////////////////////////Custom Widget section///////////////////////////////////////////
   // Widget _numberButton(String number) {
   //   return Padding(
   //     padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding / 2)),
@@ -545,7 +564,7 @@ class _OtpScreenState extends State<OtpScreen>
   //   );
   // }
 
-//////////////////////////////API Requiest section///////////////////////////////////////////
+  //////////////////////////////API Requiest section///////////////////////////////////////////
   //  /api/user/forgot_password_with_otp"
   void _verifyOTP({required String phone, required String code}) async {
     // Prevent multiple simultaneous calls
@@ -561,20 +580,17 @@ class _OtpScreenState extends State<OtpScreen>
         setState(() {
           hasVerified = true; // Mark as verified to prevent further attempts
         });
-        _login(
-          phone: phone,
-          password: widget.password,
-        );
+        _login(phone: phone, password: widget.password);
       } else {
         setState(() {
           isError = true;
         });
         _showErrorAnimation();
         Service.showMessage(
-            context: context,
-            title:
-                "Your OTP is incorrect or no longer valid. Please try again.",
-            error: true);
+          context: context,
+          title: "Your OTP is incorrect or no longer valid. Please try again.",
+          error: true,
+        );
       }
     } catch (e) {
       _showErrorAnimation();
@@ -593,31 +609,28 @@ class _OtpScreenState extends State<OtpScreen>
       _isLoading = true;
     });
 
-    Map data = {
-      "code": code,
-      "phone": phone,
-    };
+    Map data = {"code": code, "phone": phone};
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._isLoading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._isLoading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       return json.decode(response.body);
     } catch (e) {
@@ -646,15 +659,11 @@ class _OtpScreenState extends State<OtpScreen>
             Service.save('user', responseData);
             Service.saveBool('logged', true);
 
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
                   "You have successfully logged in!",
-                  style: TextStyle(
-                    color: kBlackColor,
-                  ),
+                  style: TextStyle(color: kBlackColor),
                 ),
                 backgroundColor: kPrimaryColor,
               ),
@@ -764,19 +773,19 @@ class _OtpScreenState extends State<OtpScreen>
       var body = json.encode(data);
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.responseData = json.decode(response.body);
       });
@@ -792,45 +801,46 @@ class _OtpScreenState extends State<OtpScreen>
   }
   ///////////////otp authentication/////
 
-  Future<dynamic> generateOtpAtLogin(
-      {required String phone, required String password}) async {
+  Future<dynamic> generateOtpAtLogin({
+    required String phone,
+    required String password,
+  }) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/generate_otp_at_login";
     setState(() {
       _isLoading = true;
     });
     try {
-      Map data = {
-        "phone": phone,
-        "password": password,
-      };
+      Map data = {"phone": phone, "password": password};
       var body = json.encode(data);
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{"Content-Type": "application/json"},
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{"Content-Type": "application/json"},
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       var newResponse = json.decode(response.body);
       if (newResponse != null &&
           (newResponse["success"] != null && newResponse["success"])) {
         Service.showMessage(
-            context: context,
-            title: "OTP code sent to your phone...",
-            error: false);
+          context: context,
+          title: "OTP code sent to your phone...",
+          error: false,
+        );
         return true;
       } else {
         Service.showMessage(
-            context: context,
-            title:
-                "Failed to send an OTP. Please check your phone and password and try again.",
-            error: true);
+          context: context,
+          title:
+              "Failed to send an OTP. Please check your phone and password and try again.",
+          error: true,
+        );
         return false;
       }
     } catch (e) {
@@ -852,8 +862,9 @@ class _OtpScreenState extends State<OtpScreen>
     try {
       // print('Checking for existing account: $phone');
       // Check if account already exists with biometric enabled
-      final existingAccount =
-          await BiometricCredentialsManager.getAccount(phone);
+      final existingAccount = await BiometricCredentialsManager.getAccount(
+        phone,
+      );
 
       if (existingAccount != null && existingAccount.biometricEnabled) {
         // print('Account exists with biometric - updating');

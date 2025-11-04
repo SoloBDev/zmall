@@ -9,6 +9,8 @@ class LogoContainer extends StatelessWidget {
   final double? size;
   final double borderRadius;
   final Color? backgroundColor;
+  final BoxShape shape;
+  final EdgeInsetsGeometry? padding;
   const LogoContainer({
     super.key,
     this.size,
@@ -16,41 +18,44 @@ class LogoContainer extends StatelessWidget {
     this.borderRadius = 12,
     required this.logoUrl,
     required this.errorLogoAsset,
+    this.shape = BoxShape.rectangle,
+    this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
     // return size ??= getProportionateScreenWidth(kDefaultPadding * 3);
     return Container(
-      width: size ?? getProportionateScreenWidth(kDefaultPadding * 3),
-      height: size ?? getProportionateScreenWidth(kDefaultPadding * 3),
-      padding: EdgeInsets.all(kDefaultPadding / 4),
+      width: size ?? getProportionateScreenWidth(kDefaultPadding * 4),
+      height: size ?? getProportionateScreenWidth(kDefaultPadding * 4),
+      padding: padding ?? EdgeInsets.all(kDefaultPadding / 4),
       decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(borderRadius),
+        shape: shape,
+        borderRadius: shape == BoxShape.rectangle
+            ? BorderRadius.circular(borderRadius)
+            : null,
         color: backgroundColor ?? kWhiteColor.withValues(alpha: 0.2),
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: CachedNetworkImageProvider(
-            logoUrl,
-            errorListener: (_) {},
+        // image: DecorationImage(
+        //   fit: BoxFit.cover,
+        //   image: CachedNetworkImageProvider(logoUrl, errorListener: (_) {}),
+        // ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
+        ],
       ),
       child: CachedNetworkImage(
         imageUrl: logoUrl,
         imageBuilder: (context, imageProvider) => Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
-            ),
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
           ),
         ),
-        placeholder: (context, url) => Container(
-          color: Colors.grey[200],
-        ),
+        placeholder: (context, url) => Container(color: Colors.grey[200]),
         errorWidget: (context, url, error) => Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),

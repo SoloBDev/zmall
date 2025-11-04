@@ -116,7 +116,7 @@ class SpecialOfferCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          itemName,
+                          Service.capitalizeFirstLetters(itemName),
                           maxLines: 1,
                           style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(
@@ -173,6 +173,7 @@ class SpecialOfferCard extends StatelessWidget {
                                     color: kGreyColor,
                                   ),
                               maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),

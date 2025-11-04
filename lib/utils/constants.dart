@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/utils/size_config.dart';
 import 'package:encrypt/encrypt.dart' as Encrypt;
@@ -21,10 +22,14 @@ const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // Ethiopia production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
-const BASE_URL = "https://app.zmall.et"; //Eth new domain
+const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
 
 // Ethiopia test
-// const BASE_URL = "https://test.zmallapp.com"; //test
+// const BASE_URL_TEST = "https://test.zmallapp.com"; //test
+//
+const BASE_URL = BASE_URL_PROD;
+// const BASE_URL = kDebugMode ? BASE_URL_TEST : BASE_URL_PROD;
+
 //
 const String appVersion = "3.2.2";
 const kPrimaryColor = Colors.white;

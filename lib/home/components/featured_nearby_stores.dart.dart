@@ -83,9 +83,13 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
         Service.save("closed_message", data['message']);
         Service.save("ios_app_version", data['ios_user_app_version_code']);
         Service.saveBool(
-            "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+          "ios_update_dialog",
+          data['is_ios_user_app_open_update_dialog'],
+        );
         Service.saveBool(
-            "ios_force_update", data['is_ios_user_app_force_update']);
+          "ios_force_update",
+          data['is_ios_user_app_force_update'],
+        );
         Service.save('app_close', data['app_close']);
         Service.save('app_open', data['app_open']);
         appOpen = data['app_open'];
@@ -109,9 +113,19 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
     DateTime zmallClose = dateFormat.parse(appClose);
 
     zmallOpen = new DateTime(
-        now.year, now.month, now.day, zmallOpen.hour, zmallOpen.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallOpen.hour,
+      zmallOpen.minute,
+    );
     zmallClose = new DateTime(
-        now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallClose.hour,
+      zmallClose.minute,
+    );
 
     stores.forEach((store) {
       bool isStoreOpen = false;
@@ -127,19 +141,38 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
           if (store['store_time'][i]['day'] == weekday) {
             if (store['store_time'][i]['day_time'].length != 0 &&
                 store['store_time'][i]['is_store_open']) {
-              for (var j = 0;
-                  j < store['store_time'][i]['day_time'].length;
-                  j++) {
+              for (
+                var j = 0;
+                j < store['store_time'][i]['day_time'].length;
+                j++
+              ) {
                 DateTime open = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_open_time']);
+                  store['store_time'][i]['day_time'][j]['store_open_time'],
+                );
                 open = new DateTime(
-                    now.year, now.month, now.day, open.hour, open.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  open.hour,
+                  open.minute,
+                );
                 DateTime close = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_close_time']);
+                  store['store_time'][i]['day_time'][j]['store_close_time'],
+                );
                 close = new DateTime(
-                    now.year, now.month, now.day, close.hour, close.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  close.hour,
+                  close.minute,
+                );
                 now = DateTime(
-                    now.year, now.month, now.day, now.hour, now.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  now.hour,
+                  now.minute,
+                );
 
                 if (now.isAfter(open) &&
                     now.isAfter(zmallOpen) &&
@@ -178,7 +211,12 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
         }
 
         zmallClose = DateTime(
-            now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+          now.year,
+          now.month,
+          now.day,
+          zmallClose.hour,
+          zmallClose.minute,
+        );
         now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
 
         now.isAfter(zmallClose) ? isStoreOpen = false : isStoreOpen = true;
@@ -245,8 +283,9 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          title:
-              Text(widget.isPromotional ? "Featured Stores" : "Nearby Stores"),
+          title: Text(
+            widget.isPromotional ? "Featured Stores" : "Nearby Stores",
+          ),
           leading: CustomBackButton(),
         ),
         body: SafeArea(
@@ -263,46 +302,51 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CustomSearchBar(
-                            controller: controller,
-                            hintText: Provider.of<ZLanguage>(context).search,
-                            onChanged: onSearchTextChanged,
-                            onSubmitted: (value) {
-                              onSearchTextChanged(value);
-                            },
-                            onClearButtonTap: () {
-                              controller.clear();
-                              onSearchTextChanged('');
-                              setState(() {
-                                storeOpen(storesList);
-                              });
-                            }),
+                          controller: controller,
+                          hintText: Provider.of<ZLanguage>(context).search,
+                          onChanged: onSearchTextChanged,
+                          onSubmitted: (value) {
+                            onSearchTextChanged(value);
+                          },
+                          onClearButtonTap: () {
+                            controller.clear();
+                            onSearchTextChanged('');
+                            setState(() {
+                              storeOpen(storesList);
+                            });
+                          },
+                        ),
                         _searchResult.isNotEmpty || controller.text.isNotEmpty
                             ? _buildSearchList()
                             : Expanded(
                                 child: ListView.separated(
                                   itemCount: storesList.length,
-                                  padding:
-                                      const EdgeInsets.all(kDefaultPadding / 2),
+                                  padding: const EdgeInsets.all(
+                                    kDefaultPadding / 2,
+                                  ),
                                   separatorBuilder: (context, index) =>
                                       SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 2)),
+                                        height: getProportionateScreenHeight(
+                                          kDefaultPadding / 2,
+                                        ),
+                                      ),
                                   itemBuilder: (context, index) {
-                                    String featuredTag = storesList[index]
-                                            ['promo_tags']
-                                        .toString()
-                                        .toLowerCase();
+                                    String featuredTag =
+                                        storesList[index]['promo_tags']
+                                            .toString()
+                                            .toLowerCase();
 
                                     if (widget.isPromotional) {
                                       return Stack(
                                         children: [
                                           StoreLists(
-                                              index: index,
-                                              isFromPromotional: true,
-                                              featuredTag: storesList[index]
-                                                      ['promo_tags']
-                                                  .toString()
-                                                  .toLowerCase()),
+                                            index: index,
+                                            isFromPromotional: true,
+                                            featuredTag:
+                                                storesList[index]['promo_tags']
+                                                    .toString()
+                                                    .toLowerCase(),
+                                          ),
                                           if (widget.isPromotional)
                                             Positioned(
                                               right: 2,
@@ -310,24 +354,29 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
                                               child: Container(
                                                 height:
                                                     getProportionateScreenWidth(
-                                                        kDefaultPadding * 4),
+                                                      kDefaultPadding * 2.5,
+                                                    ),
                                                 width:
                                                     getProportionateScreenWidth(
-                                                        kDefaultPadding * 4),
+                                                      kDefaultPadding * 2.5,
+                                                    ),
                                                 child: Center(
-                                                    child: Image.asset(
-                                                        "images/store_tags/$featuredTag.png")),
+                                                  child: Image.asset(
+                                                    "images/store_tags/$featuredTag.png",
+                                                  ),
+                                                ),
                                               ),
-                                            )
+                                            ),
                                         ],
                                       );
                                     } else {
                                       return StoreLists(
-                                          index: index,
-                                          featuredTag: storesList[index]
-                                                  ['promo_tags']
-                                              .toString()
-                                              .toLowerCase());
+                                        index: index,
+                                        featuredTag:
+                                            storesList[index]['promo_tags']
+                                                .toString()
+                                                .toLowerCase(),
+                                      );
                                     }
                                   },
                                 ),
@@ -335,27 +384,28 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
                       ],
                     )
                   : !_loading
-                      ? Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding * 4),
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CustomButton(
-                                  title: "Retry",
-                                  press: () {
-                                    _onRefresh();
-                                  },
-                                  color: kSecondaryColor,
-                                ),
-                              ],
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getProportionateScreenWidth(
+                          kDefaultPadding * 4,
+                        ),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomButton(
+                              title: "Retry",
+                              press: () {
+                                _onRefresh();
+                              },
+                              color: kSecondaryColor,
                             ),
-                          ),
-                        )
-                      : Container(),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Container(),
             ),
           ),
         ),
@@ -363,7 +413,7 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
     );
   }
 
-//////////////////////////newly added
+  //////////////////////////newly added
 
   Widget StoreLists({
     required int index,
@@ -474,9 +524,10 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
               height: getProportionateScreenWidth(kDefaultPadding * 4),
               width: getProportionateScreenWidth(kDefaultPadding * 4),
               child: Center(
-                  child: Image.asset("images/store_tags/$featuredTag.png")),
+                child: Image.asset("images/store_tags/$featuredTag.png"),
+              ),
             ),
-          )
+          ),
         ],
       );
     } else {
@@ -553,7 +604,7 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
       "latitude": widget.latitude,
       "longitude": widget.longitude,
       "last_opened": "2020-04-17T06:45:55.873Z",
-      "is_promotional": false
+      "is_promotional": false,
     };
     var body = json.encode(data);
     try {
@@ -561,7 +612,7 @@ class _NearbyStoresScreenState extends State<NearbyStoresScreen> {
         Uri.parse(url),
         headers: <String, String>{
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Accept": "application/json",
         },
         body: body,
       );

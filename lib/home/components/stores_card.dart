@@ -1,5 +1,6 @@
 ///updated
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/services/service.dart';
@@ -40,7 +41,8 @@ class StoresCard extends StatelessWidget {
           // ),
           border: Border.all(color: kBlackColor.withValues(alpha: 0.06)),
           borderRadius: BorderRadius.circular(
-              getProportionateScreenWidth(kDefaultPadding / 2)),
+            getProportionateScreenWidth(kDefaultPadding / 2),
+          ),
           // boxShadow: [
           //   BoxShadow(
           //     color: kBlackColor.withValues(alpha: 0.08),
@@ -62,17 +64,21 @@ class StoresCard extends StatelessWidget {
                     color: kPrimaryColor,
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                       topLeft: Radius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                     ),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                       topLeft: Radius.circular(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                     ),
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
@@ -86,10 +92,12 @@ class StoresCard extends StatelessWidget {
                       ),
                       placeholder: (context, url) => Center(
                         child: Container(
-                          width:
-                              getProportionateScreenWidth(kDefaultPadding * 5),
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding * 5),
+                          width: getProportionateScreenWidth(
+                            kDefaultPadding * 5,
+                          ),
+                          height: getProportionateScreenHeight(
+                            kDefaultPadding * 5,
+                          ),
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.transparent,
@@ -122,15 +130,15 @@ class StoresCard extends StatelessWidget {
                         maxLines: 1,
                         Service.capitalizeFirstLetters(storeName),
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: kBlackColor,
-                            overflow: TextOverflow.ellipsis),
+                          fontWeight: FontWeight.w900,
+                          color: kBlackColor,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           //store rating and distance
-
                           Row(
                             spacing: 2,
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -139,13 +147,12 @@ class StoresCard extends StatelessWidget {
                                 Icons.star_rounded,
                                 color: Colors.amber,
                                 size: getProportionateScreenWidth(
-                                    kDefaultPadding * 0.9),
+                                  kDefaultPadding * 0.9,
+                                ),
                               ),
                               Text(
                                 "$rating",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: kBlackColor,
@@ -153,9 +160,7 @@ class StoresCard extends StatelessWidget {
                               ),
                               Text(
                                 "($ratingCount)",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       fontWeight: FontWeight.normal,
                                       color: kGreyColor,
@@ -163,6 +168,7 @@ class StoresCard extends StatelessWidget {
                               ),
                             ],
                           ),
+
                           //store distance
                           // Row(
                           //   spacing: 2,
@@ -188,7 +194,6 @@ class StoresCard extends StatelessWidget {
                           // ),
 
                           ///dot separator
-
                           Container(
                             width: 5,
                             height: kDefaultPadding / 1.2,
@@ -213,7 +218,7 @@ class StoresCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
             if (isFeatured)
@@ -225,9 +230,12 @@ class StoresCard extends StatelessWidget {
                   width: getProportionateScreenWidth(kDefaultPadding * 3),
                   //
                   child: Center(
-                      child: Image.asset("images/store_tags/$featuredTag.png")),
+                    child: kDebugMode
+                        ? Image.asset("images/store_tags/new_on_zmall.png")
+                        : Image.asset("images/store_tags/$featuredTag.png"),
+                  ),
                 ),
-              )
+              ),
           ],
         ),
       ),

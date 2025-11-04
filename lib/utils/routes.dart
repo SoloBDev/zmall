@@ -11,6 +11,7 @@ import 'package:zmall/favorites/favorites_screen.dart';
 import 'package:zmall/forgot_password/forgot_password_screen.dart';
 import 'package:zmall/global/delivery/global_delivery.dart';
 import 'package:zmall/global/global.dart';
+import 'package:zmall/help/faq/faq_screen.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/home/home_screen.dart';
 import 'package:zmall/item/item_screen.dart';
@@ -26,6 +27,7 @@ import 'package:zmall/profile/profile_screen.dart';
 import 'package:zmall/register/register_screen.dart';
 import 'package:zmall/report/report_screen.dart';
 import 'package:zmall/splash/splash_screen.dart';
+// import 'package:zmall/help/support_chat/support_chat_screen.dart';
 import 'package:zmall/utils/tab_screen.dart';
 import 'package:zmall/store/store_screen.dart';
 import '../global/home_page/global_home.dart';
@@ -61,5 +63,7 @@ final Map<String, WidgetBuilder> routes = {
   GlobalDelivery.routeName: (context) => GlobalDelivery(),
   EventsScreen.routeName: (context) => EventsScreen(),
   SubscribeScreen.routeName: (context) => SubscribeScreen(),
+  // SupportChatScreen.routeName: (context) => SupportChatScreen(),
+  FAQScreen.routeName: (context) => FAQScreen(),
   // ScannerScreen.routeName: (context) => ScannerScreen(),
 };

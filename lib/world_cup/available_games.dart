@@ -13,9 +13,7 @@ import 'package:zmall/world_cup/components/prediction_card.dart';
 import 'package:zmall/world_cup/predict_screen.dart';
 
 class AvailableGames extends StatefulWidget {
-  const AvailableGames({
-    super.key,
-  });
+  const AvailableGames({super.key});
 
   @override
   State<AvailableGames> createState() => _AvailableGamesState();
@@ -112,11 +110,7 @@ class _AvailableGamesState extends State<AvailableGames> {
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.refresh,
-            ),
-          ],
+          children: [Icon(Icons.refresh)],
         ),
       ),
       body: ModalProgressHUD(
@@ -125,116 +119,151 @@ class _AvailableGamesState extends State<AvailableGames> {
         progressIndicator: LinearLoadingIndicator(),
         child: Padding(
           padding: EdgeInsets.symmetric(
-              horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
-              vertical: getProportionateScreenHeight(kDefaultPadding / 2)),
+            horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+            vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+          ),
           child: _isLoading && games == null
               ? SizedBox.shrink()
               : games != null && games.length > 0
-                  ? ListView.builder(
-                      itemCount: games.length,
-                      itemBuilder: (context, index) {
-                        final game = games[index];
-                        // print("game $game");
+              ? ListView.builder(
+                  itemCount: games.length,
+                  itemBuilder: (context, index) {
+                    final game = games[index];
+                    // print("game $game");
 
-                        // Check if the game is predicted
-                        bool predicted = false;
-                        if (userPredictions != null &&
-                            userPredictions['scores'] != null) {
-                          predicted = userPredictions['scores'].any(
-                            (prediction) =>
-                                prediction['game_id'] == game['_id'],
-                          );
-                        }
+                    // Check if the game is predicted
+                    bool predicted = false;
+                    if (userPredictions != null &&
+                        userPredictions['scores'] != null) {
+                      predicted = userPredictions['scores'].any(
+                        (prediction) => prediction['game_id'] == game['_id'],
+                      );
+                    }
 
-                        // Skip games that are predicted AND not finished
-                        if (predicted && !game['is_finished']) {
-                          return const SizedBox
-                              .shrink(); // More efficient than Container(height: 0)
-                        }
-
-                        return MatchRow(
-                          homeClubName: game['home_team'],
-                          homeClubLogo: game['home_team_logo'] ??
-                              "images/pl_logos/${game['home_team'].toLowerCase()}.png",
-                          awayClubName: game['away_team'],
-                          awayClubLogo: game['away_team_logo'] ??
-                              "images/pl_logos/${game['away_team'].toLowerCase()}.png",
-                          status: game['is_finished'] ? "FT" : "NS",
-                          timeOrScore: games[index]['is_finished']
-                              ? "${games[index]['home_score'].toString()} : ${games[index]['away_score'].toString()}"
-                              : "${games[index]['game_time'].split('T')[0]} ${games[index]['game_time'].split('T')[1].split(".")[0]}",
-                          stadium: game['stadium'],
-                          gameType: game['type'],
-                          isFinished: game['is_finished'],
-                          bannerImage: game['game_banner'] != null &&
-                                  games[index]['game_banner'].isNotEmpty
-                              ? NetworkImage(games[index]['game_banner'])
-                              : AssetImage(
-                                  "images/pl_logos/pl.jpg",
-                                  // DateTime.now().isBefore(euroPredictEnd) &&
-                                  //         DateTime.now()
-                                  //             .isAfter(euroPredictStart)
-                                  //     ? "images/pl_logos/banner.png"
-                                  //     : "images/pl_logos/pl_bg_dr.png",
-                                ),
-                          homeErrorClubLogo:
-                              "images/pl_logos/${game['home_team'].toString().toLowerCase()}.png",
-                          awayErrorClubLogo:
-                              "images/pl_logos/${game['away_team'].toString().toLowerCase()}.png",
-                          onPredictTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      PredictScreen(game: game)),
-                            ).then((_) {
-                              _getGames();
-                              _getPredictions();
-                            });
-                          },
+                    // Skip games that are predicted AND not finished
+                    if (predicted && !game['is_finished']) {
+                      return const SizedBox.shrink(); // More efficient than Container(height: 0)
+                    }
+                    DateTime gameTime = DateTime.parse(
+                      game['game_time'],
+                    ).toLocal();
+                    DateTime now = DateTime.now().toUtc().add(
+                      Duration(hours: 3),
+                    );
+                    bool isLive =
+                        now.isAfter(gameTime) &&
+                        now.isBefore(
+                          gameTime.add(const Duration(minutes: 125)),
                         );
+
+                    // Finished if more than 125 minutes have passed since start
+                    bool isGameTimeFinished = now.isAfter(
+                      gameTime.add(const Duration(minutes: 125)),
+                    );
+
+                    return MatchRow(
+                      homeClubName: game['home_team'],
+                      homeClubLogo:
+                          game['home_team_logo'] ??
+                          "images/pl_logos/${game['home_team'].toLowerCase()}.png",
+                      awayClubName: game['away_team'],
+                      awayClubLogo:
+                          game['away_team_logo'] ??
+                          "images/pl_logos/${game['away_team'].toLowerCase()}.png",
+                      status: game['is_finished'] || isGameTimeFinished
+                          ? "FT"
+                          : isLive
+                          ? "Live"
+                          : "NS",
+                      // game['is_finished'] ? "FT" : "NS",
+                      timeOrScore: games[index]['is_finished']
+                          ? "${games[index]['home_score'].toString()} : ${games[index]['away_score'].toString()}"
+                          : "${games[index]['game_time'].split('T')[0]} ${games[index]['game_time'].split('T')[1].split(".")[0]}",
+                      stadium: game['stadium'],
+                      gameType: game['type'],
+                      isFinished: game['is_finished'],
+                      bannerImage:
+                          game['game_banner'] != null &&
+                              games[index]['game_banner'].isNotEmpty
+                          ? NetworkImage(games[index]['game_banner'])
+                          : AssetImage(
+                              "images/pl_logos/pl.jpg",
+                              // DateTime.now().isBefore(euroPredictEnd) &&
+                              //         DateTime.now()
+                              //             .isAfter(euroPredictStart)
+                              //     ? "images/pl_logos/banner.png"
+                              //     : "images/pl_logos/pl_bg_dr.png",
+                            ),
+                      homeErrorClubLogo:
+                          "images/pl_logos/${game['home_team'].toString().toLowerCase()}.png",
+                      awayErrorClubLogo:
+                          "images/pl_logos/${game['away_team'].toString().toLowerCase()}.png",
+                      onPredictTap: () {
+                        // Lock prediction if 1 hour or less before kickoff
+                        bool isLocked =
+                            gameTime.difference(now).inMinutes <= 60;
+                        if (isLocked) {
+                          Service.showMessage(
+                            context: context,
+                            title:
+                                "Prediction closed, less than 1 hour left before the game starts.",
+                            error: false,
+                          );
+                          return;
+                        }
+
+                        // Allow prediction if not locked
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PredictScreen(game: game),
+                          ),
+                        ).then((_) {
+                          _getGames();
+                          _getPredictions();
+                        });
                       },
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.sports_soccer,
-                            color: kGreyColor.withValues(alpha: 0.7),
-                            size: getProportionateScreenWidth(
-                                kDefaultPadding * 4),
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
-                          Text(
-                            "No upcoming matches right now.",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  color: kGreyColor,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4)),
-                          Text(
-                            "Check back later for more action!",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: kGreyColor.withValues(alpha: 0.7),
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                    );
+                  },
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.sports_soccer,
+                        color: kGreyColor.withValues(alpha: 0.7),
+                        size: getProportionateScreenWidth(kDefaultPadding * 4),
                       ),
-                    ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
+                      Text(
+                        "No upcoming matches right now.",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: kGreyColor,
+                              fontWeight: FontWeight.w400,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 4,
+                        ),
+                      ),
+                      Text(
+                        "Check back later for more action!",
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: kGreyColor.withValues(alpha: 0.7),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
@@ -249,29 +278,29 @@ class _AvailableGamesState extends State<AvailableGames> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._isLoading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._isLoading = false;
+              });
 
-          Service.showMessage(
-            context: context,
-            title: "Network error! Please try again...",
-            error: true,
-            duration: 3,
+              Service.showMessage(
+                context: context,
+                title: "Network error! Please try again...",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         _isLoading = false;
       });
@@ -306,29 +335,29 @@ class _AvailableGamesState extends State<AvailableGames> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._isLoading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._isLoading = false;
+              });
 
-          Service.showMessage(
-            context: context,
-            title: "Network error! Please try again...",
-            error: true,
-            duration: 3,
+              Service.showMessage(
+                context: context,
+                title: "Network error! Please try again...",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         _isLoading = false;
       });

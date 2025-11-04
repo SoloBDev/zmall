@@ -16,12 +16,12 @@ import 'skip_button.dart';
 
 class SplashContainer extends StatefulWidget {
   const SplashContainer({
-    Key? key,
+    super.key,
     required this.urlLink,
     required this.adId,
     required this.bytes,
     required this.logged,
-  }) : super(key: key);
+  });
 
   final String urlLink, adId;
   final Uint8List bytes;
@@ -102,15 +102,24 @@ class _SplashContainerState extends State<SplashContainer> {
         if (store['store_time'][i]['day'] == weekday) {
           if (store['store_time'][i]['day_time'].length != 0 &&
               store['store_time'][i]['is_store_open']) {
-            for (var j = 0;
-                j < store['store_time'][i]['day_time'].length;
-                j++) {
+            for (
+              var j = 0;
+              j < store['store_time'][i]['day_time'].length;
+              j++
+            ) {
               DateTime open = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_open_time']);
+                store['store_time'][i]['day_time'][j]['store_open_time'],
+              );
               open = new DateTime(
-                  now.year, now.month, now.day, open.hour, open.minute);
+                now.year,
+                now.month,
+                now.day,
+                open.hour,
+                open.minute,
+              );
               DateTime close = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_close_time']);
+                store['store_time'][i]['day_time'][j]['store_close_time'],
+              );
               // DateTime zmallClose =
               //     DateTime(now.year, now.month, now.day, 21, 00);
               // DateTime zmallOpen =
@@ -121,14 +130,34 @@ class _SplashContainerState extends State<SplashContainer> {
               // }
 
               close = new DateTime(
-                  now.year, now.month, now.day, close.hour, close.minute);
-              now =
-                  DateTime(now.year, now.month, now.day, now.hour, now.minute);
+                now.year,
+                now.month,
+                now.day,
+                close.hour,
+                close.minute,
+              );
+              now = DateTime(
+                now.year,
+                now.month,
+                now.day,
+                now.hour,
+                now.minute,
+              );
 
-              zmallOpen = new DateTime(now.year, now.month, now.day,
-                  zmallOpen.hour, zmallOpen.minute);
-              zmallClose = new DateTime(now.year, now.month, now.day,
-                  zmallClose.hour, zmallClose.minute);
+              zmallOpen = new DateTime(
+                now.year,
+                now.month,
+                now.day,
+                zmallOpen.hour,
+                zmallOpen.minute,
+              );
+              zmallClose = new DateTime(
+                now.year,
+                now.month,
+                now.day,
+                zmallClose.hour,
+                zmallClose.minute,
+              );
 
               if (now.isAfter(open) &&
                   now.isAfter(zmallOpen) &&
@@ -158,9 +187,19 @@ class _SplashContainerState extends State<SplashContainer> {
       DateTime zmallOpen = dateFormat.parse(appOpen);
       // }
       zmallClose = DateTime(
-          now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+        now.year,
+        now.month,
+        now.day,
+        zmallClose.hour,
+        zmallClose.minute,
+      );
       zmallOpen = DateTime(
-          now.year, now.month, now.day, zmallOpen.hour, zmallOpen.minute);
+        now.year,
+        now.month,
+        now.day,
+        zmallOpen.hour,
+        zmallOpen.minute,
+      );
       now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
 
       if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
@@ -182,28 +221,25 @@ class _SplashContainerState extends State<SplashContainer> {
           Service.save("closed_message", data['message']);
           Service.save("ios_app_version", data['ios_user_app_version_code']);
           Service.saveBool(
-              "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+            "ios_update_dialog",
+            data['is_ios_user_app_open_update_dialog'],
+          );
           Service.saveBool(
-              "ios_force_update", data['is_ios_user_app_force_update']);
+            "ios_force_update",
+            data['is_ios_user_app_force_update'],
+          );
           Service.save('app_close', data['app_close']);
           Service.save('app_open', data['app_open']);
         });
       if (data['message_flag']) {
         showSimpleNotification(
-          Text(
-            "⚠️ NOTICE ⚠️",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          subtitle: Text(
-            "${data['message']}\n",
-          ),
+          Text("⚠️ NOTICE ⚠️", style: TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text("${data['message']}\n"),
           background: kBlackColor,
           duration: Duration(seconds: 7),
           elevation: 2.0,
           autoDismiss: false,
-          slideDismiss: true,
+          // slideDismiss: true,
           slideDismissDirection: DismissDirection.up,
         );
       }
@@ -229,7 +265,8 @@ class _SplashContainerState extends State<SplashContainer> {
                 backgroundColor: kPrimaryColor,
                 title: Text("New Version Update"),
                 content: Text(
-                    "We have detected an older version on the App on your phone."),
+                  "We have detected an older version on the App on your phone.",
+                ),
                 actions: <Widget>[
                   TextButton(
                     child: Text(
@@ -282,14 +319,13 @@ class _SplashContainerState extends State<SplashContainer> {
         }
       },
       child: Container(
-        padding: EdgeInsets.only(bottom: kDefaultPadding / 1.5),
         decoration: BoxDecoration(
           image: DecorationImage(
             image: MemoryImage(widget.bytes),
             fit: BoxFit.cover,
           ),
         ),
-        child: SkipButton(logged: widget.logged),
+        child: SafeArea(child: SkipButton(logged: widget.logged)),
       ),
     );
   }
@@ -297,37 +333,35 @@ class _SplashContainerState extends State<SplashContainer> {
   Future<dynamic> getItemInformation(itemId) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_item_information";
-    Map data = {
-      "item_id": itemId,
-    };
+    Map data = {"item_id": itemId};
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
 
-          Service.showMessage(
-            context: context,
-            title: "Something went wrong!",
-            error: true,
-            duration: 3,
+              Service.showMessage(
+                context: context,
+                title: "Something went wrong!",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this.notificationItem = json.decode(response.body);
         this._loading = false;

@@ -195,22 +195,23 @@ class _GlobalScreenState extends State<GlobalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: SizedBox(
-        height: getProportionateScreenWidth(60),
-        child: SafeArea(
-          child: Center(
-            child: TextButton(
-              onPressed: () {
-                Service.saveBool('is_global', false);
-                Navigator.pushNamedAndRemoveUntil(
-                    context, "/login", (Route<dynamic> route) => false);
-              },
-              child: Text(
-                "Change to ZMall Ethiopia?",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  //    decoration: TextDecoration.underline,
-                ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: getProportionateScreenWidth(60),
+          child: TextButton(
+            onPressed: () {
+              Service.saveBool('is_global', false);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                "/login",
+                (Route<dynamic> route) => false,
+              );
+            },
+            child: Text(
+              "Change to ZMall Ethiopia?",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                //    decoration: TextDecoration.underline,
               ),
             ),
           ),
@@ -220,8 +221,9 @@ class _GlobalScreenState extends State<GlobalScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            padding:
-                EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+            padding: EdgeInsets.all(
+              getProportionateScreenWidth(kDefaultPadding),
+            ),
             child: Form(
               child: Center(
                 child: Form(
@@ -236,7 +238,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                           style: TextStyle(
                             color: kSecondaryColor,
                             fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 1.6),
+                              kDefaultPadding * 1.6,
+                            ),
                             fontWeight: FontWeight.bold,
                           ),
                           children: [
@@ -245,7 +248,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                               style: TextStyle(
                                 color: kBlackColor,
                                 fontSize: getProportionateScreenWidth(
-                                    kDefaultPadding * 1.6),
+                                  kDefaultPadding * 1.6,
+                                ),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -253,16 +257,19 @@ class _GlobalScreenState extends State<GlobalScreen> {
                         ),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 2,
+                        ),
                       ),
                       Text(
                         "Login",
                         style: TextStyle(
-                            color: kBlackColor,
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 1.3),
-                            fontWeight: FontWeight.bold),
+                          color: kBlackColor,
+                          fontSize: getProportionateScreenWidth(
+                            kDefaultPadding * 1.3,
+                          ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(
                         height: getProportionateScreenHeight(kDefaultPadding),
@@ -270,7 +277,9 @@ class _GlobalScreenState extends State<GlobalScreen> {
                       Text(
                         "Phone Number",
                         style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(
                         height: getProportionateScreenHeight(kDefaultPadding),
@@ -284,7 +293,8 @@ class _GlobalScreenState extends State<GlobalScreen> {
                         hideSearch: false,
                         onFlagChanged: onCountryCodeChanged,
                         dialogSize: Size.fromHeight(
-                            getProportionateScreenHeight(double.maxFinite)),
+                          getProportionateScreenHeight(double.maxFinite),
+                        ),
                         hintText: "Without country code...",
 
                         keyboardType: TextInputType.phone,
@@ -304,11 +314,14 @@ class _GlobalScreenState extends State<GlobalScreen> {
                       Text(
                         "Email",
                         style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
                       CustomTextField(
                         keyboardType: TextInputType.emailAddress,
@@ -329,11 +342,14 @@ class _GlobalScreenState extends State<GlobalScreen> {
                       Text(
                         "First name",
                         style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
                       CustomTextField(
                         controller: _firstName,
@@ -353,11 +369,14 @@ class _GlobalScreenState extends State<GlobalScreen> {
                       Text(
                         "Last name",
                         style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
                       CustomTextField(
                         controller: _lastName,
@@ -372,8 +391,9 @@ class _GlobalScreenState extends State<GlobalScreen> {
                         },
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 1.5),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 1.5,
+                        ),
                       ),
                       CustomButton(
                         isLoading: _loading,
@@ -395,20 +415,21 @@ class _GlobalScreenState extends State<GlobalScreen> {
                               phoneWithCountryCode = "$countryCode$phone";
                               // debugPrint(phoneWithCountryCode);
                               // debugPrint("$email $firstName $lastName");
-                              verifyAndLoginUser(phoneWithCountryCode, email,
-                                      firstName, lastName)
-                                  .then(
-                                (success) {
-                                  if (success) {
-                                    _loading = !_loading;
-                                    _showOtpBottomSheet(
-                                      email: email,
-                                      lastName: lastName,
-                                      firstName: firstName,
-                                    );
-                                  }
-                                },
-                              );
+                              verifyAndLoginUser(
+                                phoneWithCountryCode,
+                                email,
+                                firstName,
+                                lastName,
+                              ).then((success) {
+                                if (success) {
+                                  _loading = !_loading;
+                                  _showOtpBottomSheet(
+                                    email: email,
+                                    lastName: lastName,
+                                    firstName: firstName,
+                                  );
+                                }
+                              });
                             }
 
                             // loginUser(phoneWithCountryCode, context);
@@ -439,30 +460,34 @@ class _GlobalScreenState extends State<GlobalScreen> {
     required String lastName,
   }) {
     showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: kPrimaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (builder) {
-          return StatefulBuilder(builder: (context, StateSetter setState) {
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: kPrimaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (builder) {
+        return StatefulBuilder(
+          builder: (context, StateSetter setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context)
-                    .viewInsets
-                    .bottom, // Adjust for keyboard
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
               ),
               child: SafeArea(
                 minimum: MediaQuery.of(context).viewInsets,
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: kDefaultPadding,
-                      vertical: kDefaultPadding / 2),
+                    horizontal: kDefaultPadding,
+                    vertical: kDefaultPadding / 2,
+                  ),
                   decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius:
-                          BorderRadiusGeometry.circular(kDefaultPadding)),
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadiusGeometry.circular(
+                      kDefaultPadding,
+                    ),
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,23 +498,24 @@ class _GlobalScreenState extends State<GlobalScreen> {
                           Text(
                             "Account Verification",
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           InkWell(
                             onTap: () => Navigator.of(context).pop(),
                             child: Icon(HeroiconsOutline.xCircle),
-                          )
+                          ),
                         ],
                       ),
                       Text(
                         "Please enter the one time pin(OTP) sent to your email.",
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(fontSize: 16),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 2,
+                        ),
                       ),
                       CustomTextField(
                         controller: _codeController,
@@ -507,11 +533,14 @@ class _GlobalScreenState extends State<GlobalScreen> {
                           if (code == smsCode) {
                             await Service.saveBool('is_global', true);
                             await Service.save(
-                                'global_user_id', phoneWithCountryCode);
+                              'global_user_id',
+                              phoneWithCountryCode,
+                            );
                             AbroadData abroadData = AbroadData(
-                                abroadEmail: email,
-                                abroadPhone: phoneWithCountryCode,
-                                abroadName: "$firstName $lastName");
+                              abroadEmail: email,
+                              abroadPhone: phoneWithCountryCode,
+                              abroadName: "$firstName $lastName",
+                            );
                             await Service.save("abroad_user", abroadData);
                             Navigator.of(context).pop();
                             setState(() {
@@ -519,9 +548,11 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             });
 
                             Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => GlobalHome()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GlobalHome(),
+                              ),
+                            );
                           } else {
                             Service.showMessage(
                               context: context,
@@ -534,42 +565,44 @@ class _GlobalScreenState extends State<GlobalScreen> {
                             });
                             Navigator.of(context).pop();
                             Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LoginScreen()));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LoginScreen(),
+                              ),
+                            );
                           }
                         },
-                      )
+                      ),
                     ],
                   ),
                 ),
               ),
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 
   Future<dynamic> verificationEmail(String email) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/simple_email_otp_verification";
 
-    Map data = {
-      "email": email,
-    };
+    Map data = {"email": email};
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{"Content-Type": "application/json"},
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{"Content-Type": "application/json"},
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);

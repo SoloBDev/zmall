@@ -1392,15 +1392,19 @@ class _OrderDetailState extends State<OrderDetail> {
         responseData = data;
       });
       Service.showMessage(
-          context: context, title: "Order Completed!", error: false);
+        context: context,
+        title: "Order Completed!",
+        error: false,
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) {
             return OrderHistoryDetail(
-                orderId: widget.order['_id'],
-                userId: widget.userId,
-                serverToken: widget.serverToken);
+              orderId: widget.order['_id'],
+              userId: widget.userId,
+              serverToken: widget.serverToken,
+            );
           },
         ),
       );
@@ -1444,10 +1448,12 @@ class _OrderDetailState extends State<OrderDetail> {
       setState(() {
         _loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("${errorCodes['${data['error_code']}']}"),
-        backgroundColor: kSecondaryColor,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("${errorCodes['${data['error_code']}']}"),
+          backgroundColor: kSecondaryColor,
+        ),
+      );
     }
   }
 
@@ -1469,8 +1475,9 @@ class _OrderDetailState extends State<OrderDetail> {
               children: [
                 if (!isLast)
                   Container(
-                    margin:
-                        EdgeInsets.only(top: getProportionateScreenHeight(20)),
+                    margin: EdgeInsets.only(
+                      top: getProportionateScreenHeight(20),
+                    ),
                     height: 24,
                     width: 2,
                     color: isCompleted ? kSecondaryColor : kGreyColor,
@@ -1534,10 +1541,7 @@ class _OrderDetailState extends State<OrderDetail> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            "Order Detail",
-            style: TextStyle(color: kBlackColor),
-          ),
+          title: Text("Order Detail", style: TextStyle(color: kBlackColor)),
           elevation: 1.0,
           bottom: TabBar(
             indicatorColor: kSecondaryColor,
@@ -1545,15 +1549,9 @@ class _OrderDetailState extends State<OrderDetail> {
               Column(
                 children: [
                   Tab(
-                    icon: Icon(
-                      Icons.delivery_dining,
-                      color: kSecondaryColor,
-                    ),
+                    icon: Icon(Icons.delivery_dining, color: kSecondaryColor),
                   ),
-                  Text(
-                    "Order Status",
-                    style: TextStyle(color: kBlackColor),
-                  )
+                  Text("Order Status", style: TextStyle(color: kBlackColor)),
                 ],
               ),
               Column(
@@ -1564,12 +1562,9 @@ class _OrderDetailState extends State<OrderDetail> {
                       color: kSecondaryColor,
                     ),
                   ),
-                  Text(
-                    "Cart",
-                    style: TextStyle(color: kBlackColor),
-                  )
+                  Text("Cart", style: TextStyle(color: kBlackColor)),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -1586,38 +1581,46 @@ class _OrderDetailState extends State<OrderDetail> {
                       ////order price section///
                       Container(
                         padding: EdgeInsets.symmetric(
-                            vertical:
-                                getProportionateScreenHeight(kDefaultPadding),
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
+                          vertical: getProportionateScreenHeight(
+                            kDefaultPadding,
+                          ),
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding,
+                          ),
+                        ),
                         margin: EdgeInsets.symmetric(
-                            vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding)),
+                          vertical: getProportionateScreenHeight(
+                            kDefaultPadding / 2,
+                          ),
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding,
+                          ),
+                        ),
                         width: double.infinity,
                         decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                            border: Border.all(color: kWhiteColor),
-                            borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(
-                                    kDefaultPadding / 1.5))),
+                          color: kPrimaryColor,
+                          border: Border.all(color: kWhiteColor),
+                          borderRadius: BorderRadius.circular(
+                            getProportionateScreenWidth(kDefaultPadding / 1.5),
+                          ),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing:
-                              getProportionateScreenHeight(kDefaultPadding),
+                          spacing: getProportionateScreenHeight(
+                            kDefaultPadding,
+                          ),
                           children: [
                             Text(
-                              Provider.of<ZLanguage>(context, listen: false)
-                                  .orderDetails,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge!
+                              Provider.of<ZLanguage>(
+                                context,
+                                listen: false,
+                              ).orderDetails,
+                              style: Theme.of(context).textTheme.titleLarge!
                                   .copyWith(
-                                      color: kBlackColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          getProportionateScreenHeight(17)),
+                                    color: kBlackColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: getProportionateScreenHeight(17),
+                                  ),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1627,9 +1630,10 @@ class _OrderDetailState extends State<OrderDetail> {
                                     icon: HeroiconsOutline.banknotes,
                                     value:
                                         "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
-                                    title: Provider.of<ZLanguage>(context,
-                                            listen: false)
-                                        .totalOrderPrice,
+                                    title: Provider.of<ZLanguage>(
+                                      context,
+                                      listen: false,
+                                    ).totalOrderPrice,
                                   ),
                                 ),
                                 Flexible(
@@ -1645,9 +1649,10 @@ class _OrderDetailState extends State<OrderDetail> {
                               icon: HeroiconsOutline.mapPin,
                               value:
                                   "${widget.order['destination_addresses'][0]['address']}",
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .deliveryAddress,
+                              title: Provider.of<ZLanguage>(
+                                context,
+                                listen: false,
+                              ).deliveryAddress,
                             ),
                             OrderStatusRow(
                               icon: HeroiconsOutline.buildingStorefront,
@@ -1782,28 +1787,36 @@ class _OrderDetailState extends State<OrderDetail> {
                       // SizedBox(
                       //     height: getProportionateScreenHeight(
                       //         kDefaultPadding / 2)),
-
                       orderStatus['order_status'] != 25 &&
                               orderStatus['delivery_status'] != null &&
                               orderStatus['delivery_status'] < 100
                           ? Container(
                               padding: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding)),
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               margin: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding)),
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2,
+                                ),
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  border: Border.all(color: kWhiteColor),
-                                  borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 1.5))),
+                                color: kPrimaryColor,
+                                border: Border.all(color: kWhiteColor),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                    kDefaultPadding / 1.5,
+                                  ),
+                                ),
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -1820,8 +1833,10 @@ class _OrderDetailState extends State<OrderDetail> {
                                         ),
                                   ),
                                   SizedBox(
-                                      height: getProportionateScreenHeight(
-                                          kDefaultPadding * 1.2)),
+                                    height: getProportionateScreenHeight(
+                                      kDefaultPadding * 1.2,
+                                    ),
+                                  ),
                                   // Order status timeline nodes
                                   _buildTimelineNode(
                                     isCompleted:
@@ -1848,16 +1863,16 @@ class _OrderDetailState extends State<OrderDetail> {
                                     isCompleted:
                                         orderStatus['order_status'] >= 7,
                                     title: "${order_status['7']}",
-                                    isLast: widget
-                                            .order['destination_addresses'][0]
-                                                ['address']
+                                    isLast:
+                                        widget
+                                            .order['destination_addresses'][0]['address']
                                             .toString()
                                             .toLowerCase() ==
                                         "user pickup",
                                   ),
                                   // Delivery status timeline nodes
-                                  if (widget.order['destination_addresses'][0]
-                                              ['address']
+                                  if (widget
+                                          .order['destination_addresses'][0]['address']
                                           .toString()
                                           .toLowerCase() !=
                                       "user pickup")
@@ -1866,14 +1881,14 @@ class _OrderDetailState extends State<OrderDetail> {
                                         _buildTimelineNode(
                                           isCompleted:
                                               orderStatus['delivery_status'] >=
-                                                  19,
+                                              19,
                                           title: "${order_status['19']}",
                                           isLast: false,
                                         ),
                                         _buildTimelineNode(
                                           isCompleted:
                                               orderStatus['delivery_status'] >=
-                                                  23,
+                                              23,
                                           title: "${order_status['23']}",
                                           isLast: true,
                                         ),
@@ -1884,14 +1899,15 @@ class _OrderDetailState extends State<OrderDetail> {
                             )
                           : Container(
                               padding: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding)),
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: kPrimaryColor,
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                ),
                               ),
+                              width: double.infinity,
+                              decoration: BoxDecoration(color: kPrimaryColor),
                               child: _buildTimelineNode(
                                 isCompleted: true,
                                 title:
@@ -1904,22 +1920,31 @@ class _OrderDetailState extends State<OrderDetail> {
                               orderStatus['delivery_status'] > 100
                           ? Container(
                               padding: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding),
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding)),
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               margin: EdgeInsets.symmetric(
-                                  vertical: getProportionateScreenHeight(
-                                      kDefaultPadding / 2),
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding)),
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2,
+                                ),
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  border: Border.all(color: kWhiteColor),
-                                  borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding / 1.5))),
+                                color: kPrimaryColor,
+                                border: Border.all(color: kWhiteColor),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(
+                                    kDefaultPadding / 1.5,
+                                  ),
+                                ),
+                              ),
                               child: _buildTimelineNode(
                                 isCompleted: true,
                                 title:
@@ -1952,11 +1977,14 @@ class _OrderDetailState extends State<OrderDetail> {
                           ? Padding(
                               padding: EdgeInsets.only(
                                 bottom: getProportionateScreenHeight(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                                 left: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                                 right: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                               child: CustomButton(
                                 title: "Track My Order",
@@ -1970,16 +1998,14 @@ class _OrderDetailState extends State<OrderDetail> {
                                               orderStatus['provider_id'],
                                           providerImage:
                                               orderStatus['provider_image'],
-                                          providerName: orderStatus[
-                                              'provider_first_name'],
+                                          providerName:
+                                              orderStatus['provider_first_name'],
                                           providerPhone:
                                               orderStatus['provider_phone'],
-                                          destLat: orderStatus[
-                                                  'destination_addresses'][0]
-                                              ['location'][0],
-                                          destLong: orderStatus[
-                                                  'destination_addresses'][0]
-                                              ['location'][1],
+                                          destLat:
+                                              orderStatus['destination_addresses'][0]['location'][0],
+                                          destLong:
+                                              orderStatus['destination_addresses'][0]['location'][1],
                                           userId: widget.userId,
                                           serverToken: widget.serverToken,
                                         );
@@ -1995,11 +2021,14 @@ class _OrderDetailState extends State<OrderDetail> {
                           ? Padding(
                               padding: EdgeInsets.only(
                                 bottom: getProportionateScreenHeight(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                                 left: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                                 right: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                               child: _loading
                                   ? Container()
@@ -2011,7 +2040,7 @@ class _OrderDetailState extends State<OrderDetail> {
                                       color: kBlackColor,
                                     ),
                             )
-                          : Container()
+                          : Container(),
                     ],
                   ),
                 ],
@@ -2028,8 +2057,10 @@ class _OrderDetailState extends State<OrderDetail> {
                       shrinkWrap: true,
                       itemCount: widget.order['order_details'].length,
                       separatorBuilder: (context, index) => SizedBox(
-                          height:
-                              getProportionateScreenWidth(kDefaultPadding / 2)),
+                        height: getProportionateScreenWidth(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
                       itemBuilder: (context, index) {
                         String extractProductName(String? noteForItem) {
                           if (noteForItem == null || noteForItem.isEmpty)
@@ -2040,52 +2071,64 @@ class _OrderDetailState extends State<OrderDetail> {
                         return Container(
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(
-                              vertical:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding)),
+                            vertical: getProportionateScreenHeight(
+                              kDefaultPadding,
+                            ),
+                            horizontal: getProportionateScreenWidth(
+                              kDefaultPadding,
+                            ),
+                          ),
                           margin: EdgeInsets.symmetric(
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding)),
+                            vertical: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                            horizontal: getProportionateScreenWidth(
+                              kDefaultPadding,
+                            ),
+                          ),
                           decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              border: Border.all(color: kWhiteColor),
-                              borderRadius: BorderRadius.circular(
-                                  getProportionateScreenWidth(
-                                      kDefaultPadding / 1.5))),
+                            color: kPrimaryColor,
+                            border: Border.all(color: kWhiteColor),
+                            borderRadius: BorderRadius.circular(
+                              getProportionateScreenWidth(
+                                kDefaultPadding / 1.5,
+                              ),
+                            ),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CategoryContainer(
-                                  title: widget.order['order_details'][index]
-                                                  ['product_name']
-                                              .toString()
-                                              .toLowerCase() ==
-                                          "aliexpress"
-                                      ? "${Service.capitalizeFirstLetters(extractProductName(widget.order['order_details'][index]['items'][0]['note_for_item']))}"
-                                      : widget.order['order_details'][index]
-                                                  ['product_name'] !=
-                                              null
-                                          ? Service.capitalizeFirstLetters(
-                                              widget.order['order_details']
-                                                  [index]['product_name'])
-                                          : "Item"),
+                                title:
+                                    widget.order['order_details'][index]['product_name']
+                                            .toString()
+                                            .toLowerCase() ==
+                                        "aliexpress"
+                                    ? "${Service.capitalizeFirstLetters(extractProductName(widget.order['order_details'][index]['items'][0]['note_for_item']))}"
+                                    : widget.order['order_details'][index]['product_name'] !=
+                                          null
+                                    ? Service.capitalizeFirstLetters(
+                                        widget
+                                            .order['order_details'][index]['product_name'],
+                                      )
+                                    : "Item",
+                              ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 4)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 4,
+                                ),
+                              ),
                               Container(
                                 width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                ),
+                                decoration: BoxDecoration(color: kPrimaryColor),
                                 child: Padding(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding / 2),
+                                      kDefaultPadding / 2,
+                                    ),
                                     vertical: getProportionateScreenHeight(
-                                        kDefaultPadding / 2),
+                                      kDefaultPadding / 2,
+                                    ),
                                   ),
                                   child: ListView.separated(
                                     physics: ClampingScrollPhysics(),
@@ -2094,20 +2137,20 @@ class _OrderDetailState extends State<OrderDetail> {
                                         .order['order_details'][index]['items']
                                         .length,
                                     separatorBuilder: (context, index) =>
-                                        Divider(
-                                      color: kWhiteColor,
-                                    ),
+                                        Divider(color: kWhiteColor),
                                     itemBuilder: (context, idx) {
                                       String extractItemName(
-                                          String? noteForItem) {
+                                        String? noteForItem,
+                                      ) {
                                         if (noteForItem == null ||
-                                            noteForItem.isEmpty) return '';
+                                            noteForItem.isEmpty)
+                                          return '';
                                         var parts = noteForItem.split(': ');
                                         return parts.length >= 3
                                             ? "${parts[2]}:\n${parts[1]}"
                                             : parts.length >= 2
-                                                ? "${parts[1]}"
-                                                : '';
+                                            ? "${parts[1]}"
+                                            : '';
                                       }
 
                                       return Row(
@@ -2120,9 +2163,7 @@ class _OrderDetailState extends State<OrderDetail> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  widget.order['order_details']
-                                                                  [index][
-                                                                  'product_name']
+                                                  widget.order['order_details'][index]['product_name']
                                                               .toString()
                                                               .toLowerCase() ==
                                                           "aliexpress"
@@ -2139,18 +2180,19 @@ class _OrderDetailState extends State<OrderDetail> {
                                                 ),
                                                 Text(
                                                   "Quantity: ${widget.order['order_details'][index]['items'][idx]['quantity']}",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                )
+                                                  style: Theme.of(
+                                                    context,
+                                                  ).textTheme.bodySmall,
+                                                ),
                                               ],
                                             ),
                                           ),
                                           Text(
                                             "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
                                             style: TextStyle(
-                                                fontWeight: FontWeight.w700),
-                                          )
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                         ],
                                       );
                                     },
@@ -2165,40 +2207,42 @@ class _OrderDetailState extends State<OrderDetail> {
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                      vertical: getProportionateScreenHeight(
+                        kDefaultPadding / 2,
+                      ),
+                      horizontal: getProportionateScreenWidth(
+                        kDefaultPadding / 2,
+                      ),
+                    ),
                     margin: EdgeInsets.symmetric(
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding)),
+                      vertical: getProportionateScreenHeight(
+                        kDefaultPadding / 2,
+                      ),
+                      horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    ),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        border: Border.all(color: kWhiteColor),
-                        borderRadius: BorderRadius.circular(
-                            getProportionateScreenWidth(
-                                kDefaultPadding / 1.5))),
+                      color: kPrimaryColor,
+                      border: Border.all(color: kWhiteColor),
+                      borderRadius: BorderRadius.circular(
+                        getProportionateScreenWidth(kDefaultPadding / 1.5),
+                      ),
+                    ),
                     child: Center(
                       child: Column(
                         children: [
                           Text(
                             "${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.order['total_order_price'].toStringAsFixed(2)}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
+                            style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           Text(
                             "Total Price",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                    color: kGreyColor,
-                                    fontWeight: FontWeight.w500),
+                                  color: kGreyColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                         ],
                       ),
@@ -2226,14 +2270,16 @@ class _OrderDetailState extends State<OrderDetail> {
         return Padding(
           padding: EdgeInsets.only(
             bottom:
-                MediaQuery.of(context).viewInsets.bottom, // Adjust for keyboard
+                MediaQuery.of(context).viewInsets.bottom +
+                kDefaultPadding, // Adjust for keyboard
           ),
           child: SafeArea(
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(kDefaultPadding)),
+                color: kPrimaryColor,
+                borderRadius: BorderRadius.circular(kDefaultPadding),
+              ),
               padding: EdgeInsets.symmetric(
                 horizontal: getProportionateScreenWidth(kDefaultPadding),
                 vertical: getProportionateScreenHeight(kDefaultPadding),
@@ -2247,8 +2293,9 @@ class _OrderDetailState extends State<OrderDetail> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        spacing:
-                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        spacing: getProportionateScreenWidth(
+                          kDefaultPadding / 2,
+                        ),
                         children: [
                           Text(
                             "Cancel Order?",
@@ -2262,16 +2309,17 @@ class _OrderDetailState extends State<OrderDetail> {
                             color: kBlackColor,
                             HeroiconsOutline.faceFrown,
                             size: getProportionateScreenHeight(24),
-                          )
+                          ),
                         ],
                       ),
                       IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: Icon(
-                            color: kBlackColor,
-                            HeroiconsOutline.xCircle,
-                            size: getProportionateScreenHeight(24),
-                          ))
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(
+                          color: kBlackColor,
+                          HeroiconsOutline.xCircle,
+                          size: getProportionateScreenHeight(24),
+                        ),
+                      ),
                     ],
                   ),
                   Text("Are you sure you want to cancel the order?"),
@@ -2281,8 +2329,9 @@ class _OrderDetailState extends State<OrderDetail> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: kGreyColor.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: kGreyColor.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: TextField(
                       style: TextStyle(color: kBlackColor),
@@ -2302,8 +2351,9 @@ class _OrderDetailState extends State<OrderDetail> {
                     children: [
                       TextButton(
                         child: Row(
-                          spacing:
-                              getProportionateScreenWidth(kDefaultPadding / 2),
+                          spacing: getProportionateScreenWidth(
+                            kDefaultPadding / 2,
+                          ),
                           children: [
                             Text(
                               "Sure",
@@ -2317,7 +2367,7 @@ class _OrderDetailState extends State<OrderDetail> {
                               color: kGreyColor,
                               HeroiconsOutline.faceFrown,
                               size: getProportionateScreenHeight(24),
-                            )
+                            ),
                           ],
                         ),
                         onPressed: () {
@@ -2327,8 +2377,9 @@ class _OrderDetailState extends State<OrderDetail> {
                       ),
                       TextButton(
                         child: Row(
-                          spacing:
-                              getProportionateScreenWidth(kDefaultPadding / 2),
+                          spacing: getProportionateScreenWidth(
+                            kDefaultPadding / 2,
+                          ),
                           children: [
                             Text(
                               "Keep It",
@@ -2342,7 +2393,7 @@ class _OrderDetailState extends State<OrderDetail> {
                               color: kSecondaryColor,
                               HeroiconsOutline.faceSmile,
                               size: getProportionateScreenHeight(24),
-                            )
+                            ),
                           ],
                         ),
                         onPressed: () {
@@ -2373,27 +2424,27 @@ class _OrderDetailState extends State<OrderDetail> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          Service.showMessage(
-            context: context,
-            title: "Network error",
-            error: true,
+            Duration(seconds: 10),
+            onTimeout: () {
+              Service.showMessage(
+                context: context,
+                title: "Network error",
+                error: true,
+              );
+              setState(() {
+                _loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          setState(() {
-            _loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       responseData = json.decode(response.body);
       return json.decode(response.body);
     } catch (e) {
@@ -2417,28 +2468,28 @@ class _OrderDetailState extends State<OrderDetail> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this._loading = false;
         orderStatus = json.decode(response.body);
@@ -2476,28 +2527,28 @@ class _OrderDetailState extends State<OrderDetail> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this._loading = false;
       });
@@ -2534,7 +2585,8 @@ class InfoContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          vertical: getProportionateScreenHeight(kDefaultPadding / 3)),
+        vertical: getProportionateScreenHeight(kDefaultPadding / 3),
+      ),
       width: double.infinity,
       decoration: BoxDecoration(
         color: status ? kPrimaryColor : kSecondaryColor,
@@ -2549,9 +2601,7 @@ class InfoContainer extends StatelessWidget {
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: status ? kSecondaryColor : kBlackColor,
-              ),
+              style: TextStyle(color: status ? kSecondaryColor : kBlackColor),
             ),
           ),
         ],

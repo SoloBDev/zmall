@@ -44,14 +44,17 @@ class _BodyState extends State<Body> {
 
   void requiredCount() {
     if (widget.item['specifications'].length > 0) {
-      for (var index = 0;
-          index < widget.item['specifications'].length;
-          index++) {
+      for (
+        var index = 0;
+        index < widget.item['specifications'].length;
+        index++
+      ) {
         if (widget.item['specifications'][index]['is_required']) {
           setState(() {
             reqCount += 1;
-            requiredSpecs
-                .add(widget.item['specifications'][index]['unique_id']);
+            requiredSpecs.add(
+              widget.item['specifications'][index]['unique_id'],
+            );
           });
         }
       }
@@ -185,16 +188,19 @@ class _BodyState extends State<Body> {
                         : "https://ibb.co/vkhzjd6",
                     imageBuilder: (context, imageProvider) => Container(
                       width: double.infinity,
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding * 16),
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding * 18,
+                      ),
                       decoration: BoxDecoration(
                         color: kPrimaryColor,
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(
-                              getProportionateScreenWidth(kDefaultPadding)),
-                          bottomRight: Radius.circular(
-                              getProportionateScreenWidth(kDefaultPadding)),
-                        ),
+                        // borderRadius: BorderRadius.only(
+                        //   bottomLeft: Radius.circular(
+                        //     getProportionateScreenWidth(kDefaultPadding),
+                        //   ),
+                        //   bottomRight: Radius.circular(
+                        //     getProportionateScreenWidth(kDefaultPadding),
+                        //   ),
+                        // ),
                         image: DecorationImage(
                           fit: BoxFit.cover,
                           image: imageProvider,
@@ -204,24 +210,27 @@ class _BodyState extends State<Body> {
                     placeholder: (context, url) => Center(
                       child: Container(
                         width: double.infinity,
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 16),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 16,
+                        ),
                         child: Center(
                           child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(kSecondaryColor),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              kSecondaryColor,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     errorWidget: (context, url, error) => Padding(
                       padding: EdgeInsets.only(
-                          top: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                        top: getProportionateScreenHeight(kDefaultPadding / 2),
+                      ),
                       child: Container(
                         width: double.infinity,
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 16),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 16,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.only(
                             bottomRight: Radius.circular(kDefaultPadding),
@@ -253,32 +262,37 @@ class _BodyState extends State<Body> {
                   },
                 ),
                 widget.item['image_url'].length > 0
-                    ? Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                              vertical: getProportionateScreenWidth(
-                                  kDefaultPadding * 1.5)),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.zoom_out_map,
-                              color: kPrimaryColor,
+                    ? SafeArea(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: getProportionateScreenWidth(
+                                kDefaultPadding,
+                              ),
+                              // vertical: getProportionateScreenWidth(
+                              //   kDefaultPadding * 1.5,
+                              // ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return PhotoViewer(
-                                      imageUrl: widget.item['image_url'][0],
-                                      itemName: widget.item['name'],
-                                    );
-                                  },
-                                ),
-                              );
-                            },
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.zoom_out_map,
+                                color: kPrimaryColor,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return PhotoViewer(
+                                        imageUrl: widget.item['image_url'][0],
+                                        itemName: widget.item['name'],
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       )
@@ -286,14 +300,18 @@ class _BodyState extends State<Body> {
                 SizedBox(
                   height: getProportionateScreenHeight(kDefaultPadding / 4),
                 ),
-                Align(
+                SafeArea(
+                  child: Align(
                     alignment: Alignment.topLeft,
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal:
-                              getProportionateScreenWidth(kDefaultPadding),
-                          vertical: getProportionateScreenWidth(
-                              kDefaultPadding * 1.5)),
+                        horizontal: getProportionateScreenWidth(
+                          kDefaultPadding,
+                        ),
+                        // vertical: getProportionateScreenWidth(
+                        //   kDefaultPadding * 1.5,
+                        // ),
+                      ),
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -312,7 +330,9 @@ class _BodyState extends State<Body> {
                           ),
                         ),
                       ),
-                    )),
+                    ),
+                  ),
+                ),
 
                 // SizedBox(
                 //   height: getProportionateScreenHeight(kDefaultPadding / 2),
@@ -332,9 +352,9 @@ class _BodyState extends State<Body> {
                   Text(
                     widget.item['name'],
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: kBlackColor,
-                        ),
+                      fontWeight: FontWeight.w500,
+                      color: kBlackColor,
+                    ),
                     textAlign: TextAlign.left,
                   ),
                   Text(
@@ -343,9 +363,9 @@ class _BodyState extends State<Body> {
                         .replaceAll("\n", "")
                         .trim(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: kGreyColor,
-                          fontWeight: FontWeight.w400,
-                        ),
+                      color: kGreyColor,
+                      fontWeight: FontWeight.w400,
+                    ),
                     textAlign: TextAlign.left,
                   ),
                   SizedBox(
@@ -355,18 +375,16 @@ class _BodyState extends State<Body> {
               ),
             ),
           ),
-          Container(
-            width: double.infinity,
-            height: 0.2,
-            color: kGreyColor,
-          ),
+          Container(width: double.infinity, height: 0.2, color: kGreyColor),
           SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
           widget.item['specifications'].length > 0
               ? Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                      horizontal: getProportionateScreenWidth(
+                        kDefaultPadding / 2,
+                      ),
+                    ),
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemCount: widget.item['specifications'].length,
@@ -386,19 +404,17 @@ class _BodyState extends State<Body> {
                                           "${widget.item['specifications'][index]['name'].toString().toUpperCase()}",
                                       color: kBlackColor,
                                     ),
-                                    widget.item['specifications'][index]
-                                            ['is_required']
+                                    widget.item['specifications'][index]['is_required']
                                         ? Text(
                                             "Choose ${widget.item['specifications'][index]['range']}",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall,
                                           )
                                         : Container(),
                                   ],
                                 ),
-                                widget.item['specifications'][index]
-                                        ['is_required']
+                                widget.item['specifications'][index]['is_required']
                                     ? CustomTag(
                                         text: "Required",
                                         color: kSecondaryColor,
@@ -407,63 +423,78 @@ class _BodyState extends State<Body> {
                               ],
                             ),
                             SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 4)),
+                              height: getProportionateScreenHeight(
+                                kDefaultPadding / 4,
+                              ),
+                            ),
                             ListView.separated(
                               physics: ClampingScrollPhysics(),
                               shrinkWrap: true,
                               itemCount: widget
-                                  .item['specifications'][index]['list'].length,
+                                  .item['specifications'][index]['list']
+                                  .length,
                               itemBuilder: (context, idx) {
                                 return GestureDetector(
                                   onTap: () {
                                     ListElement specItem = ListElement(
-                                        uniqueId: widget.item['specifications']
-                                            [index]['list'][idx]['unique_id'],
-                                        price: widget.item['specifications']
-                                                [index]['list'][idx]['price'] +
-                                            .0);
+                                      uniqueId: widget
+                                          .item['specifications'][index]['list'][idx]['unique_id'],
+                                      price:
+                                          widget
+                                              .item['specifications'][index]['list'][idx]['price'] +
+                                          .0,
+                                    );
 
                                     if (specification!
-                                            .where((element) =>
-                                                element.uniqueId ==
-                                                widget.item?['specifications']
-                                                    ?[index]['unique_id'])
+                                            .where(
+                                              (element) =>
+                                                  element.uniqueId ==
+                                                  widget
+                                                      .item?['specifications']?[index]['unique_id'],
+                                            )
                                             .length >
                                         0) {
                                       // Found specification with this unique_id
                                       var spec = (specification.firstWhere(
-                                          (element) =>
-                                              element.uniqueId ==
-                                              widget.item['specifications']
-                                                  [index]['unique_id']));
+                                        (element) =>
+                                            element.uniqueId ==
+                                            widget
+                                                .item['specifications'][index]['unique_id'],
+                                      ));
                                       if (spec.list!
-                                              .where((element) =>
-                                                  element.uniqueId ==
-                                                  specItem.uniqueId)
+                                              .where(
+                                                (element) =>
+                                                    element.uniqueId ==
+                                                    specItem.uniqueId,
+                                              )
                                               .length >
                                           0) {
                                         // Item found in specifications
                                         setState(() {
-                                          spec.list!.removeWhere((element) =>
-                                              element.uniqueId ==
-                                              specItem.uniqueId);
-                                          selected.removeWhere((element) =>
-                                              element.uniqueId ==
-                                              specItem.uniqueId);
+                                          spec.list!.removeWhere(
+                                            (element) =>
+                                                element.uniqueId ==
+                                                specItem.uniqueId,
+                                          );
+                                          selected.removeWhere(
+                                            (element) =>
+                                                element.uniqueId ==
+                                                specItem.uniqueId,
+                                          );
                                           if (spec.list!.length == 0) {
                                             setState(() {
                                               specification.removeWhere(
-                                                  (element) =>
-                                                      element.uniqueId ==
-                                                      spec.uniqueId);
+                                                (element) =>
+                                                    element.uniqueId ==
+                                                    spec.uniqueId,
+                                              );
                                             });
                                           }
                                         });
                                       } else {
                                         // Item not found in specifications...
-                                        if (widget.item['specifications'][index]
-                                                ['type'] ==
+                                        if (widget
+                                                .item['specifications'][index]['type'] ==
                                             2) {
                                           setState(() {
                                             spec.list!.add(specItem);
@@ -472,9 +503,11 @@ class _BodyState extends State<Body> {
                                         } else {
                                           try {
                                             setState(() {
-                                              selected.removeWhere((element) =>
-                                                  element.uniqueId ==
-                                                  spec.list![0].uniqueId);
+                                              selected.removeWhere(
+                                                (element) =>
+                                                    element.uniqueId ==
+                                                    spec.list![0].uniqueId,
+                                              );
                                               spec.list!.removeAt(0);
                                               spec.list!.add(specItem);
                                               selected.add(specItem);
@@ -492,10 +525,10 @@ class _BodyState extends State<Body> {
                                       // Specification with this unique_id not found adding a new one
                                       setState(() {
                                         Specification spec = Specification(
-                                            uniqueId:
-                                                widget.item['specifications']
-                                                    [index]['unique_id'],
-                                            list: [specItem]);
+                                          uniqueId: widget
+                                              .item['specifications'][index]['unique_id'],
+                                          list: [specItem],
+                                        );
                                         specification.add(spec);
                                         selected.add(specItem);
                                       });
@@ -506,24 +539,30 @@ class _BodyState extends State<Body> {
                                   },
                                   child: Container(
                                     padding: EdgeInsets.all(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding / 1.5)),
+                                      getProportionateScreenWidth(
+                                        kDefaultPadding / 1.5,
+                                      ),
+                                    ),
                                     decoration: BoxDecoration(
                                       // boxShadow: [kDefaultShadow],
-                                      color: selected
-                                                  .where((element) =>
-                                                      element.uniqueId ==
-                                                      widget.item['specifications']
-                                                              ?[index]['list']
-                                                          [idx]['unique_id'])
+                                      color:
+                                          selected
+                                                  .where(
+                                                    (element) =>
+                                                        element.uniqueId ==
+                                                        widget
+                                                            .item['specifications']?[index]['list'][idx]['unique_id'],
+                                                  )
                                                   .length >
                                               0
                                           ? kSecondaryColor.withValues(
-                                              alpha: 0.2)
+                                              alpha: 0.2,
+                                            )
                                           : kWhiteColor,
                                       borderRadius: BorderRadius.circular(
                                         getProportionateScreenWidth(
-                                            kDefaultPadding / 4),
+                                          kDefaultPadding / 4,
+                                        ),
                                       ),
                                     ),
                                     child: Row(
@@ -544,7 +583,7 @@ class _BodyState extends State<Body> {
                                         ),
                                         Text(
                                           "ብር ${widget.item['specifications'][index]['list'][idx]['price'].toStringAsFixed(2)}",
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -552,18 +591,20 @@ class _BodyState extends State<Body> {
                               },
                               separatorBuilder:
                                   (BuildContext context, int index) => SizedBox(
-                                height: getProportionateScreenHeight(
-                                    kDefaultPadding / 2),
-                              ),
-                            )
+                                    height: getProportionateScreenHeight(
+                                      kDefaultPadding / 2,
+                                    ),
+                                  ),
+                            ),
                           ],
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) =>
                           SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
-                      ),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 4,
+                            ),
+                          ),
                     ),
                   ),
                 )
@@ -578,36 +619,35 @@ class _BodyState extends State<Body> {
           widget.item['specifications'].length > 0 ? Container() : Spacer(),
           Container(
             padding: EdgeInsets.symmetric(
-                horizontal: getProportionateScreenWidth(kDefaultPadding)),
-            decoration: BoxDecoration(
-              color: kPrimaryColor,
+              horizontal: getProportionateScreenWidth(kDefaultPadding),
             ),
+            decoration: BoxDecoration(color: kPrimaryColor),
             child: Padding(
               padding: EdgeInsets.symmetric(
-                  vertical: getProportionateScreenHeight(kDefaultPadding / 3)),
+                vertical: getProportionateScreenHeight(kDefaultPadding / 3),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "PRICE:",
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: kBlackColor),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: kBlackColor),
                   ),
                   Text(
                     "ብር ${price!.toStringAsFixed(2)}",
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: kBlackColor, fontWeight: FontWeight.bold),
+                      color: kBlackColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           Container(
-            decoration: BoxDecoration(
-              color: kPrimaryColor,
-            ),
+            decoration: BoxDecoration(color: kPrimaryColor),
             child: Padding(
               padding: EdgeInsets.only(
                 left: getProportionateScreenWidth(kDefaultPadding),
@@ -624,10 +664,7 @@ class _BodyState extends State<Body> {
                           padding: EdgeInsets.all(
                             getProportionateScreenWidth(kDefaultPadding / 3),
                           ),
-                          child: Icon(
-                            Icons.note,
-                            color: kPrimaryColor,
-                          ),
+                          child: Icon(Icons.note, color: kPrimaryColor),
                         ),
                         decoration: BoxDecoration(
                           color: kSecondaryColor,
@@ -649,7 +686,8 @@ class _BodyState extends State<Body> {
                                   note = val;
                                 },
                                 decoration: textFieldInputDecorator.copyWith(
-                                    labelText: "Note"),
+                                  labelText: "Note",
+                                ),
                               ),
                               actions: <Widget>[
                                 TextButton(
@@ -691,15 +729,16 @@ class _BodyState extends State<Body> {
                                       : "https://ibb.co/vkhzjd6",
                                 );
                                 StoreLocation storeLocation = StoreLocation(
-                                    long: widget.location[1],
-                                    lat: widget.location[0]);
+                                  long: widget.location[1],
+                                  lat: widget.location[0],
+                                );
                                 DestinationAddress destination =
                                     DestinationAddress(
-                                  long: longitude,
-                                  lat: latitude,
-                                  name: "Current Location",
-                                  note: "User current location",
-                                );
+                                      long: longitude,
+                                      lat: latitude,
+                                      name: "Current Location",
+                                      note: "User current location",
+                                    );
                                 if (cart != null) {
                                   if (cart!.storeId ==
                                       widget.item['store_id']) {
@@ -715,7 +754,10 @@ class _BodyState extends State<Body> {
                                     });
                                   } else {
                                     _showDialog(
-                                        item, destination, storeLocation);
+                                      item,
+                                      destination,
+                                      storeLocation,
+                                    );
                                   }
                                 } else {
                                   // debugPrint("Empty cart! Adding new item.");
@@ -746,16 +788,15 @@ class _BodyState extends State<Body> {
                             child: Padding(
                               padding: EdgeInsets.all(
                                 getProportionateScreenWidth(
-                                    kDefaultPadding / 3),
+                                  kDefaultPadding / 3,
+                                ),
                               ),
-                              child: Icon(
-                                Icons.remove,
-                                color: kPrimaryColor,
-                              ),
+                              child: Icon(Icons.remove, color: kPrimaryColor),
                             ),
                             decoration: BoxDecoration(
-                              color:
-                                  quantity != 1 ? kSecondaryColor : kGreyColor,
+                              color: quantity != 1
+                                  ? kSecondaryColor
+                                  : kGreyColor,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(kDefaultPadding),
                                 bottomLeft: Radius.circular(kDefaultPadding),
@@ -779,8 +820,10 @@ class _BodyState extends State<Body> {
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding / 3)),
+                            horizontal: getProportionateScreenWidth(
+                              kDefaultPadding / 3,
+                            ),
+                          ),
                           child: Text(
                             quantity.toString(),
                             style: Theme.of(context).textTheme.titleLarge,
@@ -798,12 +841,10 @@ class _BodyState extends State<Body> {
                             child: Padding(
                               padding: EdgeInsets.all(
                                 getProportionateScreenWidth(
-                                    kDefaultPadding / 3),
+                                  kDefaultPadding / 3,
+                                ),
                               ),
-                              child: Icon(
-                                Icons.add,
-                                color: kPrimaryColor,
-                              ),
+                              child: Icon(Icons.add, color: kPrimaryColor),
                             ),
                           ),
                           onTap: () {
@@ -827,52 +868,54 @@ class _BodyState extends State<Body> {
 
   void _showDialog(item, destination, storeLocation) {
     showDialog(
-        context: context,
-        builder: (BuildContext alertContext) {
-          return AlertDialog(
-            title: Text("Warning"),
-            backgroundColor: kPrimaryColor,
-            content: Text(
-                "Item(s) from a different store found in cart! Would you like to clear your cart?"),
-            actions: [
-              TextButton(
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    color: kBlackColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+      context: context,
+      builder: (BuildContext alertContext) {
+        return AlertDialog(
+          title: Text("Warning"),
+          backgroundColor: kPrimaryColor,
+          content: Text(
+            "Item(s) from a different store found in cart! Would you like to clear your cart?",
+          ),
+          actions: [
+            TextButton(
+              child: Text(
+                "Cancel",
+                style: TextStyle(
+                  color: kBlackColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  Navigator.of(alertContext).pop();
-                },
               ),
-              TextButton(
-                child: Text(
-                  "Clear",
-                  style: TextStyle(
-                    color: kSecondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+              onPressed: () {
+                Navigator.of(alertContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                "Clear",
+                style: TextStyle(
+                  color: kSecondaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  setState(() {
-                    cart!.toJson();
-                    Service.remove('abroad_cart');
-                    Service.remove('abroad_aliexpressCart');
-                    cart = AbroadCart();
-                    addToCart(item, destination, storeLocation);
-                    // debugPrint(item.id);
-                    // debugPrint(cart.toJson());
-                  });
+              ),
+              onPressed: () {
+                setState(() {
+                  cart!.toJson();
+                  Service.remove('abroad_cart');
+                  Service.remove('abroad_aliexpressCart');
+                  cart = AbroadCart();
+                  addToCart(item, destination, storeLocation);
+                  // debugPrint(item.id);
+                  // debugPrint(cart.toJson());
+                });
 
-                  Navigator.of(alertContext).pop();
-                  Future.delayed(Duration(seconds: 2));
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
+                Navigator.of(alertContext).pop();
+                Future.delayed(Duration(seconds: 2));
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

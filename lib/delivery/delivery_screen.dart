@@ -105,18 +105,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         // Handle permission denial
 
         Service.showMessage(
-            context: context,
-            title: "Location permission denied. Please enable and try again",
-            error: true);
+          context: context,
+          title: "Location permission denied. Please enable and try again",
+          error: true,
+        );
         FlLocation.requestLocationPermission();
       }
     } else {
       // Location services are disabled
       Service.showMessage(
-          context: context,
-          title:
-              "Location services are turned off. Please enable them in your device settings.",
-          error: true);
+        context: context,
+        title:
+            "Location services are turned off. Please enable them in your device settings.",
+        error: true,
+      );
       return;
     }
   }
@@ -132,7 +134,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         vehicleList = data;
         // debugPrint("selectedVehicle before $selectedVehicle");
         // debugPrint("selected vehicle id  before ${vehicleId}");
-        selectedVehicle = vehicleList['vehicles'] != null &&
+        selectedVehicle =
+            vehicleList['vehicles'] != null &&
                 vehicleList['vehicles'].isNotEmpty
             ? 0
             : -1;
@@ -146,9 +149,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         _loading = false;
       });
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -167,8 +171,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         cart!.destinationAddress!.lat = latitude;
         cart!.destinationAddress!.long = longitude;
       });
-      Provider.of<ZMetaData>(context, listen: false)
-          .setLocation(currentLocation.latitude, currentLocation.longitude);
+      Provider.of<ZMetaData>(
+        context,
+        listen: false,
+      ).setLocation(currentLocation.latitude, currentLocation.longitude);
     }
   }
 
@@ -227,9 +233,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             destinationAddress = deliveryLocation!.list![selected];
           });
         }
-//        for (var i = 0; i < deliveryLocation.list.length; i++) {
-//          debugPrint(deliveryLocation.list[i].name);
-//        }
+        //        for (var i = 0; i < deliveryLocation.list.length; i++) {
+        //          debugPrint(deliveryLocation.list[i].name);
+        //        }
       });
     }
   }
@@ -344,9 +350,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     if (data != null && data['success']) {
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -367,19 +374,25 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         userData['user']['cart_id'] = data['cart_id'];
       });
       await Service.save('user', userData);
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return CheckoutScreen(
-          isForOthers: isForOthers,
-          receiverName: receiverName,
-          receiverPhone: receiverPhone,
-          vehicleId: vehicleId,
-        );
-      }));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return CheckoutScreen(
+              isForOthers: isForOthers,
+              receiverName: receiverName,
+              receiverPhone: receiverPhone,
+              vehicleId: vehicleId,
+            );
+          },
+        ),
+      );
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${responseData['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${responseData['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (responseData['error_code'] != null &&
           responseData['error_code'] == 999) {
@@ -397,17 +410,18 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     double? horizontalMargin,
   }) {
     return Container(
-        height: height,
-        width: double.infinity,
-        margin: EdgeInsets.symmetric(
-          horizontal:
-              horizontalMargin ?? getProportionateScreenWidth(kDefaultPadding),
-          vertical: getProportionateScreenHeight(kDefaultPadding / 2),
-        ),
-        child: Column(
-          spacing: getProportionateScreenHeight(spacing),
-          children: children,
-        ));
+      height: height,
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(
+        horizontal:
+            horizontalMargin ?? getProportionateScreenWidth(kDefaultPadding),
+        vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+      ),
+      child: Column(
+        spacing: getProportionateScreenHeight(spacing),
+        children: children,
+      ),
+    );
   }
 
   @override
@@ -425,7 +439,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         child: ModalProgressHUD(
           color: kPrimaryColor,
           progressIndicator: linearProgressIndicator,
-          inAsyncCall: _loading &&
+          inAsyncCall:
+              _loading &&
               (vehicleList != null && vehicleList['vehicles'].isNotEmpty),
           child: SingleChildScrollView(
             child: userData != null
@@ -434,9 +449,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       wrapperContainer(
                         children: [
                           SectionTitle(
-                            sectionTitle:
-                                Provider.of<ZLanguage>(context, listen: false)
-                                    .deliveryDetails,
+                            sectionTitle: Provider.of<ZLanguage>(
+                              context,
+                              listen: false,
+                            ).deliveryDetails,
                             subTitle: " ",
                             onSubTitlePress: () {},
                           ),
@@ -445,24 +461,30 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                             decoration: BoxDecoration(
                               color: kPrimaryColor,
                               border: Border.all(
-                                  color: kGreyColor.withValues(alpha: 0.1)),
+                                color: kGreyColor.withValues(alpha: 0.1),
+                              ),
                               borderRadius: BorderRadius.circular(
                                 getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                               ),
                               // boxShadow: [boxShadow],
                             ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
-                            ).copyWith(
-                              bottom: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ),
+                            padding:
+                                EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                ).copyWith(
+                                  bottom: getProportionateScreenHeight(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               spacing: getProportionateScreenHeight(
-                                  kDefaultPadding / 8),
+                                kDefaultPadding / 8,
+                              ),
                               children: [
                                 /////header/////
                                 Row(
@@ -472,9 +494,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                     Text(
                                       "Deliver to",
                                       style: TextStyle(
-                                          fontSize: 14,
-                                          color: kBlackColor,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 14,
+                                        color: kBlackColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     TextButton(
                                       style: ButtonStyle(
@@ -487,23 +510,25 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       },
                                       child: Row(
                                         spacing: getProportionateScreenWidth(
-                                            kDefaultPadding / 4),
+                                          kDefaultPadding / 4,
+                                        ),
                                         children: [
                                           Text(
-                                            Provider.of<ZLanguage>(context,
-                                                    listen: false)
-                                                .changeDetails,
+                                            Provider.of<ZLanguage>(
+                                              context,
+                                              listen: false,
+                                            ).changeDetails,
                                             style: TextStyle(
-                                                fontSize: 12,
-                                                color: kSecondaryColor,
-                                                fontWeight: FontWeight.bold
-                                                // decoration:TextDecoration.underline,
-                                                ),
+                                              fontSize: 12,
+                                              color: kSecondaryColor,
+                                              fontWeight: FontWeight.bold,
+                                              // decoration:TextDecoration.underline,
+                                            ),
                                           ),
                                           Icon(
                                             size: 16,
                                             HeroiconsOutline.pencilSquare,
-                                          )
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -512,21 +537,23 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
                                 ///user detail//
                                 DetailsRow(
-                                  title: Provider.of<ZLanguage>(context,
-                                          listen: false)
-                                      .name,
-                                  subtitle: receiverName.isNotEmpty &&
-                                          isForOthers
+                                  title: Provider.of<ZLanguage>(
+                                    context,
+                                    listen: false,
+                                  ).name,
+                                  subtitle:
+                                      receiverName.isNotEmpty && isForOthers
                                       ? receiverName
                                       : "${userData['user']['first_name']} ${userData['user']['last_name']} ",
                                 ),
 
                                 DetailsRow(
-                                  title: Provider.of<ZLanguage>(context,
-                                          listen: false)
-                                      .phone,
-                                  subtitle: receiverPhone.isNotEmpty &&
-                                          isForOthers
+                                  title: Provider.of<ZLanguage>(
+                                    context,
+                                    listen: false,
+                                  ).phone,
+                                  subtitle:
+                                      receiverPhone.isNotEmpty && isForOthers
                                       ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} $receiverPhone"
                                       : "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}",
                                 ),
@@ -540,18 +567,20 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           : wrapperContainer(
                               horizontalMargin: 0,
                               height: getProportionateScreenWidth(
-                                  MediaQuery.sizeOf(context).height * 0.14),
+                                MediaQuery.sizeOf(context).height * 0.14,
+                              ),
                               children: [
                                 Padding(
                                   padding: EdgeInsets.only(
                                     left: getProportionateScreenWidth(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                   ),
                                   child: SectionTitle(
                                     sectionTitle: Provider.of<ZLanguage>(
-                                            context,
-                                            listen: false)
-                                        .deliveryOptions,
+                                      context,
+                                      listen: false,
+                                    ).deliveryOptions,
                                     subTitle: " ",
                                     onSubTitlePress: () {},
                                   ),
@@ -562,35 +591,38 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                         child: ListView.separated(
                                           scrollDirection: Axis.horizontal,
                                           padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding)),
-                                          separatorBuilder:
-                                              (BuildContext context,
-                                                      int index) =>
-                                                  SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding),
+                                            horizontal:
+                                                getProportionateScreenWidth(
+                                                  kDefaultPadding,
+                                                ),
                                           ),
-                                          itemCount: vehicleList['vehicles'] !=
-                                                  null
+                                          separatorBuilder:
+                                              (
+                                                BuildContext context,
+                                                int index,
+                                              ) => SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding,
+                                                    ),
+                                              ),
+                                          itemCount:
+                                              vehicleList['vehicles'] != null
                                               ? vehicleList['vehicles'].length
                                               : 0,
-                                          itemBuilder: (context, index) =>
-                                              VehicleContainer(
+                                          itemBuilder: (context, index) => VehicleContainer(
                                             selected: selectedVehicle == index,
                                             imageUrl: selectedVehicle == index
                                                 ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
                                                 : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
-                                            category: vehicleList['vehicles']
-                                                [index]['vehicle_name'],
+                                            category:
+                                                vehicleList['vehicles'][index]['vehicle_name'],
                                             press: () {
                                               setState(() {
                                                 if (selectedVehicle != index) {
                                                   selectedVehicle = index;
                                                   vehicleId =
-                                                      vehicleList['vehicles']
-                                                          [index]['_id'];
+                                                      vehicleList['vehicles'][index]['_id'];
                                                   // debugPrint("selected vehicle id ontap $vehicleId");
                                                 } else {
                                                   selectedVehicle = -1;
@@ -606,28 +638,35 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                           scrollDirection: Axis.horizontal,
                                           separatorBuilder: (context, index) =>
                                               SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding * 2.5),
-                                          ),
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding * 2.5,
+                                                    ),
+                                              ),
                                           padding: EdgeInsets.symmetric(
-                                              horizontal:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding)),
+                                            horizontal:
+                                                getProportionateScreenWidth(
+                                                  kDefaultPadding,
+                                                ),
+                                          ),
                                           itemBuilder: (context, index) {
                                             return Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               spacing:
                                                   getProportionateScreenHeight(
-                                                      kDefaultPadding / 3),
+                                                    kDefaultPadding / 3,
+                                                  ),
                                               children: [
                                                 SearchButtonShimmer(
                                                   width:
                                                       getProportionateScreenWidth(
-                                                          kDefaultPadding * 5),
+                                                        kDefaultPadding * 5,
+                                                      ),
                                                   height:
                                                       getProportionateScreenHeight(
-                                                          kDefaultPadding * 4),
+                                                        kDefaultPadding * 4,
+                                                      ),
                                                   borderRadius: kDefaultPadding,
                                                 ),
                                                 SearchButtonShimmer(
@@ -635,7 +674,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                                   borderRadius: 5,
                                                   width:
                                                       getProportionateScreenWidth(
-                                                          kDefaultPadding * 5),
+                                                        kDefaultPadding * 5,
+                                                      ),
                                                 ),
                                               ],
                                             );
@@ -644,6 +684,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       ),
                               ],
                             ),
+
                       // : Container(
                       //     height: getProportionateScreenWidth(
                       //         MediaQuery.sizeOf(context).height * 0.14),
@@ -657,7 +698,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       // SizedBox(
                       //     height:
                       //         getProportionateScreenHeight(kDefaultPadding)),
-
                       wrapperContainer(
                         spacing: kDefaultPadding / 2,
                         children: [
@@ -665,12 +705,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                             icon: HeroiconsOutline.plusCircle,
                             subTitleColor: kSecondaryColor,
                             subTitleFontWeight: FontWeight.bold,
-                            sectionTitle:
-                                Provider.of<ZLanguage>(context, listen: false)
-                                    .locations,
-                            subTitle:
-                                Provider.of<ZLanguage>(context, listen: false)
-                                    .addLocation,
+                            sectionTitle: Provider.of<ZLanguage>(
+                              context,
+                              listen: false,
+                            ).locations,
+                            subTitle: Provider.of<ZLanguage>(
+                              context,
+                              listen: false,
+                            ).addLocation,
                             onSubTitlePress: () {
                               addLocation();
                             },
@@ -678,11 +720,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
                           //////////current loaction//////////////
                           LocationContainer(
-                            title:
-                                Provider.of<ZLanguage>(context, listen: false)
-                                    .currentLocation,
-                            note: Provider.of<ZLanguage>(context, listen: false)
-                                .useCurrentLocation,
+                            title: Provider.of<ZLanguage>(
+                              context,
+                              listen: false,
+                            ).currentLocation,
+                            note: Provider.of<ZLanguage>(
+                              context,
+                              listen: false,
+                            ).useCurrentLocation,
                             isSelected: currSelected,
                             press: () async {
                               setState(() {
@@ -701,12 +746,14 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           //////////self pickup loaction//////////////
                           if (!cart!.isLaundryService)
                             LocationContainer(
-                              title:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .selfPickup,
-                              note:
-                                  Provider.of<ZLanguage>(context, listen: false)
-                                      .userPickup,
+                              title: Provider.of<ZLanguage>(
+                                context,
+                                listen: false,
+                              ).selfPickup,
+                              note: Provider.of<ZLanguage>(
+                                context,
+                                listen: false,
+                              ).userPickup,
                               isSelected: selfPickup,
                               press: () async {
                                 setState(() {
@@ -715,15 +762,19 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   selected = -1;
                                   selectedVehicle = 0;
                                   destinationAddress = DestinationAddress(
-                                      name: Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .userPickup,
-                                      long: Provider.of<ZMetaData>(context,
-                                              listen: false)
-                                          .longitude,
-                                      lat: Provider.of<ZMetaData>(context,
-                                              listen: false)
-                                          .latitude);
+                                    name: Provider.of<ZLanguage>(
+                                      context,
+                                      listen: false,
+                                    ).userPickup,
+                                    long: Provider.of<ZMetaData>(
+                                      context,
+                                      listen: false,
+                                    ).longitude,
+                                    lat: Provider.of<ZMetaData>(
+                                      context,
+                                      listen: false,
+                                    ).latitude,
+                                  );
                                 });
                                 // getLocation();
                               },
@@ -735,13 +786,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           ListView.separated(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: deliveryLocation != null &&
+                            itemCount:
+                                deliveryLocation != null &&
                                     deliveryLocation!.list!.length > 0
                                 ? deliveryLocation!.list!.length
                                 : 0,
                             separatorBuilder: (context, index) => SizedBox(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                             ),
                             itemBuilder: (context, index) {
                               return Dismissible(
@@ -759,22 +812,29 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                       ),
                                       SizedBox(
                                         width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
+                                          kDefaultPadding / 2,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                key: Key(deliveryLocation!.list![index].lat
-                                    .toString()),
+                                key: Key(
+                                  deliveryLocation!.list![index].lat.toString(),
+                                ),
                                 onDismissed: (direction) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              '${deliveryLocation!.list![index].name} dismissed')));
+                                    SnackBar(
+                                      content: Text(
+                                        '${deliveryLocation!.list![index].name} dismissed',
+                                      ),
+                                    ),
+                                  );
                                   setState(() {
                                     deliveryLocation!.list!.removeAt(index);
                                     Service.save(
-                                        'delivery', deliveryLocation!.toJson());
+                                      'delivery',
+                                      deliveryLocation!.toJson(),
+                                    );
                                   });
                                 },
                                 child: LocationContainer(
@@ -832,39 +892,52 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
             horizontal: getProportionateScreenHeight(kDefaultPadding),
           ),
           decoration: BoxDecoration(
-              color: kPrimaryColor,
-              border: Border(top: BorderSide(color: kWhiteColor)),
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(kDefaultPadding),
-                  topRight: Radius.circular(kDefaultPadding))),
+            color: kPrimaryColor,
+            border: Border(top: BorderSide(color: kWhiteColor)),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(kDefaultPadding),
+              topRight: Radius.circular(kDefaultPadding),
+            ),
+          ),
           child: CustomButton(
             title: Provider.of<ZLanguage>(context, listen: false).cont,
             press: () async {
               if (selected != -2 && selectedVehicle != -1
-                  // deliveryLocation == null ||
-                  // deliveryLocation.list.length > selected
-                  ) {
+              // deliveryLocation == null ||
+              // deliveryLocation.list.length > selected
+              ) {
                 if (currSelected) {
                   destinationAddress = DestinationAddress(
-                      name: "Current location",
-                      long: Provider.of<ZMetaData>(context, listen: false)
-                          .longitude,
-                      lat: Provider.of<ZMetaData>(context, listen: false)
-                          .latitude);
+                    name: "Current location",
+                    long: Provider.of<ZMetaData>(
+                      context,
+                      listen: false,
+                    ).longitude,
+                    lat: Provider.of<ZMetaData>(
+                      context,
+                      listen: false,
+                    ).latitude,
+                  );
                 } else if (selfPickup) {
                   destinationAddress = DestinationAddress(
-                      name: "User Pickup",
-                      long: Provider.of<ZMetaData>(context, listen: false)
-                          .longitude,
-                      lat: Provider.of<ZMetaData>(context, listen: false)
-                          .latitude);
+                    name: "User Pickup",
+                    long: Provider.of<ZMetaData>(
+                      context,
+                      listen: false,
+                    ).longitude,
+                    lat: Provider.of<ZMetaData>(
+                      context,
+                      listen: false,
+                    ).latitude,
+                  );
                 }
                 if (destinationAddress != null) {
                   double storeToCustomerDistance = calculateDistance(
-                      cart!.storeLocation!.lat,
-                      cart!.storeLocation!.long,
-                      destinationAddress!.lat,
-                      destinationAddress!.long);
+                    cart!.storeLocation!.lat,
+                    cart!.storeLocation!.long,
+                    destinationAddress!.lat,
+                    destinationAddress!.long,
+                  );
 
                   if (selectedVehicle != -1 &&
                       vehicleList['vehicles'][selectedVehicle]['vehicle_name']
@@ -875,8 +948,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       !selfPickup) {
                     Service.showMessage(
                       context: context,
-                      title: Provider.of<ZLanguage>(context, listen: false)
-                          .farDeliveryLocation,
+                      title: Provider.of<ZLanguage>(
+                        context,
+                        listen: false,
+                      ).farDeliveryLocation,
                       error: true,
                       duration: 5,
                     );
@@ -887,15 +962,18 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       _loading = true;
                     });
                     var categoriesResponse = await CoreServices.getCategoryList(
-                        longitude: destinationAddress!.long!,
-                        latitude: destinationAddress!.lat!,
-                        countryCode:
-                            Provider.of<ZMetaData>(context, listen: false)
-                                .countryId!,
-                        countryName:
-                            Provider.of<ZMetaData>(context, listen: false)
-                                .country,
-                        context: context);
+                      longitude: destinationAddress!.long!,
+                      latitude: destinationAddress!.lat!,
+                      countryCode: Provider.of<ZMetaData>(
+                        context,
+                        listen: false,
+                      ).countryId!,
+                      countryName: Provider.of<ZMetaData>(
+                        context,
+                        listen: false,
+                      ).country,
+                      context: context,
+                    );
 
                     if (categoriesResponse != null &&
                         categoriesResponse['success']) {
@@ -906,28 +984,33 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         await Service.remove('user');
 
                         Service.showMessage(
-                            context: context,
-                            title:
-                                "${errorCodes['${categoriesResponse['error_code']}']}",
-                            error: true);
+                          context: context,
+                          title:
+                              "${errorCodes['${categoriesResponse['error_code']}']}",
+                          error: true,
+                        );
                         Navigator.pushReplacementNamed(
-                            context, LoginScreen.routeName);
+                          context,
+                          LoginScreen.routeName,
+                        );
                       } else if (categoriesResponse['error_code'] == 813) {
                         Service.showMessage(
-                            context: context,
-                            title:
-                                "Destination address cannot be outside of Addis Ababa",
-                            error: true,
-                            duration: 4);
+                          context: context,
+                          title:
+                              "Destination address cannot be outside of Addis Ababa",
+                          error: true,
+                          duration: 4,
+                        );
                         setState(() {
                           _loading = false;
                         });
                       } else {
                         Service.showMessage(
-                            context: context,
-                            title:
-                                "${errorCodes['${categoriesResponse['error_code']}']}",
-                            error: true);
+                          context: context,
+                          title:
+                              "${errorCodes['${categoriesResponse['error_code']}']}",
+                          error: true,
+                        );
                       }
                       setState(() {
                         _loading = false;
@@ -971,27 +1054,29 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
 
   void _showDeliverToBottomSheet() {
     showModalBottomSheet<void>(
-        isScrollControlled: true,
-        context: context,
-        backgroundColor: kPrimaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(kDefaultPadding),
-              topRight: Radius.circular(kDefaultPadding)),
+      isScrollControlled: true,
+      context: context,
+      backgroundColor: kPrimaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(kDefaultPadding),
+          topRight: Radius.circular(kDefaultPadding),
         ),
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext sheetContext, StateSetter setState) {
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext sheetContext, StateSetter setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(sheetContext)
-                    .viewInsets
-                    .bottom, // Adjust for keyboard
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
               ),
               child: SafeArea(
                 minimum: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding),
-                    vertical: getProportionateScreenHeight(kDefaultPadding)),
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -1001,28 +1086,29 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          Provider.of<ZLanguage>(context, listen: false)
-                              .orderForOthers,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          Provider.of<ZLanguage>(
+                            context,
+                            listen: false,
+                          ).orderForOthers,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         IconButton(
                           onPressed: () => Navigator.of(context).pop(),
                           icon: Icon(HeroiconsOutline.xCircle),
                           color: kSecondaryColor,
-                        )
+                        ),
                       ],
                     ),
                     CustomTextField(
-                        style: TextStyle(color: kBlackColor),
-                        keyboardType: TextInputType.text,
-                        onChanged: (val) {
-                          receiverName = val;
-                        },
-                        labelText: Provider.of<ZLanguage>(context).name,
-                        hintText: "Reciver name"),
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.text,
+                      onChanged: (val) {
+                        receiverName = val;
+                      },
+                      labelText: Provider.of<ZLanguage>(context).name,
+                      hintText: "Reciver name",
+                    ),
                     CustomTextField(
                       style: TextStyle(color: kBlackColor),
                       keyboardType: TextInputType.number,
@@ -1030,18 +1116,26 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                       onChanged: (val) {
                         receiverPhone = val;
                       },
-                      labelText: Provider.of<ZLanguage>(context, listen: false)
-                          .receiverPhone,
-                      hintText: Provider.of<ZLanguage>(context, listen: false)
-                          .startPhone,
+                      labelText: Provider.of<ZLanguage>(
+                        context,
+                        listen: false,
+                      ).receiverPhone,
+                      hintText: Provider.of<ZLanguage>(
+                        context,
+                        listen: false,
+                      ).startPhone,
                       prefix: Text(
-                          "${Provider.of<ZMetaData>(context, listen: false).areaCode} "),
+                        "${Provider.of<ZMetaData>(context, listen: false).areaCode} ",
+                      ),
                     ),
                     SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding)),
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
                     CustomButton(
-                      title:
-                          Provider.of<ZLanguage>(context, listen: false).submit,
+                      title: Provider.of<ZLanguage>(
+                        context,
+                        listen: false,
+                      ).submit,
                       color: kSecondaryColor,
                       press: () async {
                         if (receiverPhone.isNotEmpty &&
@@ -1063,8 +1157,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                 ),
               ),
             );
-          });
-        }).whenComplete(() {
+          },
+        );
+      },
+    ).whenComplete(() {
       setState(() {});
     });
   }
@@ -1072,7 +1168,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
-    var a = 0.5 -
+    var a =
+        0.5 -
         c((lat2 - lat1) * p) / 2 +
         c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
@@ -1090,22 +1187,22 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -1148,22 +1245,22 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -1212,22 +1309,22 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this._loading = false;
       });
@@ -1240,7 +1337,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );

@@ -60,18 +60,13 @@ class _SavedAccountsBottomSheetState extends State<SavedAccountsBottomSheet> {
       builder: (context) => AlertDialog(
         backgroundColor: kPrimaryColor,
         title: Text('Remove Account?'),
-        content: Text(
-          'Remove ${account.displayName} from saved accounts?',
-        ),
+        content: Text('Remove ${account.displayName} from saved accounts?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Cancel',
-              style: TextStyle(
-                color: kBlackColor,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: kBlackColor, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
@@ -107,154 +102,162 @@ class _SavedAccountsBottomSheetState extends State<SavedAccountsBottomSheet> {
           top: Radius.circular(kDefaultPadding),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: getProportionateScreenHeight(kDefaultPadding / 2),
-        children: [
-          // Title
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(HeroiconsOutline.userCircle),
-              SizedBox(width: kDefaultPadding),
-              Text(
-                'Saved Accounts',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+          children: [
+            // Title
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(HeroiconsOutline.userCircle),
+                SizedBox(width: kDefaultPadding),
+                Text(
+                  'Saved Accounts',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
-              Spacer(),
-              InkWell(
-                child: Icon(HeroiconsOutline.xCircle, color: kGreyColor),
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-
-          // Accounts list
-          if (_isLoading)
-            Padding(
-              padding: EdgeInsets.all(kDefaultPadding * 2),
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(kSecondaryColor),
-              ),
-            )
-          else if (_accounts.isEmpty)
-            Padding(
-              padding: EdgeInsets.all(kDefaultPadding * 2),
-              child: Column(
-                children: [
-                  Icon(
-                    HeroiconsOutline.userCircle,
-                    size: 48,
-                    color: kGreyColor,
-                  ),
-                  SizedBox(height: kDefaultPadding),
-                  Text(
-                    'No saved accounts',
-                    style: TextStyle(color: kGreyColor),
-                  ),
-                ],
-              ),
-            )
-          else
-            SafeArea(
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
-                  // vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+                Spacer(),
+                InkWell(
+                  child: Icon(HeroiconsOutline.xCircle, color: kGreyColor),
+                  onTap: () => Navigator.pop(context),
                 ),
-                itemCount: _accounts.length,
-                separatorBuilder: (context, index) => SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
-                itemBuilder: (context, index) {
-                  final account = _accounts[index];
-                  final isCurrentAccount = widget.currentUserPhone != null &&
-                      account.phone == widget.currentUserPhone;
+              ],
+            ),
 
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      border: Border.all(
-                        color: kWhiteColor,
+            // Accounts list
+            if (_isLoading)
+              Padding(
+                padding: EdgeInsets.all(kDefaultPadding * 2),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(kSecondaryColor),
+                ),
+              )
+            else if (_accounts.isEmpty)
+              Padding(
+                padding: EdgeInsets.all(kDefaultPadding * 2),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        HeroiconsOutline.userCircle,
+                        size: 48,
+                        color: kGreyColor,
                       ),
-                      borderRadius: BorderRadius.circular(kDefaultPadding / 2),
+                      SizedBox(height: kDefaultPadding),
+                      Text(
+                        'No saved accounts',
+                        style: TextStyle(color: kGreyColor),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SafeArea(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(
+                      kDefaultPadding / 2,
                     ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: kDefaultPadding,
-                        vertical: getProportionateScreenHeight(1),
+                    // vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+                  ),
+                  itemCount: _accounts.length,
+                  separatorBuilder: (context, index) => SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 2),
+                  ),
+                  itemBuilder: (context, index) {
+                    final account = _accounts[index];
+                    final isCurrentAccount =
+                        widget.currentUserPhone != null &&
+                        account.phone == widget.currentUserPhone;
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        border: Border.all(color: kWhiteColor),
+                        borderRadius: BorderRadius.circular(
+                          kDefaultPadding / 2,
+                        ),
                       ),
-                      leading: CircleAvatar(
-                        backgroundColor: kSecondaryColor.withValues(alpha: 0.1),
-                        child: Text(
-                          account.displayName[0].toUpperCase(),
-                          style: TextStyle(
-                            color: kSecondaryColor,
-                            fontWeight: FontWeight.bold,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: kDefaultPadding,
+                          vertical: getProportionateScreenHeight(1),
+                        ),
+                        leading: CircleAvatar(
+                          backgroundColor: kSecondaryColor.withValues(
+                            alpha: 0.1,
+                          ),
+                          child: Text(
+                            account.displayName[0].toUpperCase(),
+                            style: TextStyle(
+                              color: kSecondaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      title: Text(
-                        account.displayName,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: !isCurrentAccount
-                          ? null
-                          : Text(
-                              'Current',
-                              style: TextStyle(
-                                color: kSecondaryColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                      // Text(
-                      //   account.biometricEnabled
-                      //       ? '$_biometricType enabled'
-                      //       : 'No biometric',
-                      //   style: TextStyle(
-                      //     color: account.biometricEnabled
-                      //         ? kGreenColor
-                      //         : kGreyColor,
-                      //     fontSize: 12,
-                      //   ),
-                      // ),
-                      // if (account.biometricEnabled)
-                      // Icon(
-                      //   Icons.fingerprint,
-                      //   color: kSecondaryColor,
-                      //   size: 20,
-                      // ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          HeroiconsOutline.trash,
-                          color: kSecondaryColor,
-                          size: 20,
+                        title: Text(
+                          account.displayName,
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        onPressed: () => _deleteAccount(account),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (!isCurrentAccount) {
-                          widget.onAccountSelected(account);
-                        } else {
-                          Service.showMessage(
+                        subtitle: !isCurrentAccount
+                            ? null
+                            : Text(
+                                'Current',
+                                style: TextStyle(
+                                  color: kSecondaryColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                        // Text(
+                        //   account.biometricEnabled
+                        //       ? '$_biometricType enabled'
+                        //       : 'No biometric',
+                        //   style: TextStyle(
+                        //     color: account.biometricEnabled
+                        //         ? kGreenColor
+                        //         : kGreyColor,
+                        //     fontSize: 12,
+                        //   ),
+                        // ),
+                        // if (account.biometricEnabled)
+                        // Icon(
+                        //   Icons.fingerprint,
+                        //   color: kSecondaryColor,
+                        //   size: 20,
+                        // ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            HeroiconsOutline.trash,
+                            color: kSecondaryColor,
+                            size: 20,
+                          ),
+                          onPressed: () => _deleteAccount(account),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          if (!isCurrentAccount) {
+                            widget.onAccountSelected(account);
+                          } else {
+                            Service.showMessage(
                               context: context,
                               title:
-                                  "You are already logged in with this account.");
-                        }
-                      },
-                    ),
-                  );
-                },
+                                  "You are already logged in with this account.",
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

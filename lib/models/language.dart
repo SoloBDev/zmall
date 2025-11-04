@@ -152,6 +152,9 @@ class ZLanguage extends ChangeNotifier {
   String totalPromo = "Total Promo";
   String quantity = "Quantity";
 
+  //
+  String chatbot = "Chatbot";
+
   void changeLanguage(String newString) {
     // debugPrint("Setting language to $newString");
     if (newString == "en_US") {

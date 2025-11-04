@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/map_view/map_view.dart';
@@ -36,18 +37,21 @@ class _StoreScreenState extends State<StoreScreen> {
   mapViewSelected(BuildContext context) {
     var items = controller.getStores();
     if (items != null) {
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).push(
+        MaterialPageRoute(
           builder: (context) => StoreMapView(
-                isOpen: items['isOpen'],
-                categoryTitle: widget.category,
-                stores: items['stores'],
-                cityId: widget.cityId,
-                storeDeliveryId: widget.storeDeliveryId,
-              )));
+            isOpen: items['isOpen'],
+            categoryTitle: widget.category,
+            stores: items['stores'],
+            cityId: widget.cityId,
+            storeDeliveryId: widget.storeDeliveryId,
+          ),
+        ),
+      );
     }
   }
 
-// Callback to receive allClosed status from Body
+  // Callback to receive allClosed status from Body
   void _onAllClosedChanged(bool value) {
     setState(() {
       allClosed = value;
@@ -67,8 +71,9 @@ class _StoreScreenState extends State<StoreScreen> {
       backgroundColor: kPrimaryColor,
       appBar: AppBar(
         title: Text(
-            Service.capitalizeFirstLetters(widget.category['delivery_name']),
-            style: TextStyle(color: kBlackColor)),
+          Service.capitalizeFirstLetters(widget.category['delivery_name']),
+          style: TextStyle(color: kBlackColor),
+        ),
         elevation: 1.0,
         actions: [
           if (!isSearching)
@@ -80,11 +85,13 @@ class _StoreScreenState extends State<StoreScreen> {
               },
               child: OpenCloseStatusCard(
                 isOpen: !allClosed && filterOpenedStore,
-                statusText:
-                    !allClosed && filterOpenedStore ? 'Opened' : 'All stores',
+                statusText: !allClosed && filterOpenedStore
+                    ? 'Opened'
+                    : 'All stores',
                 padding: EdgeInsets.symmetric(
-                    horizontal: kDefaultPadding / 1.5,
-                    vertical: kDefaultPadding / 4),
+                  horizontal: kDefaultPadding / 1.5,
+                  vertical: kDefaultPadding / 4,
+                ),
               ),
               // Container(
               //     padding: const EdgeInsets.all(5.0),
@@ -102,14 +109,12 @@ class _StoreScreenState extends State<StoreScreen> {
               //     )),
             ),
           IconButton(
-              onPressed: () {
-                mapViewSelected(context);
-              },
-              tooltip: "Map view",
-              icon: Icon(
-                Icons.map_outlined,
-                color: kSecondaryColor,
-              ))
+            onPressed: () {
+              mapViewSelected(context);
+            },
+            tooltip: "Map view",
+            icon: Icon(HeroiconsOutline.map, color: kBlackColor),
+          ),
         ],
       ),
       body: Body(
@@ -122,7 +127,7 @@ class _StoreScreenState extends State<StoreScreen> {
         category: widget.category,
         companyId: widget.companyId,
         filterOpenedStore: filterOpenedStore,
-        //  // Pass callback to Body
+        // Pass callback to Body
         onAllClosedChanged: _onAllClosedChanged,
         onSearching: _onSearching,
       ),

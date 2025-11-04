@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -114,9 +115,13 @@ class _NotificationStoreState extends State<NotificationStore> {
         Service.save("closed_message", data['message']);
         Service.save("ios_app_version", data['ios_user_app_version_code']);
         Service.saveBool(
-            "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+          "ios_update_dialog",
+          data['is_ios_user_app_open_update_dialog'],
+        );
         Service.saveBool(
-            "ios_force_update", data['is_ios_user_app_force_update']);
+          "ios_force_update",
+          data['is_ios_user_app_force_update'],
+        );
         Service.save('app_close', data['app_close']);
         Service.save('app_open', data['app_open']);
       });
@@ -149,28 +154,57 @@ class _NotificationStoreState extends State<NotificationStore> {
         if (store['store_time'][i]['day'] == weekday) {
           if (store['store_time'][i]['day_time'].length != 0 &&
               store['store_time'][i]['is_store_open']) {
-            for (var j = 0;
-                j < store['store_time'][i]['day_time'].length;
-                j++) {
+            for (
+              var j = 0;
+              j < store['store_time'][i]['day_time'].length;
+              j++
+            ) {
               DateTime open = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_open_time']);
+                store['store_time'][i]['day_time'][j]['store_open_time'],
+              );
               open = new DateTime(
-                  now.year, now.month, now.day, open.hour, open.minute);
+                now.year,
+                now.month,
+                now.day,
+                open.hour,
+                open.minute,
+              );
               DateTime close = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_close_time']);
+                store['store_time'][i]['day_time'][j]['store_close_time'],
+              );
 
               DateTime zmallClose = dateFormat.parse(appClose);
               DateTime zmallOpen = dateFormat.parse(appOpen);
 
               close = new DateTime(
-                  now.year, now.month, now.day, close.hour, close.minute);
-              now =
-                  DateTime(now.year, now.month, now.day, now.hour, now.minute);
+                now.year,
+                now.month,
+                now.day,
+                close.hour,
+                close.minute,
+              );
+              now = DateTime(
+                now.year,
+                now.month,
+                now.day,
+                now.hour,
+                now.minute,
+              );
 
-              zmallOpen = new DateTime(now.year, now.month, now.day,
-                  zmallOpen.hour, zmallOpen.minute);
-              zmallClose = new DateTime(now.year, now.month, now.day,
-                  zmallClose.hour, zmallClose.minute);
+              zmallOpen = new DateTime(
+                now.year,
+                now.month,
+                now.day,
+                zmallOpen.hour,
+                zmallOpen.minute,
+              );
+              zmallClose = new DateTime(
+                now.year,
+                now.month,
+                now.day,
+                zmallClose.hour,
+                zmallClose.minute,
+              );
 
               if (now.isAfter(open) &&
                   now.isAfter(zmallOpen) &&
@@ -196,9 +230,19 @@ class _NotificationStoreState extends State<NotificationStore> {
       DateTime zmallClose = dateFormat.parse(appClose);
       DateTime zmallOpen = dateFormat.parse(appOpen);
       zmallClose = DateTime(
-          now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+        now.year,
+        now.month,
+        now.day,
+        zmallClose.hour,
+        zmallClose.minute,
+      );
       zmallOpen = DateTime(
-          now.year, now.month, now.day, zmallOpen.hour, zmallOpen.minute);
+        now.year,
+        now.month,
+        now.day,
+        zmallOpen.hour,
+        zmallOpen.minute,
+      );
       now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
 
       if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
@@ -253,47 +297,51 @@ class _NotificationStoreState extends State<NotificationStore> {
           ),
 
           // storeName == "" ? "Loading.." : storeName,
-          style: TextStyle(
-            color: kBlackColor,
-          ),
+          style: TextStyle(color: kBlackColor),
         ),
         leading: BackButton(
           onPressed: () {
             Navigator.pushNamedAndRemoveUntil(
-                context, "/start", (Route<dynamic> route) => false);
+              context,
+              "/start",
+              (Route<dynamic> route) => false,
+            );
           },
           color: kBlackColor,
         ),
       ),
       bottomNavigationBar:
           !_loading && (cart != null && cart!.items!.length > 0)
-              ? SafeArea(
-                  child: Container(
-                  width: double.infinity,
-                  // height: kDefaultPadding * 4,
-                  padding: EdgeInsets.symmetric(
-                    vertical: getProportionateScreenHeight(kDefaultPadding),
-                    horizontal: getProportionateScreenHeight(kDefaultPadding),
+          ? SafeArea(
+              child: Container(
+                width: double.infinity,
+                // height: kDefaultPadding * 4,
+                padding: EdgeInsets.symmetric(
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                  horizontal: getProportionateScreenHeight(kDefaultPadding),
+                ),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  border: Border(top: BorderSide(color: kWhiteColor)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(kDefaultPadding),
+                    topRight: Radius.circular(kDefaultPadding),
                   ),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    border: Border(top: BorderSide(color: kWhiteColor)),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(kDefaultPadding),
-                      topRight: Radius.circular(kDefaultPadding),
-                    ),
-                  ),
+                ),
 
-                  child: CustomButton(
-                    title: "Go to Cart",
-                    press: () {
-                      Navigator.pushNamed(context, '/cart')
-                          .then((value) => getCart());
-                    },
-                    color: kSecondaryColor,
-                  ),
-                ))
-              : SizedBox.shrink(),
+                child: CustomButton(
+                  title: "Go to Cart",
+                  press: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/cart',
+                    ).then((value) => getCart());
+                  },
+                  color: kSecondaryColor,
+                ),
+              ),
+            )
+          : SizedBox.shrink(),
       body: SafeArea(
         child: ModalProgressHUD(
           inAsyncCall: _loading,
@@ -319,7 +367,8 @@ class _NotificationStoreState extends State<NotificationStore> {
                           separatorBuilder: (BuildContext context, int index) {
                             return SizedBox(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                             );
                           },
                           itemBuilder: (BuildContext context, int index) {
@@ -330,12 +379,14 @@ class _NotificationStoreState extends State<NotificationStore> {
                               shape: RoundedRectangleBorder(
                                 side: BorderSide(color: kWhiteColor),
                                 borderRadius: BorderRadiusGeometry.circular(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                               collapsedShape: RoundedRectangleBorder(
                                 side: BorderSide(color: kWhiteColor),
                                 borderRadius: BorderRadiusGeometry.circular(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                               leading: const Icon(
                                 Icons.dining,
@@ -344,20 +395,19 @@ class _NotificationStoreState extends State<NotificationStore> {
                               ),
                               childrenPadding: EdgeInsets.only(
                                 left: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                                 right: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                                 bottom: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                               ),
                               title: Text(
                                 "${Service.capitalizeFirstLetters(products[index]["_id"]["name"])}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
                               ),
                               children: [
                                 ListView.separated(
@@ -367,9 +417,11 @@ class _NotificationStoreState extends State<NotificationStore> {
                                   separatorBuilder:
                                       (BuildContext context, int index) =>
                                           SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 2),
-                                  ),
+                                            height:
+                                                getProportionateScreenHeight(
+                                                  kDefaultPadding / 2,
+                                                ),
+                                          ),
                                   itemBuilder: (BuildContext context, int idx) {
                                     return GestureDetector(
                                       onTap: () async {
@@ -384,8 +436,8 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                 MaterialPageRoute(
                                                   builder: (context) {
                                                     return ItemScreen(
-                                                      item: products[index]
-                                                          ['items'][idx],
+                                                      item:
+                                                          products[index]['items'][idx],
                                                       location:
                                                           store['location'],
                                                     );
@@ -405,29 +457,33 @@ class _NotificationStoreState extends State<NotificationStore> {
                                             padding: EdgeInsets.symmetric(
                                               horizontal:
                                                   getProportionateScreenWidth(
-                                                      kDefaultPadding / 2),
+                                                    kDefaultPadding / 2,
+                                                  ),
                                               vertical:
                                                   getProportionateScreenHeight(
-                                                      kDefaultPadding / 2),
+                                                    kDefaultPadding / 2,
+                                                  ),
                                             ),
                                             decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: kWhiteColor),
+                                              // border: Border.all(
+                                              //   color: kWhiteColor,
+                                              // ),
                                               borderRadius:
                                                   BorderRadius.circular(
-                                                      kDefaultPadding),
+                                                    kDefaultPadding,
+                                                  ),
                                             ),
                                             child: Row(
                                               spacing: kDefaultPadding,
                                               children: [
                                                 /////////item image section//////////
-                                                products[index]['items'][idx]
-                                                                ['image_url']
+                                                products[index]['items'][idx]['image_url']
                                                             .length >
                                                         0
                                                     ? ImageContainer(
                                                         url:
-                                                            "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}")
+                                                            "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}",
+                                                      )
                                                     : ImageContainer(
                                                         url:
                                                             "https://ibb.co/vkhzjd6",
@@ -442,14 +498,14 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                     children: [
                                                       Text(
                                                         Service.capitalizeFirstLetters(
-                                                            products[index]
-                                                                    ['items']
-                                                                [idx]['name']),
+                                                          products[index]['items'][idx]['name'],
+                                                        ),
                                                         style: TextStyle(
                                                           fontSize:
                                                               getProportionateScreenWidth(
-                                                                  kDefaultPadding *
-                                                                      .9),
+                                                                kDefaultPadding *
+                                                                    .9,
+                                                              ),
                                                           color: kBlackColor,
                                                           fontWeight:
                                                               FontWeight.w600,
@@ -457,36 +513,33 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                         softWrap: true,
                                                       ),
                                                       SizedBox(
-                                                          height:
-                                                              getProportionateScreenHeight(
-                                                                  kDefaultPadding /
-                                                                      5)),
-                                                      products[index]['items']
-                                                                          [idx][
-                                                                      'details'] !=
+                                                        height:
+                                                            getProportionateScreenHeight(
+                                                              kDefaultPadding /
+                                                                  5,
+                                                            ),
+                                                      ),
+                                                      products[index]['items'][idx]['details'] !=
                                                                   null &&
-                                                              products[index]['items']
-                                                                              [
-                                                                              idx]
-                                                                          [
-                                                                          'details']
+                                                              products[index]['items'][idx]['details']
                                                                       .length >
                                                                   0
                                                           ? Text(
-                                                              products[index]
-                                                                      ['items'][
-                                                                  idx]['details'],
-                                                              style: Theme.of(
-                                                                      context)
-                                                                  .textTheme
-                                                                  .bodySmall
-                                                                  ?.copyWith(
-                                                                    color:
-                                                                        kGreyColor,
-                                                                  ),
+                                                              products[index]['items'][idx]['details'],
+                                                              style:
+                                                                  Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .textTheme
+                                                                      .bodySmall
+                                                                      ?.copyWith(
+                                                                        color:
+                                                                            kGreyColor,
+                                                                      ),
                                                             )
                                                           : SizedBox(
-                                                              height: 0.5),
+                                                              height: 0.5,
+                                                            ),
 
                                                       ////price and button section//
                                                       Row(
@@ -496,25 +549,21 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                         children: [
                                                           Text(
                                                             "${_getPrice(products[index]['items'][idx]).isNotEmpty ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                                            style: Theme.of(
-                                                                    context)
+                                                            style: Theme.of(context)
                                                                 .textTheme
                                                                 .labelLarge
                                                                 ?.copyWith(
-                                                                    color:
-                                                                        kBlackColor,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
+                                                                  color:
+                                                                      kBlackColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
                                                           ),
                                                           //// button section//
                                                           GestureDetector(
                                                             onTap: () async {
-                                                              if (products[index]['items']
-                                                                              [
-                                                                              idx]
-                                                                          [
-                                                                          'specifications']
+                                                              if (products[index]['items'][idx]['specifications']
                                                                       .length >
                                                                   0) {
                                                                 // if (isLoggedIn) {
@@ -525,23 +574,26 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                 // }
 
                                                                 isOpen
-                                                                    ? Navigator
-                                                                        .push(
+                                                                    ? Navigator.push(
                                                                         context,
                                                                         MaterialPageRoute(
                                                                           builder:
-                                                                              (context) {
-                                                                            return ItemScreen(
-                                                                              item: products[index]['items'][idx],
-                                                                              location: store['location'],
-                                                                            );
-                                                                          },
+                                                                              (
+                                                                                context,
+                                                                              ) {
+                                                                                return ItemScreen(
+                                                                                  item: products[index]['items'][idx],
+                                                                                  location: store['location'],
+                                                                                );
+                                                                              },
                                                                         ),
                                                                       ).then(
-                                                                        (value) =>
-                                                                            getCart())
-                                                                    : Service
-                                                                        .showMessage(
+                                                                        (
+                                                                          value,
+                                                                        ) =>
+                                                                            getCart(),
+                                                                      )
+                                                                    : Service.showMessage(
                                                                         context:
                                                                             context,
                                                                         title:
@@ -552,56 +604,47 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                               } else {
                                                                 //TD: Add to cart.....
 
-                                                                Item item =
-                                                                    Item(
-                                                                  id: products[
-                                                                              index]
-                                                                          [
-                                                                          'items']
-                                                                      [
-                                                                      idx]['_id'],
+                                                                Item
+                                                                item = Item(
+                                                                  id: products[index]['items'][idx]['_id'],
                                                                   quantity: 1,
-                                                                  specification: [],
+                                                                  specification:
+                                                                      [],
                                                                   noteForItem:
                                                                       "",
-                                                                  price: _getPrice(products[index]['items']
-                                                                              [
-                                                                              idx])
-                                                                          .isNotEmpty
-                                                                      ? double
-                                                                          .parse(
-                                                                          _getPrice(products[index]['items']
-                                                                              [
-                                                                              idx]),
+                                                                  price:
+                                                                      _getPrice(
+                                                                        products[index]['items'][idx],
+                                                                      ).isNotEmpty
+                                                                      ? double.parse(
+                                                                          _getPrice(
+                                                                            products[index]['items'][idx],
+                                                                          ),
                                                                         )
                                                                       : 0,
-                                                                  itemName: products[
-                                                                              index]
-                                                                          [
-                                                                          'items']
-                                                                      [
-                                                                      idx]['name'],
-                                                                  imageURL: products[index]['items'][idx]['image_url']
+                                                                  itemName:
+                                                                      products[index]['items'][idx]['name'],
+                                                                  imageURL:
+                                                                      products[index]['items'][idx]['image_url']
                                                                               .length >
                                                                           0
                                                                       ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${products[index]['items'][idx]['image_url'][0]}"
                                                                       : "https://ibb.co/vkhzjd6",
                                                                 );
                                                                 StoreLocation
-                                                                    storeLocation =
+                                                                storeLocation =
                                                                     StoreLocation(
-                                                                        long: store['location']
-                                                                            [1],
-                                                                        lat: store['location']
-                                                                            [
-                                                                            0]);
+                                                                      long:
+                                                                          store['location'][1],
+                                                                      lat:
+                                                                          store['location'][0],
+                                                                    );
                                                                 DestinationAddress
-                                                                    destination =
-                                                                    DestinationAddress(
-                                                                  long: store[
-                                                                      'location'][1],
-                                                                  lat: store[
-                                                                      'location'][0],
+                                                                destination = DestinationAddress(
+                                                                  long:
+                                                                      store['location'][1],
+                                                                  lat:
+                                                                      store['location'][0],
                                                                   name:
                                                                       "Current Location",
                                                                   note:
@@ -614,17 +657,17 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                       null) {
                                                                     if (cart!
                                                                             .storeId ==
-                                                                        products[index]['items'][idx]
-                                                                            [
-                                                                            'store_id']) {
-                                                                      setState(
-                                                                          () {
+                                                                        products[index]['items'][idx]['store_id']) {
+                                                                      setState(() {
                                                                         cart!
                                                                             .items!
-                                                                            .add(item);
+                                                                            .add(
+                                                                              item,
+                                                                            );
                                                                         Service.save(
-                                                                            'cart',
-                                                                            cart);
+                                                                          'cart',
+                                                                          cart,
+                                                                        );
 
                                                                         // Service
                                                                         //     .showMessage(
@@ -641,17 +684,15 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                       });
                                                                     } else {
                                                                       _showDialog(
-                                                                          item,
-                                                                          destination,
-                                                                          storeLocation,
-                                                                          products[index]['items'][idx]
-                                                                              [
-                                                                              'store_id']);
+                                                                        item,
+                                                                        destination,
+                                                                        storeLocation,
+                                                                        products[index]['items'][idx]['store_id'],
+                                                                      );
                                                                     }
                                                                   } else {
                                                                     // debugPrint( "User not logged in...");
-                                                                    Service
-                                                                        .showMessage(
+                                                                    Service.showMessage(
                                                                       context:
                                                                           context,
                                                                       title:
@@ -659,39 +700,38 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                       error:
                                                                           true,
                                                                     );
-                                                                    Navigator
-                                                                        .push(
+                                                                    Navigator.push(
                                                                       context,
                                                                       MaterialPageRoute(
                                                                         builder:
-                                                                            (context) =>
-                                                                                LoginScreen(
-                                                                          firstRoute:
-                                                                              false,
-                                                                        ),
+                                                                            (
+                                                                              context,
+                                                                            ) => LoginScreen(
+                                                                              firstRoute: false,
+                                                                            ),
                                                                       ),
-                                                                    ).then((value) =>
-                                                                        getUser());
+                                                                    ).then(
+                                                                      (value) =>
+                                                                          getUser(),
+                                                                    );
                                                                   }
                                                                 } else {
                                                                   if (userData !=
                                                                       null) {
                                                                     // debugPrint(  "Empty cart! Adding new item.");
                                                                     addToCart(
-                                                                        item,
-                                                                        destination,
-                                                                        storeLocation,
-                                                                        products[index]['items'][idx]
-                                                                            [
-                                                                            'store_id']);
+                                                                      item,
+                                                                      destination,
+                                                                      storeLocation,
+                                                                      products[index]['items'][idx]['store_id'],
+                                                                    );
                                                                     getCart();
                                                                     // Navigator.of(
                                                                     //         context)
                                                                     //     .pop();
                                                                   } else {
                                                                     // debugPrint( "User not logged in...");
-                                                                    Service
-                                                                        .showMessage(
+                                                                    Service.showMessage(
                                                                       context:
                                                                           context,
                                                                       title:
@@ -699,67 +739,67 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                       error:
                                                                           true,
                                                                     );
-                                                                    Navigator
-                                                                        .push(
+                                                                    Navigator.push(
                                                                       context,
                                                                       MaterialPageRoute(
                                                                         builder:
-                                                                            (context) =>
-                                                                                LoginScreen(
-                                                                          firstRoute:
-                                                                              false,
-                                                                        ),
+                                                                            (
+                                                                              context,
+                                                                            ) => LoginScreen(
+                                                                              firstRoute: false,
+                                                                            ),
                                                                       ),
-                                                                    ).then((value) =>
-                                                                        getUser());
+                                                                    ).then(
+                                                                      (value) =>
+                                                                          getUser(),
+                                                                    );
                                                                   }
                                                                 }
                                                               }
                                                             },
                                                             child: Container(
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                      horizontal:
-                                                                          kDefaultPadding /
-                                                                              2,
-                                                                      vertical:
-                                                                          kDefaultPadding /
-                                                                              3),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: kSecondaryColor
-                                                                    .withValues(
-                                                                        alpha:
-                                                                            0.1),
-                                                                border:
-                                                                    Border.all(
-                                                                  color: kSecondaryColor
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.1),
-                                                                ),
+                                                              padding: EdgeInsets.symmetric(
+                                                                horizontal:
+                                                                    kDefaultPadding /
+                                                                    2,
+                                                                vertical:
+                                                                    kDefaultPadding /
+                                                                    3,
+                                                              ),
+                                                              decoration: BoxDecoration(
+                                                                // color: kSecondaryColor
+                                                                //     .withValues(alpha: 0.1),
+                                                                // border: Border.all(
+                                                                //   color: kSecondaryColor
+                                                                //       .withValues(
+                                                                //         alpha: 0.1,
+                                                                //       ),
+                                                                // ),
                                                                 borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                  getProportionateScreenWidth(
-                                                                      kDefaultPadding /
-                                                                          2),
-                                                                ),
+                                                                    BorderRadius.circular(
+                                                                      getProportionateScreenWidth(
+                                                                        kDefaultPadding /
+                                                                            2,
+                                                                      ),
+                                                                    ),
                                                               ),
                                                               child: Row(
+                                                                spacing:
+                                                                    getProportionateScreenWidth(
+                                                                      kDefaultPadding /
+                                                                          4,
+                                                                    ),
                                                                 children: [
                                                                   Icon(
-                                                                    size: 18,
-                                                                    Icons
-                                                                        .add_shopping_cart_outlined,
+                                                                    size: 14,
+                                                                    HeroiconsOutline
+                                                                        .plus,
                                                                     color:
                                                                         kSecondaryColor,
                                                                   ),
                                                                   Text(
                                                                     "Add",
-                                                                    // "${Provider.of<ZLanguage>(context).addToCart} >>",
-                                                                    style:
-                                                                        TextStyle(
+                                                                    style: TextStyle(
                                                                       fontSize:
                                                                           14,
                                                                       color:
@@ -782,34 +822,36 @@ class _NotificationStoreState extends State<NotificationStore> {
                                       ),
                                     );
                                   },
-                                )
+                                ),
                               ],
                             );
                           },
                         ),
                       )
                     : !_loading
-                        ? Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding * 4),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding * 4),
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding * 4,
+                          ),
+                          vertical: getProportionateScreenHeight(
+                            kDefaultPadding * 4,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            CustomButton(
+                              title: "Retry",
+                              press: () {
+                                _getStoreProductList();
+                              },
+                              color: kSecondaryColor,
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                CustomButton(
-                                  title: "Retry",
-                                  press: () {
-                                    _getStoreProductList();
-                                  },
-                                  color: kSecondaryColor,
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(),
+                          ],
+                        ),
+                      )
+                    : Container(),
                 // !_loading && (cart != null && cart!.items!.length > 0)
                 //     ? Padding(
                 //         padding: EdgeInsets.only(
@@ -838,36 +880,34 @@ class _NotificationStoreState extends State<NotificationStore> {
   Future<dynamic> getStoreProductList() async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_list";
-    Map data = {
-      "store_id": widget.storeId,
-    };
+    Map data = {"store_id": widget.storeId};
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          Service.showMessage(
-            context: context,
-            title: "Something went wrong!",
-            error: true,
-            duration: 3,
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              Service.showMessage(
+                context: context,
+                title: "Something went wrong!",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -888,50 +928,52 @@ class _NotificationStoreState extends State<NotificationStore> {
 
   void _showDialog(item, destination, storeLocation, storeId) {
     showDialog(
-        context: context,
-        builder: (BuildContext alertContext) {
-          return AlertDialog(
-            backgroundColor: kPrimaryColor,
-            title: Text("Warning"),
-            content: Text(
-                "Item(s) from a different store found in cart! Would you like to clear your cart?"),
-            actions: [
-              TextButton(
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    color: kBlackColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+      context: context,
+      builder: (BuildContext alertContext) {
+        return AlertDialog(
+          backgroundColor: kPrimaryColor,
+          title: Text("Warning"),
+          content: Text(
+            "Item(s) from a different store found in cart! Would you like to clear your cart?",
+          ),
+          actions: [
+            TextButton(
+              child: Text(
+                "Cancel",
+                style: TextStyle(
+                  color: kBlackColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  Navigator.of(alertContext).pop();
-                },
               ),
-              TextButton(
-                child: Text(
-                  "Clear",
-                  style: TextStyle(
-                    color: kSecondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+              onPressed: () {
+                Navigator.of(alertContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                "Clear",
+                style: TextStyle(
+                  color: kSecondaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  setState(() {
-                    cart!.toJson();
-                    Service.remove('cart');
-                    Service.remove('aliexpressCart');
-                    cart = Cart();
-                    addToCart(item, destination, storeLocation, storeId);
-                  });
+              ),
+              onPressed: () {
+                setState(() {
+                  cart!.toJson();
+                  Service.remove('cart');
+                  Service.remove('aliexpressCart');
+                  cart = Cart();
+                  addToCart(item, destination, storeLocation, storeId);
+                });
 
-                  Navigator.of(alertContext).pop();
-                  // Future.delayed(Duration(seconds: 2));
-                  // Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
+                Navigator.of(alertContext).pop();
+                // Future.delayed(Duration(seconds: 2));
+                // Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -42,9 +42,9 @@ class _GlobalHomeState extends State<GlobalHome> {
         currentIndex: _selectedIndex,
         selectedItemColor: kSecondaryColor,
         unselectedItemColor: kGreyColor,
-        selectedLabelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: kSecondaryColor,
-            ),
+        selectedLabelStyle: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: kSecondaryColor),
         unselectedLabelStyle: Theme.of(context).textTheme.bodySmall,
         onTap: _onItemTapped,
         items: [

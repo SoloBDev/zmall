@@ -40,7 +40,8 @@ class _EditProfileState extends State<EditProfile> {
   final imagePicker = ImagePicker();
   Future getImage() async {
     final image = await imagePicker.pickImage(
-        source: ImageSource.gallery); // change getImage to pickImage
+      source: ImageSource.gallery,
+    ); // change getImage to pickImage
     setState(() {
       imageList.clear();
       _image = File(image!.path);
@@ -66,18 +67,22 @@ class _EditProfileState extends State<EditProfile> {
       backgroundColor: kPrimaryColor,
       bottomNavigationBar: enabled
           ? Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: getProportionateScreenWidth(kDefaultPadding * 2),
-              ).copyWith(
-                bottom: getProportionateScreenWidth(kDefaultPadding / 2),
-              ),
+              padding:
+                  EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(
+                      kDefaultPadding * 2,
+                    ),
+                  ).copyWith(
+                    bottom: getProportionateScreenWidth(kDefaultPadding / 2),
+                  ),
               child: SafeArea(
                 child: CustomButton(
-                    title: 'Update',
-                    // icon: HeroiconsOutline.arrowPath,
-                    press: () {
-                      _showPasswordBottomSheet();
-                    }),
+                  title: 'Update',
+                  // icon: HeroiconsOutline.arrowPath,
+                  press: () {
+                    _showPasswordBottomSheet();
+                  },
+                ),
               ),
             )
           : SizedBox.shrink(),
@@ -90,7 +95,8 @@ class _EditProfileState extends State<EditProfile> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(
-              getProportionateScreenWidth(kDefaultPadding * 1.5)),
+            getProportionateScreenWidth(kDefaultPadding * 1.5),
+          ),
           child: Column(
             children: [
               Stack(
@@ -119,19 +125,33 @@ class _EditProfileState extends State<EditProfile> {
                         : null,
                   ),
                   if (enabled)
-                    GestureDetector(
-                      onTap: getImage,
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: kSecondaryColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 20,
-                          color: Colors.white,
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: kGreyColor.withValues(alpha: 0.2),
+                        // kSecondaryColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kPrimaryColor, width: 2),
+                      ),
+                      child: GestureDetector(
+                        onTap: getImage,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsetsGeometry.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: kPrimaryColor,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.camera_alt,
+                              size: 22,
+                              color: kPrimaryColor,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -139,26 +159,25 @@ class _EditProfileState extends State<EditProfile> {
               ),
               SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
               _customActionButton(
-                  title: enabled ? "Cancle" : "Edit",
-                  padding: kDefaultPadding / 2,
-                  textColor: kGreyColor,
-                  backgroundColor: kWhiteColor,
-                  icon: enabled
-                      ? HeroiconsOutline.xCircle
-                      : HeroiconsOutline.pencilSquare,
-                  width: MediaQuery.sizeOf(context).width * 0.23,
-                  onTap: () {
-                    setState(() {
-                      enabled = !enabled;
-                    });
-                  }),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(
-                icon: HeroiconsOutline.user,
-                title: "First Name",
+                title: enabled ? "Cancle" : "Edit",
+                padding: kDefaultPadding / 2,
+                textColor: kGreyColor,
+                backgroundColor: kWhiteColor,
+                icon: enabled
+                    ? HeroiconsOutline.xCircle
+                    : HeroiconsOutline.pencilSquare,
+                width: MediaQuery.sizeOf(context).width * 0.23,
+                onTap: () {
+                  setState(() {
+                    enabled = !enabled;
+                  });
+                },
               ),
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+              _buildLable(icon: HeroiconsOutline.user, title: "First Name"),
               SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
               CustomTextField(
                 enabled: enabled,
                 initialValue: firstName,
@@ -169,12 +188,10 @@ class _EditProfileState extends State<EditProfile> {
                 },
               ),
               SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(
-                icon: HeroiconsOutline.user,
-                title: "Last Name",
-              ),
+              _buildLable(icon: HeroiconsOutline.user, title: "Last Name"),
               SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
               CustomTextField(
                 // label: 'Last Name',
                 initialValue: lastName,
@@ -186,14 +203,12 @@ class _EditProfileState extends State<EditProfile> {
                 SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
               if (!email.toLowerCase().contains("telebirr") &&
                   !email.toLowerCase().contains("dashen"))
-                _buildLable(
-                  icon: HeroiconsOutline.envelope,
-                  title: "Email",
-                ),
+                _buildLable(icon: HeroiconsOutline.envelope, title: "Email"),
               if (!email.toLowerCase().contains("telebirr") &&
                   !email.toLowerCase().contains("dashen"))
                 SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
               if (!email.toLowerCase().contains("telebirr") &&
                   !email.toLowerCase().contains("dashen"))
                 CustomTextField(
@@ -204,12 +219,10 @@ class _EditProfileState extends State<EditProfile> {
                   keyboardType: TextInputType.emailAddress,
                 ),
               SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(
-                icon: HeroiconsOutline.mapPin,
-                title: "Address",
-              ),
+              _buildLable(icon: HeroiconsOutline.mapPin, title: "Address"),
               SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
               CustomTextField(
                 // label: 'Address',
                 initialValue: address,
@@ -217,21 +230,18 @@ class _EditProfileState extends State<EditProfile> {
                 enabled: enabled,
               ),
               SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
-              if (enabled)
-                Divider(
-                  color: kWhiteColor,
-                ),
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              if (enabled) Divider(color: kWhiteColor),
               if (enabled)
                 SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
               if (enabled)
                 ProfileListTile(
                   borderColor: kWhiteColor,
                   showTrailing: false,
-                  icon: Icon(
-                    HeroiconsOutline.lockClosed,
-                  ),
+                  icon: Icon(HeroiconsOutline.lockClosed),
                   title: 'Change Password',
                   onTap: () {
                     _showChangePasswordBottomSheet();
@@ -256,14 +266,8 @@ class _EditProfileState extends State<EditProfile> {
     return Row(
       spacing: kDefaultPadding,
       children: [
-        Icon(
-          icon,
-          size: 18,
-        ),
-        Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        Icon(icon, size: 18),
+        Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -296,11 +300,7 @@ class _EditProfileState extends State<EditProfile> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: textColor ?? kPrimaryColor,
-                size: 20,
-              ),
+              Icon(icon, color: textColor ?? kPrimaryColor, size: 20),
               const SizedBox(width: kDefaultPadding / 2),
               Text(
                 title,
@@ -324,75 +324,79 @@ class _EditProfileState extends State<EditProfile> {
       isScrollControlled: true,
       backgroundColor: kPrimaryColor,
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(kDefaultPadding)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(kDefaultPadding),
+        ),
       ),
       builder: (context) {
         return StatefulBuilder(
-            builder: (BuildContext sheetContext, StateSetter setState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
-                  kDefaultPadding, // Adjust for keyboard
-            ),
-            child: SafeArea(
-              minimum: EdgeInsets.symmetric(
+          builder: (BuildContext sheetContext, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom:
+                    MediaQuery.of(sheetContext).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.symmetric(
                   horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Security Check',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: kBlackColor,
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Security Check',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            color: kBlackColor,
+                          ),
                         ),
-                      ),
-                      InkWell(
+                        InkWell(
                           onTap: () => Navigator.of(context).pop(),
                           child: Icon(
                             HeroiconsOutline.xCircle,
                             color: kBlackColor,
-                          ))
-                    ],
-                  ),
-                  Text(
-                    "Please confirm your password to update your profile.",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: kGreyColor,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: kDefaultPadding),
-                  Text(
-                    "Password",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: kGreyColor,
+                    Text(
+                      "Please confirm your password to update your profile.",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        color: kGreyColor,
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding / 2)),
-                  CustomTextField(
-                    cursorColor: kSecondaryColor,
-                    style: TextStyle(color: kBlackColor),
-                    obscureText: !_showPassword,
-                    onChanged: (val) {
-                      setState(() {
-                        password = val;
-                      });
-                    },
-                    hintText: 'Enter your password',
-                    suffixIcon: IconButton(
+                    SizedBox(height: kDefaultPadding),
+                    Text(
+                      "Password",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        color: kGreyColor,
+                      ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    CustomTextField(
+                      cursorColor: kSecondaryColor,
+                      style: TextStyle(color: kBlackColor),
+                      obscureText: !_showPassword,
+                      onChanged: (val) {
+                        setState(() {
+                          password = val;
+                        });
+                      },
+                      hintText: 'Enter your password',
+                      suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
                             _showPassword = !_showPassword;
@@ -402,55 +406,57 @@ class _EditProfileState extends State<EditProfile> {
                           _showPassword
                               ? HeroiconsOutline.eyeSlash
                               : HeroiconsOutline.eye,
-                        )),
-                  ),
-                  SizedBox(height: kDefaultPadding * 1.5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        child: Text(
-                          'Submit',
-                          style: TextStyle(color: Colors.white),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kSecondaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                        ),
-                        onPressed: () async {
-                          if (password.isNotEmpty) {
-                            setState(() => _loading = true);
-                            Navigator.of(context).pop();
-                            var data = await updateUser();
-                            if (data != null && data['success']) {
-                              userDetails();
-                              setState(() {
-                                enabled = false;
-                                _loading = false;
-                              });
-                            }
-                          } else {
-                            Service.showMessage(
-                              context: context,
-                              title: 'Please enter your password',
-                              error: true,
-                            );
-                          }
-                        },
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    SizedBox(height: kDefaultPadding * 1.5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          child: Text(
+                            'Submit',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: kSecondaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (password.isNotEmpty) {
+                              setState(() => _loading = true);
+                              Navigator.of(context).pop();
+                              var data = await updateUser();
+                              if (data != null && data['success']) {
+                                userDetails();
+                                setState(() {
+                                  enabled = false;
+                                  _loading = false;
+                                });
+                              }
+                            } else {
+                              Service.showMessage(
+                                context: context,
+                                title: 'Please enter your password',
+                                error: true,
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
       },
     );
   }
@@ -464,24 +470,26 @@ class _EditProfileState extends State<EditProfile> {
     bool _isLoadingButton = false;
     final _formKey = GlobalKey<FormState>();
     showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: kPrimaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (context) {
-          return StatefulBuilder(
-              builder: (BuildContext sheetContext, StateSetter sheetSetState) {
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: kPrimaryColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext sheetContext, StateSetter sheetSetState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                bottom:
+                    MediaQuery.of(sheetContext).viewInsets.bottom +
                     kDefaultPadding, // Adjust for keyboard
               ),
               child: SafeArea(
                 minimum: EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(kDefaultPadding),
-                    vertical: getProportionateScreenHeight(kDefaultPadding)),
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -499,7 +507,9 @@ class _EditProfileState extends State<EditProfile> {
                               const Text(
                                 "Change Password",
                                 style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const Text(
                                 "Update your password by entering a new one.",
@@ -516,16 +526,20 @@ class _EditProfileState extends State<EditProfile> {
                       ),
 
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding * 1.5)),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 1.5,
+                        ),
+                      ),
 
                       _buildLable(
                         icon: HeroiconsOutline.lockClosed,
                         title: "Old Password",
                       ),
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
                       CustomTextField(
                         obscureText: !showOldPassword,
                         hintText: "Enter your old password",
@@ -539,27 +553,30 @@ class _EditProfileState extends State<EditProfile> {
                           return null;
                         },
                         suffixIcon: IconButton(
-                            onPressed: () {
-                              sheetSetState(() {
-                                showOldPassword = !showOldPassword;
-                              });
-                            },
-                            icon: Icon(
-                              showOldPassword
-                                  ? HeroiconsOutline.eyeSlash
-                                  : HeroiconsOutline.eye,
-                            )),
+                          onPressed: () {
+                            sheetSetState(() {
+                              showOldPassword = !showOldPassword;
+                            });
+                          },
+                          icon: Icon(
+                            showOldPassword
+                                ? HeroiconsOutline.eyeSlash
+                                : HeroiconsOutline.eye,
+                          ),
+                        ),
                       ),
                       SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding)),
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
                       _buildLable(
                         icon: HeroiconsOutline.lockClosed,
                         title: "New Password",
                       ),
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
                       CustomTextField(
                         obscureText: !showNewPassword,
                         hintText: "Enter your new password",
@@ -576,27 +593,30 @@ class _EditProfileState extends State<EditProfile> {
                           return null;
                         },
                         suffixIcon: IconButton(
-                            onPressed: () {
-                              sheetSetState(() {
-                                showNewPassword = !showNewPassword;
-                              });
-                            },
-                            icon: Icon(
-                              showNewPassword
-                                  ? HeroiconsOutline.eyeSlash
-                                  : HeroiconsOutline.eye,
-                            )),
+                          onPressed: () {
+                            sheetSetState(() {
+                              showNewPassword = !showNewPassword;
+                            });
+                          },
+                          icon: Icon(
+                            showNewPassword
+                                ? HeroiconsOutline.eyeSlash
+                                : HeroiconsOutline.eye,
+                          ),
+                        ),
                       ),
                       SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding)),
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
                       _buildLable(
                         icon: HeroiconsOutline.lockClosed,
                         title: "Confirm Password",
                       ),
                       SizedBox(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
                       CustomTextField(
                         hintText: "Confirm your new password",
                         onChanged: (val) {
@@ -604,16 +624,11 @@ class _EditProfileState extends State<EditProfile> {
                             confirmPassword = val;
                           });
                         },
-                        suffixIcon: newPassword.isNotEmpty &&
+                        suffixIcon:
+                            newPassword.isNotEmpty &&
                                 newPassword == confirmPassword
-                            ? Icon(
-                                Icons.check,
-                                color: Colors.green,
-                              )
-                            : Icon(
-                                Icons.close,
-                                color: kWhiteColor,
-                              ),
+                            ? Icon(Icons.check, color: Colors.green)
+                            : Icon(Icons.close, color: kWhiteColor),
                         validator: (value) {
                           if (value!.isEmpty) {
                             return kPassNullError;
@@ -626,8 +641,8 @@ class _EditProfileState extends State<EditProfile> {
                         },
                       ),
                       SizedBox(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding)),
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
 
                       ///
                       CustomButton(
@@ -652,18 +667,21 @@ class _EditProfileState extends State<EditProfile> {
                             }
                           }
                         },
-                        color: newPassword.isNotEmpty &&
+                        color:
+                            newPassword.isNotEmpty &&
                                 newPassword == confirmPassword
                             ? kSecondaryColor
                             : kSecondaryColor.withValues(alpha: 0.7),
-                      )
+                      ),
                     ],
                   ),
                 ),
               ),
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 
   void _changePassword() async {
@@ -727,22 +745,22 @@ class _EditProfileState extends State<EditProfile> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            _loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                _loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       return json.decode(response.body);
     } catch (e) {
@@ -751,7 +769,8 @@ class _EditProfileState extends State<EditProfile> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -779,22 +798,25 @@ class _EditProfileState extends State<EditProfile> {
       var body = json.encode(data);
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          Service.showMessage(
-              context: context, title: "Network error", error: true);
+            Duration(seconds: 10),
+            onTimeout: () {
+              Service.showMessage(
+                context: context,
+                title: "Network error",
+                error: true,
+              );
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         usrData = json.decode(response.body);
       });
@@ -832,52 +854,68 @@ class _EditProfileState extends State<EditProfile> {
         ..fields['old_password'] = password
         ..fields['new_password'] = password;
       if (imageList.isNotEmpty && imageList.length > 0) {
-        http.MultipartFile multipartFile =
-            await http.MultipartFile.fromPath('file', imageList[0].path);
+        http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
+          'file',
+          imageList[0].path,
+        );
         request.files.add(multipartFile);
       }
-      await request.send().then((response) async {
-        http.Response.fromStream(response).then((value) async {
-          var data = json.decode(value.body);
-          if (data != null && data['success']) {
-            Service.showMessage(
-                context: context,
-                title: "Profile data updated successfully!",
-                error: false);
-            setState(() {
-              _loading = false;
-              enabled = false;
+      await request
+          .send()
+          .then((response) async {
+            http.Response.fromStream(response).then((value) async {
+              var data = json.decode(value.body);
+              if (data != null && data['success']) {
+                Service.showMessage(
+                  context: context,
+                  title: "Profile data updated successfully!",
+                  error: false,
+                );
+                setState(() {
+                  _loading = false;
+                  enabled = false;
+                });
+              } else {
+                if (data['error_code'] == 999) {
+                  Service.showMessage(
+                    context: context,
+                    title: "${errorCodes['${data['error_code']}']}!",
+                    error: true,
+                  );
+                  await Service.saveBool('logged', false);
+                  await Service.remove('user');
+                  Navigator.pushReplacementNamed(
+                    context,
+                    LoginScreen.routeName,
+                  );
+                } else {
+                  Service.showMessage(
+                    context: context,
+                    title: "Something went wrong. Please try again!",
+                    error: true,
+                  );
+                }
+              }
+              // print("update ${json.decode(value.body)}");
+              return json.decode(value.body);
             });
-          } else {
-            if (data['error_code'] == 999) {
-              Service.showMessage(
-                  context: context,
-                  title: "${errorCodes['${data['error_code']}']}!",
-                  error: true);
-              await Service.saveBool('logged', false);
-              await Service.remove('user');
-              Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-            } else {
-              Service.showMessage(
-                  context: context,
-                  title: "Something went wrong. Please try again!",
-                  error: true);
-            }
-          }
-          // print("update ${json.decode(value.body)}");
-          return json.decode(value.body);
-        });
-      }).timeout(Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException(
-            "The connection has timed out, please try again!");
-      });
+          })
+          .timeout(
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException(
+                "The connection has timed out, please try again!",
+              );
+            },
+          );
     } catch (e) {
       // print("update ${json.decode(value.body)}");
 
       Service.showMessage(
-          context: context,
-          title: "Something went wrong. Please check your internet connection!",
-          error: true);
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
+      );
       return null;
     } finally {
       setState(() {

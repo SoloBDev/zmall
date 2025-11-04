@@ -256,9 +256,10 @@ class _LoginScreenState extends State<LoginScreen> {
               await Service.saveBool('logged', true);
 
               _fcm.subscribeToTopic(
-                Provider.of<ZMetaData>(context, listen: false)
-                    .country
-                    .replaceAll(' ', ''),
+                Provider.of<ZMetaData>(
+                  context,
+                  listen: false,
+                ).country.replaceAll(' ', ''),
               );
 
               if (mounted) {
@@ -289,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 context: context,
                 title: loginResponseData != null
                     ? (errorCodes['${loginResponseData['error_code']}'] ??
-                        "Login failed")
+                          "Login failed")
                     : "Login failed. Please try manual login.",
                 error: true,
               );
@@ -425,7 +426,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 context: context,
                 title: loginResponseData != null
                     ? (errorCodes['${loginResponseData['error_code']}'] ??
-                        "Login failed")
+                          "Login failed")
                     : "Login failed. Please try manual login.",
                 error: true,
               );
@@ -540,7 +541,7 @@ class _LoginScreenState extends State<LoginScreen> {
               context: context,
               title: loginResponseData != null
                   ? (errorCodes['${loginResponseData['error_code']}'] ??
-                      "Login failed")
+                        "Login failed")
                   : "Login failed. Please try manual login.",
               error: true,
             );
@@ -665,7 +666,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       } else if (categoriesResponse != null &&
           categoriesResponse['error_code'] == 813) {
-        debugPrint("Not in Addis Ababa");
+        // debugPrint("Not in Addis Ababa");
         Provider.of<ZMetaData>(
           context,
           listen: false,
@@ -791,9 +792,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Text(
                               Provider.of<ZLanguage>(context).welcome,
                               // "ZMall Delivery"
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium!
+                              style: Theme.of(context).textTheme.titleMedium!
                                   .copyWith(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -802,9 +801,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             Text(
                               "Delivery Done Right!",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
+                              style: Theme.of(context).textTheme.bodyMedium!
                                   .copyWith(color: kGreyColor),
                               // headingStyle,
                             ),
@@ -845,12 +842,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           Provider.of<ZLanguage>(
                             context,
                           ).login.toString().toUpperCase(),
-                          style:
-                              Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    wordSpacing: 3,
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                wordSpacing: 3,
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         press: () => loginButtonPressed(),
                         color: kSecondaryColor,
@@ -1269,16 +1266,16 @@ class _LoginScreenState extends State<LoginScreen> {
       // debugPrint("body??? $body}");
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{"Content-Type": "application/json"},
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{"Content-Type": "application/json"},
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       // debugPrint("otp??? ${json.decode(response.body)}");
       // return json.decode(response.body);
       var newResponse = json.decode(response.body);
@@ -1338,8 +1335,8 @@ class _LoginScreenState extends State<LoginScreen> {
       isPhoneWithFlag: true,
       initialSelection:
           Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
-              ? 'ET'
-              : 'SS',
+          ? 'ET'
+          : 'SS',
       countryFilter: ['ET', 'SS'],
       onFlagChanged: (CountryCode code) {
         setState(() {

@@ -311,9 +311,9 @@ class _BorsaScreenState extends State<BorsaScreen> {
           builder: (BuildContext context, StateSetter setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(
-                  context,
-                ).viewInsets.bottom, // Adjust for keyboard
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
               ),
               child: SafeArea(
                 minimum: EdgeInsets.only(
@@ -327,9 +327,6 @@ class _BorsaScreenState extends State<BorsaScreen> {
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(kDefaultPadding),
                     ),
-                  ),
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

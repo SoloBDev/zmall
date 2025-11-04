@@ -17,7 +17,7 @@ import 'package:zmall/utils/size_config.dart';
 import 'package:zmall/widgets/custom_search_bar.dart';
 import 'package:zmall/widgets/linear_loading_indicator.dart';
 import 'package:zmall/widgets/shimmer_widget.dart';
-import '../store_screen.dart';
+import 'package:zmall/store/store_screen.dart';
 import 'custom_list_tile.dart';
 
 class Body extends StatefulWidget {
@@ -100,8 +100,13 @@ class BodyState extends State<Body> {
       _loading = true;
     });
 
-    await getStoreListByCompany(widget.cityId!, widget.storeDeliveryId!,
-        widget.latitude!, widget.longitude!, widget.companyId!);
+    await getStoreListByCompany(
+      widget.cityId!,
+      widget.storeDeliveryId!,
+      widget.latitude!,
+      widget.longitude!,
+      widget.companyId!,
+    );
 
     if (responseData != null && responseData['success']) {
       stores = responseData['stores'];
@@ -125,8 +130,12 @@ class BodyState extends State<Body> {
       _loading = true;
     });
     _getAppKeys();
-    await getCompanyList(widget.cityId!, widget.storeDeliveryId!,
-        widget.latitude!, widget.longitude!);
+    await getCompanyList(
+      widget.cityId!,
+      widget.storeDeliveryId!,
+      widget.latitude!,
+      widget.longitude!,
+    );
     if (responseData != null && responseData['success']) {
       stores = responseData['stores'];
 
@@ -198,9 +207,13 @@ class BodyState extends State<Body> {
         Service.save("closed_message", data['message']);
         Service.save("ios_app_version", data['ios_user_app_version_code']);
         Service.saveBool(
-            "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+          "ios_update_dialog",
+          data['is_ios_user_app_open_update_dialog'],
+        );
         Service.saveBool(
-            "ios_force_update", data['is_ios_user_app_force_update']);
+          "ios_force_update",
+          data['is_ios_user_app_force_update'],
+        );
         Service.save('app_close', data['app_close']);
         Service.save('app_open', data['app_open']);
         appOpen = data['app_open'];
@@ -224,9 +237,19 @@ class BodyState extends State<Body> {
     DateTime zmallClose = dateFormat.parse(appClose);
 
     zmallOpen = new DateTime(
-        now.year, now.month, now.day, zmallOpen.hour, zmallOpen.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallOpen.hour,
+      zmallOpen.minute,
+    );
     zmallClose = new DateTime(
-        now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallClose.hour,
+      zmallClose.minute,
+    );
 
     stores.forEach((store) {
       bool isStoreOpen = false;
@@ -242,19 +265,38 @@ class BodyState extends State<Body> {
           if (store['store_time'][i]['day'] == weekday) {
             if (store['store_time'][i]['day_time'].length != 0 &&
                 store['store_time'][i]['is_store_open']) {
-              for (var j = 0;
-                  j < store['store_time'][i]['day_time'].length;
-                  j++) {
+              for (
+                var j = 0;
+                j < store['store_time'][i]['day_time'].length;
+                j++
+              ) {
                 DateTime open = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_open_time']);
+                  store['store_time'][i]['day_time'][j]['store_open_time'],
+                );
                 open = new DateTime(
-                    now.year, now.month, now.day, open.hour, open.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  open.hour,
+                  open.minute,
+                );
                 DateTime close = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_close_time']);
+                  store['store_time'][i]['day_time'][j]['store_close_time'],
+                );
                 close = new DateTime(
-                    now.year, now.month, now.day, close.hour, close.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  close.hour,
+                  close.minute,
+                );
                 now = DateTime(
-                    now.year, now.month, now.day, now.hour, now.minute);
+                  now.year,
+                  now.month,
+                  now.day,
+                  now.hour,
+                  now.minute,
+                );
 
                 if (now.isAfter(open) &&
                     now.isAfter(zmallOpen) &&
@@ -293,7 +335,12 @@ class BodyState extends State<Body> {
         }
 
         zmallClose = DateTime(
-            now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
+          now.year,
+          now.month,
+          now.day,
+          zmallClose.hour,
+          zmallClose.minute,
+        );
         now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
 
         now.isAfter(zmallClose) ? isStoreOpen = false : isStoreOpen = true;
@@ -353,7 +400,7 @@ class BodyState extends State<Body> {
     });
   }
 
-//////////// Notify parent ////////////////
+  //////////// Notify parent ////////////////
   void _notifyAllClosed() {
     final allClosed = isOpen.isNotEmpty && !isOpen.any((open) => open);
     widget.onAllClosedChanged?.call(allClosed);
@@ -364,7 +411,7 @@ class BodyState extends State<Body> {
     widget.onSearching?.call(isSearching);
   }
 
-//////////// Notify parent ////////////////
+  //////////// Notify parent ////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -393,15 +440,18 @@ class BodyState extends State<Body> {
                         child: SearchButtonShimmer(width: screenWidth * 0.9),
                       ),
                       Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 5),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 5,
+                        ),
                         child: ItemTagShimmer(),
                       ),
                       SizedBox(
-                          width: getProportionateScreenHeight(kDefaultPadding)),
+                        width: getProportionateScreenHeight(kDefaultPadding),
+                      ),
                       Container(
-                          height: screenHeight * 0.7,
-                          child: ProductListShimmer()),
+                        height: screenHeight * 0.7,
+                        child: ProductListShimmer(),
+                      ),
                     ],
                   ),
                 ),
@@ -412,23 +462,25 @@ class BodyState extends State<Body> {
                     children: [
                       if (!widget.isStore!)
                         CustomSearchBar(
-                            controller: controller,
-                            hintText: Provider.of<ZLanguage>(context).search,
-                            onChanged: onSearchTextChanged,
-                            onSubmitted: (value) {
-                              onSearchTextChanged(value);
-                            },
-                            onClearButtonTap: () {
-                              controller.clear();
-                              onSearchTextChanged('');
-                              setState(() {
-                                storeOpen(stores);
-                              });
-                            }),
+                          controller: controller,
+                          hintText: Provider.of<ZLanguage>(context).search,
+                          onChanged: onSearchTextChanged,
+                          onSubmitted: (value) {
+                            onSearchTextChanged(value);
+                          },
+                          onClearButtonTap: () {
+                            controller.clear();
+                            onSearchTextChanged('');
+                            setState(() {
+                              storeOpen(stores);
+                            });
+                          },
+                        ),
                       tagFilters.length != 0
                           ? Container(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding * 3),
+                                kDefaultPadding * 3,
+                              ),
                               child: ListView.separated(
                                 itemCount: tagFilters.length,
                                 scrollDirection: Axis.horizontal,
@@ -439,20 +491,24 @@ class BodyState extends State<Body> {
                                 separatorBuilder:
                                     (BuildContext context, int index) =>
                                         SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                ),
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2,
+                                          ),
+                                        ),
                                 itemBuilder: (context, index) {
-                                  bool isSelected = selectedTagFilters
-                                      .contains(tagFilters[index]);
+                                  bool isSelected = selectedTagFilters.contains(
+                                    tagFilters[index],
+                                  );
                                   return InkWell(
                                     onTap: () {
                                       if (isSelected) {
-                                        selectedTagFilters
-                                            .remove(tagFilters[index]);
+                                        selectedTagFilters.remove(
+                                          tagFilters[index],
+                                        );
                                       } else {
-                                        selectedTagFilters
-                                            .add(tagFilters[index]);
+                                        selectedTagFilters.add(
+                                          tagFilters[index],
+                                        );
                                       }
                                       filterUsingTag();
                                     },
@@ -461,29 +517,34 @@ class BodyState extends State<Body> {
                                       decoration: BoxDecoration(
                                         color: isSelected
                                             ? kSecondaryColor.withValues(
-                                                alpha: 0.3)
+                                                alpha: 0.3,
+                                              )
                                             : kPrimaryColor,
                                         borderRadius: BorderRadius.circular(
                                           getProportionateScreenWidth(
-                                              kDefaultPadding / 2),
+                                            kDefaultPadding / 2,
+                                          ),
                                         ),
                                         border: Border.all(
                                           width: isSelected ? 1.0 : 2.0,
                                           color: isSelected
                                               ? kSecondaryColor.withValues(
-                                                  alpha: 0.6)
+                                                  alpha: 0.6,
+                                                )
                                               : kWhiteColor,
                                         ),
                                       ),
                                       padding: EdgeInsets.symmetric(
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
+                                        horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 2,
+                                        ),
+                                      ),
                                       child: Row(
                                         children: [
                                           Text(
                                             Service.capitalizeFirstLetters(
-                                                tagFilters[index].toString()),
+                                              tagFilters[index].toString(),
+                                            ),
                                             // .toUpperCase(),
                                             style: Theme.of(context)
                                                 .textTheme
@@ -506,7 +567,8 @@ class BodyState extends State<Body> {
                             )
                           : Container(),
                       Expanded(
-                        child: _searchResult.isNotEmpty ||
+                        child:
+                            _searchResult.isNotEmpty ||
                                 controller.text.isNotEmpty
                             ? _buildSearchList()
                             : _buildStoreList(),
@@ -515,33 +577,34 @@ class BodyState extends State<Body> {
                   ),
                 )
               : !_loading
-                  ? Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding * 4),
+              ? Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(
+                      kDefaultPadding * 4,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomButton(
+                        title: "Retry",
+                        press: () {
+                          widget.isStore!
+                              ? _getStoreListByCompany()
+                              : _getCompanyList();
+                        },
+                        color: kSecondaryColor,
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CustomButton(
-                            title: "Retry",
-                            press: () {
-                              widget.isStore!
-                                  ? _getStoreListByCompany()
-                                  : _getCompanyList();
-                            },
-                            color: kSecondaryColor,
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(),
+                    ],
+                  ),
+                )
+              : Container(),
         ),
       ),
     );
   }
 
-//////////////////////////newly added
+  //////////////////////////newly added
   Widget _buildStoreList() {
     final allClosed = isOpen.isNotEmpty && !isOpen.any((open) => open);
     return ListView.builder(
@@ -554,8 +617,8 @@ class BodyState extends State<Body> {
                   children: [
                     StoreLists(index: index),
                     SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
                   ],
                 )
               : const SizedBox();
@@ -564,7 +627,8 @@ class BodyState extends State<Body> {
             children: [
               StoreLists(index: index),
               SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2)),
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
             ],
           );
         }
@@ -576,9 +640,8 @@ class BodyState extends State<Body> {
     return ListView.separated(
       itemCount: _searchResult.length,
       padding: const EdgeInsets.all(kDefaultPadding / 2),
-      separatorBuilder: (context, index) => Container(
-        height: getProportionateScreenHeight(kDefaultPadding / 2),
-      ),
+      separatorBuilder: (context, index) =>
+          Container(height: getProportionateScreenHeight(kDefaultPadding / 2)),
       itemBuilder: (context, index) {
         return Container(
           child: CustomListTile(
@@ -719,7 +782,7 @@ class BodyState extends State<Body> {
     );
   }
 
-///////////////////////////////////////
+  ///////////////////////////////////////
   onSearchTextChanged(String text) async {
     _searchResult.clear();
     if (text.isEmpty) {
@@ -743,8 +806,13 @@ class BodyState extends State<Body> {
     });
   }
 
-  Future<dynamic> getStoreListByCompany(String cityId, String storeDeliveryId,
-      double latitude, double longitude, int companyId) async {
+  Future<dynamic> getStoreListByCompany(
+    String cityId,
+    String storeDeliveryId,
+    double latitude,
+    double longitude,
+    int companyId,
+  ) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_store_list_by_company";
     Map data = {
@@ -752,38 +820,39 @@ class BodyState extends State<Body> {
       "store_delivery_id": storeDeliveryId,
       "latitude": latitude,
       "longitude": longitude,
-      "company_id": companyId
+      "company_id": companyId,
     };
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          if (mounted) {
-            Service.showMessage(
-                context: context,
-                title:
-                    "Something went wrong! Check your internet and try again",
-                error: true,
-                duration: 3);
-          }
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              if (mounted) {
+                Service.showMessage(
+                  context: context,
+                  title:
+                      "Something went wrong! Check your internet and try again",
+                  error: true,
+                  duration: 3,
+                );
+              }
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -799,8 +868,12 @@ class BodyState extends State<Body> {
     }
   }
 
-  Future<dynamic> getCompanyList(String cityId, String storeDeliveryId,
-      double latitude, double longitude) async {
+  Future<dynamic> getCompanyList(
+    String cityId,
+    String storeDeliveryId,
+    double latitude,
+    double longitude,
+  ) async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_company_list";
 
@@ -815,31 +888,32 @@ class BodyState extends State<Body> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                    "Something went wrong! Check your internet and try again"),
-                backgroundColor: kSecondaryColor,
-              ),
-            );
-          }
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "Something went wrong! Check your internet and try again",
+                    ),
+                    backgroundColor: kSecondaryColor,
+                  ),
+                );
+              }
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this.responseData = json.decode(response.body);
@@ -865,7 +939,7 @@ class BodyState extends State<Body> {
       "latitude": widget.latitude,
       "longitude": widget.longitude,
       "last_opened": "2020-04-17T06:45:55.873Z",
-      "is_promotional": false
+      "is_promotional": false,
     };
     var body = json.encode(data);
     try {
@@ -873,7 +947,7 @@ class BodyState extends State<Body> {
         Uri.parse(url),
         headers: <String, String>{
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Accept": "application/json",
         },
         body: body,
       );

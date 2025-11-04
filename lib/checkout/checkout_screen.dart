@@ -72,6 +72,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool nextDay = false;
   bool threeHours = false;
 
+  //for dynamic laundry express options
+  List<dynamic> expressOptions = [];
+  String? selectedDeliveryId;
+  String selectedExpressOption = "normal";
+  // String expressOptionName = "Normal Delivery";
+  IconData expressIcon = Icons.timer_sharp;
+
   Widget linearProgressIndicator = Container(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -81,10 +88,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           size: getProportionateScreenWidth(kDefaultPadding),
         ),
         SizedBox(height: kDefaultPadding * 0.5),
-        Text(
-          "Loading...",
-          style: TextStyle(color: kBlackColor),
-        ),
+        Text("Loading...", style: TextStyle(color: kBlackColor)),
       ],
     ),
   );
@@ -115,7 +119,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() {
         cart = Cart.fromJson(data);
         // debugPrint("cart ${Cart.fromJson(data)}");
-        if (cart!.destinationAddress?.name == "User Pickup") {
+        if (cart != null && cart!.destinationAddress?.name == "User Pickup") {
           setState(() {
             selfPickup = true;
           });
@@ -137,6 +141,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _loading = true;
     });
     var data = await getStoreDetail();
+    // debugPrint("store detail; $data");
     if (data != null && data['success']) {
       setState(() {
         storeDetail = data;
@@ -157,11 +162,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           selfPickup = onlySelfPickup!;
         });
       }
+      if (cart != null && cart!.isLaundryService) {
+        setState(() {
+          expressOptions = storeDetail['store']['express_options'];
+          if (expressOptions.isNotEmpty && selectedDeliveryId == null) {
+            selectedDeliveryId = expressOptions.first['_id'];
+            selectedExpressOption = 'normal';
+          }
+        });
+      }
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${promoCodeData['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${promoCodeData['error_code']}']}!",
+        error: true,
+      );
     }
   }
 
@@ -169,8 +184,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     var data = await getTotalDistance(cart);
     if (data != null && data['rows'][0]['elements'][0]['status'] == 'OK') {
       setState(() {
-        distance =
-            data['rows'][0]['elements'][0]['distance']['value'].toDouble();
+        distance = data['rows'][0]['elements'][0]['distance']['value']
+            .toDouble();
         time = data['rows'][0]['elements'][0]['duration']['value'].toDouble();
       });
       await Future.delayed(Duration(seconds: 1));
@@ -203,9 +218,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${promoCodeData['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${promoCodeData['error_code']}']}!",
+        error: true,
+      );
     }
   }
 
@@ -220,13 +236,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         int diff = etaResponse['high'] - etaResponse['low'] > 65
             ? 15
             : etaResponse['high'] - etaResponse['low'] < 65 &&
-                    etaResponse['high'] - etaResponse['low'] > 55
-                ? 10
-                : 0;
-        _etaLow =
-            DateTime.now().add(Duration(minutes: etaResponse['low'].toInt()));
-        _etaHigh = DateTime.now()
-            .add(Duration(minutes: etaResponse['high'].toInt() - diff));
+                  etaResponse['high'] - etaResponse['low'] > 55
+            ? 10
+            : 0;
+        _etaLow = DateTime.now().add(
+          Duration(minutes: etaResponse['low'].toInt()),
+        );
+        _etaHigh = DateTime.now().add(
+          Duration(minutes: etaResponse['high'].toInt() - diff),
+        );
       });
     } else {
       _etaLow = DateTime.now().add(Duration(minutes: 30));
@@ -249,18 +267,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (responseData['error_code'] != null &&
           responseData['error_code'] == 999) {
         Service.showMessage(
-            context: context,
-            title: "${errorCodes['${responseData['error_code']}']}!",
-            error: true);
+          context: context,
+          title: "${errorCodes['${responseData['error_code']}']}!",
+          error: true,
+        );
         await CoreServices.clearCache();
         Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       } else {
         Service.showMessage(
-            context: context,
-            title: "${errorCodes['${responseData['message']}']}!",
-            error: true);
+          context: context,
+          title: "${errorCodes['${responseData['message']}']}!",
+          error: true,
+        );
       }
     }
+  }
+
+  IconData getExressIcon({required String expressType}) {
+    expressType = expressType.toLowerCase();
+    return expressType.contains("normal delivery")
+        ? expressIcon = Icons.timer_sharp
+        : expressType.contains("half express")
+        ? expressIcon = Icons.fast_forward
+        : expressType.contains("next day")
+        ? expressIcon = Icons.today_outlined
+        : expressType.contains("three hour")
+        ? expressIcon = Icons.timer_3_select_sharp
+        : expressIcon = Icons.timer_sharp;
   }
 
   @override
@@ -277,131 +310,135 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       bottomNavigationBar:
           /////place order button
           SafeArea(
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            vertical: getProportionateScreenHeight(kDefaultPadding / 4),
-            horizontal: getProportionateScreenHeight(kDefaultPadding),
-          ),
-          decoration: BoxDecoration(
-              color: kPrimaryColor,
-              border: Border(top: BorderSide(color: kWhiteColor)),
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(kDefaultPadding),
-                  topRight: Radius.circular(kDefaultPadding))),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: getProportionateScreenHeight(kDefaultPadding / 2),
-            children: [
-              if (responseData != null && responseData['success'])
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "${Provider.of<ZLanguage>(context).total} :",
-                        style: TextStyle(
-                          fontSize:
-                              getProportionateScreenWidth(kDefaultPadding * .7),
-                        ),
-                      ),
-                      SizedBox(
-                          width: getProportionateScreenHeight(
-                              kDefaultPadding / 2)),
-                      Text(
-                        promoCodeApplied
-                            ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
-                            : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              CustomButton(
-                isLoading: _placeOrder,
-                title: Provider.of<ZLanguage>(context).placeOrder,
-                press: () {
-                  if (scheduledOrder) {
-                    if (_scheduledDate != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return KifiyaScreen(
-                              price: promoCodeApplied
-                                  ? promoCodeData['order_payment']
-                                          ['user_pay_payment']
-                                      .toDouble()
-                                  : responseData['order_payment']
-                                          ['user_pay_payment']
-                                      .toDouble(),
-                              orderPaymentId: responseData['order_payment']
-                                  ['_id'],
-                              orderPaymentUniqueId:
-                                  responseData['order_payment']['unique_id']
-                                      .toString(),
-                              onlyCashless: onlyCashless,
-                              vehicleId: responseData['vehicles'][0]['_id'],
-                              userpickupWithSchedule:
-                                  cart!.isSchedule && selfPickup ? true : false,
-                            );
-                          },
-                        ),
-                      );
-                    } else {
-                      Service.showMessage(
-                        context: context,
-                        title: "Please select date & time for schedule",
-                        error: false,
-                        duration: 5,
-                      );
-                    }
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return KifiyaScreen(
-                            price: promoCodeApplied
-                                ? promoCodeData['order_payment']
-                                        ['user_pay_payment']
-                                    .toDouble()
-                                : responseData['order_payment']
-                                        ['user_pay_payment']
-                                    .toDouble(),
-                            orderPaymentId: responseData['order_payment']
-                                ['_id'],
-                            orderPaymentUniqueId: responseData['order_payment']
-                                    ['unique_id']
-                                .toString(),
-                            onlyCashless: (onlyCashless ??
-                                    false) ////new, safest way of old method
-                                ? true
-                                : (selfPickup ? true : false),
-
-                            // onlyCashless: onlyCashless!  //old
-                            //     ? onlyCashless
-                            //     : selfPickup
-                            //         ? true
-                            //         : false,
-                            vehicleId: responseData['vehicles'][0]['_id'],
-                            userpickupWithSchedule:
-                                cart!.isSchedule && selfPickup ? true : false,
-                          );
-                        },
-                      ),
-                    );
-                  }
-                },
-                color: kSecondaryColor,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: getProportionateScreenHeight(kDefaultPadding / 4),
+                horizontal: getProportionateScreenHeight(kDefaultPadding),
               ),
-            ],
+              decoration: BoxDecoration(
+                color: kPrimaryColor,
+                border: Border(top: BorderSide(color: kWhiteColor)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(kDefaultPadding),
+                  topRight: Radius.circular(kDefaultPadding),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+                children: [
+                  if (responseData != null && responseData['success'])
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${Provider.of<ZLanguage>(context).total} :",
+                            style: TextStyle(
+                              fontSize: getProportionateScreenWidth(
+                                kDefaultPadding * .7,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
+                          Text(
+                            promoCodeApplied
+                                ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
+                                : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['user_pay_payment'].toStringAsFixed(2)}",
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  CustomButton(
+                    isLoading: _placeOrder,
+                    title: Provider.of<ZLanguage>(context).placeOrder,
+                    press: () {
+                      if (scheduledOrder) {
+                        if (_scheduledDate != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return KifiyaScreen(
+                                  price: promoCodeApplied
+                                      ? promoCodeData['order_payment']['user_pay_payment']
+                                            .toDouble()
+                                      : responseData['order_payment']['user_pay_payment']
+                                            .toDouble(),
+                                  orderPaymentId:
+                                      responseData['order_payment']['_id'],
+                                  orderPaymentUniqueId:
+                                      responseData['order_payment']['unique_id']
+                                          .toString(),
+                                  onlyCashless: onlyCashless,
+                                  vehicleId: responseData['vehicles'][0]['_id'],
+                                  userpickupWithSchedule:
+                                      cart!.isSchedule && selfPickup
+                                      ? true
+                                      : false,
+                                );
+                              },
+                            ),
+                          );
+                        } else {
+                          Service.showMessage(
+                            context: context,
+                            title: "Please select date & time for schedule",
+                            error: false,
+                            duration: 5,
+                          );
+                        }
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return KifiyaScreen(
+                                price: promoCodeApplied
+                                    ? promoCodeData['order_payment']['user_pay_payment']
+                                          .toDouble()
+                                    : responseData['order_payment']['user_pay_payment']
+                                          .toDouble(),
+                                orderPaymentId:
+                                    responseData['order_payment']['_id'],
+                                orderPaymentUniqueId:
+                                    responseData['order_payment']['unique_id']
+                                        .toString(),
+                                onlyCashless:
+                                    (onlyCashless ??
+                                        false) ////new, safest way of old method
+                                    ? true
+                                    : (selfPickup ? true : false),
+
+                                // onlyCashless: onlyCashless!  //old
+                                //     ? onlyCashless
+                                //     : selfPickup
+                                //         ? true
+                                //         : false,
+                                vehicleId: responseData['vehicles'][0]['_id'],
+                                userpickupWithSchedule:
+                                    cart!.isSchedule && selfPickup
+                                    ? true
+                                    : false,
+                              );
+                            },
+                          ),
+                        );
+                      }
+                    },
+                    color: kSecondaryColor,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
       body: ModalProgressHUD(
         inAsyncCall: _loading,
         color: kPrimaryColor,
@@ -412,22 +449,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(
-                            horizontal: getProportionateScreenWidth(
-                                kDefaultPadding / 1.5))
-                        .copyWith(
-                            bottom:
-                                getProportionateScreenHeight(kDefaultPadding)),
+                    padding:
+                        EdgeInsets.symmetric(
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding / 1.5,
+                          ),
+                        ).copyWith(
+                          bottom: getProportionateScreenHeight(kDefaultPadding),
+                        ),
                     child: Column(
                       spacing: getProportionateScreenWidth(kDefaultPadding),
                       children: [
                         Container(
                           width: double.infinity,
                           margin: EdgeInsets.only(
-                              top: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
+                            top: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
                           padding: EdgeInsets.all(
-                              getProportionateScreenWidth(kDefaultPadding)),
+                            getProportionateScreenWidth(kDefaultPadding),
+                          ),
                           decoration: BoxDecoration(
                             color: kPrimaryColor,
                             borderRadius: BorderRadius.circular(
@@ -439,14 +481,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               OrderStatusRow(
-                                value: Provider.of<ZLanguage>(context)
-                                    .deliveryOptions,
+                                value: Provider.of<ZLanguage>(
+                                  context,
+                                ).deliveryOptions,
                                 title: "Preferred delivery option",
                                 icon: HeroiconsOutline.adjustmentsHorizontal,
                               ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               cart!.isLaundryService
                                   ? Container()
                                   : CheckboxListTile(
@@ -457,22 +502,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       ),
                                       title: Text(
                                         Provider.of<ZLanguage>(context).asSoon,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall,
                                       ),
                                       subtitle: Text(
-                                        Provider.of<ZLanguage>(context)
-                                            .expressOrder,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
+                                        Provider.of<ZLanguage>(
+                                          context,
+                                        ).expressOrder,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
                                       ),
                                       contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
+                                        vertical: 0,
+                                        horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 2,
+                                        ),
+                                      ),
                                       activeColor: kSecondaryColor,
                                       value: this.orderAsap,
                                       onChanged: (bool? value) {
@@ -520,9 +567,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 activeColor: kSecondaryColor,
                                 value: this.scheduledOrder,
                                 contentPadding: EdgeInsets.symmetric(
-                                    vertical: 0,
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding / 2)),
+                                  vertical: 0,
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
                                 onChanged: (bool? value) {
                                   if (!onlyScheduledOrder!) {
                                     if (value!) {
@@ -555,50 +604,58 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                           child: Text(
                                             _scheduledDate != null
                                                 ? _scheduledDate
-                                                    .toString()
-                                                    .split('.')[0]
+                                                      .toString()
+                                                      .split('.')[0]
                                                 : Provider.of<ZLanguage>(
-                                                        context)
-                                                    .addDate,
+                                                    context,
+                                                  ).addDate,
                                             style: TextStyle(
                                               color: kSecondaryColor,
                                             ),
                                           ),
                                           style: ButtonStyle(
-                                            elevation:
-                                                WidgetStateProperty.all(1.0),
+                                            elevation: WidgetStateProperty.all(
+                                              1.0,
+                                            ),
                                             backgroundColor:
                                                 WidgetStateProperty.all(
-                                                    kPrimaryColor),
+                                                  kPrimaryColor,
+                                                ),
                                           ),
                                           onPressed: () async {
                                             DateTime _now = DateTime.now();
                                             DateTime? pickedDate =
                                                 await showDatePicker(
-                                              context: context,
-                                              initialDate: DateTime.now(),
-                                              firstDate: _now,
-                                              lastDate: _now.add(
-                                                Duration(days: 7),
-                                              ),
-                                            );
+                                                  context: context,
+                                                  initialDate: DateTime.now(),
+                                                  firstDate: _now,
+                                                  lastDate: _now.add(
+                                                    Duration(days: 7),
+                                                  ),
+                                                );
                                             TimeOfDay? time =
                                                 await showTimePicker(
-                                                    context: context,
-                                                    initialTime:
-                                                        TimeOfDay.fromDateTime(
-                                                            DateTime.now()));
+                                                  context: context,
+                                                  initialTime:
+                                                      TimeOfDay.fromDateTime(
+                                                        DateTime.now(),
+                                                      ),
+                                                );
                                             setState(() {
                                               _scheduledDate = pickedDate!.add(
-                                                  Duration(
-                                                      hours: time!.hour,
-                                                      minutes: time.minute));
+                                                Duration(
+                                                  hours: time!.hour,
+                                                  minutes: time.minute,
+                                                ),
+                                              );
                                               cart!.isSchedule = true;
                                               cart!.scheduleStart =
                                                   _scheduledDate;
                                             });
                                             await Service.save(
-                                                'cart', cart!.toJson());
+                                              'cart',
+                                              cart!.toJson(),
+                                            );
                                             getCart();
                                           },
                                         ),
@@ -614,25 +671,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         size: getProportionateScreenHeight(18),
                                       ),
                                       title: Text(
-                                        Provider.of<ZLanguage>(context)
-                                            .selfPickup,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
+                                        Provider.of<ZLanguage>(
+                                          context,
+                                        ).selfPickup,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall,
                                       ),
                                       subtitle: Text(
                                         Provider.of<ZLanguage>(context).diy,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
                                       ),
                                       activeColor: kSecondaryColor,
                                       value: this.selfPickup,
                                       contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
+                                        vertical: 0,
+                                        horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding / 2,
+                                        ),
+                                      ),
                                       onChanged: (bool? value) {
                                         if (!onlySelfPickup!) {
                                           setState(() {
@@ -653,154 +712,212 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         }
                                       },
                                     ),
+
                               cart!.isLaundryService
-                                  ? CheckboxListTile(
-                                      secondary: Icon(
-                                        Icons.timer_sharp,
-                                        // color: kSecondaryColor,
-                                        size: getProportionateScreenHeight(18),
-                                      ),
-                                      title: Text(
-                                        "Normal delivery",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      subtitle: Text(
-                                        "Delivered in 4-5 days",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                      activeColor: kSecondaryColor,
-                                      value: normalDelivery,
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          normalDelivery = true;
-                                          halfExpress = false;
-                                          nextDay = false;
-                                          threeHours = false;
-                                        });
-                                        getCart();
-                                      },
+                                  ? Column(
+                                      children: expressOptions.map<Widget>((
+                                        option,
+                                      ) {
+                                        return CheckboxListTile(
+                                          secondary: Icon(
+                                            getExressIcon(
+                                              expressType:
+                                                  option['delivery_type'],
+                                            ),
+                                            size: getProportionateScreenHeight(
+                                              18,
+                                            ),
+                                          ),
+                                          title: Text(
+                                            option['delivery_type'],
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleSmall,
+                                          ),
+                                          subtitle: Text(
+                                            "Delivered within ${option['delivered_within']}",
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall,
+                                          ),
+                                          activeColor: kSecondaryColor,
+                                          value:
+                                              selectedDeliveryId ==
+                                              option['_id'],
+                                          contentPadding: EdgeInsets.symmetric(
+                                            vertical: 0,
+                                            horizontal:
+                                                getProportionateScreenWidth(
+                                                  kDefaultPadding / 2,
+                                                ),
+                                          ),
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              selectedDeliveryId = value!
+                                                  ? option['_id']
+                                                  : null;
+                                              selectedExpressOption =
+                                                  option['delivery_key'];
+                                            });
+                                            getCart();
+                                          },
+                                        );
+                                      }).toList(),
                                     )
                                   : Container(),
-                              cart!.isLaundryService
-                                  ? CheckboxListTile(
-                                      secondary: Icon(
-                                        Icons.fast_forward_rounded,
-                                        // color: kSecondaryColor,
-                                        size: getProportionateScreenHeight(18),
-                                      ),
-                                      title: Text(
-                                        "Half express delivery",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      subtitle: Text(
-                                        "Delivered within 2 days",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                      activeColor: kSecondaryColor,
-                                      value: halfExpress,
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          normalDelivery = false;
-                                          halfExpress = true;
-                                          nextDay = false;
-                                          threeHours = false;
-                                        });
-                                        getCart();
-                                      },
-                                    )
-                                  : Container(),
-                              cart!.isLaundryService
-                                  ? CheckboxListTile(
-                                      secondary: Icon(
-                                        Icons.today_outlined,
-                                        // color: kSecondaryColor,
-                                        size: getProportionateScreenHeight(18),
-                                      ),
-                                      title: Text(
-                                        "Next day delivery",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      subtitle: Text(
-                                        "Delivered the next day",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                      activeColor: kSecondaryColor,
-                                      value: nextDay,
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          normalDelivery = false;
-                                          halfExpress = false;
-                                          nextDay = true;
-                                          threeHours = false;
-                                        });
-                                        getCart();
-                                      },
-                                    )
-                                  : Container(),
-                              cart!.isLaundryService
-                                  ? CheckboxListTile(
-                                      secondary: Icon(
-                                        Icons.timer_3_select_sharp,
-                                        // color: kSecondaryColor,
-                                        size: getProportionateScreenHeight(18),
-                                      ),
-                                      title: Text(
-                                        "Three hours delivery",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall,
-                                      ),
-                                      subtitle: Text(
-                                        "Delivered within 3 hours",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                      activeColor: kSecondaryColor,
-                                      value: threeHours,
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 0,
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding / 2)),
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          normalDelivery = false;
-                                          halfExpress = false;
-                                          nextDay = false;
-                                          threeHours = true;
-                                        });
-                                        getCart();
-                                      },
-                                    )
-                                  : Container(),
+
+                              // cart!.isLaundryService
+                              //     ? CheckboxListTile(
+                              //         secondary: Icon(
+                              //           Icons.timer_sharp,
+                              //           // color: kSecondaryColor,
+                              //           size: getProportionateScreenHeight(18),
+                              //         ),
+                              //         title: Text(
+                              //           "Normal delivery",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.titleSmall,
+                              //         ),
+                              //         subtitle: Text(
+                              //           "Delivered in 4-5 days",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.bodySmall,
+                              //         ),
+                              //         activeColor: kSecondaryColor,
+                              //         value: normalDelivery,
+                              //         contentPadding: EdgeInsets.symmetric(
+                              //           vertical: 0,
+                              //           horizontal: getProportionateScreenWidth(
+                              //             kDefaultPadding / 2,
+                              //           ),
+                              //         ),
+                              //         onChanged: (bool? value) {
+                              //           setState(() {
+                              //             normalDelivery = true;
+                              //             halfExpress = false;
+                              //             nextDay = false;
+                              //             threeHours = false;
+                              //           });
+                              //           getCart();
+                              //         },
+                              //       )
+                              //     : Container(),
+                              // cart!.isLaundryService
+                              //     ? CheckboxListTile(
+                              //         secondary: Icon(
+                              //           Icons.fast_forward_rounded,
+                              //           // color: kSecondaryColor,
+                              //           size: getProportionateScreenHeight(18),
+                              //         ),
+                              //         title: Text(
+                              //           "Half express delivery",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.titleSmall,
+                              //         ),
+                              //         subtitle: Text(
+                              //           "Delivered within 2 days",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.bodySmall,
+                              //         ),
+                              //         activeColor: kSecondaryColor,
+                              //         value: halfExpress,
+                              //         contentPadding: EdgeInsets.symmetric(
+                              //           vertical: 0,
+                              //           horizontal: getProportionateScreenWidth(
+                              //             kDefaultPadding / 2,
+                              //           ),
+                              //         ),
+                              //         onChanged: (bool? value) {
+                              //           setState(() {
+                              //             normalDelivery = false;
+                              //             halfExpress = true;
+                              //             nextDay = false;
+                              //             threeHours = false;
+                              //           });
+                              //           getCart();
+                              //         },
+                              //       )
+                              //     : Container(),
+                              // cart!.isLaundryService
+                              //     ? CheckboxListTile(
+                              //         secondary: Icon(
+                              //           Icons.today_outlined,
+                              //           // color: kSecondaryColor,
+                              //           size: getProportionateScreenHeight(18),
+                              //         ),
+                              //         title: Text(
+                              //           "Next day delivery",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.titleSmall,
+                              //         ),
+                              //         subtitle: Text(
+                              //           "Delivered the next day",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.bodySmall,
+                              //         ),
+                              //         activeColor: kSecondaryColor,
+                              //         value: nextDay,
+                              //         contentPadding: EdgeInsets.symmetric(
+                              //           vertical: 0,
+                              //           horizontal: getProportionateScreenWidth(
+                              //             kDefaultPadding / 2,
+                              //           ),
+                              //         ),
+                              //         onChanged: (bool? value) {
+                              //           setState(() {
+                              //             normalDelivery = false;
+                              //             halfExpress = false;
+                              //             nextDay = true;
+                              //             threeHours = false;
+                              //           });
+                              //           getCart();
+                              //         },
+                              //       )
+                              //     : Container(),
+                              // cart!.isLaundryService
+                              //     ? CheckboxListTile(
+                              //         secondary: Icon(
+                              //           Icons.timer_3_select_sharp,
+                              //           // color: kSecondaryColor,
+                              //           size: getProportionateScreenHeight(18),
+                              //         ),
+                              //         title: Text(
+                              //           "Three hours delivery",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.titleSmall,
+                              //         ),
+                              //         subtitle: Text(
+                              //           "Delivered within 3 hours",
+                              //           style: Theme.of(
+                              //             context,
+                              //           ).textTheme.bodySmall,
+                              //         ),
+                              //         activeColor: kSecondaryColor,
+                              //         value: threeHours,
+                              //         contentPadding: EdgeInsets.symmetric(
+                              //           vertical: 0,
+                              //           horizontal: getProportionateScreenWidth(
+                              //             kDefaultPadding / 2,
+                              //           ),
+                              //         ),
+                              //         onChanged: (bool? value) {
+                              //           setState(() {
+                              //             normalDelivery = false;
+                              //             halfExpress = false;
+                              //             nextDay = false;
+                              //             threeHours = true;
+                              //           });
+                              //           getCart();
+                              //         },
+                              //       )
+                              //     : Container(),
                             ],
                           ),
                         ),
@@ -808,7 +925,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.all(
-                              getProportionateScreenWidth(kDefaultPadding)),
+                            getProportionateScreenWidth(kDefaultPadding),
+                          ),
                           decoration: BoxDecoration(
                             color: kPrimaryColor,
                             borderRadius: BorderRadius.circular(
@@ -820,41 +938,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               OrderStatusRow(
-                                value: Provider.of<ZLanguage>(context)
-                                    .deliveryDetails,
+                                value: Provider.of<ZLanguage>(
+                                  context,
+                                ).deliveryDetails,
                                 title: "Your Delivery Summary",
                                 icon: HeroiconsOutline.informationCircle,
                               ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                              ),
                               DetailsRow(
                                 title: Provider.of<ZLanguage>(context).name,
-                                subtitle: widget.receiverName.isNotEmpty &&
+                                subtitle:
+                                    widget.receiverName.isNotEmpty &&
                                         widget.isForOthers
                                     ? widget.receiverName
                                     : userData != null
-                                        ? "${userData['user']['first_name']} ${userData['user']['last_name']} "
-                                        : "",
+                                    ? "${userData['user']['first_name']} ${userData['user']['last_name']} "
+                                    : "",
                               ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 3,
+                                ),
+                              ),
                               DetailsRow(
                                 title: Provider.of<ZLanguage>(context).phone,
-                                subtitle: widget.receiverPhone.isNotEmpty &&
+                                subtitle:
+                                    widget.receiverPhone.isNotEmpty &&
                                         widget.isForOthers
                                     ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${widget.receiverPhone}"
                                     : userData != null
-                                        ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}"
-                                        : "",
+                                    ? "${Provider.of<ZMetaData>(context, listen: false).areaCode} ${userData['user']['phone']}"
+                                    : "",
                               ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 3,
+                                ),
+                              ),
                               DetailsRow(
-                                title: Provider.of<ZLanguage>(context)
-                                    .deliveryAddress,
+                                title: Provider.of<ZLanguage>(
+                                  context,
+                                ).deliveryAddress,
                                 subtitle: cart != null
                                     ? "${cart!.destinationAddress?.name?.split(',')[0]}"
                                     : "",
@@ -872,40 +1000,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   border: Border.all(color: kWhiteColor),
                                   borderRadius: BorderRadius.circular(
                                     getProportionateScreenWidth(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                   ),
                                   boxShadow: [kDefaultShadow],
                                 ),
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
-                                    vertical: getProportionateScreenHeight(
-                                        kDefaultPadding)),
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                  vertical: getProportionateScreenHeight(
+                                    kDefaultPadding,
+                                  ),
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     OrderStatusRow(
-                                      value: Provider.of<ZLanguage>(context)
-                                          .orderDetail,
+                                      value: Provider.of<ZLanguage>(
+                                        context,
+                                      ).orderDetail,
                                       title: "Summary of your order",
                                       icon: HeroiconsOutline.banknotes,
                                     ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding,
+                                      ),
+                                    ),
                                     DetailsRow(
-                                      title: Provider.of<ZLanguage>(context)
-                                          .servicePrice,
+                                      title: Provider.of<ZLanguage>(
+                                        context,
+                                      ).servicePrice,
                                       subtitle: promoCodeApplied
                                           ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_delivery_price'].toStringAsFixed(2)}"
                                           : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_delivery_price'].toStringAsFixed(2)}",
                                     ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 3)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3,
+                                      ),
+                                    ),
                                     DetailsRow(
-                                      title: Provider.of<ZLanguage>(context)
-                                          .totalOrderPrice,
+                                      title: Provider.of<ZLanguage>(
+                                        context,
+                                      ).totalOrderPrice,
                                       subtitle: promoCodeApplied
                                           ? "${Provider.of<ZMetaData>(context, listen: false).currency} ${promoCodeData['order_payment']['total_order_price'].toStringAsFixed(2)}"
                                           : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['total_order_price'].toStringAsFixed(2)}",
@@ -930,8 +1069,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     //       "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
                                     // ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 3)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3,
+                                      ),
+                                    ),
                                     // aliexpressCart != null &&
                                     //         aliexpressCart!.cart.storeId ==
                                     //             cart!.storeId
@@ -945,8 +1086,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     //         ),
                                     //       ),
                                     DetailsRow(
-                                      title: Provider.of<ZLanguage>(context)
-                                          .promoPayment,
+                                      title: Provider.of<ZLanguage>(
+                                        context,
+                                      ).promoPayment,
                                       subtitle: promoCodeApplied
                                           ? "${Provider.of<ZMetaData>(context, listen: false).currency} -${promoCodeData['order_payment']['promo_payment'].toStringAsFixed(2)}"
                                           : "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_payment']['promo_payment'].toStringAsFixed(2)}",
@@ -955,12 +1097,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       },
                                     ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 3)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3,
+                                      ),
+                                    ),
 
                                     DetailsRow(
-                                      title:
-                                          Provider.of<ZLanguage>(context).tip,
+                                      title: Provider.of<ZLanguage>(
+                                        context,
+                                      ).tip,
                                       subtitle:
                                           "${tip!.toStringAsFixed(2)} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                       onTap: () {
@@ -968,8 +1113,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       },
                                     ),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 3)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding / 3,
+                                      ),
+                                    ),
                                     if (_etaLow != null ||
                                         (aliexpressCart != null &&
                                             aliexpressCart!.cart.storeId !=
@@ -999,8 +1146,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     // ),
                                     // : Container(),
                                     SizedBox(
-                                        height: getProportionateScreenHeight(
-                                            kDefaultPadding / 2)),
+                                      height: getProportionateScreenHeight(
+                                        kDefaultPadding / 2,
+                                      ),
+                                    ),
                                     // Center(
                                     //   child: Row(
                                     //     mainAxisAlignment:
@@ -1063,23 +1212,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                               )
                             : _loading
-                                ? SpinKitDancingSquare(
-                                    color: kSecondaryColor,
-                                    size: getProportionateScreenHeight(
-                                        kDefaultPadding),
-                                  )
-                                : Container(
-                                    child: Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            vertical:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding)),
-                                        child: Text(
-                                            "${errorCodes['${responseData['message']}']}"),
+                            ? SpinKitDancingSquare(
+                                color: kSecondaryColor,
+                                size: getProportionateScreenHeight(
+                                  kDefaultPadding,
+                                ),
+                              )
+                            : Container(
+                                child: Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: getProportionateScreenHeight(
+                                        kDefaultPadding,
                                       ),
                                     ),
+                                    child: Text(
+                                      "${errorCodes['${responseData['message']}']}",
+                                    ),
                                   ),
+                                ),
+                              ),
                         // SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
                       ],
                     ),
@@ -1095,21 +1247,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget CustomContainerTag({
-    required String title,
-  }) {
+  Widget CustomContainerTag({required String title}) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: kDefaultPadding / 2, vertical: kDefaultPadding / 4),
+        horizontal: kDefaultPadding / 2,
+        vertical: kDefaultPadding / 4,
+      ),
       decoration: BoxDecoration(
-          color: kSecondaryColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(kDefaultPadding / 2)),
+        color: kSecondaryColor.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(kDefaultPadding / 2),
+      ),
       child: Text(
         title,
-        style: Theme.of(context)
-            .textTheme
-            .labelMedium!
-            .copyWith(color: kSecondaryColor, fontWeight: FontWeight.bold),
+        style: Theme.of(context).textTheme.labelMedium!.copyWith(
+          color: kSecondaryColor,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -1136,15 +1289,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     var url =
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${cart.storeLocation?.lat?.toStringAsFixed(6)},${cart.storeLocation?.long?.toStringAsFixed(6)}&destinations=${cart.destinationAddress?.lat},${cart.destinationAddress?.long}&key=$apiKey";
     try {
-      http.Response response = await http.get(Uri.parse(url)).timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+      http.Response response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            Duration(seconds: 30),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       return json.decode(response.body);
     } catch (e) {
@@ -1153,10 +1308,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title: "Something went wrong! Check your internet and try again",
-            error: true,
-            duration: 3);
+          context: context,
+          title: "Something went wrong! Check your internet and try again",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1188,31 +1344,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           "pickup": [cart.storeLocation?.lat, cart.storeLocation?.long],
           "destination": [
             cart.destinationAddress?.lat,
-            cart.destinationAddress?.long
-          ]
-        }
-      ]
+            cart.destinationAddress?.long,
+          ],
+        },
+      ],
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 30),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return json.decode(response.body);
     } catch (e) {
       setState(() {
@@ -1220,10 +1376,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title: "Something went wrong! Check your internet and try again",
-            error: true,
-            duration: 3);
+          context: context,
+          title: "Something went wrong! Check your internet and try again",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1259,40 +1416,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       "is_user_pick_up_order": selfPickup,
       "total_item_count": cart!.items?.length,
       "is_user_drop_order": !cart!.isLaundryService,
-      "express_option": normalDelivery
-          ? "normal"
-          : halfExpress
-              ? "half_express"
-              : nextDay
-                  ? "next_day"
-                  : threeHours
-                      ? "three_hour"
-                      : "normal",
+      "express_option": selectedExpressOption,
       "server_token": cart!.serverToken,
       "vehicle_id": widget.vehicleId,
       "tip": tip,
     };
     var body = json.encode(data);
+    // debugPrint("invoice body $body");
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
+            Duration(seconds: 30),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
 
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -1301,7 +1451,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       // debugPrint("====================\n");
       // debugPrint("vehicles>>>> ${responseData['vehicles'][0]['_id']}");
       // debugPrint("====================\n");
-      // debugPrint("responseData>>> $responseData");
+      // debugPrint("invoce responseData>>> $responseData");
       return json.decode(response.body);
     } catch (e) {
       setState(() {
@@ -1309,10 +1459,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title: "Order invoice failed! Check your internet and try again",
-            error: true,
-            duration: 4);
+          context: context,
+          title: "Order invoice failed! Check your internet and try again",
+          error: true,
+          duration: 4,
+        );
       }
       return null;
     }
@@ -1350,22 +1501,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.promoCodeData = json.decode(response.body);
         this._loading = false;
@@ -1377,10 +1528,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title: "Apply promo code failed! Check your internet and try again",
-            error: true,
-            duration: 3);
+          context: context,
+          title: "Apply promo code failed! Check your internet and try again",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1418,22 +1570,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.storeDetail = json.decode(response.body);
       });
@@ -1444,11 +1596,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title:
-                "Couldn't get store detail, check your internet and try again.",
-            error: true,
-            duration: 3);
+          context: context,
+          title:
+              "Couldn't get store detail, check your internet and try again.",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1474,30 +1627,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_list";
-    Map data = {
-      "store_id": cart!.storeId,
-    };
+    Map data = {"store_id": cart!.storeId};
     var body = json.encode(data);
-
+    // debugPrint("store detail data $body");
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.storeDetail = json.decode(response.body);
       });
@@ -1508,11 +1659,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title:
-                "Couldn't get store detail, check your internet and try again.",
-            error: true,
-            duration: 3);
+          context: context,
+          title:
+              "Couldn't get store detail, check your internet and try again.",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1531,75 +1683,78 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
       builder: (context) {
         return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context)
-                  .viewInsets
-                  .bottom, // Adjust for keyboard
-            ),
-            child: SafeArea(
-              minimum: EdgeInsets.symmetric(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.symmetric(
                   horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    Provider.of<ZLanguage>(context).applyPromoCode,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  CustomTextField(
-                    style: TextStyle(color: kBlackColor),
-                    keyboardType: TextInputType.text,
-                    onChanged: (val) {
-                      promoCode = val;
-                    },
-                    hintText: Provider.of<ZLanguage>(context).promoCode,
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2),
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 2),
-                  ),
-                  _loading
-                      ? SpinKitWave(
-                          color: kSecondaryColor,
-                          size: getProportionateScreenWidth(kDefaultPadding),
-                        )
-                      : CustomButton(
-                          title: Provider.of<ZLanguage>(context).apply,
-                          color: kSecondaryColor,
-                          press: () async {
-                            if (promoCode.isNotEmpty) {
-                              setState(() {
-                                _loading = true;
-                              });
-                              _applyPromoCode();
-                              Navigator.of(context).pop();
-                            } else {
-                              Navigator.of(context).pop();
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      Provider.of<ZLanguage>(context).applyPromoCode,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CustomTextField(
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.text,
+                      onChanged: (val) {
+                        promoCode = val;
+                      },
+                      hintText: Provider.of<ZLanguage>(context).promoCode,
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    _loading
+                        ? SpinKitWave(
+                            color: kSecondaryColor,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          )
+                        : CustomButton(
+                            title: Provider.of<ZLanguage>(context).apply,
+                            color: kSecondaryColor,
+                            press: () async {
+                              if (promoCode.isNotEmpty) {
+                                setState(() {
+                                  _loading = true;
+                                });
+                                _applyPromoCode();
+                                Navigator.of(context).pop();
+                              } else {
+                                Navigator.of(context).pop();
 
-                              Service.showMessage(
+                                Service.showMessage(
                                   context: context,
                                   title: "Promo Code cannot be empty!",
-                                  error: false);
-                            }
-                          },
-                        ),
-                ],
+                                  error: false,
+                                );
+                              }
+                            },
+                          ),
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
       },
     ).whenComplete(() {
       setState(() {});
@@ -1619,170 +1774,177 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
       builder: (BuildContext context) {
         return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context)
-                  .viewInsets
-                  .bottom, // Adjust for keyboard
-            ),
-            child: SafeArea(
-              minimum: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding)),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  Text(
-                    Provider.of<ZLanguage>(context, listen: false).addTip,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  CustomTextField(
-                    style: TextStyle(color: kBlackColor),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      FilteringTextInputFormatter.singleLineFormatter,
-                      FilteringTextInputFormatter.deny(RegExp(r'^0')),
-                    ],
-                    onChanged: (val) {
-                      tipTemp = double.parse(val);
-                    },
-                    hintText: Provider.of<ZLanguage>(context).tip,
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // InkWell(
-                      //   onTap: () {
-                      //     tip =
-                      //         20.00;
-                      //     Navigator.pop(
-                      //         context);
-                      //     _getCartInvoice();
-                      //   },
-                      //   child:
-                      //       CustomTag(
-                      //     text:
-                      //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                      //   ),
-                      // ),
-                      InkWell(
-                        onTap: () {
-                          tip = 20.00;
-                          Navigator.pop(context);
-                          _getCartInvoice();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding / 2,
-                              vertical: kDefaultPadding / 4),
-                          decoration: BoxDecoration(
-                              color: kBlackColor,
-                              borderRadius:
-                                  BorderRadius.circular(kDefaultPadding / 2)),
-                          child: Text(
-                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(color: kPrimaryColor),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          tip = 30.00;
-                          Navigator.pop(context);
-                          _getCartInvoice();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding / 2,
-                              vertical: kDefaultPadding / 4),
-                          decoration: BoxDecoration(
-                              color: kBlackColor,
-                              borderRadius:
-                                  BorderRadius.circular(kDefaultPadding / 2)),
-                          child: Text(
-                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(color: kPrimaryColor),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          tip = 40.00;
-                          Navigator.pop(context);
-                          _getCartInvoice();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding / 2,
-                              vertical: kDefaultPadding / 4),
-                          decoration: BoxDecoration(
-                              color: kBlackColor,
-                              borderRadius:
-                                  BorderRadius.circular(kDefaultPadding / 2)),
-                          child: Text(
-                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(color: kPrimaryColor),
-                          ),
-                        ),
-                      ),
-                      // InkWell(
-                      //   onTap: () {
-                      //     tip =
-                      //         40.00;
-                      //     Navigator.pop(
-                      //         context);
-                      //     _getCartInvoice();
-                      //   },
-                      //   child:
-                      //       CustomTag(
-                      //     text:
-                      //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  CustomButton(
-                    title:
-                        Provider.of<ZLanguage>(context, listen: false).submit,
-                    color: kSecondaryColor,
-                    press: () async {
-                      tip = tipTemp;
-                      Navigator.pop(context);
-                      _getCartInvoice();
-                    },
-                  ),
-                ],
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    kDefaultPadding, // Adjust for keyboard
               ),
-            ),
-          );
-        });
+              child: SafeArea(
+                minimum: EdgeInsets.symmetric(
+                  horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  vertical: getProportionateScreenHeight(kDefaultPadding),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Text(
+                      Provider.of<ZLanguage>(context, listen: false).addTip,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CustomTextField(
+                      style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        FilteringTextInputFormatter.singleLineFormatter,
+                        FilteringTextInputFormatter.deny(RegExp(r'^0')),
+                      ],
+                      onChanged: (val) {
+                        tipTemp = double.parse(val);
+                      },
+                      hintText: Provider.of<ZLanguage>(context).tip,
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // InkWell(
+                        //   onTap: () {
+                        //     tip =
+                        //         20.00;
+                        //     Navigator.pop(
+                        //         context);
+                        //     _getCartInvoice();
+                        //   },
+                        //   child:
+                        //       CustomTag(
+                        //     text:
+                        //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                        //   ),
+                        // ),
+                        InkWell(
+                          onTap: () {
+                            tip = 20.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding / 2,
+                              vertical: kDefaultPadding / 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kBlackColor,
+                              borderRadius: BorderRadius.circular(
+                                kDefaultPadding / 2,
+                              ),
+                            ),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context).textTheme.labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            tip = 30.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding / 2,
+                              vertical: kDefaultPadding / 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kBlackColor,
+                              borderRadius: BorderRadius.circular(
+                                kDefaultPadding / 2,
+                              ),
+                            ),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context).textTheme.labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            tip = 40.00;
+                            Navigator.pop(context);
+                            _getCartInvoice();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding / 2,
+                              vertical: kDefaultPadding / 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kBlackColor,
+                              borderRadius: BorderRadius.circular(
+                                kDefaultPadding / 2,
+                              ),
+                            ),
+                            child: Text(
+                              "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                              style: Theme.of(context).textTheme.labelLarge!
+                                  .copyWith(color: kPrimaryColor),
+                            ),
+                          ),
+                        ),
+                        // InkWell(
+                        //   onTap: () {
+                        //     tip =
+                        //         40.00;
+                        //     Navigator.pop(
+                        //         context);
+                        //     _getCartInvoice();
+                        //   },
+                        //   child:
+                        //       CustomTag(
+                        //     text:
+                        //         "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    CustomButton(
+                      title: Provider.of<ZLanguage>(
+                        context,
+                        listen: false,
+                      ).submit,
+                      color: kSecondaryColor,
+                      press: () async {
+                        tip = tipTemp;
+                        Navigator.pop(context);
+                        _getCartInvoice();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
     ).whenComplete(() {
       setState(() {});
@@ -1811,9 +1973,7 @@ class DetailsRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.normal,
-          ),
+          style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.normal),
         ),
         onTap != null
             ? Row(
@@ -1823,18 +1983,16 @@ class DetailsRow extends StatelessWidget {
                     onTap: onTap,
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                          horizontal: kDefaultPadding / 2,
-                          vertical: kDefaultPadding / 4),
+                        horizontal: kDefaultPadding / 2,
+                        vertical: kDefaultPadding / 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: kSecondaryColor.withValues(alpha: 0.18),
-                        borderRadius:
-                            BorderRadius.circular(kDefaultPadding / 2),
+                        // color: kSecondaryColor.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(
+                          kDefaultPadding / 2,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.add,
-                        size: 18,
-                        color: kSecondaryColor,
-                      ),
+                      child: Icon(Icons.add, size: 18, color: kSecondaryColor),
                     ),
                   ),
                   Text(

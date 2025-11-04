@@ -54,8 +54,10 @@ class _MyPredictionState extends State<MyPrediction> {
 
   void _initializeExpansionStates() {
     if (userPredictions != null && userPredictions['scores'] != null) {
-      _isTileExpanded =
-          List<bool>.filled(userPredictions['scores'].length, false);
+      _isTileExpanded = List<bool>.filled(
+        userPredictions['scores'].length,
+        false,
+      );
     }
   }
 
@@ -122,11 +124,24 @@ class _MyPredictionState extends State<MyPrediction> {
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.refresh,
+          children: [Icon(Icons.refresh)],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: TextButton(
+          onPressed: () {
+            Service.launchInWebViewOrVC(
+              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/predictions",
+            );
+          },
+          child: Text(
+            "Rules & Winnings",
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: kGreyColor,
+              decoration: TextDecoration.underline,
+              decorationColor: kPrimaryColor,
             ),
-          ],
+          ),
         ),
       ),
       body: ModalProgressHUD(
@@ -135,403 +150,402 @@ class _MyPredictionState extends State<MyPrediction> {
         progressIndicator: LinearLoadingIndicator(),
         child: Padding(
           padding: EdgeInsets.symmetric(
+            vertical: getProportionateScreenWidth(kDefaultPadding / 2),
             horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
-          ).copyWith(
-            bottom: getProportionateScreenHeight(kDefaultPadding / 2),
           ),
           child: _isLoading && userPredictions == null
               ? SizedBox.shrink()
               : userPredictions != null && userPredictions['scores'].length > 0
-                  ? Column(
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Service.launchInWebViewOrVC(
-                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/predictions");
-                          },
-                          child: Text(
-                            "Rules & Winnings",
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: kGreyColor,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: kPrimaryColor,
-                                    ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListView.separated(
-                            itemCount: userPredictions['scores'].length,
-                            itemBuilder: (context, index) {
-                              final prediction =
-                                  userPredictions['scores'][index];
-                              return Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black12, blurRadius: 4)
-                                  ],
-                                  image: DecorationImage(
-                                    image: AssetImage(
-                                      "images/pl_logos/pl.jpg",
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
+              ? Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: userPredictions['scores'].length,
+                        itemBuilder: (context, index) {
+                          final prediction = userPredictions['scores'][index];
+                          return Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black12, blurRadius: 4),
+                              ],
+                              image: DecorationImage(
+                                image: AssetImage("images/pl_logos/pl.jpg"),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: ExpansionTile(
+                              leading: SizedBox.shrink(),
+                              trailing: SizedBox.shrink(),
+                              tilePadding: EdgeInsets.symmetric(
+                                horizontal: 0,
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 8,
                                 ),
-                                child: ExpansionTile(
-                                    leading: SizedBox.shrink(),
-                                    trailing: SizedBox.shrink(),
-                                    tilePadding: EdgeInsets.symmetric(
-                                      horizontal: 0,
-                                      vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 8),
-                                    ),
-                                    visualDensity: VisualDensity.compact,
-                                    //
+                              ),
+                              visualDensity: VisualDensity.compact,
 
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          kDefaultPadding),
+                              //
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  kDefaultPadding,
+                                ),
+                              ),
+                              collapsedShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  kDefaultPadding,
+                                ),
+                              ),
+                              childrenPadding: EdgeInsets.symmetric(
+                                horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding / 2,
+                                ),
+                                vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2,
+                                ),
+                              ),
+                              onExpansionChanged: (bool expanded) {
+                                setState(() {
+                                  _isTileExpanded[index] = expanded;
+                                });
+                              },
+                              initiallyExpanded: _isTileExpanded[index],
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  LogoContainer(
+                                    logoUrl:
+                                        prediction['game_detail']['home_team_logo'] ??
+                                        '',
+                                    errorLogoAsset:
+                                        "images/pl_logos/${prediction['game_detail']['home_team'].toString().toLowerCase()}.png",
+                                    size: getProportionateScreenWidth(
+                                      kDefaultPadding * 3,
                                     ),
-                                    collapsedShape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          kDefaultPadding),
+                                    padding: EdgeInsets.all(
+                                      getProportionateScreenWidth(
+                                        kDefaultPadding / 4,
+                                      ),
                                     ),
-                                    childrenPadding: EdgeInsets.symmetric(
-                                      horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                      vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 2),
+                                  ),
+                                  SizedBox(
+                                    width: getProportionateScreenHeight(
+                                      kDefaultPadding / 4,
                                     ),
-                                    onExpansionChanged: (bool expanded) {
-                                      setState(() {
-                                        _isTileExpanded[index] = expanded;
-                                      });
-                                    },
-                                    initiallyExpanded: _isTileExpanded[index],
-                                    title: Row(
+                                  ),
+                                  Text(
+                                    prediction['game_detail']['home_team'],
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  Spacer(),
+                                  Center(
+                                    child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
                                       children: [
-                                        LogoContainer(
-                                          // shape: BoxShape.rectangle,
-                                          // backgroundColor: kBlackColor
-                                          // .withValues(alpha: 0.5),
-                                          logoUrl: prediction['game_detail']
-                                                  ['home_team_logo'] ??
-                                              '',
-                                          errorLogoAsset:
-                                              "images/pl_logos/${prediction['game_detail']['home_team'].toString().toLowerCase()}.png",
-                                        ),
-                                        SizedBox(
-                                          width: getProportionateScreenHeight(
-                                              kDefaultPadding / 2),
-                                        ),
-                                        Text(
-                                          prediction['game_detail']
-                                              ['home_team'],
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
-                                                  color: kPrimaryColor,
-                                                  fontWeight: FontWeight.w600),
-                                        ),
-                                        Spacer(),
-                                        Center(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    prediction['game_detail']
-                                                            ['is_finished']
-                                                        ? prediction[
-                                                                    'game_detail']
-                                                                ['home_score']
-                                                            .toString()
-                                                        : "-",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleLarge
-                                                        ?.copyWith(
-                                                          fontSize: 24,
-                                                          color: kPrimaryColor,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              prediction['game_detail']['is_finished']
+                                                  ? prediction['game_detail']['home_score']
+                                                        .toString()
+                                                  : "-",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge
+                                                  ?.copyWith(
+                                                    fontSize: 24,
+                                                    color: kPrimaryColor,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  Text(
-                                                    "\t:\t",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleLarge
-                                                        ?.copyWith(
-                                                          color: kPrimaryColor,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                            ),
+                                            Text(
+                                              "\t:\t",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge
+                                                  ?.copyWith(
+                                                    color: kPrimaryColor,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  Text(
-                                                    prediction['game_detail']
-                                                            ['is_finished']
-                                                        ? prediction[
-                                                                    'game_detail']
-                                                                ['away_score']
-                                                            .toString()
-                                                        : "-",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleLarge
-                                                        ?.copyWith(
-                                                          fontSize: 24,
-                                                          color: kPrimaryColor,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
+                                            ),
+                                            Text(
+                                              prediction['game_detail']['is_finished']
+                                                  ? prediction['game_detail']['away_score']
+                                                        .toString()
+                                                  : "-",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge
+                                                  ?.copyWith(
+                                                    fontSize: 24,
+                                                    color: kPrimaryColor,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                ],
-                                              ),
-                                              //////////////user prediction section//////////
-                                              if (!_isTileExpanded[index])
-                                                Row(
-                                                  spacing:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding / 3),
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    Text(
-                                                      prediction['home_score']
-                                                          .toString(),
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: kGreyColor,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      "Prediction",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: kGreyColor,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      prediction['away_score']
-                                                          .toString(),
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: kGreyColor,
-                                                          ),
-                                                    ),
-                                                  ],
+                                            ),
+                                          ],
+                                        ),
+                                        //////////////user prediction section//////////
+                                        if (!_isTileExpanded[index])
+                                          Row(
+                                            spacing:
+                                                getProportionateScreenWidth(
+                                                  kDefaultPadding / 3,
                                                 ),
-                                              // //////////////user prediction result//////////
-                                              prediction['game_detail']
-                                                          ['is_finished'] &&
-                                                      prediction['game_detail']
-                                                              ['home_score'] ==
-                                                          prediction[
-                                                              'home_score'] &&
-                                                      prediction['game_detail']
-                                                              ['away_score'] ==
-                                                          prediction[
-                                                              'away_score']
-                                                  ? Text(
-                                                      "WIN",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyLarge
-                                                          ?.copyWith(
-                                                              color:
-                                                                  Colors.green,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                    )
-                                                  : prediction['game_detail']
-                                                          ['is_finished']
-                                                      ? Text(
-                                                          "LOSE",
-                                                          style: Theme.of(
-                                                                  context)
-                                                              .textTheme
-                                                              .bodyLarge
-                                                              ?.copyWith(
-                                                                  color:
-                                                                      kSecondaryColor,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        )
-                                                      : Text(
-                                                          "Result Pending...",
-                                                          style: Theme.of(
-                                                                  context)
-                                                              .textTheme
-                                                              .bodyLarge
-                                                              ?.copyWith(
-                                                                  color:
-                                                                      kGreyColor,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                        ),
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                prediction['home_score']
+                                                    .toString(),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: kGreyColor,
+                                                    ),
+                                              ),
+                                              Text(
+                                                "Prediction",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: kGreyColor,
+                                                    ),
+                                              ),
+                                              Text(
+                                                prediction['away_score']
+                                                    .toString(),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: kGreyColor,
+                                                    ),
+                                              ),
                                             ],
                                           ),
-                                        ),
-                                        Spacer(),
-                                        Text(
-                                          prediction['game_detail']
-                                              ['away_team'],
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
-                                                  color: kPrimaryColor,
-                                                  fontWeight: FontWeight.w600),
-                                        ),
-                                        SizedBox(
-                                          width: getProportionateScreenHeight(
-                                              kDefaultPadding / 2),
-                                        ),
-                                        LogoContainer(
-                                          logoUrl: userPredictions['scores']
-                                                      [index]['game_detail']
-                                                  ['away_tew600am_logo'] ??
-                                              '',
-                                          errorLogoAsset:
-                                              "images/pl_logos/${prediction['game_detail']['away_team'].toString().toLowerCase()}.png",
+                                        // //////////////user prediction result//////////
+                                        Row(
+                                          children: [
+                                            prediction['game_detail']['is_finished'] &&
+                                                    prediction['game_detail']['home_score'] ==
+                                                        prediction['home_score'] &&
+                                                    prediction['game_detail']['away_score'] ==
+                                                        prediction['away_score']
+                                                ? Text(
+                                                    "WIN",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.copyWith(
+                                                          color: Colors.green,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  )
+                                                : prediction['game_detail']['is_finished']
+                                                ? Text(
+                                                    "LOSE",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.copyWith(
+                                                          color:
+                                                              kSecondaryColor,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  )
+                                                : Text(
+                                                    "Result Pending...",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.copyWith(
+                                                          color: kGreyColor,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                left:
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding / 3,
+                                                    ),
+                                              ),
+                                              child: Icon(
+                                                size: 18,
+                                                _isTileExpanded[index]
+                                                    ? HeroiconsSolid.chevronUp
+                                                    : HeroiconsSolid
+                                                          .chevronDown,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                    children: [
-                                      //////////////user prediction section//////////
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          Text(
-                                            prediction['home_score'].toString(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge
-                                                ?.copyWith(
-                                                    color: kPrimaryColor,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                          ),
-                                          Text(
-                                            "Prediction",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge
-                                                ?.copyWith(
-                                                    color: kPrimaryColor,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                          ),
-                                          Text(
-                                            prediction['away_score'].toString(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge
-                                                ?.copyWith(
-                                                    color: kPrimaryColor,
-                                                    fontWeight:
-                                                        FontWeight.w600),
-                                          ),
-                                        ],
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    prediction['game_detail']['away_team'],
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                  SizedBox(
+                                    width: getProportionateScreenHeight(
+                                      kDefaultPadding / 4,
+                                    ),
+                                  ),
+                                  LogoContainer(
+                                    logoUrl:
+                                        userPredictions['scores'][index]['game_detail']['away_tew600am_logo'] ??
+                                        '',
+                                    errorLogoAsset:
+                                        "images/pl_logos/${prediction['game_detail']['away_team'].toString().toLowerCase()}.png",
+                                    size: getProportionateScreenWidth(
+                                      kDefaultPadding * 3,
+                                    ),
+                                    padding: EdgeInsets.all(
+                                      getProportionateScreenWidth(
+                                        kDefaultPadding / 4,
                                       ),
-                                      WinPercentageWidget(
-                                        showColor: false,
-                                        homeTeam: prediction['game_detail']
-                                            ['home_team'],
-                                        awayTeam: prediction['game_detail']
-                                            ['away_team'],
-                                        homeWinCount: prediction['game_detail']
-                                            ['home_win_count'],
-                                        drawCount: prediction['game_detail']
-                                            ['draw_count'],
-                                        awayWinCount: prediction['game_detail']
-                                            ['away_win_count'],
-                                        homeColor: Colors.green,
-                                        drawColor: Colors.grey,
-                                        awayColor: Colors.blue,
-                                        padding: getProportionateScreenWidth(
-                                            kDefaultPadding),
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(color: kPrimaryColor),
-                                      ),
-                                    ]),
-                              );
-                            },
-                            separatorBuilder:
-                                (BuildContext context, int index) => SizedBox(
-                              height: getProportionateScreenWidth(
-                                  kDefaultPadding / 2),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                //////////////user prediction section//////////
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      prediction['home_score'].toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: kPrimaryColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    Text(
+                                      "Prediction",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: kPrimaryColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    Text(
+                                      prediction['away_score'].toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: kPrimaryColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                WinPercentageWidget(
+                                  showColor: false,
+                                  homeTeam:
+                                      prediction['game_detail']['home_team'],
+                                  awayTeam:
+                                      prediction['game_detail']['away_team'],
+                                  homeWinCount:
+                                      prediction['game_detail']['home_win_count'],
+                                  drawCount:
+                                      prediction['game_detail']['draw_count'],
+                                  awayWinCount:
+                                      prediction['game_detail']['away_win_count'],
+                                  homeColor: Colors.green,
+                                  drawColor: Colors.grey,
+                                  awayColor: Colors.blue,
+                                  padding: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                  textStyle: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: kPrimaryColor),
+                                ),
+                              ],
                             ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            HeroiconsOutline.trophy,
-                            color: kSecondaryColor.withValues(alpha: 0.7),
-                            size: getProportionateScreenWidth(
-                                kDefaultPadding * 4),
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
-                          Text(
-                            "No predictions found.",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  color: kGreyColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 4)),
-                          Text(
-                            "Start predicting game outcomes to see your scores here!",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: kGreyColor,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) =>
+                            SizedBox(
+                              height: getProportionateScreenWidth(
+                                kDefaultPadding / 2,
+                              ),
+                            ),
                       ),
                     ),
+                  ],
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        HeroiconsOutline.trophy,
+                        color: kSecondaryColor.withValues(alpha: 0.7),
+                        size: getProportionateScreenWidth(kDefaultPadding * 4),
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
+                      Text(
+                        "No predictions found.",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: kGreyColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 4,
+                        ),
+                      ),
+                      Text(
+                        "Start predicting game outcomes to see your scores here!",
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: kGreyColor),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
@@ -546,29 +560,29 @@ class _MyPredictionState extends State<MyPrediction> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._isLoading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._isLoading = false;
+              });
 
-          Service.showMessage(
-            context: context,
-            title: "Network error! Please try again...",
-            error: true,
-            duration: 3,
+              Service.showMessage(
+                context: context,
+                title: "Network error! Please try again...",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         _isLoading = false;
       });
@@ -604,29 +618,29 @@ class _MyPredictionState extends State<MyPrediction> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._isLoading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._isLoading = false;
+              });
 
-          Service.showMessage(
-            context: context,
-            title: "Network error! Please try again...",
-            error: true,
-            duration: 3,
+              Service.showMessage(
+                context: context,
+                title: "Network error! Please try again...",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         _isLoading = false;
       });
@@ -648,6 +662,7 @@ class _MyPredictionState extends State<MyPrediction> {
     }
   }
 }
+
 //  ModalProgressHUD(
 //               inAsyncCall: _isLoading,
 //               color: kBlackColor.withValues(alpha: 0.3),

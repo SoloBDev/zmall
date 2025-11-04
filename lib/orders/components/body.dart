@@ -368,15 +368,17 @@ class _BodyState extends State<Body> {
           .timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
-          );
+          if (mounted) {
+            setState(() {
+              this._loading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Something went wrong!"),
+                backgroundColor: kSecondaryColor,
+              ),
+            );
+          }
           throw TimeoutException("The connection has timed out!");
         },
       );
@@ -387,16 +389,17 @@ class _BodyState extends State<Body> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      if (mounted)
+      if (mounted) {
         setState(() {
           this._loading = false;
         });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Your internet connection is bad!"),
-          backgroundColor: kSecondaryColor,
-        ),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Your internet connection is bad!"),
+            backgroundColor: kSecondaryColor,
+          ),
+        );
+      }
       return null;
     }
   }
