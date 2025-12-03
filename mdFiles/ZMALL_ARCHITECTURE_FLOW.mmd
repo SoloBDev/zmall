@@ -1,0 +1,104 @@
+---
+title: ZMall System Architecture - Top to Bottom Flow
+---
+graph TD
+    %% TIER 1: CLIENTS & EXTERNAL
+    subgraph TIER1["═══════════════════ TIER 1: CLIENTS & EXTERNAL ═══════════════════"]
+        subgraph ExtConn["External Connections"]
+            Internet["☁️ INTERNET"]:::compact
+            Mobile["📱 Mobile Devices"]:::compact
+            POS["💳 POS Machines"]:::compact
+        end
+
+        subgraph PaymentGW["Payment Gateways"]
+            Telebirr["💰 Telebirr"]:::compact
+            Chapa["💳 Chapa"]:::compact
+            EthSwitch["🏦 EthSwitch"]:::compact
+            Amole["💵 Amole"]:::compact
+            Dashen["🏦 Dashen"]:::compact
+            Others["💳 Others"]:::compact
+        end
+
+        subgraph GoogleSocial["Google & Social"]
+            GMaps["🗺️ Maps API"]:::compact
+            GOAuth["🔐 OAuth"]:::compact
+            Facebook["📘 Analytics"]:::compact
+        end
+    end
+
+    %% TIER 2: BACKEND SERVERS
+    subgraph TIER2["═══════════════════ TIER 2: BACKEND SERVERS ═══════════════════"]
+        subgraph ZMallServer["🖥️ ZMall Server"]
+            ServerURLs["Production: 196.188.187.43:8000<br/>Test: 196.189.44.49:7000"]:::compact
+
+            UserAPI["/api/user/*"]:::compact
+            AdminAPI["/api/admin/*"]:::compact
+            StoreAPI["/api/store/*"]:::compact
+
+            Users["👥 Users"]:::compact
+            Orders["📦 Orders"]:::compact
+            Stores["🏪 Stores"]:::compact
+            Products["📦 Products"]:::compact
+            Cart["🛒 Cart"]:::compact
+            Trans["💳 Transactions"]:::compact
+        end
+
+        subgraph PaymentAgg["💳 Payment Aggregator"]
+            PaymentURL["URL: 196.189.44.60/"]:::compact
+            PaymentOps["Telebirr, Chapa, EthSwitch, Amole"]:::compact
+        end
+    end
+
+    %% TIER 3: FIREBASE & CLOUD SERVICES
+    subgraph TIER3["═══════════════════ TIER 3: FIREBASE & CLOUD ═══════════════════"]
+        subgraph Firebase["🔥 Firebase zmall-184809"]
+            FCM["🔔 FCM"]:::compact
+            Analytics["📊 Analytics"]:::compact
+            DynamicLinks["🔗 Dynamic Links<br/>Not Used"]:::compact
+        end
+    end
+
+    %% TIER 4: MOBILE APPLICATION
+    subgraph TIER4["═══════════════════ TIER 4: MOBILE APP ═══════════════════"]
+        subgraph FlutterApp["📱 Flutter v3.2.3+340"]
+            Splash["Splash"]:::compact
+            Login["Login/OTP"]:::compact
+            Home["Home"]:::compact
+            Store["Store"]:::compact
+            Product["Product"]:::compact
+            Cart2["Cart"]:::compact
+            Checkout["Checkout"]:::compact
+            Wallet["Wallet"]:::compact
+            Profile["Profile"]:::compact
+
+            ServiceDart["service.dart"]:::compact
+            CoreServices["core_services.dart"]:::compact
+            Biometric["biometric_services"]:::compact
+
+            Models["Models"]:::compact
+            SharedPrefs["SharedPreferences"]:::compact
+            SecureStorage["Secure Storage"]:::compact
+
+            BiometricAuth["Biometric Auth"]:::compact
+            OTP["OTP/SMS"]:::compact
+            MultiAccount["Multi-Account"]:::compact
+        end
+    end
+
+    %% CONNECTIONS
+    TIER1 --> TIER2
+    TIER2 --> TIER3
+    TIER3 --> TIER4
+    Mobile --> FlutterApp
+
+    %% Styling
+    classDef tier1Style fill:#FFE4B5,stroke:#FF8C00,stroke-width:3px,color:#000
+    classDef tier2Style fill:#B0E0E6,stroke:#4682B4,stroke-width:3px,color:#000
+    classDef tier3Style fill:#FFB6C1,stroke:#DC143C,stroke-width:3px,color:#000
+    classDef tier4Style fill:#98FB98,stroke:#228B22,stroke-width:3px,color:#000
+    classDef compact fill:#FFF,stroke:#666,stroke-width:1px,padding:2px,margin:2px
+
+    class TIER1 tier1Style
+    class TIER2 tier2Style
+    class TIER3 tier3Style
+    class TIER4 tier4Style

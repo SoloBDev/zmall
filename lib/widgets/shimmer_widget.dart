@@ -154,13 +154,14 @@ class ItemTagShimmer extends StatelessWidget {
 //   }
 // }
 class ProductListShimmer extends StatelessWidget {
-  const ProductListShimmer({super.key});
+  final int itemCount;
+  const ProductListShimmer({super.key, this.itemCount = 6});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: 6,
+      itemCount: itemCount,
       scrollDirection: Axis.vertical,
       itemBuilder: (context, index) {
         return Container(
@@ -200,8 +201,9 @@ class ProductListShimmer extends StatelessWidget {
                     ),
                     Container(
                       width: getProportionateScreenWidth(kDefaultPadding * 6),
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding * 0.8),
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding * 0.8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white, // Changed from kPrimaryColor
                         borderRadius: BorderRadius.circular(5),
@@ -209,8 +211,9 @@ class ProductListShimmer extends StatelessWidget {
                     ),
                     Container(
                       width: getProportionateScreenWidth(kDefaultPadding * 3),
-                      height:
-                          getProportionateScreenHeight(kDefaultPadding * 0.8),
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding * 0.8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white, // Changed from kPrimaryColor
                         borderRadius: BorderRadius.circular(5),
@@ -218,6 +221,7 @@ class ProductListShimmer extends StatelessWidget {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: getProportionateScreenHeight(kDefaultPadding),
                       children: [
                         Container(
                           width: SizeConfig.screenWidth! * 0.35,
@@ -227,9 +231,7 @@ class ProductListShimmer extends StatelessWidget {
                             borderRadius: BorderRadius.circular(5),
                           ),
                         ),
-                        SizedBox(
-                            width:
-                                getProportionateScreenHeight(kDefaultPadding)),
+
                         Container(
                           width: SizeConfig.screenWidth! * 0.35,
                           height: getProportionateScreenHeight(kDefaultPadding),
@@ -298,12 +300,14 @@ class SearchButtonShimmer extends StatelessWidget {
         height: height ?? getProportionateScreenHeight(kDefaultPadding * 2.4),
         decoration: BoxDecoration(
           color: kPrimaryColor,
-          borderRadius:
-              BorderRadius.circular(borderRadius ?? kDefaultPadding * 2),
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? kDefaultPadding * 2,
+          ),
         ),
         padding: EdgeInsets.symmetric(
-            horizontal: getProportionateScreenWidth(kDefaultPadding),
-            vertical: getProportionateScreenHeight(kDefaultPadding / 5)),
+          horizontal: getProportionateScreenWidth(kDefaultPadding),
+          vertical: getProportionateScreenHeight(kDefaultPadding / 5),
+        ),
       ),
     );
   }
@@ -324,7 +328,8 @@ class StoreHeaderShimmer extends StatelessWidget {
       child: Container(
         width: double.infinity,
         margin: EdgeInsets.symmetric(
-            horizontal: getProportionateScreenHeight(kDefaultPadding / 2)),
+          horizontal: getProportionateScreenHeight(kDefaultPadding / 2),
+        ),
         padding: isInCart
             ? EdgeInsets.zero
             : EdgeInsets.symmetric(
@@ -368,7 +373,8 @@ class StoreHeaderShimmer extends StatelessWidget {
                       Container(
                         width: getProportionateScreenWidth(kDefaultPadding * 6),
                         height: getProportionateScreenHeight(
-                            kDefaultPadding * 0.75),
+                          kDefaultPadding * 0.75,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
@@ -383,7 +389,7 @@ class StoreHeaderShimmer extends StatelessWidget {
                         height: 30,
                         borderRadius: 5,
                       )
-                    : SizedBox.shrink()
+                    : SizedBox.shrink(),
               ],
             ),
 
@@ -392,8 +398,10 @@ class StoreHeaderShimmer extends StatelessWidget {
                 ? SizedBox.shrink()
                 : Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                      horizontal: getProportionateScreenWidth(
+                        kDefaultPadding / 2,
+                      ),
+                    ),
                     child: SearchButtonShimmer(width: screenWidth * 0.8),
                   ),
 
@@ -453,73 +461,78 @@ class KifiyaMethodesShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isServiceScreen = isService != null && isService == true;
     return Shimmer.fromColors(
-        baseColor: baseColor,
-        highlightColor: highlightColor,
-        period: const Duration(milliseconds: 1000),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: MediaQuery.sizeOf(context).height * 0.7,
-              child: GridView.builder(
-                padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding / 1.5)),
-                itemCount: 12,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 0.9,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemBuilder: (context, index) {
-                  return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height:
-                              getProportionateScreenHeight(kDefaultPadding * 4),
-                          width:
-                              getProportionateScreenWidth(kDefaultPadding * 4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300], // Placeholder color
-                            borderRadius: BorderRadius.circular(
-                                getProportionateScreenWidth(kDefaultPadding)),
-                          ),
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 1.5)),
-                        Container(
-                          height: getProportionateScreenHeight(
-                              kDefaultPadding / 1.5),
-                          width:
-                              getProportionateScreenWidth(kDefaultPadding * 4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300], // Placeholder color
-                            borderRadius: BorderRadius.circular(
-                                getProportionateScreenHeight(kDefaultPadding)),
-                          ),
-                        ),
-                      ]);
-                },
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      period: const Duration(milliseconds: 1000),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.7,
+            child: GridView.builder(
+              padding: EdgeInsets.all(
+                getProportionateScreenWidth(kDefaultPadding / 1.5),
               ),
+              itemCount: 12,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 0.9,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemBuilder: (context, index) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: getProportionateScreenHeight(kDefaultPadding * 4),
+                      width: getProportionateScreenWidth(kDefaultPadding * 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300], // Placeholder color
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenWidth(kDefaultPadding),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding / 1.5,
+                      ),
+                    ),
+                    Container(
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding / 1.5,
+                      ),
+                      width: getProportionateScreenWidth(kDefaultPadding * 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300], // Placeholder color
+                        borderRadius: BorderRadius.circular(
+                          getProportionateScreenHeight(kDefaultPadding),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            // SizedBox(
-            //     height: getProportionateScreenHeight(
-            //         isServiceScreen ? 0 : kDefaultPadding)),
-            // if (!isServiceScreen)
-            //   Container(
-            //     height: getProportionateScreenHeight(kDefaultPadding * 4),
-            //     width: double.infinity,
-            //     margin: EdgeInsets.symmetric(
-            //         horizontal: getProportionateScreenWidth(kDefaultPadding)),
-            //     decoration: BoxDecoration(
-            //       color: Colors.grey[300], // Placeholder color
-            //       borderRadius: BorderRadius.circular(
-            //           getProportionateScreenWidth(kDefaultPadding)),
-            //     ),
-            //   ),
-          ],
-        ));
+          ),
+          // SizedBox(
+          //     height: getProportionateScreenHeight(
+          //         isServiceScreen ? 0 : kDefaultPadding)),
+          // if (!isServiceScreen)
+          //   Container(
+          //     height: getProportionateScreenHeight(kDefaultPadding * 4),
+          //     width: double.infinity,
+          //     margin: EdgeInsets.symmetric(
+          //         horizontal: getProportionateScreenWidth(kDefaultPadding)),
+          //     decoration: BoxDecoration(
+          //       color: Colors.grey[300], // Placeholder color
+          //       borderRadius: BorderRadius.circular(
+          //           getProportionateScreenWidth(kDefaultPadding)),
+          //     ),
+          //   ),
+        ],
+      ),
+    );
   }
 }

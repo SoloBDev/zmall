@@ -47,7 +47,7 @@ class _TabScreenState extends State<TabScreen> {
         // Default to false if key doesn't exist
         _isChatbotEnabled = userData['is_chatbot_active'] ?? false;
         //debugPrint("=====_isChatbotEnabled11 $_isChatbotEnabled========");
-        _isChatbotEnabled = true;
+        // _isChatbotEnabled = true; //for debug purpose
         //debugPrint("=====_isChatbotEnabled22 $_isChatbotEnabled========");
       } else {
         //debugPrint("=====  IN ELSE =====");

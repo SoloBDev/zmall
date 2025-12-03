@@ -50,7 +50,7 @@ class CustomListTile extends StatelessWidget {
                     isOpen: isStoreOpen,
                     isAbroad: isAbroad,
                     isFromPromotional: isFromPromotional,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -60,6 +60,7 @@ class CustomListTile extends StatelessWidget {
       ),
     );
   }
+
   //  TextButton(
   //         style: ButtonStyle(
   //           backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -161,7 +162,7 @@ class FavoriteCustomListTile extends StatelessWidget {
                   store: store,
                   isOpen: isOpen,
                   isAbroad: isAbroad,
-                )
+                ),
               ],
             ),
           ),

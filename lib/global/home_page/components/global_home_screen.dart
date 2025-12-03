@@ -6,9 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:intl/intl.dart';
-
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/utils/constants.dart';
@@ -52,7 +49,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
   var categories;
   var promotionalItems;
   List<bool> isPromotionalItemOpen = [];
-  bool _isClosed = false;
+  // bool _isClosed = false;
   String promptMessage =
       'We are sorry to inform you that we are not operational today';
 
@@ -209,6 +206,8 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     setState(() {
       _loading = true;
     });
+    // Ensure app metadata is loaded before checking store status
+    _getAppKeys();
     isPromotionalItemOpen.clear();
     var data = await CoreServices.getPromotionalItems(
       isGlobal: true,
@@ -237,7 +236,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       });
     }
     for (int i = 0; i < promotionalItems['promotional_items'].length; i++) {
-      bool isPromolItOpen = await storeOpen(
+      bool isPromolItOpen = await Service.isStoreOpen(
         promotionalItems['promotional_items'][i],
       );
       isPromotionalItemOpen.add(isPromolItOpen);
@@ -259,11 +258,11 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     }
   }
 
-  void getUser() async {
-    var data = await Service.read('abroad_user');
+  // void getUser() async {
+  //   var data = await Service.read('abroad_user');
 
-    getAbroadUser();
-  }
+  //   getAbroadUser();
+  // }
 
   void getAbroadUser() async {
     var data = await Service.read('abroad_user');
@@ -408,7 +407,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
   void getAppKeys() async {
     var data = await Service.read('ios_app_version');
     var currentVersion = await Service.read('version');
-    _isClosed = await Service.readBool('is_closed');
+    // _isClosed = await Service.readBool('is_closed');
     promptMessage = await Service.read('closed_message');
     var showUpdateDialog = await Service.readBool('ios_update_dialog');
     if (data != null) {
@@ -486,149 +485,6 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     return isNetwork;
   }
 
-  ///
-  Future<bool> storeOpen(var store) async {
-    setState(() {
-      _loading = true;
-    });
-    _getAppKeys();
-    setState(() {
-      _loading = false;
-    });
-    bool isStoreOpen = false;
-    // store_time
-    // store_open_close_timen
-    if (store['store_time'] != null && store['store_time'].length != 0) {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      for (var i = 0; i < store['store_time'].length; i++) {
-        DateFormat dateFormat = new DateFormat.Hm();
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        int weekday;
-        if (now.weekday == 7) {
-          weekday = 0;
-        } else {
-          weekday = now.weekday;
-        }
-
-        if (store['store_time'][i]['day'] == weekday) {
-          if (store['store_time'][i]['day_time'].length != 0 &&
-              store['store_time'][i]['is_store_open']) {
-            for (
-              var j = 0;
-              j < store['store_time'][i]['day_time'].length;
-              j++
-            ) {
-              DateTime open = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_open_time'],
-              );
-              open = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                open.hour,
-                open.minute,
-              );
-              DateTime close = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_close_time'],
-              );
-              // DateTime zmallClose =
-              //     DateTime(now.year, now.month, now.day, 21, 00);
-              // DateTime zmallOpen =
-              //     DateTime(now.year, now.month, now.day, 09, 00);
-              // if (appOpen != null && appOpen != null) {
-              DateTime zmallClose = dateFormat.parse(appClose);
-              DateTime zmallOpen = dateFormat.parse(appOpen);
-              // }
-
-              close = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                close.hour,
-                close.minute,
-              );
-              now = DateTime(
-                now.year,
-                now.month,
-                now.day,
-                now.hour,
-                now.minute,
-              );
-
-              zmallOpen = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallOpen.hour,
-                zmallOpen.minute,
-              );
-              zmallClose = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallClose.hour,
-                zmallClose.minute,
-              );
-
-              // debugPrint(zmallOpen);
-              // debugPrint(open);
-              // debugPrint(now);
-              // debugPrint(close);
-              // debugPrint(zmallClose);
-              if (now.isAfter(open) &&
-                  now.isAfter(zmallOpen) &&
-                  now.isBefore(close) &&
-                  store['store_time'][i]['is_store_open'] &&
-                  now.isBefore(zmallClose)) {
-                isStoreOpen = true;
-                break;
-              } else {
-                isStoreOpen = false;
-              }
-            }
-          } else {
-            isStoreOpen = store['store_time'][i]['is_store_open'];
-          }
-        }
-      }
-    } else {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateFormat dateFormat = new DateFormat.Hm();
-      // DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
-      // DateTime zmallOpen = DateTime(now.year, now.month, now.day, 09, 00);
-      // if (appOpen != null && appOpen != null) {
-      DateTime zmallClose = dateFormat.parse(appClose);
-      DateTime zmallOpen = dateFormat.parse(appOpen);
-      // }
-      zmallClose = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallClose.hour,
-        zmallClose.minute,
-      );
-      zmallOpen = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallOpen.hour,
-        zmallOpen.minute,
-      );
-      now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-
-      if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
-        isStoreOpen = true;
-      } else {
-        isStoreOpen = false;
-      }
-    }
-    return isStoreOpen;
-  }
-
-  ///
   @override
   Widget build(BuildContext context) {
     return Scaffold(

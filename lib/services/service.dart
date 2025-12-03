@@ -5,10 +5,13 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/models/metadata.dart';
+import 'package:zmall/models/cart.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/utils/size_config.dart';
 
 import '../utils/constants.dart';
@@ -42,28 +45,38 @@ class Service {
     bool? error,
     int duration = 2,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: error == null
-            ? kGreyColor
-            : error
-            ? kSecondaryColor
-            : kGreenColor,
-        content: Text(
-          title!,
-          style: TextStyle(fontSize: 15, color: kPrimaryColor),
+    // Check if the context is still mounted and valid before showing SnackBar
+    if (!context.mounted) {
+      return; // Don't show message if context is not mounted
+    }
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: error == null
+              ? kGreyColor
+              : error
+              ? kSecondaryColor
+              : kGreenColor,
+          content: Text(
+            title!,
+            style: TextStyle(fontSize: 15, color: kPrimaryColor),
+          ),
+          duration: Duration(seconds: duration),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(kDefaultPadding),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: getProportionateScreenWidth(kDefaultPadding),
+            vertical: getProportionateScreenHeight(kDefaultPadding),
+          ),
         ),
-        duration: Duration(seconds: duration),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(kDefaultPadding),
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding),
-          vertical: getProportionateScreenHeight(kDefaultPadding),
-        ),
-      ),
-    );
+      );
+    } catch (e) {
+      // Silently fail if the widget is deactivated
+      // This prevents the app from crashing
+    }
   }
 
   static Future<bool> isConnected(context) async {
@@ -314,4 +327,501 @@ class Service {
       return null;
     }
   }
+
+  // ============= Cart Helper Methods =============
+
+  /// Check if two cart items are identical
+  ///
+  /// Items are considered the same if they have:
+  /// - Same item ID
+  /// - Same specifications (same spec unique_ids and selected options)
+  ///
+  /// This is useful for preventing duplicate items in the cart and
+  /// instead updating the quantity of existing items.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// if (Service.isSameItem(existingItem, newItem)) {
+  ///   // Update quantity instead of adding duplicate
+  ///   existingItem.quantity += newItem.quantity;
+  /// } else {
+  ///   // Add as new item
+  ///   cart.items.add(newItem);
+  /// }
+  /// ```
+  static bool isSameItem(Item existingItem, Item newItem) {
+    // Check if item IDs match
+    if (existingItem.id != newItem.id) {
+      return false;
+    }
+
+    // Check if specifications match
+    if (existingItem.specification == null && newItem.specification == null) {
+      return true;
+    }
+
+    if (existingItem.specification == null || newItem.specification == null) {
+      return false;
+    }
+
+    if (existingItem.specification!.length != newItem.specification!.length) {
+      return false;
+    }
+
+    // Compare each specification
+    for (var newSpec in newItem.specification!) {
+      bool found = false;
+      for (var existingSpec in existingItem.specification!) {
+        if (existingSpec.uniqueId == newSpec.uniqueId) {
+          // Check if the selected options within this spec are the same
+          if (existingSpec.list!.length != newSpec.list!.length) {
+            return false;
+          }
+
+          // Compare each option in the specification
+          for (var newOption in newSpec.list!) {
+            bool optionFound = false;
+            for (var existingOption in existingSpec.list!) {
+              if (existingOption.uniqueId == newOption.uniqueId) {
+                optionFound = true;
+                break;
+              }
+            }
+            if (!optionFound) {
+              return false;
+            }
+          }
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Add or merge an item into the cart
+  ///
+  /// If an identical item already exists in the cart (same ID and specifications),
+  /// this method will merge them by updating the quantity and recalculating the price.
+  /// Otherwise, it will add the item as a new entry.
+  ///
+  /// Parameters:
+  /// - [cart]: The current cart object
+  /// - [newItem]: The item to add or merge
+  ///
+  /// Returns: `true` if the item was merged with an existing item, `false` if added as new
+  ///
+  /// Example usage:
+  /// ```dart
+  /// Cart cart = await Service.read('cart');
+  /// Item newItem = Item(id: '123', quantity: 1, price: 275.0);
+  ///
+  /// bool wasMerged = Service.addOrMergeCartItem(cart, newItem);
+  /// await Service.save('cart', cart.toJson());
+  ///
+  /// if (wasMerged) {
+  ///   print('Item quantity updated');
+  /// } else {
+  ///   print('New item added to cart');
+  /// }
+  /// ```
+  static bool addOrMergeCartItem(Cart cart, Item newItem) {
+    // Check if the same item with same specifications exists
+    int existingItemIndex = -1;
+    for (int i = 0; i < (cart.items?.length ?? 0); i++) {
+      if (isSameItem(cart.items![i], newItem)) {
+        existingItemIndex = i;
+        break;
+      }
+    }
+
+    if (existingItemIndex != -1) {
+      // Item found - merge by updating quantity and price
+      int oldQuantity = cart.items![existingItemIndex].quantity ?? 0;
+      int newQuantity = oldQuantity + (newItem.quantity ?? 0);
+
+      // Calculate unit price from the existing item
+      // If old quantity is 0, calculate from new item to avoid division by zero
+      double unitPrice = oldQuantity > 0
+          ? (cart.items![existingItemIndex].price ?? 0) / oldQuantity
+          : (newItem.price ?? 0) / (newItem.quantity ?? 1);
+
+      // Update quantity and recalculate total price
+      cart.items![existingItemIndex].quantity = newQuantity;
+      cart.items![existingItemIndex].price = unitPrice * newQuantity;
+
+      return true; // Item was merged
+    } else {
+      // Item not found - add as new
+      cart.items ??= [];
+      cart.items!.add(newItem);
+
+      return false; // Item was added as new
+    }
+  }
+
+  ///Get product Price
+  static getPrice(item) {
+    var price = item['price'] ?? item['item_price'] ?? item['new_price'] ?? 0;
+    if (price == 0) {
+      // look for a default-selected spec
+      for (var i = 0; i < item['specifications'].length; i++) {
+        for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
+          final spec = item['specifications'][i]['list'][j];
+          if (spec['is_default_selected'] == true) {
+            return spec['price'].toStringAsFixed(2);
+          }
+        }
+      }
+
+      // fallback to first available price if none are default-selected
+      if (item['specifications'].isNotEmpty &&
+          item['specifications'][0]['list'].isNotEmpty) {
+        final firstSpecPrice = item['specifications'][0]['list'][0]['price'];
+        return firstSpecPrice.toStringAsFixed(2);
+      }
+    } else {
+      var price = item['price'] ?? item['item_price'] ?? item['new_price'] ?? 0;
+      return price.toStringAsFixed(2);
+    }
+
+    return "0.00";
+  }
+  // static String getPrice(item) {
+  //   if (item['price'] == null || item['price'] == 0) {
+  //     // look for a default-selected spec
+  //     for (var i = 0; i < item['specifications'].length; i++) {
+  //       for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
+  //         final spec = item['specifications'][i]['list'][j];
+  //         if (spec['is_default_selected'] == true) {
+  //           return spec['price'].toStringAsFixed(2);
+  //         }
+  //       }
+  //     }
+
+  //     // fallback to first available price if none are default-selected
+  //     if (item['specifications'].isNotEmpty &&
+  //         item['specifications'][0]['list'].isNotEmpty) {
+  //       final firstSpecPrice = item['specifications'][0]['list'][0]['price'];
+  //       return firstSpecPrice.toStringAsFixed(2);
+  //     }
+  //   } else {
+  //     return item['price'].toStringAsFixed(2);
+  //   }
+
+  //   return "0.00";
+  // }
+  //Previous implementation: returns 0.00 if the specification has a default selected/ not required
+  // String _getPrice(item) {
+  //   print(item['specifications']);
+
+  //   if (item['price'] == null || item['price'] == 0) {
+  //     for (var i = 0; i < item['specifications'].length; i++) {
+  //       for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
+  //         if (item['specifications'][i]['list'][j]['is_default_selected']) {
+  //           return item['specifications'][i]['list'][j]['price']
+  //               .toStringAsFixed(2);
+  //         }
+  //       }
+  //     }
+  //   } else {
+  //     return item['price'].toStringAsFixed(2);
+  //   }
+  //   return "0.00";
+  // }
+
+  // ============= Store Helper Methods =============
+
+  /// Check if a single store is currently open (Pattern 1)
+  ///
+  /// This method checks if a single store is open based on:
+  /// - App-wide open/close times (appOpen and appClose)
+  /// - Store-specific schedules with weekday support
+  /// - UTC+3 timezone (for Ethiopia and South Sudan)
+  ///
+  /// Parameters:
+  /// - [store]: Store object containing store_time schedule
+  ///
+  /// Returns: true if the store is currently open, false otherwise
+  ///
+  /// Example usage:
+  /// ```dart
+  /// bool isOpen = await Service.isStoreOpen(store);
+  /// if (isOpen) {
+  ///   print('Store is open');
+  /// }
+  /// ```
+  static Future<bool> isStoreOpen(var store) async {
+    List<bool> result = await storeOpen([store]);
+    return result.isNotEmpty ? result[0] : false;
+  }
+
+  /// Determine which stores are currently open based on their schedules (Pattern 2)
+  ///
+  /// This method checks if stores are open based on:
+  /// - App-wide open/close times (appOpen and appClose)
+  /// - Store-specific schedules with weekday support
+  /// - UTC+3 timezone (for Ethiopia and South Sudan)
+  ///
+  /// Parameters:
+  /// - [stores]: List of store objects containing store_time schedules
+  ///
+  /// Returns: List<bool> where each boolean indicates if the corresponding store is open
+  ///
+  /// Example usage:
+  /// ```dart
+  /// List<bool> isOpen = await Service.storeOpen(stores);
+  /// if (isOpen[0]) {
+  ///   print('First store is open');
+  /// }
+  /// ```
+  static Future<List<bool>> storeOpen(List stores) async {
+    List<bool> isOpen = [];
+    DateFormat dateFormat = DateFormat.Hm();
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+
+    // Read app open/close times from storage if not provided
+
+    var appOpen = await read('app_open');
+    var appClose = await read('app_close');
+
+    DateTime zmallOpen = dateFormat.parse(appOpen!);
+    DateTime zmallClose = dateFormat.parse(appClose!);
+
+    zmallOpen = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      zmallOpen.hour,
+      zmallOpen.minute,
+    );
+    zmallClose = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      zmallClose.hour,
+      zmallClose.minute,
+    );
+
+    stores.forEach((store) {
+      bool isStoreOpen = false;
+      if (store['store_time'] != null && store['store_time'].length != 0) {
+        for (var i = 0; i < store['store_time'].length; i++) {
+          int weekday;
+          if (now.weekday == 7) {
+            weekday = 0;
+          } else {
+            weekday = now.weekday;
+          }
+
+          if (store['store_time'][i]['day'] == weekday) {
+            if (store['store_time'][i]['day_time'].length != 0 &&
+                store['store_time'][i]['is_store_open']) {
+              for (
+                var j = 0;
+                j < store['store_time'][i]['day_time'].length;
+                j++
+              ) {
+                DateTime open = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_open_time'],
+                );
+                open = DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                  open.hour,
+                  open.minute,
+                );
+                DateTime close = dateFormat.parse(
+                  store['store_time'][i]['day_time'][j]['store_close_time'],
+                );
+                close = DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                  close.hour,
+                  close.minute,
+                );
+                now = DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                  now.hour,
+                  now.minute,
+                );
+
+                if (now.isAfter(open) &&
+                    now.isAfter(zmallOpen) &&
+                    now.isBefore(close) &&
+                    store['store_time'][i]['is_store_open'] &&
+                    now.isBefore(zmallClose)) {
+                  isStoreOpen = true;
+                  break;
+                } else {
+                  isStoreOpen = false;
+                }
+              }
+            } else {
+              if (now.isAfter(zmallOpen) &&
+                  now.isBefore(zmallClose) &&
+                  store['store_time'][i]['is_store_open']) {
+                isStoreOpen = true;
+              } else {
+                isStoreOpen = false;
+              }
+            }
+          }
+        }
+      } else {
+        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+        DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
+        DateFormat dateFormat = DateFormat.Hm();
+        if (appClose != null) {
+          zmallClose = dateFormat.parse(appClose);
+        }
+
+        zmallClose = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          zmallClose.hour,
+          zmallClose.minute,
+        );
+        now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+
+        now.isAfter(zmallClose) ? isStoreOpen = false : isStoreOpen = true;
+      }
+      isOpen.add(isStoreOpen);
+    });
+
+    return isOpen;
+  }
+
+  // ============= Proximity Order Methods =============
+
+  /// Fetch proximity order items using existing orders_list endpoint
+  /// Returns list of individual items from orders within specified radius from user location
+  static Future<List<Map<String, dynamic>>> getProximityOrders({
+    required BuildContext context,
+    required double userLatitude,
+    required double userLongitude,
+    double radiusKm = 5.0,
+  }) async {
+    try {
+      // Fetch all active delivery orders
+      var response = await CoreServices.getOrdersList(
+        context: context,
+        orderStatus: "all", // All statuses
+        paymentStatus: "all",
+        page: 1,
+        pickupType: "both",
+        createdBy: "both",
+        orderType: "both",
+        searchField: "user_detail.first_name",
+        searchValue: "",
+      );
+
+      if (response != null && response['success'] == true) {
+        List ordersList = response['orders'] ?? [];
+        List<Map<String, dynamic>> proximityItems = [];
+
+        for (var order in ordersList) {
+          // Get destination location
+          var cartDetail = order['cart_detail'];
+          if (cartDetail == null) {
+            continue;
+          }
+
+          var destAddresses = cartDetail['destination_addresses'] as List?;
+          if (destAddresses == null || destAddresses.isEmpty) {
+            continue;
+          }
+
+          var destLocation = destAddresses[0]['location'] as List?;
+          if (destLocation == null || destLocation.length < 2) {
+            continue;
+          }
+
+          double destLat = destLocation[0].toDouble();
+          double destLong = destLocation[1].toDouble();
+
+          // Calculate distance from user to delivery destination
+          double distance = calculateDistance(
+            userLatitude,
+            userLongitude,
+            destLat,
+            destLong,
+          );
+
+          // Filter by radius
+          if (distance <= radiusKm) {
+            // Check if urgent (created more than 30 minutes ago)
+            DateTime createdAt = DateTime.parse(order['created_at']);
+            Duration timeSinceCreation = DateTime.now().difference(createdAt);
+            bool isUrgent = timeSinceCreation.inMinutes > 30;
+
+            // Extract items from order
+            var orderDetails = cartDetail['order_details'] as List? ?? [];
+            var storeDetail = order['store_detail'] ?? {};
+            var storeLocation = storeDetail['location'] as List? ?? [];
+
+            for (var orderDetail in orderDetails) {
+              var items = orderDetail['items'] as List? ?? [];
+
+              for (var item in items) {
+                // Create enriched item object with store and order info
+                Map<String, dynamic> enrichedItem = {
+                  // Item details
+                  'item_id': item['item_id'],
+                  'item_name': item['item_name'],
+                  'item_price': item['item_price'],
+                  'image_url': item['image_url'],
+                  'quantity': item['quantity'],
+                  'unique_id': item['unique_id'],
+                  'details': item['details'],
+                  'max_item_quantity': item['max_item_quantity'],
+                  'specifications': item['specifications'],
+                  'note_for_item': item['note_for_item'],
+
+                  // Store details
+                  'store_detail': storeDetail,
+                  'store_id': storeDetail['_id'],
+                  'store_name': storeDetail['name'],
+                  'store_location': storeLocation,
+
+                  // Order details
+                  'order_id': order['_id'],
+                  'order_unique_id': order['unique_id'],
+                  'distance_from_user': distance,
+                  'is_urgent': isUrgent,
+                };
+
+                proximityItems.add(enrichedItem);
+              }
+            }
+          }
+        }
+
+        // Sort by distance (closest first)
+        proximityItems.sort((a, b) {
+          double distA = a['distance_from_user'] ?? double.infinity;
+          double distB = b['distance_from_user'] ?? double.infinity;
+          return distA.compareTo(distB);
+        });
+
+        return proximityItems;
+      }
+
+      return [];
+    } catch (e) {
+      // print("Error fetching proximity orders: $e");
+      return [];
+    }
+  }
+
+  ///////////////////////////Proximity Order Methods Closed ==////////////////////
 }

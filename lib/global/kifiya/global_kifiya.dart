@@ -167,11 +167,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     if (data != null &&
         data['success'] &&
         data['data']['error_response'] == null &&
-        data['data']['aliexpress_ds_order_create_response']['result']
-            ['is_success']) {
-      List<dynamic>? orderIds = data['data']
-              ['aliexpress_ds_order_create_response']['result']['order_list']
-          ['number'];
+        data['data']['aliexpress_ds_order_create_response']['result']['is_success']) {
+      List<dynamic>? orderIds =
+          data['data']['aliexpress_ds_order_create_response']['result']['order_list']['number'];
       _createOrder(orderIds: orderIds);
     } else {
       setState(() {
@@ -205,12 +203,17 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         _loading = false;
         _placeOrder = false;
       });
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return GlobalReport(
-          price: widget.price,
-          orderPaymentUniqueId: widget.orderPaymentUniqueId,
-        );
-      }));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return GlobalReport(
+              price: widget.price,
+              orderPaymentUniqueId: widget.orderPaymentUniqueId,
+            );
+          },
+        ),
+      );
     } else {
       // debugPrint("\t\t- Create Order Response");
       // debugPrint(data);
@@ -314,10 +317,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Payments",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("Payments", style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),
       body: SafeArea(
@@ -328,7 +328,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           child: paymentResponse != null
               ? SingleChildScrollView(
                   padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
@@ -342,8 +343,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                               .banknotes, // Replace with appropriate icon if needed
                         ),
                         SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
+                          height: getProportionateScreenHeight(kDefaultPadding),
+                        ),
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -355,53 +356,68 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                             // boxShadow: [boxShadow],
                           ),
                           padding: EdgeInsets.symmetric(
-                            horizontal:
-                                getProportionateScreenWidth(kDefaultPadding),
+                            horizontal: getProportionateScreenWidth(
+                              kDefaultPadding,
+                            ),
                             vertical: getProportionateScreenHeight(
-                                kDefaultPadding / 2),
+                              kDefaultPadding / 2,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "Payment Information",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium!
+                                style: Theme.of(context).textTheme.titleMedium!
                                     .copyWith(
-                                        color: kBlackColor,
-                                        fontWeight: FontWeight.bold),
+                                      color: kBlackColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 2)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 2,
+                                ),
+                              ),
                               DetailsRow(
-                                  title: "Name",
-                                  subtitle: abroadData != null &&
-                                          abroadData!.abroadName!.isNotEmpty
-                                      ? abroadData!.abroadName!
-                                      : "N/A"),
+                                title: "Name",
+                                subtitle:
+                                    abroadData != null &&
+                                        abroadData!.abroadName!.isNotEmpty
+                                    ? abroadData!.abroadName!
+                                    : "N/A",
+                              ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 3,
+                                ),
+                              ),
                               DetailsRow(
-                                  title: "Phone",
-                                  subtitle: abroadData != null &&
-                                          abroadData!.abroadPhone!.isNotEmpty
-                                      ? abroadData!.abroadPhone!
-                                      : "N/A"),
+                                title: "Phone",
+                                subtitle:
+                                    abroadData != null &&
+                                        abroadData!.abroadPhone!.isNotEmpty
+                                    ? abroadData!.abroadPhone!
+                                    : "N/A",
+                              ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 3,
+                                ),
+                              ),
                               DetailsRow(
-                                  title: "Email",
-                                  subtitle: abroadData != null &&
-                                          abroadData!.abroadEmail!.isNotEmpty
-                                      ? abroadData!.abroadEmail!
-                                      : "N/A"),
+                                title: "Email",
+                                subtitle:
+                                    abroadData != null &&
+                                        abroadData!.abroadEmail!.isNotEmpty
+                                    ? abroadData!.abroadEmail!
+                                    : "N/A",
+                              ),
                               SizedBox(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding / 3)),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding / 3,
+                                ),
+                              ),
                               //                                 TextButton(
                               // //                          style: ButtonStyle(
                               // //                            backgroundColor:
@@ -510,20 +526,21 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                           ),
                         ),
                         SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
+                          height: getProportionateScreenHeight(kDefaultPadding),
+                        ),
                         Text(
                           "Payment Information",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium!
+                          style: Theme.of(context).textTheme.titleMedium!
                               .copyWith(
-                                  color: kBlackColor,
-                                  fontWeight: FontWeight.bold),
+                                color: kBlackColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
+                          height: getProportionateScreenHeight(
+                            kDefaultPadding / 2,
+                          ),
+                        ),
                         widget.onlyCashless
                             ? Text(
                                 "Store only allows digital payments.",
@@ -533,7 +550,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                         widget.onlyCashless
                             ? SizedBox(
                                 height: getProportionateScreenHeight(
-                                    kDefaultPadding / 2))
+                                  kDefaultPadding / 2,
+                                ),
+                              )
                             : Container(),
                         Container(
                           child: ListView.separated(
@@ -546,249 +565,61 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                             //       getProportionateScreenWidth(kDefaultPadding),
                             // ),
                             separatorBuilder: (context, index) {
-                              return Container(
-                                height: 4,
-                              );
+                              return Container(height: 4);
                             },
                             itemCount:
                                 paymentResponse['payment_gateway'].length,
                             itemBuilder: (BuildContext ctx, index) {
-                              if (paymentResponse['payment_gateway'][index]
-                                          ['name']
+                              if (paymentResponse['payment_gateway'][index]['name']
                                       .toString()
                                       .toLowerCase() ==
                                   'boa') {
                                 // debugPrint(paymentResponse['payment_gateway'][index]['name']);
                                 return KifiyaMethodContainer(
-                                    selected: kifiyaMethod == index + 4,
-                                    title: paymentResponse['payment_gateway']
-                                            [index]['description']
-                                        .toString()
-                                        .toUpperCase(),
-                                    kifiyaMethod: kifiyaMethod,
-                                    imagePath: "images/boa.png",
-                                    press: () async {
-                                      setState(() {
-                                        kifiyaMethod = index + 4;
-                                        paymentGatewayId =
-                                            paymentResponse['payment_gateway']
-                                                [index]['_id'];
-                                      });
-                                      // var cartId =  await Service.read("cart_id");
-                                      // debugPrint(
-                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // debugPrint(
-                                      //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // debugPrint(
-                                      //     "Payment Gateway ID : $paymentGatewayId");
-                                      // debugPrint("User ID : ${cart!.userId}");
-                                      // debugPrint(
-                                      //     "Server Token : ${cart!.serverToken}");
-                                      // debugPrint("Cart ID : $cartId");
-                                      var data = await useBorsa();
-                                      if (data['success']) {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                backgroundColor: kPrimaryColor,
-                                                title: Text(
-                                                  "Pay Using International Card",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium!
-                                                      .copyWith(
-                                                          color: kBlackColor,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                ),
-                                                content: Wrap(
-                                                  children: [
-                                                    Text(
-                                                      "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall!
-                                                          .copyWith(
-                                                            color: kBlackColor,
-                                                          ),
-                                                    ),
-                                                    Container(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding /
-                                                                  2),
-                                                    ),
-                                                    CustomTextField(
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                      keyboardType:
-                                                          TextInputType.text,
-                                                      onChanged: (val) {
-                                                        firstName = val;
-                                                      },
-                                                      hintText:
-                                                          firstName.isNotEmpty
-                                                              ? firstName
-                                                              : "First Name",
-                                                    ),
-                                                    Container(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding /
-                                                                  2),
-                                                    ),
-                                                    CustomTextField(
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                      keyboardType:
-                                                          TextInputType.text,
-                                                      onChanged: (val) {
-                                                        lastName = val;
-                                                      },
-                                                      hintText:
-                                                          lastName.isNotEmpty
-                                                              ? lastName
-                                                              : "Last Name",
-                                                    ),
-                                                    Container(
-                                                      height:
-                                                          getProportionateScreenHeight(
-                                                              kDefaultPadding /
-                                                                  2),
-                                                    ),
-                                                    CustomTextField(
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                      enabled: true,
-                                                      keyboardType:
-                                                          TextInputType.text,
-                                                      onChanged: (val) {},
-                                                      hintText: abroadData!
-                                                              .abroadEmail!
-                                                              .isNotEmpty
-                                                          ? abroadData!
-                                                              .abroadEmail
-                                                          : "Email",
-                                                    ),
-                                                  ],
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color:
-                                                              kSecondaryColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Continue",
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        uuid =
-                                                            (int.parse(uuid) +
-                                                                    1)
-                                                                .toString();
-                                                      });
-
-                                                      if (abroadData != null &&
-                                                          abroadData!
-                                                              .abroadEmail!
-                                                              .isNotEmpty &&
-                                                          abroadData!
-                                                              .abroadName!
-                                                              .isNotEmpty &&
-                                                          abroadData!
-                                                              .abroadPhone!
-                                                              .isNotEmpty) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    CyberSource(
-                                                              url:
-                                                                  "https://pgw.shekla.app/cards/process?total=${widget.price}&stotal=${widget.price}&tax=0&shiping=0&order_id=${uuid}_${widget.orderPaymentUniqueId}&first=$firstName&last=$lastName&phone=${abroadData!.abroadPhone}&email=${abroadData!.abroadEmail}&appId=1234",
-                                                            ),
-                                                          ),
-                                                        ).then((value) {
-                                                          _boaVerify();
-                                                        });
-                                                      }
-                                                    },
-                                                  )
-                                                ],
-                                              );
-                                            });
-                                      } else {
-                                        Service.showMessage(
-                                          context: context,
-                                          title:
-                                              "Something went wrong! Please try again!",
-                                          error: true,
-                                        );
-                                      }
+                                  selected: kifiyaMethod == index + 4,
+                                  title:
+                                      paymentResponse['payment_gateway'][index]['description']
+                                          .toString()
+                                          .toUpperCase(),
+                                  kifiyaMethod: kifiyaMethod,
+                                  imagePath: "images/payment/boa.png",
+                                  press: () async {
+                                    setState(() {
+                                      kifiyaMethod = index + 4;
+                                      paymentGatewayId =
+                                          paymentResponse['payment_gateway'][index]['_id'];
                                     });
-                              } else if (paymentResponse['payment_gateway']
-                                          [index]['name']
-                                      .toString()
-                                      .toLowerCase() ==
-                                  "zemen") {
-                                return KifiyaMethodContainer(
-                                    selected: kifiyaMethod == index + 4,
-                                    title: paymentResponse['payment_gateway']
-                                            [index]['description']
-                                        .toString()
-                                        .toUpperCase(),
-                                    kifiyaMethod: kifiyaMethod,
-                                    imagePath: "images/zemen.png",
-                                    press: () async {
-                                      setState(() {
-                                        kifiyaMethod = index + 4;
-                                        paymentGatewayId =
-                                            paymentResponse['payment_gateway']
-                                                [index]['_id'];
-                                      });
-                                      // var cartId =  await Service.read("cart_id");
-                                      // debugPrint(
-                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // debugPrint(
-                                      //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // debugPrint(
-                                      //     "Payment Gateway ID : $paymentGatewayId");
-                                      // debugPrint("User ID : ${cart!.userId}");
-                                      // debugPrint(
-                                      //     "Server Token : ${cart!.serverToken}");
-                                      // debugPrint("Cart ID : $cartId");
-                                      var data = await useBorsa();
-                                      if (data['success']) {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                backgroundColor: kPrimaryColor,
-                                                title: Text(
-                                                  "Pay Using International Card",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium!
-                                                      .copyWith(
-                                                          color: kBlackColor,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                ),
-                                                content: Text(
+                                    // var cartId =  await Service.read("cart_id");
+                                    // debugPrint(
+                                    //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                    // debugPrint(
+                                    //     "Order payment ID : ${widget.orderPaymentId}");
+                                    // debugPrint(
+                                    //     "Payment Gateway ID : $paymentGatewayId");
+                                    // debugPrint("User ID : ${cart!.userId}");
+                                    // debugPrint(
+                                    //     "Server Token : ${cart!.serverToken}");
+                                    // debugPrint("Cart ID : $cartId");
+                                    var data = await useBorsa();
+                                    if (data['success']) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            backgroundColor: kPrimaryColor,
+                                            title: Text(
+                                              "Pay Using International Card",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium!
+                                                  .copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            content: Wrap(
+                                              children: [
+                                                Text(
                                                   "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?",
                                                   style: Theme.of(context)
                                                       .textTheme
@@ -797,204 +628,378 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                                         color: kBlackColor,
                                                       ),
                                                 ),
-                                                actions: [
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color:
-                                                              kSecondaryColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
+                                                Container(
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                        kDefaultPadding / 2,
+                                                      ),
+                                                ),
+                                                CustomTextField(
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
                                                   ),
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Continue",
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      setState(() {
-                                                        uuid =
-                                                            (int.parse(uuid) +
-                                                                    1)
-                                                                .toString();
-                                                      });
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) {
-                                                            return Telebirr(
-                                                              isAbroad: true,
-                                                              url:
-                                                                  "https://pgw.shekla.app/zemen/post_bill",
-                                                              hisab:
-                                                                  widget.price,
-                                                              traceNo: uuid +
-                                                                  "_" +
-                                                                  widget
-                                                                      .orderPaymentUniqueId,
-                                                              phone: cart!
-                                                                  .abroadData!
-                                                                  .abroadPhone!,
-                                                              orderPaymentId: widget
-                                                                  .orderPaymentId,
-                                                              title:
-                                                                  "Master Card Payment Gateway",
-                                                            );
-                                                          },
-                                                        ),
-                                                      ).then((value) {
-                                                        _boaVerify();
-                                                      });
-                                                    },
-                                                  )
-                                                ],
-                                              );
-                                            });
-                                      } else {
-                                        Service.showMessage(
-                                          context: context,
-                                          title:
-                                              "Something went wrong! Please try again!",
-                                          error: true,
-                                        );
-                                      }
-                                    });
-                              }
+                                                  keyboardType:
+                                                      TextInputType.text,
+                                                  onChanged: (val) {
+                                                    firstName = val;
+                                                  },
+                                                  hintText: firstName.isNotEmpty
+                                                      ? firstName
+                                                      : "First Name",
+                                                ),
+                                                Container(
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                        kDefaultPadding / 2,
+                                                      ),
+                                                ),
+                                                CustomTextField(
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
+                                                  ),
+                                                  keyboardType:
+                                                      TextInputType.text,
+                                                  onChanged: (val) {
+                                                    lastName = val;
+                                                  },
+                                                  hintText: lastName.isNotEmpty
+                                                      ? lastName
+                                                      : "Last Name",
+                                                ),
+                                                Container(
+                                                  height:
+                                                      getProportionateScreenHeight(
+                                                        kDefaultPadding / 2,
+                                                      ),
+                                                ),
+                                                CustomTextField(
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
+                                                  ),
+                                                  enabled: true,
+                                                  keyboardType:
+                                                      TextInputType.text,
+                                                  onChanged: (val) {},
+                                                  hintText:
+                                                      abroadData!
+                                                          .abroadEmail!
+                                                          .isNotEmpty
+                                                      ? abroadData!.abroadEmail
+                                                      : "Email",
+                                                ),
+                                              ],
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: kSecondaryColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              TextButton(
+                                                child: Text(
+                                                  "Continue",
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    uuid = (int.parse(uuid) + 1)
+                                                        .toString();
+                                                  });
 
+                                                  if (abroadData != null &&
+                                                      abroadData!
+                                                          .abroadEmail!
+                                                          .isNotEmpty &&
+                                                      abroadData!
+                                                          .abroadName!
+                                                          .isNotEmpty &&
+                                                      abroadData!
+                                                          .abroadPhone!
+                                                          .isNotEmpty) {
+                                                    Navigator.of(context).pop();
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            CyberSource(
+                                                              url:
+                                                                  "https://pgw.shekla.app/cards/process?total=${widget.price}&stotal=${widget.price}&tax=0&shiping=0&order_id=${uuid}_${widget.orderPaymentUniqueId}&first=$firstName&last=$lastName&phone=${abroadData!.abroadPhone}&email=${abroadData!.abroadEmail}&appId=1234",
+                                                            ),
+                                                      ),
+                                                    ).then((value) {
+                                                      _boaVerify();
+                                                    });
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      Service.showMessage(
+                                        context: context,
+                                        title:
+                                            "Something went wrong! Please try again!",
+                                        error: true,
+                                      );
+                                    }
+                                  },
+                                );
+                              } else if (paymentResponse['payment_gateway'][index]['name']
+                                      .toString()
+                                      .toLowerCase() ==
+                                  "zemen") {
+                                return KifiyaMethodContainer(
+                                  selected: kifiyaMethod == index + 4,
+                                  title:
+                                      paymentResponse['payment_gateway'][index]['description']
+                                          .toString()
+                                          .toUpperCase(),
+                                  kifiyaMethod: kifiyaMethod,
+                                  imagePath: "images/payment/zemen.png",
+                                  press: () async {
+                                    setState(() {
+                                      kifiyaMethod = index + 4;
+                                      paymentGatewayId =
+                                          paymentResponse['payment_gateway'][index]['_id'];
+                                    });
+                                    // var cartId =  await Service.read("cart_id");
+                                    // debugPrint(
+                                    //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                    // debugPrint(
+                                    //     "Order payment ID : ${widget.orderPaymentId}");
+                                    // debugPrint(
+                                    //     "Payment Gateway ID : $paymentGatewayId");
+                                    // debugPrint("User ID : ${cart!.userId}");
+                                    // debugPrint(
+                                    //     "Server Token : ${cart!.serverToken}");
+                                    // debugPrint("Cart ID : $cartId");
+                                    var data = await useBorsa();
+                                    if (data['success']) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            backgroundColor: kPrimaryColor,
+                                            title: Text(
+                                              "Pay Using International Card",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium!
+                                                  .copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            content: Text(
+                                              "Proceed to pay ብር ${widget.price.toStringAsFixed(2)} using International Card?",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .copyWith(color: kBlackColor),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: kSecondaryColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              TextButton(
+                                                child: Text(
+                                                  "Continue",
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  setState(() {
+                                                    uuid = (int.parse(uuid) + 1)
+                                                        .toString();
+                                                  });
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return Telebirr(
+                                                          isAbroad: true,
+                                                          url:
+                                                              "https://pgw.shekla.app/zemen/post_bill",
+                                                          hisab: widget.price,
+                                                          traceNo:
+                                                              uuid +
+                                                              "_" +
+                                                              widget
+                                                                  .orderPaymentUniqueId,
+                                                          phone: cart!
+                                                              .abroadData!
+                                                              .abroadPhone!,
+                                                          orderPaymentId: widget
+                                                              .orderPaymentId,
+                                                          title:
+                                                              "Master Card Payment Gateway",
+                                                        );
+                                                      },
+                                                    ),
+                                                  ).then((value) {
+                                                    _boaVerify();
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      Service.showMessage(
+                                        context: context,
+                                        title:
+                                            "Something went wrong! Please try again!",
+                                        error: true,
+                                      );
+                                    }
+                                  },
+                                );
+                              }
                               ///**************************Dashen mastercard***************************************
-                              else if (paymentResponse['payment_gateway'][index]
-                                          ['name']
+                              else if (paymentResponse['payment_gateway'][index]['name']
                                       .toString()
                                       .toLowerCase() ==
                                   "dashen mastercard") {
                                 return KifiyaMethodContainer(
-                                    selected: kifiyaMethod == index + 4,
-                                    title: paymentResponse['payment_gateway']
-                                            [index]['description']
-                                        .toString()
-                                        .toUpperCase(),
-                                    kifiyaMethod: kifiyaMethod,
-                                    imagePath: "images/dashenmpgs.png",
-                                    press: () async {
-                                      setState(() {
-                                        kifiyaMethod = index + 4;
-                                        paymentGatewayId =
-                                            paymentResponse['payment_gateway']
-                                                [index]['_id'];
-                                      });
-                                      // var cartId = await Service.read("cart_id");
-                                      // debugPrint(
-                                      //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
-                                      // debugPrint(
-                                      //     "Order payment ID : ${widget.orderPaymentId}");
-                                      // debugPrint(
-                                      //     "Payment Gateway ID : $paymentGatewayId");
-                                      // debugPrint("User ID : ${cart!.userId}");
-                                      // debugPrint(
-                                      //     "Server Token : ${cart!.serverToken}");
-                                      // debugPrint("Cart ID : $cartId");
-
-                                      var data = await useBorsa();
-                                      if (data['success']) {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                backgroundColor: kPrimaryColor,
-                                                title: Text(
-                                                  "Pay Using Mastercard",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium!
-                                                      .copyWith(
-                                                          color: kBlackColor,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                ),
-                                                content: Text(
-                                                  "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price.toStringAsFixed(2)} using Dashen Mastercard?",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .copyWith(
-                                                        color: kBlackColor,
-                                                      ),
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color:
-                                                              kSecondaryColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: Text(
-                                                      "Continue",
-                                                      style: TextStyle(
-                                                          color: kBlackColor),
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) {
-                                                            return DashenMasterCard(
-                                                                url:
-                                                                    "https://pgw.shekla.app/dashenMpgs/mastercard/api/checkout",
-                                                                amount: widget
-                                                                    .price,
-                                                                phone: abroadData!
-                                                                    .abroadPhone!,
-                                                                traceNo: widget
-                                                                    .orderPaymentUniqueId,
-                                                                orderPaymentId:
-                                                                    widget
-                                                                        .orderPaymentId,
-                                                                currency: Provider.of<
-                                                                            ZMetaData>(
-                                                                        context,
-                                                                        listen:
-                                                                            false)
-                                                                    .currency);
-                                                          },
-                                                        ),
-                                                      ).then((value) {
-                                                        _boaVerify();
-                                                      });
-                                                    },
-                                                  )
-                                                ],
-                                              );
-                                            });
-                                      } else {
-                                        Service.showMessage(
-                                          context: context,
-                                          title:
-                                              "Something went wrong! Please try again!",
-                                          error: true,
-                                        );
-                                      }
+                                  selected: kifiyaMethod == index + 4,
+                                  title:
+                                      paymentResponse['payment_gateway'][index]['description']
+                                          .toString()
+                                          .toUpperCase(),
+                                  kifiyaMethod: kifiyaMethod,
+                                  imagePath: "images/payment/dashenmpgs.png",
+                                  press: () async {
+                                    setState(() {
+                                      kifiyaMethod = index + 4;
+                                      paymentGatewayId =
+                                          paymentResponse['payment_gateway'][index]['_id'];
                                     });
+                                    // var cartId = await Service.read("cart_id");
+                                    // debugPrint(
+                                    //     "Order payment unique ID : ${widget.orderPaymentUniqueId}");
+                                    // debugPrint(
+                                    //     "Order payment ID : ${widget.orderPaymentId}");
+                                    // debugPrint(
+                                    //     "Payment Gateway ID : $paymentGatewayId");
+                                    // debugPrint("User ID : ${cart!.userId}");
+                                    // debugPrint(
+                                    //     "Server Token : ${cart!.serverToken}");
+                                    // debugPrint("Cart ID : $cartId");
+
+                                    var data = await useBorsa();
+                                    if (data['success']) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            backgroundColor: kPrimaryColor,
+                                            title: Text(
+                                              "Pay Using Mastercard",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium!
+                                                  .copyWith(
+                                                    color: kBlackColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                            content: Text(
+                                              "Proceed to pay ${Provider.of<ZMetaData>(context, listen: false).currency} ${widget.price.toStringAsFixed(2)} using Dashen Mastercard?",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .copyWith(color: kBlackColor),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: kSecondaryColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              TextButton(
+                                                child: Text(
+                                                  "Continue",
+                                                  style: TextStyle(
+                                                    color: kBlackColor,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return DashenMasterCard(
+                                                          url:
+                                                              "https://pgw.shekla.app/dashenMpgs/mastercard/api/checkout",
+                                                          amount: widget.price,
+                                                          phone: abroadData!
+                                                              .abroadPhone!,
+                                                          traceNo: widget
+                                                              .orderPaymentUniqueId,
+                                                          orderPaymentId: widget
+                                                              .orderPaymentId,
+                                                          currency:
+                                                              Provider.of<
+                                                                    ZMetaData
+                                                                  >(
+                                                                    context,
+                                                                    listen:
+                                                                        false,
+                                                                  )
+                                                                  .currency,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ).then((value) {
+                                                    _boaVerify();
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      Service.showMessage(
+                                        context: context,
+                                        title:
+                                            "Something went wrong! Please try again!",
+                                        error: true,
+                                      );
+                                    }
+                                  },
+                                );
                               }
-
                               ///*******************************Dashen mastercard*******************************
-
                               else {
                                 return SizedBox.shrink();
                               }
@@ -1008,7 +1013,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                             ? SpinKitWave(
                                 color: kSecondaryColor,
                                 size: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               )
                             : CustomButton(
                                 title: "Place Order",
@@ -1017,14 +1023,15 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
                                   // debugPrint(data);
                                   if (paymentGatewayId != null) {
                                     _payOrderPayment(
-                                        otp: "",
-                                        paymentId: widget.orderPaymentId);
+                                      otp: "",
+                                      paymentId: widget.orderPaymentId,
+                                    );
                                   } else {}
                                 },
                                 color: paymentGatewayId != null
                                     ? kSecondaryColor
                                     : kGreyColor,
-                              )
+                              ),
                       ],
                     ),
                   ),
@@ -1051,22 +1058,22 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this.paymentResponse = json.decode(response.body);
@@ -1082,7 +1089,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1109,22 +1117,22 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       // debugPrint("=========Pay Order Payment Done=========");
       // debugPrint(json.decode(response.body));
       setState(() {
@@ -1140,7 +1148,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1158,29 +1167,29 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     Map data = {
       "user_id": cart!.userId,
       "is_use_wallet": false,
-      "server_token": cart!.serverToken
+      "server_token": cart!.serverToken,
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;
@@ -1194,7 +1203,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1218,9 +1228,11 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       Map data = {
         "user_id": cart!.userId,
         "cart_id": cart_id,
-        "is_schedule_order":
-            cart!.isSchedule != null ? cart!.isSchedule : false,
-        "schedule_order_start_at": cart!.scheduleStart != null &&
+        "is_schedule_order": cart!.isSchedule != null
+            ? cart!.isSchedule
+            : false,
+        "schedule_order_start_at":
+            cart!.scheduleStart != null &&
                 cart!.isSchedule != null &&
                 cart!.isSchedule
             ? cart!.scheduleStart!.toUtc().toString()
@@ -1233,22 +1245,22 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       http.Response response;
       response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       // debugPrint("==========Create Order Done==========");
       // debugPrint(json.decode(response.body));
       setState(() {
@@ -1265,7 +1277,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1276,8 +1289,9 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
   Future<dynamic> createAliexpressOrder() async {
     // debugPrint("in createAliexpressOrder>>>");
     var aliOrderResponse;
-    var mobile_no =
-        cart!.phone.isNotEmpty ? cart!.phone : "${userData['user']['phone']}";
+    var mobile_no = cart!.phone.isNotEmpty
+        ? cart!.phone
+        : "${userData['user']['phone']}";
     var full_name = cart!.userName.isNotEmpty
         ? cart!.userName
         : "${userData['user']['first_name']} ${userData['user']['last_name']}";
@@ -1300,7 +1314,7 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
           "product_price": {
             // "currency_code": "ETB",
             "price": item.price,
-          }
+          },
         });
       }
       // else {debugPrint("Index $index out of range for productIds or itemIds");}
@@ -1321,22 +1335,22 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
         // debugPrint("body $body");
         http.Response response = await http
             .post(
-          Uri.parse(url),
-          headers: <String, String>{
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: body,
-        )
+              Uri.parse(url),
+              headers: <String, String>{
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+              },
+              body: body,
+            )
             .timeout(
-          Duration(seconds: 50),
-          onTimeout: () {
-            setState(() {
-              this._loading = false;
-            });
-            throw TimeoutException("The connection has timed out!");
-          },
-        );
+              Duration(seconds: 50),
+              onTimeout: () {
+                setState(() {
+                  this._loading = false;
+                });
+                throw TimeoutException("The connection has timed out!");
+              },
+            );
         setState(() {
           aliOrderResponse = json.decode(response.body);
         });
@@ -1364,28 +1378,28 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
     Map data = {
       "user_id": cart!.userId,
       "server_token": cart!.serverToken,
-      "order_payment_id": widget.orderPaymentId
+      "order_payment_id": widget.orderPaymentId,
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;
@@ -1400,7 +1414,8 @@ class _GlobalKifiyaState extends State<GlobalKifiya> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );

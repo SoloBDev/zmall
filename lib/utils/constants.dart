@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:zmall/utils/size_config.dart';
 import 'package:encrypt/encrypt.dart' as Encrypt;
@@ -11,23 +10,24 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 // Ethiopia old production
 // const BASE_URL = "https://app.zmallapp.com"; //Eth production
 // const BASE_URL = "http://159.65.147.111:8000"; //cloudocean server
+// const BASE_URL_TEST = "https://test.zmallapp.com"; //old test domain
 
 // south sudan production
 const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // const BASE_URL_JUBA = "http://196.189.124.241:8000"; //Juba Production
-
 // south sudan test
 // const BASE_URL_JUBA = "http://167.172.180.220:7000"; //test
 
 // Ethiopia production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
-const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
+// const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
 
 // Ethiopia test
-// const BASE_URL_TEST = "https://test.zmallapp.com"; //test
-//
-const BASE_URL = BASE_URL_PROD;
+// const BASE_URL_TEST = "http://196.189.44.49:7000"; //test
+const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
+
+const BASE_URL = BASE_URL_TEST;
 // const BASE_URL = kDebugMode ? BASE_URL_TEST : BASE_URL_PROD;
 
 //

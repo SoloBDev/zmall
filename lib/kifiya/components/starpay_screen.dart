@@ -4,46 +4,51 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:zmall/models/cart.dart';
 import 'package:zmall/utils/constants.dart';
+import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/size_config.dart';
-import 'package:zmall/widgets/custom_back_button.dart';
 
-class AddisPay extends StatefulWidget {
-  const AddisPay({
+class StarPayScreen extends StatefulWidget {
+  const StarPayScreen({
     required this.url,
-    required this.phone,
-    required this.email,
     required this.amount,
+    required this.phone,
     required this.traceNo,
+    required this.orderPaymentId,
+    this.isAbroad = false,
     required this.firstName,
     required this.lastName,
+    required this.items,
+    required this.email,
   });
   final String url;
+
+  final double amount;
   final String phone;
   final String email;
-  final double amount;
-  final String traceNo;
   final String firstName;
   final String lastName;
+  final String traceNo;
+  final String orderPaymentId;
+  final bool isAbroad;
+  final List<Item> items;
 
   @override
-  _AddisPayState createState() => _AddisPayState();
+  _StarPayScreenState createState() => _StarPayScreenState();
 }
 
-class _AddisPayState extends State<AddisPay> {
-  String title = "AddisPay";
-  String message = "Connecting to AddisPay...";
+class _StarPayScreenState extends State<StarPayScreen> {
+  final String title = "StarPay";
   bool _loading = false;
-  bool _isError = false;
   String initUrl = "";
-  // bool isError = false;
+
   InAppWebViewSettings settings = InAppWebViewSettings(
     //both platforms
     useShouldOverrideUrlLoading: true,
     mediaPlaybackRequiresUserGesture: false,
     javaScriptEnabled: true, // Ensure payment JS works
     clearCache: true, // Clear cache for security
-    disableDefaultErrorPage: true,
     //android
     useHybridComposition: true,
     //ios
@@ -53,40 +58,29 @@ class _AddisPayState extends State<AddisPay> {
   @override
   void initState() {
     super.initState();
+
+    // debugPrint(
+    //   "alicart.items: ${widget.items.map((item) => item.toJson()).toList()}",
+    // );
     _initiateUrl();
   }
 
   void _initiateUrl() async {
-    if (!mounted) return;
-
-    setState(() {
-      _loading = true;
-    });
-    try {
-      final data = await initiateUrl();
-      if (data != null) {
-        setState(() {
-          initUrl = "${data['checkout_url']}/${data['uuid']}";
-          message = "Invoice initiated successfully. Loading...";
-        });
-      } else {
-        throw Exception('Invalid response from initiateUrl');
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isError = true;
-          message = "Failed to initiate payment. Please try again.";
-        });
-
-        if (_isError || Navigator.canPop(context)) {
-          Navigator.of(context).pop();
-        }
-      }
-    } finally {
+    var response = await initiateUrl();
+    if (response != null && response['success']
+    // && response['data']['data']['status'].toString().toLowerCase() =='success'
+    ) {
+      Service.showMessage(
+        context: context,
+        title: "${response['data']['message']}. Loading...",
+        // "Invoice initiated successfully. Loading...",
+        error: false,
+        duration: 6,
+      );
       setState(() {
-        this._loading = false;
+        initUrl = response['data']['data']['payment_url'];
       });
+      // debugPrint("initUrl $initUrl");
     }
   }
 
@@ -95,23 +89,21 @@ class _AddisPayState extends State<AddisPay> {
     return Scaffold(
       appBar: AppBar(
         title: Text(title, style: TextStyle(color: kBlackColor)),
-        leading: CustomBackButton(),
       ),
-      body: _loading || _isError || initUrl.isEmpty
+      body: _loading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (_loading && !_isError)
-                    SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenWidth(kDefaultPadding * 2),
-                    ),
+                  SpinKitWave(
+                    color: kSecondaryColor,
+                    size: getProportionateScreenWidth(kDefaultPadding * 2),
+                  ),
                   SizedBox(
                     height: getProportionateScreenHeight(kDefaultPadding),
                   ),
                   Text(
-                    message,
+                    "Connecting to StarPay...",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: kBlackColor.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
@@ -126,15 +118,6 @@ class _AddisPayState extends State<AddisPay> {
               shouldOverrideUrlLoading: (controller, navigationAction) async {
                 return NavigationActionPolicy.ALLOW; // Allow all navigations
               },
-              onReceivedError: (controller, request, error) {
-                setState(() {
-                  _loading = false;
-                  message = "Failed to initiate payment. Please try again.";
-                  // Force rebuild to show error message
-                  initUrl =
-                      ""; // Clear the URL so the error message is shown instead of the webview
-                });
-              },
             ),
     );
   }
@@ -145,17 +128,28 @@ class _AddisPayState extends State<AddisPay> {
     });
     var url = widget.url;
 
-    Map data = {
-      "appId": "123456",
-      "amount": "${widget.amount}",
-      "trace_no": widget.traceNo,
-      "phone": widget.phone,
-      "email": widget.email,
-      "first_name": widget.firstName,
-      "last_name": widget.lastName,
-      "description": "ZMall Order payment",
-    };
+    // Map items to StarPay format
+    List<Map<String, dynamic>> mappedItems = widget.items.map((item) {
+      return {
+        "productId": item.id,
+        "quantity": item.quantity,
+        "item_name": item.itemName,
+        "unit_price": item.price,
+      };
+    }).toList();
 
+    Map data = {
+      "items": mappedItems,
+      "email": widget.email,
+      "amount": widget.amount,
+      "trace_no": widget.traceNo,
+      "last_name": widget.lastName,
+      "first_name": widget.firstName,
+      "phone": "+251${widget.phone}",
+      "description": "Order payment Zmall Food Delivery",
+    };
+    // debugPrint("data $data");
+    // debugPrint("mappedItems $mappedItems");
     var body = json.encode(data);
     try {
       http.Response response = await http
@@ -170,21 +164,27 @@ class _AddisPayState extends State<AddisPay> {
           .timeout(
             Duration(seconds: 10),
             onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
               throw TimeoutException("The connection has timed out!");
             },
           );
+      // debugPrint("response ${json.decode(response.body)}");
+
       return json.decode(response.body);
     } catch (e) {
-      setState(() {
-        _isError = true;
-        message =
-            "Something went wrong. Please check your internet connection!";
-      });
+      // debugPrint("error $e");
 
+      Service.showMessage(
+        context: context,
+        title: "Something went wrong. Please check your internet connection!",
+        error: true,
+      );
       return null;
     } finally {
       setState(() {
-        this._loading = false;
+        _loading = false;
       });
     }
   }

@@ -5,7 +5,7 @@ import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/size_config.dart';
 
 class LoyaltyCardScreen extends StatefulWidget {
-  const LoyaltyCardScreen({Key? key}) : super(key: key);
+  const LoyaltyCardScreen({super.key});
 
   @override
   State<LoyaltyCardScreen> createState() => _LoyaltyCardScreenState();
@@ -38,10 +38,7 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Loyalty Card",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("Loyalty Card", style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),
       body: Container(
@@ -78,30 +75,38 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
         foregroundColor: kPrimaryColor,
         child: Icon(Icons.add),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context){
-            return AddNewCardScreen();
-          }));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return AddNewCardScreen();
+              },
+            ),
+          );
         },
       ),
     );
   }
 
-  Card _buildCreditCard(
-      {required Color color,
-      required String cardNumber,
-      required String cardHolder,
-      required String cardExpiration}) {
+  Card _buildCreditCard({
+    required Color color,
+    required String cardNumber,
+    required String cardHolder,
+    required String cardExpiration,
+  }) {
     return Card(
       elevation: 4.0,
       color: color,
       /*1*/
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Container(
         height: 200,
         padding: const EdgeInsets.only(
-            left: 16.0, right: 16.0, bottom: 22.0, top: 10),
+          left: 16.0,
+          right: 16.0,
+          bottom: 22.0,
+          top: 10,
+        ),
         child: Column(
           /*2*/
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,10 +132,7 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
                   label: 'CARDHOLDER',
                   value: cardHolder.toUpperCase(),
                 ),
-                _buildDetailsBlock(
-                  label: 'VALID THRU',
-                  value: cardExpiration,
-                ),
+                _buildDetailsBlock(label: 'VALID THRU', value: cardExpiration),
               ],
             ),
           ],
@@ -146,13 +148,19 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
         Text(
           '$label',
           style: TextStyle(
-              color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold),
+            color: Colors.grey,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           '$value',
           style: TextStyle(
-              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-        )
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -162,26 +170,14 @@ class _LoyaltyCardScreenState extends State<LoyaltyCardScreen> {
       /*1*/
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Image.asset(
-          "images/contact_less.png",
-          height: 20,
-          width: 18,
-        ),
+        Image.asset("images/contact_less.png", height: 20, width: 18),
         Spacer(),
         Container(
           color: kPrimaryColor,
-          child: Image.asset(
-            "images/dashen.png",
-            height: 40,
-            width: 40,
-          ),
+          child: Image.asset("/payment/dashen.png", height: 40, width: 40),
         ),
-        SizedBox(width: getProportionateScreenWidth(kDefaultPadding),),
-        Image.asset(
-          "images/zmall.jpg",
-          height: 40,
-          width: 40,
-        ),
+        SizedBox(width: getProportionateScreenWidth(kDefaultPadding)),
+        Image.asset("images/zmall.jpg", height: 40, width: 40),
       ],
     );
   }

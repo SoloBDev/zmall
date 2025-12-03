@@ -97,7 +97,7 @@
 //                 ],
 //               ),
 //               Image.asset(
-//                 "images/telebirr.png",
+//                 "images/payment/telebirr.png",
 //                 height: getProportionateScreenHeight(kDefaultPadding * 10),
 //                 width: getProportionateScreenWidth(kDefaultPadding * 10),
 //               ),

@@ -326,7 +326,8 @@ class _BodyState extends State<Body> {
                             if (userData != null) {
                               if (cart!.storeId == widget.item['store_id']) {
                                 setState(() {
-                                  cart!.items!.add(item);
+                                  // Use Service method to add or merge item
+                                  Service.addOrMergeCartItem(cart!, item);
                                   Service.save('cart', cart);
                                   Navigator.of(context).pop();
                                 });

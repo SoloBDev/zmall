@@ -431,7 +431,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
                             PaymentCard(
                               title: "Telebirr InApp",
                               subtitle: "Pay with mobile app",
-                              imageUrl: "images/telebirr.png",
+                              imageUrl: "images/payment/telebirr.png",
                               onPressed: () {
                                 if (topupFormKey.currentState!.validate()) {
                                   _getKifiyaGateway();
@@ -1650,7 +1650,7 @@ class CustomCard extends StatelessWidget {
 //                               PaymentCard(
 //                                 title: "Telebirr InApp",
 //                                 subtitle: "Pay with mobile app",
-//                                 imageUrl: "images/telebirr.png",
+//                                 imageUrl: "images/payment/telebirr.png",
 //                                 onPressed: () {
 //                                   _getKifiyaGateway();
 
@@ -1715,7 +1715,7 @@ class CustomCard extends StatelessWidget {
 //                               PaymentCard(
 //                                 title: "Telebirr USSD",
 //                                 subtitle: "Pay with USSD code",
-//                                 imageUrl: "images/telebirr.png",
+//                                 imageUrl: "images/payment/telebirr.png",
 //                                 onPressed: () {
 //                                   Navigator.push(
 //                                     context,

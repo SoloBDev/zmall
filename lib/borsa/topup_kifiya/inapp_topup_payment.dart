@@ -26,8 +26,9 @@ class TopupPaymentInApp extends StatefulWidget {
 }
 
 class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
-  static const MethodChannel _channel =
-      MethodChannel('telebirrInAppSdkChannel');
+  static const MethodChannel _channel = MethodChannel(
+    'telebirrInAppSdkChannel',
+  );
 
   Future<dynamic> placeOrderIOS({
     required String receiveCode,
@@ -59,18 +60,24 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
         ///Confirm payment verification
         if (code == 0) {
           _handlePaymentResponse(code: code);
-          Future.delayed(Duration(seconds: 2),
-              () => Navigator.pop(context, _paymentResult));
+          Future.delayed(
+            Duration(seconds: 2),
+            () => Navigator.pop(context, _paymentResult),
+          );
         } else {
           _handlePaymentResponse(code: -99);
-          Future.delayed(Duration(seconds: 2),
-              () => Navigator.pop(context, _paymentResult));
+          Future.delayed(
+            Duration(seconds: 2),
+            () => Navigator.pop(context, _paymentResult),
+          );
         }
       } else {
         // Unexpected response format
         _handlePaymentResponse(code: -1);
         Future.delayed(
-            Duration(seconds: 2), () => Navigator.pop(context, false));
+          Duration(seconds: 2),
+          () => Navigator.pop(context, false),
+        );
       }
     } on PlatformException catch (e) {
       _handlePaymentResponse(code: e.details["code"]);
@@ -90,8 +97,10 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
         'receiveCode': receiveCode,
       };
 
-      final Map<Object?, Object?> response =
-          await _channel.invokeMethod('placeOrder', arguments);
+      final Map<Object?, Object?> response = await _channel.invokeMethod(
+        'placeOrder',
+        arguments,
+      );
 
       // debugPrint("***Response From Native (Android/iOS)***: ${response.toString()}");
 
@@ -108,8 +117,10 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
         ///Confirm payment verification
         if (code == 0) {
           _handlePaymentResponse(code: code);
-          Future.delayed(Duration(seconds: 2),
-              () => Navigator.pop(context, _paymentResult));
+          Future.delayed(
+            Duration(seconds: 2),
+            () => Navigator.pop(context, _paymentResult),
+          );
         } else {
           Future.delayed(
             Duration(seconds: 2),
@@ -120,7 +131,9 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
         // Unexpected response format
         _handlePaymentResponse(code: -1);
         Future.delayed(
-            Duration(seconds: 2), () => Navigator.pop(context, false));
+          Duration(seconds: 2),
+          () => Navigator.pop(context, false),
+        );
       }
     } on PlatformException catch (e) {
       _handlePaymentResponse(code: e.details["code"]);
@@ -181,7 +194,11 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
     // Display the message in the UI
 
     Service.showMessage(
-        context: context, title: message, error: isError, duration: 3);
+      context: context,
+      title: message,
+      error: isError,
+      duration: 3,
+    );
   }
 
   @override
@@ -198,10 +215,7 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "TeleBirr InApp",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("TeleBirr InApp", style: TextStyle(color: kBlackColor)),
         centerTitle: true,
         leading: BackButton(
           onPressed: () {
@@ -221,20 +235,21 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
                 Text(
                   'Initiating Payment',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: kBlackColor,
-                        letterSpacing: 0.8,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    color: kBlackColor,
+                    letterSpacing: 0.8,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 4)),
+                  height: getProportionateScreenHeight(kDefaultPadding / 4),
+                ),
                 Text(
                   'Powered by Ethiotelecom',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: kGreyColor,
-                      ),
+                    fontWeight: FontWeight.w500,
+                    color: kGreyColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -244,9 +259,10 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
             // Telebirr Logo
             ClipRRect(
               borderRadius: BorderRadius.circular(
-                  getProportionateScreenWidth(kDefaultPadding / 2)),
+                getProportionateScreenWidth(kDefaultPadding / 2),
+              ),
               child: Image.asset(
-                "images/telebirr.png",
+                "images/payment/telebirr.png",
                 height: getProportionateScreenHeight(kDefaultPadding * 12),
                 width: getProportionateScreenWidth(kDefaultPadding * 12),
                 fit: BoxFit.contain,
@@ -266,17 +282,17 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
               "Waiting for your payment to be confirmed...",
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: kBlackColor.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: kBlackColor.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w600,
+              ),
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
             Text(
               "Please complete the transaction in the Telebirr app.",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: kGreyColor,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: kGreyColor),
             ),
           ],
         ),
@@ -298,25 +314,25 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
       "phone": phone,
       "amount": amount,
       "description": "ZMall wallet topup production",
-      "isInapp": true
+      "isInapp": true,
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         responseData = json.decode(response.body);
@@ -332,14 +348,14 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
             ? placeOrder(
                 appId: responseData["appId"],
                 shortCode: responseData["shortCode"],
-                receiveCode: responseData['createOrderResult']['biz_content']
-                    ['receiveCode'],
+                receiveCode:
+                    responseData['createOrderResult']['biz_content']['receiveCode'],
               )
             : placeOrderIOS(
                 appId: responseData["appId"],
                 shortCode: responseData["shortCode"],
-                receiveCode: responseData['createOrderResult']['biz_content']
-                    ['receiveCode'],
+                receiveCode:
+                    responseData['createOrderResult']['biz_content']['receiveCode'],
               );
       } else if (responseData != null &&
           responseData['createOrderResult']['errorCode'] != null) {
@@ -644,7 +660,7 @@ class _TopupPaymentInAppState extends State<TopupPaymentInApp> {
 //               borderRadius: BorderRadius.circular(
 //                   getProportionateScreenWidth(kDefaultPadding / 2)),
 //               child: Image.asset(
-//                 "images/telebirr.png",
+//                 "images/payment/telebirr.png",
 //                 height: getProportionateScreenHeight(kDefaultPadding * 12),
 //                 width: getProportionateScreenWidth(kDefaultPadding * 12),
 //                 fit: BoxFit.contain,

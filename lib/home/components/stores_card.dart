@@ -230,9 +230,8 @@ class StoresCard extends StatelessWidget {
                   width: getProportionateScreenWidth(kDefaultPadding * 3),
                   //
                   child: Center(
-                    child: kDebugMode
-                        ? Image.asset("images/store_tags/new_on_zmall.png")
-                        : Image.asset("images/store_tags/$featuredTag.png"),
+                    child: Image.asset("images/store_tags/$featuredTag.png"),
+                    //  kDebugMode ? Image.asset("images/store_tags/new_on_zmall.png") :
                   ),
                 ),
               ),

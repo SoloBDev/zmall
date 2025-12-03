@@ -685,19 +685,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                               ],
                             ),
 
-                      // : Container(
-                      //     height: getProportionateScreenWidth(
-                      //         MediaQuery.sizeOf(context).height * 0.14),
-                      //     child: Expanded(
-                      //       child:
-                      //   ),
-                      // SpinKitPianoWave(
-                      //     color: kSecondaryColor,
-                      //   ),
-
-                      // SizedBox(
-                      //     height:
-                      //         getProportionateScreenHeight(kDefaultPadding)),
                       wrapperContainer(
                         spacing: kDefaultPadding / 2,
                         children: [
@@ -1197,22 +1184,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           .timeout(
             Duration(seconds: 10),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
               throw TimeoutException("The connection has timed out!");
             },
           );
       setState(() {
         this.responseData = json.decode(response.body);
-        this._loading = false;
       });
 
       return json.decode(response.body);
     } catch (e) {
-      setState(() {
-        this._loading = false;
-      });
       if (mounted) {
         Service.showMessage(
           context: context,
@@ -1223,6 +1203,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
       }
 
       return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -1255,22 +1239,15 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
               throw TimeoutException("The connection has timed out!");
             },
           );
       setState(() {
         this.responseData = json.decode(response.body);
-        this._loading = false;
       });
 
       return json.decode(response.body);
     } catch (e) {
-      setState(() {
-        this._loading = false;
-      });
       if (mounted) {
         Service.showMessage(
           context: context,
@@ -1280,6 +1257,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         );
       }
       return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -1319,21 +1300,12 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           .timeout(
             Duration(seconds: 10),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
               throw TimeoutException("The connection has timed out!");
             },
           );
-      setState(() {
-        this._loading = false;
-      });
 
       return json.decode(response.body);
     } catch (e) {
-      setState(() {
-        this._loading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1343,6 +1315,10 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         ),
       );
       return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 }

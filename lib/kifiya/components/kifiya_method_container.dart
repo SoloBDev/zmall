@@ -61,7 +61,7 @@ class KifiyaMethodContainer extends StatelessWidget {
                     fit: BoxFit.contain,
                     imagePath.isNotEmpty
                         ? imagePath
-                        : 'images/default_payment.png',
+                        : 'images/payment/default_payment.png',
                     width: getProportionateScreenWidth(40),
                     height: getProportionateScreenWidth(40),
                   ),
@@ -71,18 +71,18 @@ class KifiyaMethodContainer extends StatelessWidget {
                 title.toLowerCase().contains("tele birr")
                     ? "USSD"
                     : title.toLowerCase().contains("telebirr reference")
-                        ? "Reference"
-                        : title.toLowerCase().contains("telebirr inapp")
-                            ? "InApp"
-                            : Service.capitalizeFirstLetters(title),
+                    ? "Reference"
+                    : title.toLowerCase().contains("telebirr inapp")
+                    ? "InApp"
+                    : Service.capitalizeFirstLetters(title),
                 textAlign: TextAlign.center,
                 softWrap: true,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: 14,
-                      color: kBlackColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontSize: 14,
+                  color: kBlackColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

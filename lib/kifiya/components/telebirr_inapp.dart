@@ -26,8 +26,9 @@ class TelebirrInApp extends StatefulWidget {
 }
 
 class _TelebirrInAppState extends State<TelebirrInApp> {
-  static const MethodChannel _channel =
-      MethodChannel('telebirrInAppSdkChannel');
+  static const MethodChannel _channel = MethodChannel(
+    'telebirrInAppSdkChannel',
+  );
 
   Future<dynamic> placeOrderIOS({
     required String receiveCode,
@@ -59,31 +60,40 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         ///Confirm payment verification
         if (code == 0) {
           var confirmPaymentResponce = await confirmPayment(
-              code: code,
-              status: response['status'].toString(),
-              traceNo: widget.traceNo,
-              message: response['errMsg'].toString());
+            code: code,
+            status: response['status'].toString(),
+            traceNo: widget.traceNo,
+            message: response['errMsg'].toString(),
+          );
           // debugPrint("confirmPaymentResponce:>>>> $confirmPaymentResponce");
           if (confirmPaymentResponce != null &&
               confirmPaymentResponce["success"]) {
             _handlePaymentResponse(code: code);
-            Future.delayed(Duration(seconds: 2),
-                () => Navigator.pop(context, _paymentResult));
+            Future.delayed(
+              Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult),
+            );
           } else {
             _handlePaymentResponse(code: -99);
-            Future.delayed(Duration(seconds: 2),
-                () => Navigator.pop(context, _paymentResult));
+            Future.delayed(
+              Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult),
+            );
           }
         } else {
           _handlePaymentResponse(code: code);
-          Future.delayed(Duration(seconds: 2),
-              () => Navigator.pop(context, _paymentResult));
+          Future.delayed(
+            Duration(seconds: 2),
+            () => Navigator.pop(context, _paymentResult),
+          );
         }
       } else {
         // Unexpected response format
         _handlePaymentResponse(code: -1);
         Future.delayed(
-            Duration(seconds: 2), () => Navigator.pop(context, false));
+          Duration(seconds: 2),
+          () => Navigator.pop(context, false),
+        );
       }
     } on PlatformException catch (e) {
       _handlePaymentResponse(code: e.details["code"]);
@@ -127,8 +137,10 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         'shortCode': shortCode,
       };
 
-      final Map<Object?, Object?> response =
-          await _channel.invokeMethod('placeOrder', arguments);
+      final Map<Object?, Object?> response = await _channel.invokeMethod(
+        'placeOrder',
+        arguments,
+      );
 
       // debugPrint("***Response From Native (Android/iOS)***: ${response.toString()}");
 
@@ -145,15 +157,18 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
         ///Confirm payment verification
         if (code == 0) {
           var confirmPaymentResponce = await confirmPayment(
-              code: code,
-              status: response['status'].toString(),
-              traceNo: widget.traceNo,
-              message: response['errMsg'].toString());
+            code: code,
+            status: response['status'].toString(),
+            traceNo: widget.traceNo,
+            message: response['errMsg'].toString(),
+          );
           if (confirmPaymentResponce != null &&
               confirmPaymentResponce["success"]) {
             _handlePaymentResponse(code: code);
-            Future.delayed(Duration(seconds: 2),
-                () => Navigator.pop(context, _paymentResult));
+            Future.delayed(
+              Duration(seconds: 2),
+              () => Navigator.pop(context, _paymentResult),
+            );
           } else {
             Future.delayed(
               Duration(seconds: 2),
@@ -162,14 +177,18 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
           }
         } else {
           _handlePaymentResponse(code: -99);
-          Future.delayed(Duration(seconds: 2),
-              () => Navigator.pop(context, _paymentResult));
+          Future.delayed(
+            Duration(seconds: 2),
+            () => Navigator.pop(context, _paymentResult),
+          );
         }
       } else {
         // Unexpected response format
         _handlePaymentResponse(code: -1);
         Future.delayed(
-            Duration(seconds: 2), () => Navigator.pop(context, false));
+          Duration(seconds: 2),
+          () => Navigator.pop(context, false),
+        );
       }
     } on PlatformException catch (e) {
       _handlePaymentResponse(code: e.details["code"]);
@@ -230,7 +249,11 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
     // Display the message in the UI
 
     Service.showMessage(
-        context: context, title: message, error: isError, duration: 3);
+      context: context,
+      title: message,
+      error: isError,
+      duration: 3,
+    );
   }
 
   @override
@@ -247,10 +270,7 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "TeleBirr InApp",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("TeleBirr InApp", style: TextStyle(color: kBlackColor)),
         centerTitle: true,
         leading: BackButton(
           onPressed: () {
@@ -270,20 +290,21 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
                 Text(
                   'Initiating Payment',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: kBlackColor,
-                        letterSpacing: 0.8,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    color: kBlackColor,
+                    letterSpacing: 0.8,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding / 4)),
+                  height: getProportionateScreenHeight(kDefaultPadding / 4),
+                ),
                 Text(
                   'Powered by Ethiotelecom',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: kGreyColor,
-                      ),
+                    fontWeight: FontWeight.w500,
+                    color: kGreyColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -293,9 +314,10 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             // Telebirr Logo
             ClipRRect(
               borderRadius: BorderRadius.circular(
-                  getProportionateScreenWidth(kDefaultPadding / 2)),
+                getProportionateScreenWidth(kDefaultPadding / 2),
+              ),
               child: Image.asset(
-                "images/telebirr.png",
+                "images/payment/telebirr.png",
                 height: getProportionateScreenHeight(kDefaultPadding * 12),
                 width: getProportionateScreenWidth(kDefaultPadding * 12),
                 fit: BoxFit.contain,
@@ -315,17 +337,17 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
               "Waiting for your payment to be confirmed...",
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: kBlackColor.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: kBlackColor.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w600,
+              ),
             ),
             SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
             Text(
               "Please complete the transaction in the Telebirr app.",
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: kGreyColor,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: kGreyColor),
             ),
           ],
         ),
@@ -333,35 +355,36 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
     );
   }
 
-  Future<dynamic> confirmPayment(
-      {required int code,
-      required String traceNo,
-      required String status,
-      required String message}) async {
+  Future<dynamic> confirmPayment({
+    required int code,
+    required String traceNo,
+    required String status,
+    required String message,
+  }) async {
     var url = "https://pgw.shekla.app/telebirrInapp/in_app_call_back";
     Map data = {
       "code": code,
       "status": status,
       "traceNo": traceNo,
-      "message": message
+      "message": message,
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       return json.decode(response.body);
     } catch (e) {
       return null;
@@ -381,25 +404,25 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
       "phone": phone,
       "amount": amount,
       "description": "ZMall_Telebirr_InApp",
-      "isInapp": true
+      "isInapp": true,
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         responseData = json.decode(response.body);
@@ -414,14 +437,14 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
             ? placeOrder(
                 appId: responseData["appId"],
                 shortCode: responseData["shortCode"],
-                receiveCode: responseData['createOrderResult']['biz_content']
-                    ['receiveCode'],
+                receiveCode:
+                    responseData['createOrderResult']['biz_content']['receiveCode'],
               )
             : placeOrderIOS(
                 appId: responseData["appId"],
                 shortCode: responseData["shortCode"],
-                receiveCode: responseData['createOrderResult']['biz_content']
-                    ['receiveCode'],
+                receiveCode:
+                    responseData['createOrderResult']['biz_content']['receiveCode'],
               );
       }
       return json.decode(response.body);

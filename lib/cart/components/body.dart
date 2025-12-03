@@ -53,6 +53,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   //bool transferLoading = false;
   //bool isDonation = false;
   //bool isCheckout = false;
+  //
   @override
   void initState() {
     super.initState();
@@ -171,9 +172,10 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       Service.save('aliexpressCart', aliexpressCart?.toJson());
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
     }
     setState(() {
       _loading = false;
@@ -218,18 +220,20 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
         // Handle permission denial
 
         Service.showMessage(
-            context: context,
-            title: "Location permission denied. Please enable and try again",
-            error: true);
+          context: context,
+          title: "Location permission denied. Please enable and try again",
+          error: true,
+        );
         FlLocation.requestLocationPermission();
       }
     } else {
       // Location services are disabled
       Service.showMessage(
-          context: context,
-          title:
-              "Location services are turned off. Please enable them in your device settings.",
-          error: true);
+        context: context,
+        title:
+            "Location services are turned off. Please enable them in your device settings.",
+        error: true,
+      );
       return;
     }
   }
@@ -244,17 +248,19 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           latitude = currentLocation.latitude;
           longitude = currentLocation.longitude;
         });
-        Provider.of<ZMetaData>(context, listen: false)
-            .setLocation(currentLocation.latitude, currentLocation.longitude);
+        Provider.of<ZMetaData>(
+          context,
+          listen: false,
+        ).setLocation(currentLocation.latitude, currentLocation.longitude);
       }
     } catch (e) {
       // Handle location retrieval errors
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title:
-                "Could not get your location. Using default location instead.",
-            error: true);
+          context: context,
+          title: "Could not get your location. Using default location instead.",
+          error: true,
+        );
         // Here you could explicitly set to use default location
         // Or provide UI for the user to manually enter location
       }
@@ -295,9 +301,19 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
 
     now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
     zmallOpen = new DateTime(
-        now.year, now.month, now.day, zmallOpen.hour, zmallOpen.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallOpen.hour,
+      zmallOpen.minute,
+    );
     zmallClose = new DateTime(
-        now.year, now.month, now.day, zmallClose.hour, zmallOpen.minute);
+      now.year,
+      now.month,
+      now.day,
+      zmallClose.hour,
+      zmallOpen.minute,
+    );
     if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
       isStoreOpen = true;
     } else {
@@ -322,7 +338,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     }
   }
 
-//////////////////////////////////////////////////////////////////newly added
+  //////////////////////////////////////////////////////////////////newly added
   void _getStoreExtraItemList() async {
     setState(() {
       _loading = true;
@@ -373,13 +389,13 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     // );
   }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: userData != null &&
-              (cart != null && cart!.items!.length > 0)
+      bottomNavigationBar:
+          userData != null && (cart != null && cart!.items!.length > 0)
           ? SafeArea(
               child: Container(
                 width: double.infinity,
@@ -387,32 +403,34 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                 padding: EdgeInsets.symmetric(
                   vertical: getProportionateScreenHeight(kDefaultPadding / 2),
                   // horizontal: getProportionateScreenHeight(kDefaultPadding / 2),
-                ).copyWith(
-                    bottom: getProportionateScreenHeight(kDefaultPadding)),
+                ).copyWith(bottom: getProportionateScreenHeight(kDefaultPadding)),
                 decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    border: Border(top: BorderSide(color: kWhiteColor)),
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(kDefaultPadding),
-                        topRight: Radius.circular(kDefaultPadding))),
+                  color: kPrimaryColor,
+                  border: Border(top: BorderSide(color: kWhiteColor)),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(kDefaultPadding),
+                    topRight: Radius.circular(kDefaultPadding),
+                  ),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   spacing: getProportionateScreenHeight(kDefaultPadding),
                   // crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     //
-
                     if (extraItems != null) showExtraItems(),
                     // Spacer(),
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding),
+                        horizontal: getProportionateScreenWidth(
+                          kDefaultPadding,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        spacing:
-                            getProportionateScreenWidth(kDefaultPadding * 1.2),
+                        spacing: getProportionateScreenWidth(
+                          kDefaultPadding * 1.2,
+                        ),
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(
@@ -422,9 +440,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                             children: [
                               Text(
                                 "${Provider.of<ZMetaData>(context, listen: false).currency} ${price.toStringAsFixed(2)}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
+                                style: Theme.of(context).textTheme.headlineSmall
                                     ?.copyWith(
                                       // fontSize: 18,
                                       color: kBlackColor,
@@ -433,12 +449,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                               ),
                               Text(
                                 "${Provider.of<ZLanguage>(context).cartTotal}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: kGreyColor,
-                                    ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: kGreyColor),
                               ),
                             ],
                           ),
@@ -462,36 +474,48 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                   _doLocationTask();
                                 } else {
                                   DateFormat dateFormat = new DateFormat.Hm();
-                                  DateTime now = DateTime.now()
-                                      .toUtc()
-                                      .add(Duration(hours: 3));
-                                  var appClose =
-                                      await Service.read('app_close');
+                                  DateTime now = DateTime.now().toUtc().add(
+                                    Duration(hours: 3),
+                                  );
+                                  var appClose = await Service.read(
+                                    'app_close',
+                                  );
                                   var appOpen = await Service.read('app_open');
-                                  DateTime zmallClose =
-                                      dateFormat.parse(appClose);
-                                  DateTime zmallOpen =
-                                      dateFormat.parse(appOpen);
+                                  DateTime zmallClose = dateFormat.parse(
+                                    appClose,
+                                  );
+                                  DateTime zmallOpen = dateFormat.parse(
+                                    appOpen,
+                                  );
 
-                                  now = DateTime(now.year, now.month, now.day,
-                                      now.hour, now.minute);
+                                  now = DateTime(
+                                    now.year,
+                                    now.month,
+                                    now.day,
+                                    now.hour,
+                                    now.minute,
+                                  );
                                   zmallOpen = new DateTime(
-                                      now.year,
-                                      now.month,
-                                      now.day,
-                                      zmallOpen.hour,
-                                      zmallOpen.minute);
+                                    now.year,
+                                    now.month,
+                                    now.day,
+                                    zmallOpen.hour,
+                                    zmallOpen.minute,
+                                  );
                                   zmallClose = new DateTime(
-                                      now.year,
-                                      now.month,
-                                      now.day,
-                                      zmallClose.hour,
-                                      zmallClose.minute);
+                                    now.year,
+                                    now.month,
+                                    now.day,
+                                    zmallClose.hour,
+                                    zmallClose.minute,
+                                  );
 
                                   if (now.isAfter(zmallOpen) &&
                                       now.isBefore(zmallClose)) {
                                     Navigator.pushNamed(
-                                        context, DeliveryScreen.routeName);
+                                      context,
+                                      DeliveryScreen.routeName,
+                                    );
                                     //   if (isDonation) {
                                     //   debugPrint('***This is Donation***');
                                     //   //showDonation();
@@ -501,11 +525,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                     // }
                                   } else {
                                     Service.showMessage(
-                                        context: context,
-                                        title:
-                                            "Sorry, we are currently closed. Please comeback soon.",
-                                        error: false,
-                                        duration: 3);
+                                      context: context,
+                                      title:
+                                          "Sorry, we are currently closed. Please comeback soon.",
+                                      error: false,
+                                      duration: 3,
+                                    );
                                   }
                                 }
                               },
@@ -523,9 +548,7 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           : SizedBox.shrink(),
       body: ModalProgressHUD(
         color: kPrimaryColor,
-        progressIndicator: LinearLoadingIndicator(
-          title: "Checking...",
-        ),
+        progressIndicator: LinearLoadingIndicator(title: "Checking..."),
         // progressIndicator: Column(
         //   mainAxisAlignment: MainAxisAlignment.center,
         //   children: [
@@ -549,8 +572,9 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                     decoration: BoxDecoration(
                       color: kWhiteColor,
                       borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(kDefaultPadding * 1.2),
-                          bottomRight: Radius.circular(kDefaultPadding * 1.2)),
+                        bottomLeft: Radius.circular(kDefaultPadding * 1.2),
+                        bottomRight: Radius.circular(kDefaultPadding * 1.2),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -568,30 +592,43 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                           ),
                         TextButton(
                           style: TextButton.styleFrom(
-                              backgroundColor: kPrimaryColor,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusGeometry.circular(
-                                      kDefaultPadding / 1.5))),
+                            backgroundColor: kPrimaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(
+                                kDefaultPadding / 1.5,
+                              ),
+                            ),
+                          ),
                           onPressed:
                               storeName.toString().toLowerCase() == "aliexpress"
-                                  ? () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (context) {
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
                                         return AliProductListScreen();
-                                      }));
-                                    }
-                                  : () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (context) {
+                                      },
+                                    ),
+                                  );
+                                }
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
                                         return NotificationStore(
-                                            storeId: cart!.storeId!);
-                                      }));
-                                    },
+                                          storeId: cart!.storeId!,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
                           child: Text(
                             "Add more?",
-                            style: TextStyle(fontWeight: FontWeight.bold
-                                // decoration: TextDecoration.underline
-                                ),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              // decoration: TextDecoration.underline
+                            ),
                           ),
                         ),
                       ],
@@ -614,41 +651,52 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                       ),
                       separatorBuilder: (BuildContext context, int index) =>
                           Container(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 3),
-                      ),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 3,
+                            ),
+                          ),
                       itemBuilder: (context, index) {
                         final item = cart!.items?[index];
                         return item != null
                             ? Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                    kDefaultPadding / 2,
+                                  ),
                                   vertical: getProportionateScreenHeight(
-                                      kDefaultPadding / 4),
+                                    kDefaultPadding / 4,
+                                  ),
                                 ),
                                 decoration: BoxDecoration(
-                                    color: kPrimaryColor,
-                                    border: Border.all(
-                                        color: kWhiteColor, width: 2),
-                                    borderRadius:
-                                        BorderRadius.circular(kDefaultPadding)),
+                                  color: kPrimaryColor,
+                                  border: Border.all(
+                                    color: kWhiteColor,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    kDefaultPadding,
+                                  ),
+                                ),
                                 child: Row(
                                   children: [
                                     ImageContainer(url: item.imageURL!),
                                     SizedBox(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2)),
+                                      width: getProportionateScreenWidth(
+                                        kDefaultPadding / 2,
+                                      ),
+                                    ),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         spacing: getProportionateScreenHeight(
-                                            kDefaultPadding / 5),
+                                          kDefaultPadding / 5,
+                                        ),
                                         children: [
                                           Text(
                                             Service.capitalizeFirstLetters(
-                                                item.itemName!),
+                                              item.itemName!,
+                                            ),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: kBlackColor,
@@ -677,62 +725,65 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                         Row(
                                           children: [
                                             IconButton(
-                                                icon: Icon(
-                                                  Icons.remove_circle_outline,
-                                                  color: item.quantity != 1
-                                                      ? kSecondaryColor
-                                                      : kGreyColor,
-                                                ),
-                                                onPressed: item.quantity == 1
-                                                    ? () {
-                                                        Service.showMessage(
-                                                            context: context,
-                                                            title:
-                                                                "Minimum order quantity is 1!",
-                                                            error: true);
-                                                      }
-                                                    : () {
-                                                        int? currQty =
-                                                            item.quantity;
-                                                        double? unitPrice =
-                                                            item.price! /
-                                                                currQty!;
-                                                        setState(() {
-                                                          item.quantity =
+                                              icon: Icon(
+                                                Icons.remove_circle_outline,
+                                                color: item.quantity != 1
+                                                    ? kSecondaryColor
+                                                    : kGreyColor,
+                                              ),
+                                              onPressed: item.quantity == 1
+                                                  ? () {
+                                                      Service.showMessage(
+                                                        context: context,
+                                                        title:
+                                                            "Minimum order quantity is 1!",
+                                                        error: true,
+                                                      );
+                                                    }
+                                                  : () {
+                                                      int? currQty =
+                                                          item.quantity;
+                                                      double? unitPrice =
+                                                          item.price! /
+                                                          currQty!;
+                                                      setState(() {
+                                                        item.quantity =
+                                                            currQty - 1;
+                                                        item.price =
+                                                            unitPrice *
+                                                            (currQty - 1);
+                                                        Service.save(
+                                                          'cart',
+                                                          cart,
+                                                        ); //old
+                                                        // Update aliexpressCart if applicable
+                                                        if (aliexpressCart !=
+                                                                null &&
+                                                            aliexpressCart!
+                                                                    .cart
+                                                                    .storeId ==
+                                                                cart!.storeId) {
+                                                          // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
+                                                          aliexpressCart!
+                                                                  .cart
+                                                                  .items![index]
+                                                                  .quantity =
                                                               currQty - 1;
-                                                          item.price =
+                                                          aliexpressCart!
+                                                                  .cart
+                                                                  .items![index]
+                                                                  .price =
                                                               unitPrice *
-                                                                  (currQty - 1);
-                                                          Service.save('cart',
-                                                              cart); //old
-                                                          // Update aliexpressCart if applicable
-                                                          if (aliexpressCart !=
-                                                                  null &&
-                                                              aliexpressCart!
-                                                                      .cart
-                                                                      .storeId ==
-                                                                  cart!
-                                                                      .storeId) {
-                                                            // int aliexpressIndex = aliexpressCart!.itemIds!.indexOf(item.id!);
-                                                            aliexpressCart!
-                                                                    .cart
-                                                                    .items![index]
-                                                                    .quantity =
-                                                                currQty - 1;
-                                                            aliexpressCart!
-                                                                    .cart
-                                                                    .items![index]
-                                                                    .price =
-                                                                unitPrice *
-                                                                    (currQty -
-                                                                        1);
-                                                            Service.save(
-                                                                'aliexpressCart',
-                                                                aliexpressCart); // Save updated aliexpressCart
-                                                          }
-                                                        });
-                                                        calculatePrice();
-                                                      }),
+                                                              (currQty - 1);
+                                                          Service.save(
+                                                            'aliexpressCart',
+                                                            aliexpressCart,
+                                                          ); // Save updated aliexpressCart
+                                                        }
+                                                      });
+                                                      calculatePrice();
+                                                    },
+                                            ),
                                             Text(
                                               "${item.quantity}",
                                               style: Theme.of(context)
@@ -744,45 +795,49 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                   ),
                                             ),
                                             IconButton(
-                                                icon: Icon(
-                                                  Icons.add_circle,
-                                                  color: kSecondaryColor,
-                                                ),
-                                                onPressed: () {
-                                                  int? currQty = item.quantity;
-                                                  double? unitPrice =
-                                                      item.price! / currQty!;
-                                                  setState(() {
-                                                    item.quantity = currQty + 1;
-                                                    item.price = unitPrice *
+                                              icon: Icon(
+                                                Icons.add_circle,
+                                                color: kSecondaryColor,
+                                              ),
+                                              onPressed: () {
+                                                int? currQty = item.quantity;
+                                                double? unitPrice =
+                                                    item.price! / currQty!;
+                                                setState(() {
+                                                  item.quantity = currQty + 1;
+                                                  item.price =
+                                                      unitPrice * (currQty + 1);
+                                                  Service.save(
+                                                    'cart',
+                                                    cart,
+                                                  ); //old
+                                                  // Update aliexpressCart if applicable
+                                                  if (aliexpressCart != null &&
+                                                      aliexpressCart!
+                                                              .cart
+                                                              .storeId ==
+                                                          cart!.storeId) {
+                                                    // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
+                                                    aliexpressCart!
+                                                            .cart
+                                                            .items![index]
+                                                            .quantity =
+                                                        currQty + 1;
+                                                    aliexpressCart!
+                                                            .cart
+                                                            .items![index]
+                                                            .price =
+                                                        unitPrice *
                                                         (currQty + 1);
                                                     Service.save(
-                                                        'cart', cart); //old
-                                                    // Update aliexpressCart if applicable
-                                                    if (aliexpressCart !=
-                                                            null &&
-                                                        aliexpressCart!
-                                                                .cart.storeId ==
-                                                            cart!.storeId) {
-                                                      // int aliexpressIndex = aliexpressCart!.productIds!.indexOf(item.productId!);
-                                                      aliexpressCart!
-                                                              .cart
-                                                              .items![index]
-                                                              .quantity =
-                                                          currQty + 1;
-                                                      aliexpressCart!
-                                                              .cart
-                                                              .items![index]
-                                                              .price =
-                                                          unitPrice *
-                                                              (currQty + 1);
-                                                      Service.save(
-                                                          'aliexpressCart',
-                                                          aliexpressCart); // Save updated aliexpressCart
-                                                    }
-                                                  });
-                                                  calculatePrice();
-                                                }),
+                                                      'aliexpressCart',
+                                                      aliexpressCart,
+                                                    ); // Save updated aliexpressCart
+                                                  }
+                                                });
+                                                calculatePrice();
+                                              },
+                                            ),
                                           ],
                                         ),
                                         GestureDetector(
@@ -794,7 +849,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                               Service.save('cart', cart); //old
                                               if (aliexpressCart != null &&
                                                   aliexpressCart!
-                                                          .cart.storeId ==
+                                                          .cart
+                                                          .storeId ==
                                                       cart!.storeId) {
                                                 aliexpressCart!.cart.items!
                                                     .removeAt(index);
@@ -802,25 +858,28 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                                                     .removeAt(index);
                                                 aliexpressCart!.productIds!
                                                     .removeAt(index);
-                                                Service.save('aliexpressCart',
-                                                    aliexpressCart); //NEW
+                                                Service.save(
+                                                  'aliexpressCart',
+                                                  aliexpressCart,
+                                                ); //NEW
                                               }
                                             });
                                             calculatePrice();
                                           },
                                           child: Text(
-                                            Provider.of<ZLanguage>(context)
-                                                .remove,
+                                            Provider.of<ZLanguage>(
+                                              context,
+                                            ).remove,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyLarge
                                                 ?.copyWith(
-                                                    fontSize: 12,
-                                                    color: kSecondaryColor,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                                  fontSize: 12,
+                                                  color: kSecondaryColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -969,7 +1028,8 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
             : Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding)),
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -980,49 +1040,53 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                         color: kSecondaryColor.withOpacity(0.8),
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 1.5),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 1.5,
+                        ),
                       ),
                       Text(
                         "Your Basket is Empty!",
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800, // Very bold
-                              color: kBlackColor,
-                              letterSpacing: 0.5,
-                            ),
+                          fontWeight: FontWeight.w800, // Very bold
+                          color: kBlackColor,
+                          letterSpacing: 0.5,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
                       Text(
                         "Start adding products to your cart to begin your order.",
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: kGreyColor,
-                              height: 1.4,
-                            ),
+                          color: kGreyColor,
+                          height: 1.4,
+                        ),
                         textAlign: TextAlign.center,
                       ),
+
                       // Optional: Add a button to navigate to products/home
                       // SizedBox(
                       //     height: getProportionateScreenHeight(
                       //         kDefaultPadding * 2)),
-
                       Center(
                         child: TextButton(
                           onPressed: () {
-                            Navigator.pushNamedAndRemoveUntil(context, "/start",
-                                (Route<dynamic> route) => false);
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              "/start",
+                              (Route<dynamic> route) => false,
+                            );
                           },
                           child: Text(
                             "Start Shopping",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium!
+                            style: Theme.of(context).textTheme.titleMedium!
                                 .copyWith(
-                                    color: kSecondaryColor,
-                                    fontWeight: FontWeight.bold),
+                                  color: kSecondaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ),
                       ),
@@ -1050,29 +1114,27 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
   Future<dynamic> getStoreDetail() async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_list";
-    Map data = {
-      "store_id": cart!.storeId!,
-    };
+    Map data = {"store_id": cart!.storeId!};
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this.storeDetail = json.decode(response.body);
       });
@@ -1084,11 +1146,12 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
       });
       if (mounted) {
         Service.showMessage(
-            context: context,
-            title:
-                "Couldn't get store detail, check your internet and try again.",
-            error: true,
-            duration: 3);
+          context: context,
+          title:
+              "Couldn't get store detail, check your internet and try again.",
+          error: true,
+          duration: 3,
+        );
       }
       return null;
     }
@@ -1100,36 +1163,35 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_available";
 
-    Map data = {
-      "store_id": storeID,
-    };
+    Map data = {"store_id": storeID};
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
 
-          Service.showMessage(
-              context: context,
-              title: "Something went wrong!",
-              error: true,
-              duration: 3);
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+              Service.showMessage(
+                context: context,
+                title: "Something went wrong!",
+                error: true,
+                duration: 3,
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this._loading = false;
       });
@@ -1149,53 +1211,57 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
 
   void _showDialog(item, destination, storeLocation, storeId) {
     showDialog(
-        context: context,
-        builder: (BuildContext alertContext) {
-          return AlertDialog(
-            backgroundColor: kPrimaryColor,
-            title: Text(Provider.of<ZLanguage>(context).warning),
-            content: Text(Provider.of<ZLanguage>(context).itemsFound),
-            actions: [
-              TextButton(
-                child: Text(
-                  Provider.of<ZLanguage>(context).cancel,
-                  style: TextStyle(
-                    color: kBlackColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+      context: context,
+      builder: (BuildContext alertContext) {
+        return AlertDialog(
+          backgroundColor: kPrimaryColor,
+          title: Text(Provider.of<ZLanguage>(context).warning),
+          content: Text(Provider.of<ZLanguage>(context).itemsFound),
+          actions: [
+            TextButton(
+              child: Text(
+                Provider.of<ZLanguage>(context).cancel,
+                style: TextStyle(
+                  color: kBlackColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  Navigator.of(alertContext).pop();
-                },
               ),
-              TextButton(
-                child: Text(
-                  Provider.of<ZLanguage>(context).clear,
-                  style: TextStyle(
-                    color: kSecondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+              onPressed: () {
+                Navigator.of(alertContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                Provider.of<ZLanguage>(context).clear,
+                style: TextStyle(
+                  color: kSecondaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () {
-                  setState(() {
-                    cart!.toJson();
-                    Service.remove('cart');
-                    Service.remove('aliexpressCart'); ////NEW
-                    cart = Cart();
-                    addToCart(item, destination, storeLocation, storeId);
-                  });
+              ),
+              onPressed: () {
+                setState(() {
+                  cart!.toJson();
+                  Service.remove('cart');
+                  Service.remove('aliexpressCart'); ////NEW
+                  cart = Cart();
+                  addToCart(item, destination, storeLocation, storeId);
+                });
 
-                  Navigator.of(alertContext).pop();
-                },
-              ),
-            ],
-          );
-        });
+                Navigator.of(alertContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget showExtraItems() {
-    bool isNull = extraItems.every((extraItem) => cart!.items!
-        .any((cartItem) => cartItem.toJson()['_id'] == extraItem['_id']));
+    bool isNull = extraItems.every(
+      (extraItem) => cart!.items!.any(
+        (cartItem) => cartItem.toJson()['_id'] == extraItem['_id'],
+      ),
+    );
     return isNull
         ? SizedBox.shrink()
         : Column(
@@ -1206,9 +1272,9 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                 Text(
                   'Perfect Paring for Your Order!',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: kBlackColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               Container(
                 width: double.infinity,
@@ -1217,214 +1283,230 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
                   scrollDirection: Axis.horizontal,
                   itemCount: extraItems.length,
                   padding: EdgeInsets.symmetric(
-                    horizontal:
-                        getProportionateScreenWidth(kDefaultPadding / 2),
-                    vertical: getProportionateScreenHeight(kDefaultPadding / 4),
+                    horizontal: getProportionateScreenWidth(
+                      kDefaultPadding / 2,
+                    ),
+                    vertical: getProportionateScreenHeight(kDefaultPadding / 2),
                   ),
                   separatorBuilder: (BuildContext context, int index) =>
                       SizedBox(
-                    width: getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
+                        width: getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                   itemBuilder: (context, index) {
-                    bool isAppear = cart!.items!.any((element) =>
-                        element.toJson()['_id'] == extraItems[index]['_id']);
+                    bool isAppear = cart!.items!.any(
+                      (element) =>
+                          element.toJson()['_id'] == extraItems[index]['_id'],
+                    );
                     if (isAppear) {
                       return SizedBox.shrink();
                     }
                     return Container(
                       decoration: BoxDecoration(
-                          border: Border.all(color: kWhiteColor),
-                          borderRadius: BorderRadius.circular(kDefaultPadding)),
+                        border: Border.all(color: kWhiteColor),
+                        borderRadius: BorderRadius.circular(kDefaultPadding),
+                      ),
                       padding: EdgeInsets.symmetric(
-                          horizontal:
-                              getProportionateScreenWidth(kDefaultPadding / 2),
-                          vertical: getProportionateScreenHeight(
-                              kDefaultPadding / 3)),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing:
-                            getProportionateScreenHeight(kDefaultPadding / 4),
+                        horizontal: getProportionateScreenWidth(
+                          kDefaultPadding / 2,
+                        ),
+                        vertical: getProportionateScreenHeight(
+                          kDefaultPadding / 3,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        spacing: getProportionateScreenHeight(
+                          kDefaultPadding / 3,
+                        ),
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            spacing: getProportionateScreenHeight(
-                                kDefaultPadding / 3),
-                            children: [
-                              /////item image section///
-                              CachedNetworkImage(
-                                imageUrl:
-                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 3),
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding * 3),
-                                  decoration: BoxDecoration(
-                                    color: kWhiteColor,
-                                    borderRadius: BorderRadius.circular(
-                                        getProportionateScreenHeight(
-                                            kDefaultPadding)),
-                                    image: DecorationImage(
-                                      fit: BoxFit.contain,
-                                      image: imageProvider,
-                                    ),
-                                  ),
-                                ),
-                                placeholder: (context, url) => Center(
-                                  child: Container(
-                                    width: getProportionateScreenWidth(
-                                        kDefaultPadding * 3),
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding * 3),
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          kWhiteColor),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding * 3),
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding * 3),
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      fit: BoxFit.contain,
-                                      image: AssetImage(zmallLogo),
-                                    ),
-                                  ),
-                                ),
+                          /////item image section///
+                          CachedNetworkImage(
+                            imageUrl:
+                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}",
+                            imageBuilder: (context, imageProvider) => Container(
+                              width: getProportionateScreenWidth(
+                                kDefaultPadding * 3,
                               ),
-
-                              //////item name and price section////
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    extraItems[index]['name'],
-                                    style: TextStyle(
-                                      fontSize: getProportionateScreenWidth(
-                                          kDefaultPadding * 0.9),
-                                      color: kBlackColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    softWrap: true,
-                                  ),
-                                  Text(
-                                    "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium
-                                        ?.copyWith(
-                                          color: kGreyColor,
-                                        ),
-                                  ),
-                                ],
+                              height: getProportionateScreenHeight(
+                                kDefaultPadding * 3,
                               ),
-                            ],
-                          ),
-                          ///// add to cart button section///
-                          GestureDetector(
-                            onTap: () async {
-                              // Add to cart.....
-
-                              // debugPrint('id... ${extraItems[index]['_id']}');
-                              Item item = Item(
-                                id: extraItems[index]['_id'],
-                                quantity: 1,
-                                specification: [],
-                                noteForItem: "",
-                                price: _getPrice(extraItems[index]) != null
-                                    ? double.parse(
-                                        _getPrice(extraItems[index]),
-                                      )
-                                    : 0,
-                                itemName: extraItems[index]['name'],
-                                imageURL: extraItems[index]['image_url']
-                                            .length >
-                                        0
-                                    ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
-                                    : "https://ibb.co/vkhzjd6",
-                              );
-                              // debugPrint('item... $item');
-                              StoreLocation storeLocation = StoreLocation(
-                                  long: storeLocations[1],
-                                  lat: storeLocations[0]);
-                              // debugPrint('sLocation... $storeLocation');
-                              DestinationAddress destination =
-                                  DestinationAddress(
-                                long: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .longitude,
-                                lat: Provider.of<ZMetaData>(context,
-                                        listen: false)
-                                    .latitude,
-                                name: "Current Location",
-                                note: "User current location",
-                              );
-                              // debugPrint('DestinationAddress... $destination');
-                              if (cart != null && userData != null) {
-                                if (cart!.storeId! ==
-                                    extraItems[index]['store_id']) {
-                                  setState(() {
-                                    cart!.items!.add(item);
-                                    Service.save('cart', cart)
-                                        .then((value) => calculatePrice())
-                                        // .then(
-                                        //   (value) => Service.showMessage(
-                                        //     context: context,
-                                        //     title: "Item added to cart",
-                                        //   ),
-                                        // )
-                                        .then((value) => setState(() {}));
-                                  });
-                                } else {
-                                  _showDialog(item, destination, storeLocation,
-                                      extraItems[index]['store_id']);
-                                }
-                              }
-                            },
-                            child: Container(
                               decoration: BoxDecoration(
-                                  color: kSecondaryColor.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(
-                                      kDefaultPadding / 2)),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
-                                  vertical: getProportionateScreenWidth(
-                                      kDefaultPadding / 4),
+                                color: kWhiteColor,
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenHeight(kDefaultPadding),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  spacing: getProportionateScreenWidth(
-                                      kDefaultPadding / 3),
-                                  children: [
-                                    Icon(
-                                        size: 20,
-                                        color: kSecondaryColor,
-                                        Icons.add_shopping_cart_rounded),
-                                    Text(
-                                      " ${Provider.of<ZLanguage>(context, listen: false).addToCart} ",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                              fontSize: 14,
-                                              color: kSecondaryColor,
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                image: DecorationImage(
+                                  fit: BoxFit.contain,
+                                  image: imageProvider,
+                                ),
+                              ),
+                            ),
+                            placeholder: (context, url) => Center(
+                              child: Container(
+                                width: getProportionateScreenWidth(
+                                  kDefaultPadding * 3,
+                                ),
+                                height: getProportionateScreenHeight(
+                                  kDefaultPadding * 3,
+                                ),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    kWhiteColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              width: getProportionateScreenWidth(
+                                kDefaultPadding * 3,
+                              ),
+                              height: getProportionateScreenHeight(
+                                kDefaultPadding * 3,
+                              ),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  fit: BoxFit.contain,
+                                  image: AssetImage(zmallLogo),
                                 ),
                               ),
                             ),
                           ),
 
-                          ///
+                          //////item name and price section////
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                extraItems[index]['name'],
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(
+                                    kDefaultPadding * 0.9,
+                                  ),
+                                  color: kBlackColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                softWrap: true,
+                              ),
+                              Text(
+                                "${_getPrice(extraItems[index]) != null ? _getPrice(extraItems[index]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(color: kGreyColor),
+                              ),
+                              ///// add to cart button section///
+                              GestureDetector(
+                                onTap: () async {
+                                  // Add to cart.....
+
+                                  // debugPrint('id... ${extraItems[index]['_id']}');
+                                  Item item = Item(
+                                    id: extraItems[index]['_id'],
+                                    quantity: 1,
+                                    specification: [],
+                                    noteForItem: "",
+                                    price: _getPrice(extraItems[index]) != null
+                                        ? double.parse(
+                                            _getPrice(extraItems[index]),
+                                          )
+                                        : 0,
+                                    itemName: extraItems[index]['name'],
+                                    imageURL:
+                                        extraItems[index]['image_url'].length >
+                                            0
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${extraItems[index]['image_url']}"
+                                        : "https://ibb.co/vkhzjd6",
+                                  );
+                                  // debugPrint('item... $item');
+                                  StoreLocation storeLocation = StoreLocation(
+                                    long: storeLocations[1],
+                                    lat: storeLocations[0],
+                                  );
+                                  // debugPrint('sLocation... $storeLocation');
+                                  DestinationAddress destination =
+                                      DestinationAddress(
+                                        long: Provider.of<ZMetaData>(
+                                          context,
+                                          listen: false,
+                                        ).longitude,
+                                        lat: Provider.of<ZMetaData>(
+                                          context,
+                                          listen: false,
+                                        ).latitude,
+                                        name: "Current Location",
+                                        note: "User current location",
+                                      );
+                                  // debugPrint('DestinationAddress... $destination');
+                                  if (cart != null && userData != null) {
+                                    if (cart!.storeId! ==
+                                        extraItems[index]['store_id']) {
+                                      setState(() {
+                                        cart!.items!.add(item);
+                                        Service.save('cart', cart)
+                                            .then((value) => calculatePrice())
+                                            // .then(
+                                            //   (value) => Service.showMessage(
+                                            //     context: context,
+                                            //     title: "Item added to cart",
+                                            //   ),
+                                            // )
+                                            .then((value) => setState(() {}));
+                                      });
+                                    } else {
+                                      _showDialog(
+                                        item,
+                                        destination,
+                                        storeLocation,
+                                        extraItems[index]['store_id'],
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    // color: kSecondaryColor.withValues(alpha: 0.1),
+                                    // borderRadius: BorderRadius.circular(
+                                    //   kDefaultPadding / 2,
+                                    // ),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      // horizontal: getProportionateScreenWidth(
+                                      //   kDefaultPadding / 2,
+                                      // ),
+                                      vertical: getProportionateScreenWidth(
+                                        kDefaultPadding / 4,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      spacing: getProportionateScreenWidth(
+                                        kDefaultPadding / 3,
+                                      ),
+                                      children: [
+                                        Icon(
+                                          size: 20,
+                                          color: kSecondaryColor,
+                                          HeroiconsOutline.plus,
+                                        ),
+                                        Text(
+                                          "Add",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                fontSize: 14,
+                                                color: kSecondaryColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     );
@@ -1435,294 +1517,3 @@ class _BodyState extends State<Body> with TickerProviderStateMixin {
           );
   }
 }
-
-/* 
-
-  void getUser() async {
-    var data = await Service.read('user');
-
-    if (data != null) {
-      setState(() {
-        userData = data;
-        walletBalance = double.parse(userData['user']['wallet'].toString());
-      });
-      getCart();
-    }
-  }
-
- 
-  
-
-  void _getTransactions() async {
-    setState(() {
-      _loading = true;
-    });
-    var data = await transactionHistoryDetails();
-
-    if (data != null && data['success']) {
-      setState(() {
-        _loading = false;
-      });
-    } else {
-      if (data['error_code'] == 999) {
-        await Service.saveBool('logged', false);
-        await Service.remove('user');
-        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
-      }
-      setState(() {
-        _loading = false;
-      });
-      if (errorCodes['${data['error_code']}'] != null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("${errorCodes['${data['error_code']}']}"),
-          backgroundColor: kSecondaryColor,
-        ));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("No wallet transaction history"),
-          backgroundColor: kSecondaryColor,
-        ));
-      }
-    }
-  } 
-  
-  
-  
-  
-  
-  
-  Future<dynamic> transactionHistoryDetails() async {
-    var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_wallet_history";
-    Map data = {
-      "id": userData['user']['_id'],
-      "type": userData['user']['admin_type'],
-      "server_token": userData['user']['server_token'],
-    };
-    var body = json.encode(data);
-
-    try {
-      http.Response response = await http
-          .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
-          .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
- ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Network error", true));
-          setState(() {
-            _loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
-
-      return json.decode(response.body);
-    } catch (e) {
-      //debugPrint(e);
-      return null;
-    }
-  }
-
-  Future<dynamic> genzebLak() async {
-    var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/transfer_wallet_amount";
-    Map data = {
-      "user_id": userData['user']['_id'],
-      "top_up_user_phone": '964345364', //storeDetail['store']['phone'],
-      "password": payerPassword,
-      "wallet": price,
-      "server_token": userData['user']['server_token'],
-    };
-    var body = json.encode(data);
-    try {
-      http.Response response = await http
-          .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
-          .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
- ScaffoldMessenger.of(context).showSnackBar(Service.showMessage1("Network error", true));
-          setState(() {
-            _loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
-      //debugPrint(json.decode(response.body));
-      return json.decode(response.body);
-    } catch (e) {
-     // debugPrint(e);
-      return null;
-    }
-  }
-
-  Widget showDonationView() {
-    return Padding(
-      padding: MediaQuery.of(context).viewInsets,
-      child: Container(
-        padding: EdgeInsets.all(getProportionateScreenHeight(kDefaultPadding)),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(kDefaultPadding * 2),
-              topRight: Radius.circular(kDefaultPadding * 2)),
-        ),
-        child: Wrap(
-          children: <Widget>[
-            Center(
-              child: Text(
-                "Pay ${Provider.of<ZMetaData>(context, listen: false).currency} $price",
-                style: Theme.of(context)
-                    .textTheme
-                    .headline5
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Center(
-                child: Text(
-              "Wallet - ${Provider.of<ZMetaData>(context, listen: false).currency} ${walletBalance.toStringAsFixed(2)}",
-            )),
-            Container(
-              height: getProportionateScreenHeight(kDefaultPadding),
-            ),
-            Container(
-                height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            TextField(
-              style: TextStyle(color: kBlackColor),
-              keyboardType: TextInputType.visiblePassword,
-              obscureText: true,
-              onChanged: (val) {
-                payerPassword = val;
-              },
-              decoration:
-                  textFieldInputDecorator.copyWith(labelText: "Password"),
-            ),
-            Container(
-                height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            Visibility(
-              visible: isCheckout,
-              child: CustomButton(
-                title: "Send",
-                color: kSecondaryColor,
-                press: () async {
-                  if (price <= walletBalance) {
-                    if (payerPassword.isNotEmpty) {
-                      setState(() {
-                        transferLoading = true;
-                      });
-
-                      var data = await genzebLak();
-                      if (data != null && data['success']) {
-                        setState(() {
-                          transferLoading = false;
-                          userData['user']['wallet'] -= price;
-                        });
-                        getUser();
-                        _getTransactions();
-
-                        /*     ScaffoldMessenger.of(context).showSnackBar(
-                            Service.showMessage(
-                                "Donation made successfully!\nThank you for your generous donation! Your support is greatly appreciated and will make a meaningful difference.",
-                                false,
-                                duration: 5)); */
-                        setState(() {
-                          transferLoading = false;
-                          Service.remove('cart');
-                          Service.remove('aliexpressCart');//NEW
-                          isCheckout = !isCheckout;
-                          walletBalance = double.parse(
-                              userData['user']['wallet'].toString());
-                          payerPassword = '';
-                        });
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(
-                                  "Donation made successfully!",
-                                ),
-                                titleTextStyle: TextStyle(
-                                    color: kSecondaryColor, fontSize: 20),
-                                content: Text(
-                                    "You have made donation to ${storeDetail['store']['company_name']}. Thank you for your generous donation, Your support is greatly appreciated and will make a meaningful difference."),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isCheckout = !isCheckout;
-                                        walletBalance = double.parse(
-                                            userData['user']['wallet']
-                                                .toString());
-                                        payerPassword = '';
-                                        Navigator.of(context).pop();
-                                      });
-                                    },
-                                    child: Text('OK'),
-                                  )
-                                ],
-                              );
-                            });
-                      } else {
-                        if (data['error_code'] == 999) {
-                          await Service.saveBool('logged', false);
-                          await Service.remove('user');
-                          Navigator.pushReplacementNamed(
-                              context, LoginScreen.routeName);
-                        }
-                        setState(() {
-                          transferLoading = false;
-                          isCheckout = !isCheckout;
-                          walletBalance = double.parse(
-                              userData['user']['wallet'].toString());
-                          payerPassword = '';
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            Service.showMessage(
-                                "${errorCodes['${data['error_code']}']}",
-                                true));
-                      }
-                    } else {
-                      setState(() {
-                        isCheckout = !isCheckout;
-                        walletBalance =
-                            double.parse(userData['user']['wallet'].toString());
-                        payerPassword = '';
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          Service.showMessage(
-                              "Invalid! Please make sure the fields is filled.",
-                              true));
-                    }
-                  } else {
-                    setState(() {
-                      isCheckout = !isCheckout;
-                    });
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      Service.showMessage(
-                          "Sorry, you have an insufficent balance.", true),
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-   */

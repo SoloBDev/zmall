@@ -1,0 +1,103 @@
+graph TD
+    subgraph TIER1[" "]
+        direction TB
+        T1_Title["<b>TIER 1: CLIENTS & EXTERNAL</b>"]
+
+        subgraph ExtConn["External Connections"]
+            Internet["☁️ INTERNET<br/>📱 Mobile Devices<br/>💳 POS Machines"]
+        end
+
+        subgraph PaymentGateways["Payment & External Services"]
+            PG["🏦 <b>Payment Gateways</b><br/>• Telebirr InApp<br/>• Chapa<br/>• EthSwitch<br/>• Addis Pay<br/>• Amole<br/>• Yagout Pay<br/>• CBE USSD<br/>• Dashen Bank<br/>• Etta Card<br/>• SantiM Pay<br/>• CyberSource"]
+        end
+
+        subgraph GoogleSocial["Google Services & Social"]
+            GS["• Google Maps API<br/>• Google OAuth<br/>• Facebook Analytics<br/>• Facebook App Events"]
+        end
+
+        %% Internal connections in TIER 1
+        Internet --> PaymentGateways
+        Internet --> GoogleSocial
+    end
+
+    subgraph TIER2[" "]
+        direction TB
+        T2_Title["<b>TIER 2: BACKEND SERVERS</b>"]
+
+        subgraph ZMallServer["🖥️ ZMall Server Main Backend"]
+            ServerURLs["• Production: http://196.188.187.43:8000<br/>• Test: http://196.189.44.49:7000"]
+
+            APIs["<b>REST API Endpoints</b><br/>• /api/user/* - User operations<br/>• /api/admin/* - Admin operations<br/>• /api/store/* - Store operations<br/>• Authentication, Orders, Cart, Products, etc."]
+
+            MongoDB["<b>🍃 MongoDB Database</b><br/>• Users Collection<br/>• Orders Collection<br/>• Stores Collection<br/>• Products Collection<br/>• Cart Collection<br/>• Transactions Collection"]
+
+            %% Internal connections in ZMall Server
+            ServerURLs --> APIs
+            APIs --> MongoDB
+        end
+
+        subgraph PaymentAgg["💳 Payment Aggregator Separate Service"]
+            PaymentInfo["• Base URL: http://196.189.44.60/<br/>• Handles payment gateway integrations<br/>• Payment processing endpoints<br/>• Telebirr, Chapa, EthSwitch, Amole, etc."]
+        end
+    end
+
+    subgraph TIER3[" "]
+        direction TB
+        T3_Title["<b>TIER 3: FIREBASE & CLOUD SERVICES</b>"]
+
+        subgraph Firebase["🔥 Firebase Services Project: zmall-184809"]
+            ActiveServices["<b>Active Services In Use:</b><br/>🔔 Cloud Messaging FCM<br/>📊 Analytics + Events"]
+            InactiveServices["<b>Integrated but Not Used:</b><br/>🔗 Dynamic Links Configured"]
+
+            %% Internal connections in Firebase
+            ActiveServices -.-> InactiveServices
+        end
+    end
+
+    subgraph TIER4[" "]
+        direction TB
+        T4_Title["<b>MOBILE APPLICATION LAYER</b>"]
+
+        subgraph FlutterApp["📱 ZMall Flutter App v3.2.3+340"]
+
+            Presentation["<b>PRESENTATION LAYER lib/</b><br/><b>Feature Modules:</b><br/>• Splash & Onboarding • Shopping Cart<br/>• Login/Register OTP • Checkout & Orders<br/>• Home Local Market • Delivery Tracking<br/>• Global Marketplace • Wallet Borsa<br/>• Store Browsing • Profile Management<br/>• Product Details • Event Booking<br/>• Search • World Cup Special<br/>• Notifications • AliExpress Integration<br/>• Courier Service • Support Chat"]
+
+            Business["<b>BUSINESS LOGIC LAYER</b><br/>• service.dart - Main service handler<br/>• core_services.dart - API integration<br/>• biometric_services/ - Biometric auth<br/>• firebase_core_services.dart - Firebase utils<br/>• State Management Provider"]
+
+            DataLayer["<b>DATA LAYER</b><br/>Models: User, Cart, Order, Store, Product, Language, etc.<br/><br/><b>Local Storage:</b><br/>• SharedPreferences - App data, cart, cached content<br/>• Flutter Secure Storage - Encrypted biometric credentials"]
+
+            Security["<b>SECURITY & AUTHENTICATION</b><br/>• Biometric Auth Face ID, Touch ID, Fingerprint<br/>• OTP Verification SMS<br/>• Multi-Account Support<br/>• Encrypted Credential Storage<br/>• Device Token Management"]
+
+            Platforms["<b>Platforms:</b> iOS 15.0+ | Android SDK 36"]
+
+            %% Internal connections in Flutter App
+            Presentation --> Business
+            Business --> DataLayer
+            Business --> Security
+        end
+    end
+
+    %% Main tier connections (Top to Bottom)
+    TIER1 --> TIER2
+    TIER2 --> TIER3
+    TIER3 --> TIER4
+
+    %% Cross-tier specific connections
+    Internet -.-> FlutterApp
+    PaymentGateways -.-> PaymentAgg
+    FlutterApp --> ZMallServer
+    FlutterApp --> PaymentAgg
+    FlutterApp --> Firebase
+
+    %% Styling
+    classDef tier1Style fill:#FFE4B5,stroke:#FF8C00,stroke-width:4px
+    classDef tier2Style fill:#B0E0E6,stroke:#4682B4,stroke-width:4px
+    classDef tier3Style fill:#FFB6C1,stroke:#DC143C,stroke-width:4px
+    classDef tier4Style fill:#98FB98,stroke:#228B22,stroke-width:4px
+    classDef boxStyle fill:#FFF,stroke:#666,stroke-width:2px
+
+    class TIER1 tier1Style
+    class TIER2 tier2Style
+    class TIER3 tier3Style
+    class TIER4 tier4Style
+    class ExtConn,PaymentGateways,GoogleSocial,ZMallServer,PaymentAgg,Firebase,FlutterApp boxStyle

@@ -398,4 +398,54 @@ class CoreServices {
     await Service.remove('p_items');
     await Service.remove('s_items');
   }
+
+  /// Get orders list from admin endpoint
+  /// Used to fetch all orders with various filters
+  static Future<dynamic> getOrdersList({
+    required BuildContext context,
+    String orderStatus = "all",
+    String paymentStatus = "all",
+    int page = 1,
+    String pickupType = "both",
+    String createdBy = "both",
+    String orderType = "both",
+    String searchField = "user_detail.first_name",
+    String searchValue = "",
+  }) async {
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/orders_list";
+    Map data = {
+      "order_status": orderStatus,
+      "payment_status": paymentStatus,
+      "page": page,
+      "pickup_type": pickupType,
+      "created_by": createdBy,
+      "order_type": orderType,
+      "search_field": searchField,
+      "search_value": searchValue,
+    };
+
+    var body = json.encode(data);
+    try {
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
+      return json.decode(response.body);
+    } catch (e) {
+      // print("Error fetching orders list: $e");
+      return null;
+    }
+  }
 }

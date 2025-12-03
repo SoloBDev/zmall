@@ -61,8 +61,9 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
         error: true,
         duration: 4,
       );
-      await Future.delayed(Duration(seconds: 4))
-          .then((value) => Navigator.pop(context));
+      await Future.delayed(
+        Duration(seconds: 4),
+      ).then((value) => Navigator.pop(context));
     }
   }
 
@@ -70,10 +71,7 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: kPrimaryColor,
-        elevation: 0.0,
-      ),
+      appBar: AppBar(backgroundColor: kPrimaryColor, elevation: 0.0),
       body: ModalProgressHUD(
         inAsyncCall: _loading,
         progressIndicator: linearProgressIndicator,
@@ -97,21 +95,26 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                           Text(
                             'Pay Using ETTA Card',
                             style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.bold),
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             'Powered by Dashen Bank S.C.',
-                            style:
-                                TextStyle(fontSize: 21, color: Colors.black45),
+                            style: TextStyle(
+                              fontSize: 21,
+                              color: Colors.black45,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Expanded(
                       child: Image.asset(
-                        "images/dashen.png",
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 4),
+                        "images/payment/dashen.png",
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding * 4,
+                        ),
                         width: getProportionateScreenWidth(kDefaultPadding * 4),
                       ),
                     ),
@@ -139,8 +142,9 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: TextFormField(
-                          decoration:
-                              const InputDecoration(hintText: "Full name"),
+                          decoration: const InputDecoration(
+                            hintText: "Full name",
+                          ),
                         ),
                       ),
                       Row(
@@ -159,8 +163,9 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                                   pin = value;
                                 });
                               },
-                              decoration:
-                                  const InputDecoration(hintText: "PIN"),
+                              decoration: const InputDecoration(
+                                hintText: "PIN",
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -177,8 +182,9 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
                                 LengthLimitingTextInputFormatter(5),
                                 CardMonthInputFormatter(),
                               ],
-                              decoration:
-                                  const InputDecoration(hintText: "MM/YY"),
+                              decoration: const InputDecoration(
+                                hintText: "MM/YY",
+                              ),
                             ),
                           ),
                         ],
@@ -228,22 +234,22 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;
@@ -275,7 +281,9 @@ class _EttaCardScreenState extends State<EttaCardScreen> {
 class CardNumberInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var text = newValue.text;
     if (newValue.selection.baseOffset == 0) {
       return newValue;
@@ -290,15 +298,18 @@ class CardNumberInputFormatter extends TextInputFormatter {
     }
     var string = buffer.toString();
     return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
+    );
   }
 }
 
 class CardMonthInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var newText = newValue.text;
     if (newValue.selection.baseOffset == 0) {
       return newValue;
@@ -313,7 +324,8 @@ class CardMonthInputFormatter extends TextInputFormatter {
     }
     var string = buffer.toString();
     return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
+    );
   }
 }

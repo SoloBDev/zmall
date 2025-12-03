@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/services/core_services.dart';
@@ -77,8 +76,9 @@ class _SearchScreenState extends State<SearchScreen>
     setState(() {
       if (_tabController.index == 0) {
         // Stores tab selected
-        storeDeliveryId =
-            widget.categories.isNotEmpty ? widget.categories[0]['_id'] : null;
+        storeDeliveryId = widget.categories.isNotEmpty
+            ? widget.categories[0]['_id']
+            : null;
         selectedCatagory = 0;
         _searchResult = [];
         isOpen = [];
@@ -160,89 +160,8 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   void storeOpen(List stores) async {
-    var appClose = await Service.read('app_close');
-    var appOpen = await Service.read('app_open');
-    isOpen.clear();
-    stores.forEach((store) {
-      bool isStoreOpen = false;
-      if (store['store_time'] != null && store['store_time'].length != 0) {
-        for (var i = 0; i < store['store_time'].length; i++) {
-          DateFormat dateFormat = new DateFormat.Hm();
-          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-          int weekday;
-          if (now.weekday == 7) {
-            weekday = 0;
-          } else {
-            weekday = now.weekday;
-          }
-
-          if (store['store_time'][i]['day'] == weekday) {
-            if (store['store_time'][i]['day_time'].length != 0 &&
-                store['store_time'][i]['is_store_open']) {
-              for (var j = 0;
-                  j < store['store_time'][i]['day_time'].length;
-                  j++) {
-                DateTime open = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_open_time']);
-                open = new DateTime(
-                    now.year, now.month, now.day, open.hour, open.minute);
-                DateTime close = dateFormat.parse(
-                    store['store_time'][i]['day_time'][j]['store_close_time']);
-                close = new DateTime(
-                    now.year, now.month, now.day, close.hour, close.minute);
-                now = DateTime(
-                    now.year, now.month, now.day, now.hour, now.minute);
-
-                DateTime zmallOpen = dateFormat.parse(appOpen);
-                DateTime zmallClose = dateFormat.parse(appClose);
-                zmallOpen = new DateTime(now.year, now.month, now.day,
-                    zmallOpen.hour, zmallOpen.minute);
-                zmallClose = new DateTime(now.year, now.month, now.day,
-                    zmallClose.hour, zmallClose.minute);
-                if (now.isAfter(open) &&
-                    now.isAfter(zmallOpen) &&
-                    now.isBefore(close) &&
-                    store['store_time'][i]['is_store_open'] &&
-                    now.isBefore(zmallClose)) {
-                  isStoreOpen = true;
-                  break;
-                } else {
-                  isStoreOpen = false;
-                }
-              }
-            } else {
-              DateTime zmallOpen = dateFormat.parse(appOpen);
-              DateTime zmallClose = dateFormat.parse(appClose);
-              zmallOpen = new DateTime(now.year, now.month, now.day,
-                  zmallOpen.hour, zmallOpen.minute);
-              zmallClose = new DateTime(now.year, now.month, now.day,
-                  zmallClose.hour, zmallClose.minute);
-              if (now.isAfter(zmallOpen) &&
-                  now.isBefore(zmallClose) &&
-                  store['store_time'][i]['is_store_open']) {
-                isStoreOpen = true;
-              } else {
-                isStoreOpen = false;
-              }
-            }
-          }
-        }
-      } else {
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
-        DateFormat dateFormat = DateFormat.Hm();
-        if (appClose != null) {
-          zmallClose = dateFormat.parse(appClose);
-        }
-
-        zmallClose = DateTime(
-            now.year, now.month, now.day, zmallClose.hour, zmallClose.minute);
-        now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-
-        now.isAfter(zmallClose) ? isStoreOpen = false : isStoreOpen = true;
-      }
-      isOpen.add(isStoreOpen);
-    });
+    // Use Service method to determine which stores are open
+    isOpen = await Service.storeOpen(stores);
   }
 
   void filterPrice() {
@@ -297,7 +216,8 @@ class _SearchScreenState extends State<SearchScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                "${errorCodes['${data?['error_code'] ?? 'Store not found'}']}"),
+              "${errorCodes['${data?['error_code'] ?? 'Store not found'}']}",
+            ),
             backgroundColor: kSecondaryColor,
           ),
         );
@@ -313,18 +233,15 @@ class _SearchScreenState extends State<SearchScreen>
       _searchResult = List.from(stores);
     } else {
       for (var store in stores) {
-        if (store['name']
-                ?.toString()
-                .toLowerCase()
-                .contains(searchQuery.toLowerCase()) ??
+        if (store['name']?.toString().toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            ) ??
             false) {
           double similarity = calculateStoreSimilarity(
-              store['name']?.toString().toLowerCase() ?? '',
-              searchQuery.toLowerCase());
-          final updatedStore = {
-            ...store,
-            'similarity': similarity,
-          };
+            store['name']?.toString().toLowerCase() ?? '',
+            searchQuery.toLowerCase(),
+          );
+          final updatedStore = {...store, 'similarity': similarity};
           _searchResult.add(updatedStore);
         }
       }
@@ -339,18 +256,20 @@ class _SearchScreenState extends State<SearchScreen>
     });
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/search_item_global";
-    Map data = {
-      "name": searchQuery,
-    };
+    Map data = {"name": searchQuery};
 
     var body = json.encode(data);
     try {
-      var response = await http.post(Uri.parse(url),
-          body: body,
-          headers: <String, String>{
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          }).timeout(Duration(seconds: 30));
+      var response = await http
+          .post(
+            Uri.parse(url),
+            body: body,
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+          )
+          .timeout(Duration(seconds: 30));
       return json.decode(response.body);
     } catch (error) {
       // print(error);
@@ -370,12 +289,16 @@ class _SearchScreenState extends State<SearchScreen>
     };
     var body = json.encode(data);
     try {
-      var response = await http.post(Uri.parse(url),
-          body: body,
-          headers: <String, String>{
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          }).timeout(Duration(seconds: 30));
+      var response = await http
+          .post(
+            Uri.parse(url),
+            body: body,
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+          )
+          .timeout(Duration(seconds: 30));
       return json.decode(response.body);
     } catch (error) {
       // print(error);
@@ -398,16 +321,14 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     stores.forEach((store) {
-      if (store['name']
-          .toString()
-          .toLowerCase()
-          .contains(query.toLowerCase())) {
+      if (store['name'].toString().toLowerCase().contains(
+        query.toLowerCase(),
+      )) {
         double similarity = calculateStoreSimilarity(
-            store['name']?.toString().toLowerCase() ?? '', query.toLowerCase());
-        final updatedStore = {
-          ...store,
-          'similarity': similarity,
-        };
+          store['name']?.toString().toLowerCase() ?? '',
+          query.toLowerCase(),
+        );
+        final updatedStore = {...store, 'similarity': similarity};
         _searchResult.add(updatedStore);
       }
     });
@@ -467,9 +388,9 @@ class _SearchScreenState extends State<SearchScreen>
                 Text(
                   Provider.of<ZLanguage>(context).priceFilter,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: kBlackColor,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: kBlackColor,
+                  ),
                 ),
                 SizedBox(height: kDefaultPadding),
 
@@ -523,11 +444,13 @@ class _SearchScreenState extends State<SearchScreen>
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(
-                              vertical: kDefaultPadding * 0.8),
+                            vertical: kDefaultPadding * 0.8,
+                          ),
                           backgroundColor: kBlackColor.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(kDefaultPadding / 2),
+                            borderRadius: BorderRadius.circular(
+                              kDefaultPadding / 2,
+                            ),
                           ),
                         ),
                         child: Text(
@@ -551,11 +474,13 @@ class _SearchScreenState extends State<SearchScreen>
                         },
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(
-                              vertical: kDefaultPadding * 0.8),
+                            vertical: kDefaultPadding * 0.8,
+                          ),
                           backgroundColor: kSecondaryColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(kDefaultPadding / 2),
+                            borderRadius: BorderRadius.circular(
+                              kDefaultPadding / 2,
+                            ),
                           ),
                         ),
                         child: Text(
@@ -725,10 +650,8 @@ class _SearchScreenState extends State<SearchScreen>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ItemScreen(
-                              item: item,
-                              location: [0.0, 0.0],
-                            ),
+                            builder: (context) =>
+                                ItemScreen(item: item, location: [0.0, 0.0]),
                           ),
                         );
                       } else {
@@ -821,19 +744,22 @@ class StoresTabView extends StatelessWidget {
                       ),
                     ),
                     padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2)),
+                      horizontal: getProportionateScreenWidth(
+                        kDefaultPadding / 2,
+                      ),
+                    ),
                     child: Text(
                       Service.capitalizeFirstLetters(
-                          categories[index]['delivery_name'].toString()),
+                        categories[index]['delivery_name'].toString(),
+                      ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: selectedCategory == index
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: selectedCategory == index
-                                ? kSecondaryColor
-                                : kBlackColor,
-                          ),
+                        fontWeight: selectedCategory == index
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: selectedCategory == index
+                            ? kSecondaryColor
+                            : kBlackColor,
+                      ),
                     ),
                   ),
                 );
@@ -848,73 +774,74 @@ class StoresTabView extends StatelessWidget {
         loading
             ? Expanded(
                 child: ListView.separated(
-                  itemBuilder: (context, index) => Column(
-                    children: [ProductListShimmer()],
-                  ),
+                  itemBuilder: (context, index) =>
+                      Column(children: [ProductListShimmer()]),
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 10),
                   itemCount: 5,
                 ),
               )
             : searchResult.isNotEmpty
-                ? Expanded(
-                    child: ListView.separated(
-                      itemCount: searchResult.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return SearchLists(
-                          index: index,
-                          stores: stores,
-                          isOpen: isOpen,
-                          latitude: latitude,
-                          longitude: longitude,
-                          onStoreSelected: onStoreSelected,
-                        );
-                      },
-                      separatorBuilder: (BuildContext context, int index) =>
-                          SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2),
+            ? Expanded(
+                child: ListView.separated(
+                  itemCount: searchResult.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return SearchLists(
+                      index: index,
+                      stores: stores,
+                      isOpen: isOpen,
+                      latitude: latitude,
+                      longitude: longitude,
+                      onStoreSelected: onStoreSelected,
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) =>
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
+                ),
+              )
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      HeroiconsOutline.buildingStorefront,
+                      size: getProportionateScreenWidth(kDefaultPadding * 4),
+                      color: kBlackColor.withValues(alpha: 0.3),
                     ),
-                  )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          HeroiconsOutline.buildingStorefront,
-                          size:
-                              getProportionateScreenWidth(kDefaultPadding * 4),
-                          color: kBlackColor.withValues(alpha: 0.3),
-                        ),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        Text(
-                          Provider.of<ZLanguage>(context).nothingFound,
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.8),
-                            fontWeight: FontWeight.w500,
-                            color: kBlackColor.withValues(alpha: 0.6),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                        Text(
-                          "Try adjusting your search or filters",
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.6),
-                            color: kBlackColor.withValues(alpha: 0.4),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
                     ),
-                  ),
+                    Text(
+                      Provider.of<ZLanguage>(context).nothingFound,
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(
+                          kDefaultPadding * 0.8,
+                        ),
+                        fontWeight: FontWeight.w500,
+                        color: kBlackColor.withValues(alpha: 0.6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    Text(
+                      "Try adjusting your search or filters",
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(
+                          kDefaultPadding * 0.6,
+                        ),
+                        color: kBlackColor.withValues(alpha: 0.4),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
       ],
     );
   }
@@ -942,219 +869,221 @@ class ItemsTabView extends StatelessWidget {
         loading
             ? Expanded(
                 child: ListView.separated(
-                  itemBuilder: (context, index) => Column(
-                    children: [ProductListShimmer()],
-                  ),
+                  itemBuilder: (context, index) =>
+                      Column(children: [ProductListShimmer()]),
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 10),
                   itemCount: 5,
                 ),
               )
             : filteredResult['items']?.isNotEmpty == true
-                ? Expanded(
-                    child: ListView.separated(
-                      itemCount: filteredResult['items']?.length ?? 0,
-                      separatorBuilder: (context, index) => const SizedBox(
-                        height: kDefaultPadding / 2,
-                      ),
-                      itemBuilder: (context, index) {
-                        if (index >= filteredResult['items']!.length ||
-                            index >= isOpen.length) {
-                          return SizedBox.shrink();
-                        }
-                        final item = filteredResult['items']![index];
-                        final isStoreOpen =
-                            index < isOpen.length ? isOpen[index] : false;
+            ? Expanded(
+                child: ListView.separated(
+                  itemCount: filteredResult['items']?.length ?? 0,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: kDefaultPadding / 2),
+                  itemBuilder: (context, index) {
+                    if (index >= filteredResult['items']!.length ||
+                        index >= isOpen.length) {
+                      return SizedBox.shrink();
+                    }
+                    final item = filteredResult['items']![index];
+                    final isStoreOpen = index < isOpen.length
+                        ? isOpen[index]
+                        : false;
 
-                        return Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () => onItemSelected(item, isStoreOpen),
-                              child: Container(
-                                margin: const EdgeInsets.only(
-                                    left: kDefaultPadding / 2,
-                                    right: kDefaultPadding / 2,
-                                    top: kDefaultPadding / 4),
-                                padding:
-                                    const EdgeInsets.all(kDefaultPadding / 2),
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  border: Border.all(color: kWhiteColor),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    SearchImageContainer(
-                                      imageUrl: item['image_url']?.isNotEmpty ==
-                                              true
-                                          ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
-                                          : "https://ibb.co/vkhzjd6",
-                                      isOpen: isStoreOpen,
-                                    ),
-                                    SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                                    // Item info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            Service.capitalizeFirstLetters(
-                                                item['name']),
-                                            style: TextStyle(
-                                              fontSize:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding / 1.2),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                Service.capitalizeFirstLetters(
-                                                    item['store_name']),
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding /
-                                                              1.4),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              if (!isStoreOpen)
-                                                Text(
-                                                  textAlign: TextAlign.center,
-                                                  " (Closed)",
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall!
-                                                      .copyWith(
-                                                          letterSpacing: 1,
-                                                          color:
-                                                              kSecondaryColor,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize:
-                                                              getProportionateScreenWidth(
-                                                                  8)),
-                                                ),
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            height:
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding / 3),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "${Provider.of<ZMetaData>(context, listen: false).currency} ${item['price']}",
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding /
-                                                              1.2),
-                                                  fontWeight: FontWeight.bold,
-                                                  color: kSecondaryColor,
-                                                ),
-                                              ),
-                                              Spacer(),
-                                              Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal:
-                                                        getProportionateScreenHeight(
-                                                            kDefaultPadding /
-                                                                2)),
-                                                child: OpenCloseStatusCard(
-                                                  isOpen: isStoreOpen,
-                                                  statusText: item[
-                                                              'similarity'] !=
-                                                          null
-                                                      ? "${((item['similarity'] as double) * 100).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}"
-                                                      : "",
-                                                  color: item['similarity'] !=
-                                                          null
-                                                      ? ((item['similarity']
-                                                                          as double) *
-                                                                      100)
-                                                                  .toInt() >
-                                                              90
-                                                          ? Colors.green
-                                                          : ((item['similarity']
-                                                                              as double) *
-                                                                          100)
-                                                                      .toInt() >
-                                                                  70
-                                                              ? Colors.orange
-                                                              : ((item['similarity'] as double) *
-                                                                              100)
-                                                                          .toInt() >
-                                                                      50
-                                                                  ? kSecondaryColor
-                                                                  : kGreyColor
-                                                      : kGreyColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () => onItemSelected(item, isStoreOpen),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              left: kDefaultPadding / 2,
+                              right: kDefaultPadding / 2,
+                              top: kDefaultPadding / 4,
+                            ),
+                            padding: const EdgeInsets.all(kDefaultPadding / 2),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              border: Border.all(color: kWhiteColor),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
                                 ),
                               ),
                             ),
-                          ],
-                        );
-                      },
-                    ),
-                  )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off_outlined,
-                          size:
-                              getProportionateScreenWidth(kDefaultPadding * 4),
-                          color: kBlackColor.withValues(alpha: 0.3),
-                        ),
-                        SizedBox(
-                            height:
-                                getProportionateScreenHeight(kDefaultPadding)),
-                        Text(
-                          Provider.of<ZLanguage>(context).nothingFound,
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.8),
-                            fontWeight: FontWeight.w500,
-                            color: kBlackColor.withValues(alpha: 0.6),
+                            child: Row(
+                              children: [
+                                SearchImageContainer(
+                                  imageUrl:
+                                      item['image_url']?.isNotEmpty == true
+                                      ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
+                                      : "https://ibb.co/vkhzjd6",
+                                  isOpen: isStoreOpen,
+                                ),
+                                SizedBox(
+                                  width: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
+                                // Item info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        Service.capitalizeFirstLetters(
+                                          item['name'],
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: getProportionateScreenWidth(
+                                            kDefaultPadding / 1.2,
+                                          ),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            Service.capitalizeFirstLetters(
+                                              item['store_name'],
+                                            ),
+                                            style: TextStyle(
+                                              fontSize:
+                                                  getProportionateScreenWidth(
+                                                    kDefaultPadding / 1.4,
+                                                  ),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          if (!isStoreOpen)
+                                            Text(
+                                              textAlign: TextAlign.center,
+                                              " (Closed)",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall!
+                                                  .copyWith(
+                                                    letterSpacing: 1,
+                                                    color: kSecondaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        getProportionateScreenWidth(
+                                                          8,
+                                                        ),
+                                                  ),
+                                            ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: getProportionateScreenHeight(
+                                          kDefaultPadding / 3,
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "${Provider.of<ZMetaData>(context, listen: false).currency} ${item['price']}",
+                                            style: TextStyle(
+                                              fontSize:
+                                                  getProportionateScreenWidth(
+                                                    kDefaultPadding / 1.2,
+                                                  ),
+                                              fontWeight: FontWeight.bold,
+                                              color: kSecondaryColor,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  getProportionateScreenHeight(
+                                                    kDefaultPadding / 2,
+                                                  ),
+                                            ),
+                                            child: OpenCloseStatusCard(
+                                              isOpen: isStoreOpen,
+                                              statusText:
+                                                  item['similarity'] != null
+                                                  ? "${((item['similarity'] as double) * 100).toInt().toString()}% ${Provider.of<ZLanguage>(context).match}"
+                                                  : "",
+                                              color: item['similarity'] != null
+                                                  ? ((item['similarity']
+                                                                        as double) *
+                                                                    100)
+                                                                .toInt() >
+                                                            90
+                                                        ? Colors.green
+                                                        : ((item['similarity']
+                                                                          as double) *
+                                                                      100)
+                                                                  .toInt() >
+                                                              70
+                                                        ? Colors.orange
+                                                        : ((item['similarity']
+                                                                          as double) *
+                                                                      100)
+                                                                  .toInt() >
+                                                              50
+                                                        ? kSecondaryColor
+                                                        : kGreyColor
+                                                  : kGreyColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(
-                            height: getProportionateScreenHeight(
-                                kDefaultPadding / 2)),
-                        Text(
-                          "Try searching for different items",
-                          style: TextStyle(
-                            fontSize: getProportionateScreenWidth(
-                                kDefaultPadding * 0.6),
-                            color: kBlackColor.withValues(alpha: 0.4),
-                          ),
-                          textAlign: TextAlign.center,
                         ),
                       ],
+                    );
+                  },
+                ),
+              )
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search_off_outlined,
+                      size: getProportionateScreenWidth(kDefaultPadding * 4),
+                      color: kBlackColor.withValues(alpha: 0.3),
                     ),
-                  ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Text(
+                      Provider.of<ZLanguage>(context).nothingFound,
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(
+                          kDefaultPadding * 0.8,
+                        ),
+                        fontWeight: FontWeight.w500,
+                        color: kBlackColor.withValues(alpha: 0.6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
+                    Text(
+                      "Try searching for different items",
+                      style: TextStyle(
+                        fontSize: getProportionateScreenWidth(
+                          kDefaultPadding * 0.6,
+                        ),
+                        color: kBlackColor.withValues(alpha: 0.4),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
       ],
     );
   }

@@ -21,8 +21,8 @@ class SkipButton extends StatelessWidget {
             foregroundColor: Colors.white70,
           ),
           onPressed: () async {
-            bool isGlobal = await Service.readBool('is_global');
-            var abroadData = await Service.read('abroad_user');
+            bool isGlobal = await Service.readBool('is_global') ?? false;
+            var abroadData = await Service.read('abroad_user') ?? false;
             try {
               isGlobal
                   ? Navigator.of(context).pushReplacement(

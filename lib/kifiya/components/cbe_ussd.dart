@@ -63,8 +63,9 @@ class _CbeUssdState extends State<CbeUssd> {
         error: true,
         duration: 4,
       );
-      await Future.delayed(Duration(seconds: 3))
-          .then((value) => Navigator.pop(context));
+      await Future.delayed(
+        Duration(seconds: 3),
+      ).then((value) => Navigator.pop(context));
     }
   }
 
@@ -73,59 +74,54 @@ class _CbeUssdState extends State<CbeUssd> {
     if (data != null && data['success']) {
       Navigator.pop(context);
     } else {
-      await Future.delayed(Duration(seconds: 2))
-          .then((value) => _verifyPayment());
+      await Future.delayed(
+        Duration(seconds: 2),
+      ).then((value) => _verifyPayment());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.title,
-            style: TextStyle(color: kBlackColor),
-          ),
-          elevation: 1.0,
+      appBar: AppBar(
+        title: Text(widget.title, style: TextStyle(color: kBlackColor)),
+        elevation: 1.0,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pay Using CBE Birr',
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Powered by CBE',
+                  style: TextStyle(fontSize: 21, color: Colors.black45),
+                ),
+              ],
+            ),
+            Image.asset(
+              "images/payment/cbebirr.png",
+              height: getProportionateScreenHeight(kDefaultPadding * 10),
+              width: getProportionateScreenWidth(kDefaultPadding * 10),
+            ),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
+            SpinKitPouringHourGlassRefined(color: kBlackColor),
+            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
+            Text(
+              "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
-        body: Padding(
-          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pay Using CBE Birr',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Powered by CBE',
-                    style: TextStyle(fontSize: 21, color: Colors.black45),
-                  ),
-                ],
-              ),
-              Image.asset(
-                "images/cbebirr.png",
-                height: getProportionateScreenHeight(kDefaultPadding * 10),
-                width: getProportionateScreenWidth(kDefaultPadding * 10),
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              SpinKitPouringHourGlassRefined(color: kBlackColor),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              Text(
-                "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ));
+      ),
+    );
   }
 
   Future<dynamic> initPayment() async {
@@ -138,29 +134,29 @@ class _CbeUssdState extends State<CbeUssd> {
       "trace_no": widget.traceNo,
       "amount": widget.hisab,
       "phone": widget.phone,
-      "appId": "1234"
+      "appId": "1234",
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;
@@ -192,29 +188,29 @@ class _CbeUssdState extends State<CbeUssd> {
     Map data = {
       "user_id": widget.userId,
       "server_token": widget.serverToken,
-      "order_payment_id": widget.orderPaymentId
+      "order_payment_id": widget.orderPaymentId,
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;

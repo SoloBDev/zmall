@@ -115,7 +115,7 @@
 //                 ],
 //               ),
 //               Image.asset(
-//                 "images/momo.png",
+//                 "images/payment/momo.png",
 //                 height: getProportionateScreenHeight(kDefaultPadding * 10),
 //                 width: getProportionateScreenWidth(kDefaultPadding * 10),
 //               ),

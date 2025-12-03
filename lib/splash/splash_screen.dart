@@ -16,7 +16,6 @@ import 'package:zmall/utils/tab_screen.dart';
 import 'package:zmall/utils/size_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:zmall/login/login_screen.dart';
-
 import 'component/loader.dart';
 import 'component/splash_container.dart';
 
@@ -51,10 +50,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void getLang() async {
     var data = await Service.read('lang');
     // debugPrint("Checking language");
-    if (data == null) {
-      Provider.of<ZLanguage>(context, listen: false).changeLanguage('en_US');
-    } else {
-      Provider.of<ZLanguage>(context, listen: false).changeLanguage(data);
+    if (mounted) {
+      if (data == null) {
+        Provider.of<ZLanguage>(context, listen: false).changeLanguage('en_US');
+      } else {
+        Provider.of<ZLanguage>(context, listen: false).changeLanguage(data);
+      }
     }
   }
 
@@ -70,10 +71,13 @@ class _SplashScreenState extends State<SplashScreen> {
       getLocation();
     } else {
       // Handle permission denial
-      Service.showMessage(
+      if (mounted) {
+        Service.showMessage(
           context: context,
           title: "Location permission denied. Please enable and try again",
-          error: true);
+          error: true,
+        );
+      }
       FlLocation.requestLocationPermission();
     }
   }
@@ -81,8 +85,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void getLocation() async {
     var currentLocation = await FlLocation.getLocation();
     // debugPrint("Checking location.....");
-    Provider.of<ZMetaData>(context, listen: false)
-        .setLocation(currentLocation.latitude, currentLocation.longitude);
+    if (mounted) {
+      Provider.of<ZMetaData>(
+        context,
+        listen: false,
+      ).setLocation(currentLocation.latitude, currentLocation.longitude);
+    }
   }
 
   void _doLocationTask() async {
@@ -99,10 +107,13 @@ class _SplashScreenState extends State<SplashScreen> {
             serviceStatus == LocationPermission.whileInUse) {
           getLocation();
         } else {
-          Service.showMessage(
+          if (mounted) {
+            Service.showMessage(
               context: context,
               title: "Location service disabled. Please enable and try again",
-              error: true);
+              error: true,
+            );
+          }
         }
       }
     } else {
@@ -113,12 +124,18 @@ class _SplashScreenState extends State<SplashScreen> {
   void getMetaData() async {
     String? country = await Service.read("country");
 
-    if (country != null) {
-      Provider.of<ZMetaData>(context, listen: false)
-          .changeCountrySettings(country);
-    } else {
-      Provider.of<ZMetaData>(context, listen: false)
-          .changeCountrySettings("Ethiopia");
+    if (mounted) {
+      if (country != null) {
+        Provider.of<ZMetaData>(
+          context,
+          listen: false,
+        ).changeCountrySettings(country);
+      } else {
+        Provider.of<ZMetaData>(
+          context,
+          listen: false,
+        ).changeCountrySettings("Ethiopia");
+      }
     }
   }
 
@@ -130,9 +147,13 @@ class _SplashScreenState extends State<SplashScreen> {
       Service.save("closed_message", data['message']);
       Service.save("ios_app_version", data['ios_user_app_version_code']);
       Service.saveBool(
-          "ios_update_dialog", data['is_ios_user_app_open_update_dialog']);
+        "ios_update_dialog",
+        data['is_ios_user_app_open_update_dialog'],
+      );
       Service.saveBool(
-          "ios_force_update", data['is_ios_user_app_force_update']);
+        "ios_force_update",
+        data['is_ios_user_app_force_update'],
+      );
     }
   }
 
@@ -197,12 +218,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void isLogged() async {
     var data = await Service.readBool('logged');
-    if (data != null) {
-      setState(() {
-        logged = data;
-      });
-    } else {
-      // debugPrint("No logged user found");
+    if (mounted) {
+      if (data != null) {
+        setState(() {
+          logged = data;
+        });
+      } else {
+        // debugPrint("No logged user found");
+      }
     }
   }
 
@@ -228,18 +251,23 @@ class _SplashScreenState extends State<SplashScreen> {
     var url = Uri.parse("https://nedajmadeya.com/ad/launch");
     try {
       http.Response response = await http
-          .get(url, headers: <String, String>{'Device': 'ios'}).timeout(
-              Duration(seconds: 5), onTimeout: () {
-        throw TimeoutException("The connection has timed out!");
-      });
+          .get(url, headers: <String, String>{'Device': 'ios'})
+          .timeout(
+            Duration(seconds: 5),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       var data = json.decode(response.body);
 
-      setState(() {
-        bytes = base64Decode(data['image']);
-        urlLink = data['url_link'];
-        adId = data['ad_id'];
-        loading = !loading;
-      });
+      if (mounted) {
+        setState(() {
+          bytes = base64Decode(data['image']);
+          urlLink = data['url_link'];
+          adId = data['ad_id'];
+          loading = !loading;
+        });
+      }
       return "success";
     } catch (e) {
       // debugPrint(e);
@@ -250,29 +278,37 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<dynamic> getAppKeys() async {
     var url = Uri.parse(
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_app_keys");
+      "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/admin/get_app_keys",
+    );
 
     try {
-      http.Response response =
-          await http.post(url).timeout(Duration(seconds: 10), onTimeout: () {
-        throw TimeoutException("The connection has timed out!");
-      });
+      http.Response response = await http
+          .post(url)
+          .timeout(
+            Duration(seconds: 10),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       if (json.decode(response.body) != null &&
           json.decode(response.body)['success']) {
         var data = {
           "success": json.decode(response.body)['success'],
-          "message_flag": json.decode(response.body)['app_keys']
-              ['message_flag'],
-          "ios_user_app_version_code": json.decode(response.body)['app_keys']
-              ['ios_user_app_version_code'],
+          "message_flag": json.decode(
+            response.body,
+          )['app_keys']['message_flag'],
+          "ios_user_app_version_code": json.decode(
+            response.body,
+          )['app_keys']['ios_user_app_version_code'],
           "message": json.decode(response.body)['app_keys']['message'],
           // "ios_user_app_version_code": json.decode(response.body)['app_keys']
           // ['ios_user_app_version_code'],
-          "is_ios_user_app_open_update_dialog":
-              json.decode(response.body)['app_keys']
-                  ['is_ios_user_app_open_update_dialog'],
-          "is_ios_user_app_force_update": json.decode(response.body)['app_keys']
-              ['is_ios_user_app_force_update']
+          "is_ios_user_app_open_update_dialog": json.decode(
+            response.body,
+          )['app_keys']['is_ios_user_app_open_update_dialog'],
+          "is_ios_user_app_force_update": json.decode(
+            response.body,
+          )['app_keys']['is_ios_user_app_force_update'],
         };
         return data;
       } else {

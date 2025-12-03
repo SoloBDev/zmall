@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/services/core_services.dart';
@@ -32,18 +31,21 @@ class SplashContainer extends StatefulWidget {
 }
 
 class _SplashContainerState extends State<SplashContainer> {
-  bool _loading = false;
+  // bool _loading = false;
+  // bool _isClosed = false;
   var notificationItem;
-  bool _isClosed = false;
+
   String promptMessage = "";
 
   void _getItemInformation(String itemId) async {
-    setState(() {
-      _loading = true;
-    });
+    // setState(() {
+    //   _loading = true;
+    // });
+    // Ensure app metadata is loaded before checking store status
+    _getAppKeys();
     await getItemInformation(itemId);
     if (notificationItem != null && notificationItem['success']) {
-      bool isOpen = await storeOpen(notificationItem['item']);
+      bool isOpen = await Service.isStoreOpen(notificationItem['item']);
       if (isOpen) {
         Navigator.pushReplacement(
           context,
@@ -77,142 +79,8 @@ class _SplashContainerState extends State<SplashContainer> {
     }
   }
 
-  Future<bool> storeOpen(var store) async {
-    setState(() {
-      _loading = true;
-    });
-    _getAppKeys();
-    setState(() {
-      _loading = false;
-    });
-    bool isStoreOpen = false;
-    if (store['store_time'] != null && store['store_time'].length != 0) {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      for (var i = 0; i < store['store_time'].length; i++) {
-        DateFormat dateFormat = new DateFormat.Hm();
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        int weekday;
-        if (now.weekday == 7) {
-          weekday = 0;
-        } else {
-          weekday = now.weekday;
-        }
-
-        if (store['store_time'][i]['day'] == weekday) {
-          if (store['store_time'][i]['day_time'].length != 0 &&
-              store['store_time'][i]['is_store_open']) {
-            for (
-              var j = 0;
-              j < store['store_time'][i]['day_time'].length;
-              j++
-            ) {
-              DateTime open = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_open_time'],
-              );
-              open = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                open.hour,
-                open.minute,
-              );
-              DateTime close = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_close_time'],
-              );
-              // DateTime zmallClose =
-              //     DateTime(now.year, now.month, now.day, 21, 00);
-              // DateTime zmallOpen =
-              //     DateTime(now.year, now.month, now.day, 09, 00);
-              // if (appOpen != null && appOpen != null) {
-              DateTime zmallClose = dateFormat.parse(appClose);
-              DateTime zmallOpen = dateFormat.parse(appOpen);
-              // }
-
-              close = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                close.hour,
-                close.minute,
-              );
-              now = DateTime(
-                now.year,
-                now.month,
-                now.day,
-                now.hour,
-                now.minute,
-              );
-
-              zmallOpen = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallOpen.hour,
-                zmallOpen.minute,
-              );
-              zmallClose = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallClose.hour,
-                zmallClose.minute,
-              );
-
-              if (now.isAfter(open) &&
-                  now.isAfter(zmallOpen) &&
-                  now.isBefore(close) &&
-                  store['store_time'][i]['is_store_open'] &&
-                  now.isBefore(zmallClose)) {
-                isStoreOpen = true;
-                break;
-              } else {
-                isStoreOpen = false;
-              }
-            }
-          } else {
-            isStoreOpen = store['store_time'][i]['is_store_open'];
-          }
-        }
-      }
-    } else {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateFormat dateFormat = new DateFormat.Hm();
-      // DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
-      // DateTime zmallOpen = DateTime(now.year, now.month, now.day, 09, 00);
-      // if (appOpen != null && appOpen != null) {
-      DateTime zmallClose = dateFormat.parse(appClose);
-      DateTime zmallOpen = dateFormat.parse(appOpen);
-      // }
-      zmallClose = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallClose.hour,
-        zmallClose.minute,
-      );
-      zmallOpen = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallOpen.hour,
-        zmallOpen.minute,
-      );
-      now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-
-      if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
-        isStoreOpen = true;
-      } else {
-        isStoreOpen = false;
-      }
-    }
-
-    return isStoreOpen;
-  }
-
   void _getAppKeys() async {
+    debugPrint("in _getAppKeys=====");
     var data = await CoreServices.appKeys(context);
     if (data != null && data['success']) {
       if (mounted)
@@ -251,7 +119,7 @@ class _SplashContainerState extends State<SplashContainer> {
   void getAppKeys() async {
     var data = await Service.read('ios_app_version');
     var currentVersion = await Service.read('version');
-    _isClosed = await Service.readBool('is_closed');
+    // _isClosed = await Service.readBool('is_closed');
     promptMessage = await Service.read('closed_message');
     var showUpdateDialog = await Service.readBool('ios_update_dialog');
     if (data != null) {
@@ -300,11 +168,11 @@ class _SplashContainerState extends State<SplashContainer> {
         // debugPrint("Launch ad url");
         CoreServices.saveAdClick(widget.adId);
         if (widget.urlLink.split("/")[0] == "item") {
-          //TODO: Redirect to notification item
+          //Redirect to notification item
           // debugPrint("Redirect to notification item");
           _getItemInformation(widget.urlLink.split("/")[1]);
         } else if (widget.urlLink.split("/")[0] == "store") {
-          //TODO: Redirect to notification store
+          // Redirect to notification store
           // debugPrint("Redirect to notification store");
           Navigator.pushReplacement(
             context,
@@ -349,9 +217,7 @@ class _SplashContainerState extends State<SplashContainer> {
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
+              setState(() {});
 
               Service.showMessage(
                 context: context,
@@ -364,19 +230,17 @@ class _SplashContainerState extends State<SplashContainer> {
           );
       setState(() {
         this.notificationItem = json.decode(response.body);
-        this._loading = false;
       });
 
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      if (mounted) {
-        setState(() {
-          this._loading = false;
-        });
-      }
 
       return null;
+    } finally {
+      // setState(() {
+      //   this._loading = false;
+      // });
     }
   }
 }

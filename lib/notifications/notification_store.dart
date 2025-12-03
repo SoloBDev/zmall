@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/utils/constants.dart';
@@ -85,9 +84,11 @@ class _NotificationStoreState extends State<NotificationStore> {
   }
 
   void _getStoreProductList() async {
+    // Ensure app metadata is loaded before checking store status
+    _getAppKeys();
     await getStoreProductList();
     if (responseData != null && responseData['success']) {
-      isOpen = await storeOpen(responseData['store']);
+      isOpen = await Service.isStoreOpen(responseData['store']);
       if (mounted) {
         setState(() {
           store = responseData['store'];
@@ -126,149 +127,6 @@ class _NotificationStoreState extends State<NotificationStore> {
         Service.save('app_open', data['app_open']);
       });
     }
-  }
-
-  Future<bool> storeOpen(var store) async {
-    setState(() {
-      _loading = true;
-    });
-    _getAppKeys();
-    setState(() {
-      _loading = false;
-    });
-    bool isStoreOpen = false;
-
-    if (store['store_time'] != null && store['store_time'].length != 0) {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      for (var i = 0; i < store['store_time'].length; i++) {
-        DateFormat dateFormat = new DateFormat.Hm();
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        int weekday;
-        if (now.weekday == 7) {
-          weekday = 0;
-        } else {
-          weekday = now.weekday;
-        }
-
-        if (store['store_time'][i]['day'] == weekday) {
-          if (store['store_time'][i]['day_time'].length != 0 &&
-              store['store_time'][i]['is_store_open']) {
-            for (
-              var j = 0;
-              j < store['store_time'][i]['day_time'].length;
-              j++
-            ) {
-              DateTime open = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_open_time'],
-              );
-              open = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                open.hour,
-                open.minute,
-              );
-              DateTime close = dateFormat.parse(
-                store['store_time'][i]['day_time'][j]['store_close_time'],
-              );
-
-              DateTime zmallClose = dateFormat.parse(appClose);
-              DateTime zmallOpen = dateFormat.parse(appOpen);
-
-              close = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                close.hour,
-                close.minute,
-              );
-              now = DateTime(
-                now.year,
-                now.month,
-                now.day,
-                now.hour,
-                now.minute,
-              );
-
-              zmallOpen = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallOpen.hour,
-                zmallOpen.minute,
-              );
-              zmallClose = new DateTime(
-                now.year,
-                now.month,
-                now.day,
-                zmallClose.hour,
-                zmallClose.minute,
-              );
-
-              if (now.isAfter(open) &&
-                  now.isAfter(zmallOpen) &&
-                  now.isBefore(close) &&
-                  store['store_time'][i]['is_store_open'] &&
-                  now.isBefore(zmallClose)) {
-                isStoreOpen = true;
-                break;
-              } else {
-                isStoreOpen = false;
-              }
-            }
-          } else {
-            isStoreOpen = store['store_time'][i]['is_store_open'];
-          }
-        }
-      }
-    } else {
-      var appClose = await Service.read('app_close');
-      var appOpen = await Service.read('app_open');
-      DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-      DateFormat dateFormat = new DateFormat.Hm();
-      DateTime zmallClose = dateFormat.parse(appClose);
-      DateTime zmallOpen = dateFormat.parse(appOpen);
-      zmallClose = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallClose.hour,
-        zmallClose.minute,
-      );
-      zmallOpen = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        zmallOpen.hour,
-        zmallOpen.minute,
-      );
-      now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-
-      if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
-        isStoreOpen = true;
-      } else {
-        isStoreOpen = false;
-      }
-    }
-
-    return isStoreOpen;
-  }
-
-  String _getPrice(item) {
-    if (item['price'] == null || item['price'] == 0) {
-      for (var i = 0; i < item['specifications'].length; i++) {
-        for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
-          if (item['specifications'][i]['list'][j]['is_default_selected']) {
-            return item['specifications'][i]['list'][j]['price']
-                .toStringAsFixed(2);
-          }
-        }
-      }
-    } else {
-      return item['price'].toStringAsFixed(2);
-    }
-    return "0.00";
   }
 
   void addToCart(item, destination, storeLocation, storeId) {
@@ -350,7 +208,7 @@ class _NotificationStoreState extends State<NotificationStore> {
           //     CustomLinearProgressIndicator(message: "Loading store.."),
           progressIndicator: products != null
               ? LinearLoadingIndicator()
-              : ProductListShimmer(),
+              : ProductListShimmer(itemCount: 7),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
@@ -548,7 +406,7 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                 .spaceBetween,
                                                         children: [
                                                           Text(
-                                                            "${_getPrice(products[index]['items'][idx]).isNotEmpty ? _getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                            "${Service.getPrice(products[index]['items'][idx]).isNotEmpty ? Service.getPrice(products[index]['items'][idx]) : 0} ${Provider.of<ZMetaData>(context, listen: false).currency}",
                                                             style: Theme.of(context)
                                                                 .textTheme
                                                                 .labelLarge
@@ -613,11 +471,11 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                   noteForItem:
                                                                       "",
                                                                   price:
-                                                                      _getPrice(
+                                                                      Service.getPrice(
                                                                         products[index]['items'][idx],
                                                                       ).isNotEmpty
                                                                       ? double.parse(
-                                                                          _getPrice(
+                                                                          Service.getPrice(
                                                                             products[index]['items'][idx],
                                                                           ),
                                                                         )
@@ -659,29 +517,28 @@ class _NotificationStoreState extends State<NotificationStore> {
                                                                             .storeId ==
                                                                         products[index]['items'][idx]['store_id']) {
                                                                       setState(() {
-                                                                        cart!
-                                                                            .items!
-                                                                            .add(
-                                                                              item,
-                                                                            );
+                                                                        // Use Service method to add or merge item
+                                                                        Service.addOrMergeCartItem(
+                                                                          cart!,
+                                                                          item,
+                                                                        );
+                                                                        // cart!.items!.add(item);
                                                                         Service.save(
                                                                           'cart',
                                                                           cart,
                                                                         );
-
-                                                                        // Service
-                                                                        //     .showMessage(
-                                                                        //   context:
-                                                                        //       context,
-                                                                        //   title:
-                                                                        //       "Item added to cart",
-                                                                        //   error:
-                                                                        //       false,
-                                                                        // );
                                                                         // Navigator.of(
                                                                         //         context)
                                                                         //     .pop();
                                                                       });
+                                                                      Service.showMessage(
+                                                                        context:
+                                                                            context,
+                                                                        title:
+                                                                            "Item added to cart",
+                                                                        error:
+                                                                            false,
+                                                                      );
                                                                     } else {
                                                                       _showDialog(
                                                                         item,
@@ -852,23 +709,6 @@ class _NotificationStoreState extends State<NotificationStore> {
                         ),
                       )
                     : Container(),
-                // !_loading && (cart != null && cart!.items!.length > 0)
-                //     ? Padding(
-                //         padding: EdgeInsets.only(
-                //           left: getProportionateScreenWidth(kDefaultPadding),
-                //           right: getProportionateScreenWidth(kDefaultPadding),
-                //           bottom: getProportionateScreenWidth(kDefaultPadding),
-                //         ),
-                //         child: CustomButton(
-                //           title: "Go to Cart",
-                //           press: () {
-                //             Navigator.pushNamed(context, '/cart')
-                //                 .then((value) => getCart());
-                //           },
-                //           color: kSecondaryColor,
-                //         ),
-                //       )
-                //     : Container(),
               ],
             ),
           ),
@@ -977,3 +817,156 @@ class _NotificationStoreState extends State<NotificationStore> {
     );
   }
 }
+
+  // Future<bool> storeOpen(var store) async {
+  //   setState(() {
+  //     _loading = true;
+  //   });
+  //   _getAppKeys();
+  //   setState(() {
+  //     _loading = false;
+  //   });
+  //   bool isStoreOpen = false;
+
+  //   if (store['store_time'] != null && store['store_time'].length != 0) {
+  //     var appClose = await Service.read('app_close');
+  //     var appOpen = await Service.read('app_open');
+  //     for (var i = 0; i < store['store_time'].length; i++) {
+  //       DateFormat dateFormat = new DateFormat.Hm();
+  //       DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+  //       int weekday;
+  //       if (now.weekday == 7) {
+  //         weekday = 0;
+  //       } else {
+  //         weekday = now.weekday;
+  //       }
+
+  //       if (store['store_time'][i]['day'] == weekday) {
+  //         if (store['store_time'][i]['day_time'].length != 0 &&
+  //             store['store_time'][i]['is_store_open']) {
+  //           for (
+  //             var j = 0;
+  //             j < store['store_time'][i]['day_time'].length;
+  //             j++
+  //           ) {
+  //             DateTime open = dateFormat.parse(
+  //               store['store_time'][i]['day_time'][j]['store_open_time'],
+  //             );
+  //             open = new DateTime(
+  //               now.year,
+  //               now.month,
+  //               now.day,
+  //               open.hour,
+  //               open.minute,
+  //             );
+  //             DateTime close = dateFormat.parse(
+  //               store['store_time'][i]['day_time'][j]['store_close_time'],
+  //             );
+
+  //             DateTime zmallClose = dateFormat.parse(appClose);
+  //             DateTime zmallOpen = dateFormat.parse(appOpen);
+
+  //             close = new DateTime(
+  //               now.year,
+  //               now.month,
+  //               now.day,
+  //               close.hour,
+  //               close.minute,
+  //             );
+  //             now = DateTime(
+  //               now.year,
+  //               now.month,
+  //               now.day,
+  //               now.hour,
+  //               now.minute,
+  //             );
+
+  //             zmallOpen = new DateTime(
+  //               now.year,
+  //               now.month,
+  //               now.day,
+  //               zmallOpen.hour,
+  //               zmallOpen.minute,
+  //             );
+  //             zmallClose = new DateTime(
+  //               now.year,
+  //               now.month,
+  //               now.day,
+  //               zmallClose.hour,
+  //               zmallClose.minute,
+  //             );
+
+  //             if (now.isAfter(open) &&
+  //                 now.isAfter(zmallOpen) &&
+  //                 now.isBefore(close) &&
+  //                 store['store_time'][i]['is_store_open'] &&
+  //                 now.isBefore(zmallClose)) {
+  //               isStoreOpen = true;
+  //               break;
+  //             } else {
+  //               isStoreOpen = false;
+  //             }
+  //           }
+  //         } else {
+  //           isStoreOpen = store['store_time'][i]['is_store_open'];
+  //         }
+  //       }
+  //     }
+  //   } else {
+  //     var appClose = await Service.read('app_close');
+  //     var appOpen = await Service.read('app_open');
+  //     DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+  //     DateFormat dateFormat = new DateFormat.Hm();
+  //     DateTime zmallClose = dateFormat.parse(appClose);
+  //     DateTime zmallOpen = dateFormat.parse(appOpen);
+  //     zmallClose = DateTime(
+  //       now.year,
+  //       now.month,
+  //       now.day,
+  //       zmallClose.hour,
+  //       zmallClose.minute,
+  //     );
+  //     zmallOpen = DateTime(
+  //       now.year,
+  //       now.month,
+  //       now.day,
+  //       zmallOpen.hour,
+  //       zmallOpen.minute,
+  //     );
+  //     now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+
+  //     if (now.isAfter(zmallOpen) && now.isBefore(zmallClose)) {
+  //       isStoreOpen = true;
+  //     } else {
+  //       isStoreOpen = false;
+  //     }
+  //   }
+
+  //   return isStoreOpen;
+  // }
+
+  // If no default spec exists, use the first spec’s first price as a fallback.
+  // String _getPrice(item) {
+  //   if (item['price'] == null || item['price'] == 0) {
+  //     // look for a default-selected spec
+  //     for (var i = 0; i < item['specifications'].length; i++) {
+  //       for (var j = 0; j < item['specifications'][i]['list'].length; j++) {
+  //         final spec = item['specifications'][i]['list'][j];
+  //         if (spec['is_default_selected'] == true) {
+  //           return spec['price'].toStringAsFixed(2);
+  //         }
+  //       }
+  //     }
+
+  //     // fallback to first available price if none are default-selected
+  //     if (item['specifications'].isNotEmpty &&
+  //         item['specifications'][0]['list'].isNotEmpty) {
+  //       final firstSpecPrice = item['specifications'][0]['list'][0]['price'];
+  //       return firstSpecPrice.toStringAsFixed(2);
+  //     }
+  //   } else {
+  //     return item['price'].toStringAsFixed(2);
+  //   }
+
+  //   return "0.00";
+  // }

@@ -6,7 +6,6 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/borsa/borsa_screen.dart';
-import 'package:zmall/help/support_chat/support_chat_screen.dart';
 import 'package:zmall/services/core_services.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/login/login_screen.dart';

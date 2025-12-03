@@ -32,15 +32,17 @@ class _ReportScreenState extends State<ReportScreen> {
     // debugPrint("Logging ecommerce purchase");
     MyApp.analytics
         .logPurchase(
-            currency: Provider.of<ZMetaData>(context, listen: false).country,
-            value: widget.price,
-            transactionId: widget.orderPaymentUniqueId)
+          currency: Provider.of<ZMetaData>(context, listen: false).country,
+          value: widget.price,
+          transactionId: widget.orderPaymentUniqueId,
+        )
         .whenComplete(
           () => debugPrint(""),
           // debugPrint("purchase logged"),
         );
     _fcm.subscribeToTopic(
-        Provider.of<ZMetaData>(context, listen: false).country);
+      Provider.of<ZMetaData>(context, listen: false).country,
+    );
   }
 
   @override
@@ -63,22 +65,22 @@ class _ReportScreenState extends State<ReportScreen> {
                   children: [
                     Container(
                       padding: EdgeInsets.all(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ).copyWith(top: 0),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: kSecondaryColor.withValues(
-                            alpha: 0.1), // Subtle background for the icon
-                        border: Border.all(
-                          color: kSecondaryColor.withValues(alpha: 0.4),
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: kSecondaryColor.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            spreadRadius: 3,
-                          ),
-                        ],
+                        // color: kSecondaryColor.withValues( alpha: 0.1), // Subtle background for the icon
+                        // border: Border.all(
+                        //   color: kSecondaryColor.withValues(alpha: 0.4),
+                        //   width: 2,
+                        // ),
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //     color: kSecondaryColor.withValues(alpha: 0.2),
+                        //     blurRadius: 15,
+                        //     spreadRadius: 3,
+                        //   ),
+                        // ],
                       ),
                       child: Icon(
                         HeroiconsSolid.shieldCheck,
@@ -87,18 +89,19 @@ class _ReportScreenState extends State<ReportScreen> {
                       ),
                     ),
                     SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding)),
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
                     Text(
                       "Order Confirmed!", // "Completed!",
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: kSecondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: kSecondaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 4)),
+                      height: getProportionateScreenHeight(kDefaultPadding / 4),
+                    ),
                     Text(
                       "Your order has been successfully placed.\nThank you for choosing ZMall!",
                       // "Order Created. Thank you for choosing ZMall",
@@ -121,7 +124,10 @@ class _ReportScreenState extends State<ReportScreen> {
                 ///"Done",
                 press: () {
                   Navigator.pushNamedAndRemoveUntil(
-                      context, "/start", (Route<dynamic> route) => false);
+                    context,
+                    "/start",
+                    (Route<dynamic> route) => false,
+                  );
                 },
                 color: kSecondaryColor,
               ),

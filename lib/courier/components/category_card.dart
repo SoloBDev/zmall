@@ -24,8 +24,9 @@ class CategoryCard extends StatelessWidget {
           color: kPrimaryColor,
           borderRadius: BorderRadius.circular(kDefaultPadding),
           border: Border.all(
-            color:
-                selected ? kSecondaryColor : kGreyColor.withValues(alpha: 0.2),
+            color: selected
+                ? kSecondaryColor
+                : kGreyColor.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
@@ -39,13 +40,14 @@ class CategoryCard extends StatelessWidget {
               height: getProportionateScreenHeight(kDefaultPadding * 3),
               fit: BoxFit.cover,
             ),
-            Text(category,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                      fontWeight:
-                          selected ? FontWeight.bold : FontWeight.normal,
-                      color: kBlackColor,
-                    )),
+            Text(
+              category,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                color: kBlackColor,
+              ),
+            ),
           ],
         ),
       ),

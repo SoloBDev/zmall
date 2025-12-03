@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/utils/constants.dart';
@@ -225,128 +224,8 @@ class BodyState extends State<Body> {
   }
 
   void storeOpen(List stores) async {
-    isOpen.clear();
-    DateFormat dateFormat = new DateFormat.Hm();
-    DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-    if (appOpen == null || appClose == null) {
-      appOpen = await Service.read('app_open');
-      appClose = await Service.read('app_close');
-    }
-
-    DateTime zmallOpen = dateFormat.parse(appOpen);
-    DateTime zmallClose = dateFormat.parse(appClose);
-
-    zmallOpen = new DateTime(
-      now.year,
-      now.month,
-      now.day,
-      zmallOpen.hour,
-      zmallOpen.minute,
-    );
-    zmallClose = new DateTime(
-      now.year,
-      now.month,
-      now.day,
-      zmallClose.hour,
-      zmallClose.minute,
-    );
-
-    stores.forEach((store) {
-      bool isStoreOpen = false;
-      if (store['store_time'] != null && store['store_time'].length != 0) {
-        for (var i = 0; i < store['store_time'].length; i++) {
-          int weekday;
-          if (now.weekday == 7) {
-            weekday = 0;
-          } else {
-            weekday = now.weekday;
-          }
-
-          if (store['store_time'][i]['day'] == weekday) {
-            if (store['store_time'][i]['day_time'].length != 0 &&
-                store['store_time'][i]['is_store_open']) {
-              for (
-                var j = 0;
-                j < store['store_time'][i]['day_time'].length;
-                j++
-              ) {
-                DateTime open = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_open_time'],
-                );
-                open = new DateTime(
-                  now.year,
-                  now.month,
-                  now.day,
-                  open.hour,
-                  open.minute,
-                );
-                DateTime close = dateFormat.parse(
-                  store['store_time'][i]['day_time'][j]['store_close_time'],
-                );
-                close = new DateTime(
-                  now.year,
-                  now.month,
-                  now.day,
-                  close.hour,
-                  close.minute,
-                );
-                now = DateTime(
-                  now.year,
-                  now.month,
-                  now.day,
-                  now.hour,
-                  now.minute,
-                );
-
-                if (now.isAfter(open) &&
-                    now.isAfter(zmallOpen) &&
-                    now.isBefore(close) &&
-                    store['store_time'][i]['is_store_open'] &&
-                    now.isBefore(zmallClose)) {
-                  isStoreOpen = true;
-                  break;
-                } else {
-                  isStoreOpen = false;
-                }
-              }
-            } else {
-              // DateTime zmallOpen = dateFormat.parse(appOpen);
-              // DateTime zmallClose = dateFormat.parse(appClose);
-              // zmallOpen = new DateTime(now.year, now.month, now.day,
-              //     zmallOpen.hour, zmallOpen.minute);
-              // zmallClose = new DateTime(now.year, now.month, now.day,
-              //     zmallClose.hour, zmallClose.minute);
-              if (now.isAfter(zmallOpen) &&
-                  now.isBefore(zmallClose) &&
-                  store['store_time'][i]['is_store_open']) {
-                isStoreOpen = true;
-              } else {
-                isStoreOpen = false;
-              }
-            }
-          }
-        }
-      } else {
-        DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
-        DateTime zmallClose = DateTime(now.year, now.month, now.day, 21, 00);
-        DateFormat dateFormat = DateFormat.Hm();
-        if (appClose != null) {
-          zmallClose = dateFormat.parse(appClose);
-        }
-
-        zmallClose = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          zmallClose.hour,
-          zmallClose.minute,
-        );
-        now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-
-        now.isAfter(zmallClose) ? isStoreOpen = false : isStoreOpen = true;
-      }
-      isOpen.add(isStoreOpen);
-    });
+    // Use Service method to determine which stores are open
+    isOpen = await Service.storeOpen(stores);
   }
 
   void isLogged() async {
@@ -837,9 +716,6 @@ class BodyState extends State<Body> {
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
               if (mounted) {
                 Service.showMessage(
                   context: context,
@@ -855,16 +731,14 @@ class BodyState extends State<Body> {
           );
       setState(() {
         this.responseData = json.decode(response.body);
-        this._loading = false;
       });
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
+    } finally {
       setState(() {
-        this._loading = false;
+        _loading = false;
       });
-
-      return null;
     }
   }
 
@@ -898,9 +772,6 @@ class BodyState extends State<Body> {
           .timeout(
             Duration(seconds: 15),
             onTimeout: () {
-              setState(() {
-                this._loading = false;
-              });
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -922,11 +793,12 @@ class BodyState extends State<Body> {
       return json.decode(response.body);
     } catch (e) {
       // debugPrint(e);
-      setState(() {
-        this._loading = false;
-      });
 
       return null;
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 

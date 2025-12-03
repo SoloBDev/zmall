@@ -7,15 +7,18 @@ class LinearLoadingIndicator extends StatelessWidget {
   final String? title;
   final double? width;
   final double? height;
-  final Color? backgroundColor;
   final double? fontSize;
+  final Color? iconColor;
+  final Color? backgroundColor;
+
   const LinearLoadingIndicator({
     super.key,
     this.title,
     this.width,
     this.height,
-    this.backgroundColor,
     this.fontSize,
+    this.iconColor,
+    this.backgroundColor,
   });
 
   @override
@@ -25,21 +28,26 @@ class LinearLoadingIndicator extends StatelessWidget {
         height: height ?? getProportionateScreenHeight(kDefaultPadding * 5),
         width: width ?? getProportionateScreenWidth(kDefaultPadding * 5),
         decoration: BoxDecoration(
-            color: backgroundColor ?? kGreyColor.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(kDefaultPadding)),
+          color: backgroundColor ?? kGreyColor.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(kDefaultPadding),
+        ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: getProportionateScreenHeight(kDefaultPadding / 2),
             children: [
               SpinKitWave(
-                color: kSecondaryColor,
+                color: iconColor ?? kSecondaryColor,
                 size: getProportionateScreenWidth(kDefaultPadding),
               ),
-              Text(title ?? "Loading...",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                      color: kPrimaryColor, fontSize: fontSize ?? 14)),
+              Text(
+                title ?? "Loading...",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: kPrimaryColor,
+                  fontSize: fontSize ?? 14,
+                ),
+              ),
             ],
           ),
         ),

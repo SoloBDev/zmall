@@ -21,15 +21,18 @@ class CategoryCardWidget extends StatelessWidget {
       getProportionateScreenWidth(kDefaultPadding / 1.5),
     );
     EdgeInsetsGeometry padding = EdgeInsets.symmetric(
-        horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
-        vertical: getProportionateScreenWidth(kDefaultPadding / 4));
+      horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
+      vertical: getProportionateScreenWidth(kDefaultPadding / 4),
+    );
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
-          vertical: getProportionateScreenWidth(kDefaultPadding / 4)),
+        horizontal: getProportionateScreenWidth(kDefaultPadding / 4),
+        vertical: getProportionateScreenWidth(kDefaultPadding / 4),
+      ),
       decoration: BoxDecoration(
-          color: kPrimaryColor,
-          borderRadius: BorderRadius.circular(kDefaultPadding)),
+        color: kPrimaryColor,
+        borderRadius: BorderRadius.circular(kDefaultPadding),
+      ),
       child: InkWell(
         onTap: onPressed,
         child: Column(
@@ -69,7 +72,6 @@ class CategoryCardWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: kWhiteColor,
-                  borderRadius: borderRadius,
                   image: DecorationImage(
                     fit: BoxFit.cover,
                     image: AssetImage(zmallLogo),
@@ -86,9 +88,10 @@ class CategoryCardWidget extends StatelessWidget {
                   // .bodyMedium
                   .bodySmall
                   ?.copyWith(
-                      color: kGreyColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: getProportionateScreenWidth(10)),
+                    color: kGreyColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: getProportionateScreenWidth(10),
+                  ),
             ),
           ],
         ),

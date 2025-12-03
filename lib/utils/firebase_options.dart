@@ -73,8 +73,10 @@ class DefaultFirebaseOptions {
     projectId: 'zmall-184809',
     databaseURL: 'https://zmall-184809.firebaseio.com',
     storageBucket: 'zmall-184809.appspot.com',
-    androidClientId: '362956281866-1ss42kupu9momch6ou2qpk7ppf6smlot.apps.googleusercontent.com',
-    iosClientId: '362956281866-4pn66vt8g3ptaa5hmqjnhhni91gb9k5n.apps.googleusercontent.com',
+    androidClientId:
+        '362956281866-1ss42kupu9momch6ou2qpk7ppf6smlot.apps.googleusercontent.com',
+    iosClientId:
+        '362956281866-4pn66vt8g3ptaa5hmqjnhhni91gb9k5n.apps.googleusercontent.com',
     iosBundleId: 'com.zmall.user',
   );
 }

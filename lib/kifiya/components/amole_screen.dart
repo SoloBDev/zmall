@@ -11,10 +11,7 @@ import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/size_config.dart';
 
 class AmoleScreen extends StatefulWidget {
-  const AmoleScreen({
-    required this.hisab,
-    required this.userData,
-  });
+  const AmoleScreen({required this.hisab, required this.userData});
 
   final double hisab;
   final userData;
@@ -44,14 +41,16 @@ class _AmoleScreenState extends State<AmoleScreen> {
         });
 
         Service.showMessage(
-            context: context, title: "OTP successfully sent!", error: false);
+          context: context,
+          title: "OTP successfully sent!",
+          error: false,
+        );
       }
     }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _sendOtp();
   }
@@ -80,10 +79,7 @@ class _AmoleScreenState extends State<AmoleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Pay with Amole",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("Pay with Amole", style: TextStyle(color: kBlackColor)),
         leading: BackButton(
           color: kBlackColor,
           onPressed: () {
@@ -93,28 +89,29 @@ class _AmoleScreenState extends State<AmoleScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(
-            getProportionateScreenWidth(kDefaultPadding),
-          ),
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding)),
+                  getProportionateScreenWidth(kDefaultPadding),
+                ),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(
-                        getProportionateScreenWidth(kDefaultPadding))),
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Amole",
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(
                       height: getProportionateScreenHeight(kDefaultPadding / 2),
@@ -133,8 +130,9 @@ class _AmoleScreenState extends State<AmoleScreen> {
                       onChanged: (val) {
                         otp = val;
                       },
-                      decoration:
-                          textFieldInputDecorator.copyWith(labelText: "OTP"),
+                      decoration: textFieldInputDecorator.copyWith(
+                        labelText: "OTP",
+                      ),
                     ),
                     SizedBox(
                       height: getProportionateScreenHeight(kDefaultPadding),
@@ -150,7 +148,7 @@ class _AmoleScreenState extends State<AmoleScreen> {
                               verifyOTP();
                             },
                             color: kSecondaryColor,
-                          )
+                          ),
                   ],
                 ),
               ),
@@ -173,29 +171,29 @@ class _AmoleScreenState extends State<AmoleScreen> {
       "phone": widget.userData['user']['phone'],
       "type": widget.userData['user']['admin_type'],
       "token": widget.userData['user']['server_token'],
-      "country_phone_code": widget.userData['user']['country_phone_code']
+      "country_phone_code": widget.userData['user']['country_phone_code'],
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this._loading = false;
       });
@@ -228,22 +226,22 @@ class _AmoleScreenState extends State<AmoleScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;

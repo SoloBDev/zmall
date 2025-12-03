@@ -48,7 +48,9 @@ class _AddNewCardScreenState extends State<AddNewCardScreen> {
                         Text(
                           'ZMall Loyalty Card',
                           style: TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.bold),
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'Powered by Dashen Bank S.C.',
@@ -59,7 +61,7 @@ class _AddNewCardScreenState extends State<AddNewCardScreen> {
                   ),
                   Expanded(
                     child: Image.asset(
-                      "images/dashen.png",
+                      "images/payment/dashen.png",
                       height: getProportionateScreenHeight(kDefaultPadding * 4),
                       width: getProportionateScreenWidth(kDefaultPadding * 4),
                     ),
@@ -83,8 +85,9 @@ class _AddNewCardScreenState extends State<AddNewCardScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: TextFormField(
-                        decoration:
-                            const InputDecoration(hintText: "Full name"),
+                        decoration: const InputDecoration(
+                          hintText: "Full name",
+                        ),
                       ),
                     ),
                     Row(
@@ -109,8 +112,9 @@ class _AddNewCardScreenState extends State<AddNewCardScreen> {
                               LengthLimitingTextInputFormatter(5),
                               CardMonthInputFormatter(),
                             ],
-                            decoration:
-                                const InputDecoration(hintText: "MM/YY"),
+                            decoration: const InputDecoration(
+                              hintText: "MM/YY",
+                            ),
                           ),
                         ),
                       ],
@@ -148,7 +152,9 @@ class _AddNewCardScreenState extends State<AddNewCardScreen> {
 class CardNumberInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var text = newValue.text;
     if (newValue.selection.baseOffset == 0) {
       return newValue;
@@ -163,15 +169,18 @@ class CardNumberInputFormatter extends TextInputFormatter {
     }
     var string = buffer.toString();
     return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
+    );
   }
 }
 
 class CardMonthInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     var newText = newValue.text;
     if (newValue.selection.baseOffset == 0) {
       return newValue;
@@ -186,7 +195,8 @@ class CardMonthInputFormatter extends TextInputFormatter {
     }
     var string = buffer.toString();
     return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
+    );
   }
 }
