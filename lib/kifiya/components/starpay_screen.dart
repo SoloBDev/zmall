@@ -90,35 +90,37 @@ class _StarPayScreenState extends State<StarPayScreen> {
       appBar: AppBar(
         title: Text(title, style: TextStyle(color: kBlackColor)),
       ),
-      body: _loading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SpinKitWave(
-                    color: kSecondaryColor,
-                    size: getProportionateScreenWidth(kDefaultPadding * 2),
-                  ),
-                  SizedBox(
-                    height: getProportionateScreenHeight(kDefaultPadding),
-                  ),
-                  Text(
-                    "Connecting to StarPay...",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: kBlackColor.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w500,
+      body: SafeArea(
+        child: _loading
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SpinKitWave(
+                      color: kSecondaryColor,
+                      size: getProportionateScreenWidth(kDefaultPadding * 2),
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Text(
+                      "Connecting to StarPay...",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: kBlackColor.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
               ),
-            )
-          : InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
-            ),
+      ),
     );
   }
 

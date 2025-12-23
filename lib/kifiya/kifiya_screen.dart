@@ -83,6 +83,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   late String uuid;
   bool isCourierSchedule = false;
   late String courierScheduleDate;
+
   Widget linearProgressIndicator = Container(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -103,12 +104,22 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   @override
   void initState() {
     super.initState();
+
+    // _loadPackageInfo();
     getUser();
     if (widget.onlyCashless != null && widget.onlyCashless == true) {
       kifiyaMethod = -1;
     }
     uuid = widget.orderPaymentUniqueId!;
   }
+
+  // Future<void> _loadPackageInfo() async {
+  //   final packageInfo = await PackageInfo.fromPlatform();
+  //   setState(() {
+  //     _appVersion = packageInfo.version;
+  //     // _buildNumber = packageInfo.buildNumber;
+  //   });
+  // }
 
   void _userDetails() async {
     var usrData = await userDetails();
@@ -2290,6 +2301,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       "is_user_pickup_with_schedule": widget.userpickupWithSchedule,
       "vehicleId": widget.vehicleId,
       "device_type": deviceType,
+      "app_version": appVersion,
       // "device_type": "android",
       // "device_type": 'iOS',
     };

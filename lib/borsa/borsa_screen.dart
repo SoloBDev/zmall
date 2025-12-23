@@ -124,163 +124,169 @@ class _BorsaScreenState extends State<BorsaScreen> {
           ),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _zWalletCard(textTheme: textTheme)),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: _zWalletCard(textTheme: textTheme)),
 
-          // Transactions Section
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: SliverAppBarDelegate(
-              minHeight: getProportionateScreenWidth(80),
-              maxHeight: getProportionateScreenWidth(80),
-              child: Container(
-                color: kPrimaryColor,
-                padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
-                child: Column(
-                  spacing: getProportionateScreenHeight(kDefaultPadding / 2),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section Title
-                    Text(
-                      "Transactions",
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: kBlackColor,
+            // Transactions Section
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: SliverAppBarDelegate(
+                minHeight: getProportionateScreenWidth(80),
+                maxHeight: getProportionateScreenWidth(80),
+                child: Container(
+                  color: kPrimaryColor,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenHeight(kDefaultPadding / 4),
+                  ),
+                  child: Column(
+                    spacing: getProportionateScreenHeight(kDefaultPadding / 2),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section Title
+                      Text(
+                        "Transactions",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: kBlackColor,
+                            ),
                       ),
-                    ),
 
-                    // Filter Chips
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildFilterChip(
-                            "All",
-                            HeroiconsOutline.arrowPathRoundedSquare,
-                            selectedFilter == "All",
-                            () {
-                              setState(() {
-                                selectedFilter = "All";
-                              });
-                            },
-                          ),
-                          SizedBox(width: 12),
-                          _buildFilterChip(
-                            "Received",
-                            HeroiconsOutline.arrowDown,
-                            selectedFilter == "Received",
-                            () {
-                              setState(() {
-                                selectedFilter = "Received";
-                              });
-                            },
-                          ),
-                          SizedBox(width: 12),
-                          _buildFilterChip(
-                            "Sent",
-                            HeroiconsOutline.arrowUp,
-                            selectedFilter == "Sent",
-                            () {
-                              setState(() {
-                                selectedFilter = "Sent";
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (responseData == null || !responseData['success'])
-            SliverToBoxAdapter(
-              child: isLoading
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: kDefaultPadding * 2,
-                        ),
-                        child: SpinKitWave(
-                          color: kSecondaryColor,
-                          size: getProportionateScreenWidth(kDefaultPadding),
-                        ),
-                      ),
-                    )
-                  : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: kDefaultPadding * 2,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // Filter Chips
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
                           children: [
-                            Icon(
-                              HeroiconsOutline.arrowsUpDown,
-                              size: 60,
-                              color: kGreyColor.withValues(alpha: 0.5),
+                            _buildFilterChip(
+                              "All",
+                              HeroiconsOutline.arrowPathRoundedSquare,
+                              selectedFilter == "All",
+                              () {
+                                setState(() {
+                                  selectedFilter = "All";
+                                });
+                              },
                             ),
-                            SizedBox(height: 16),
-                            Text(
-                              "No wallet history found!",
-                              style: TextStyle(color: kGreyColor, fontSize: 16),
+                            SizedBox(width: 12),
+                            _buildFilterChip(
+                              "Received",
+                              HeroiconsOutline.arrowDown,
+                              selectedFilter == "Received",
+                              () {
+                                setState(() {
+                                  selectedFilter = "Received";
+                                });
+                              },
                             ),
-                            Text(
-                              "Add funds to your wallet",
-                              style: TextStyle(
-                                color: kGreyColor.withValues(alpha: 0.6),
-                                fontSize: 14,
-                              ),
+                            SizedBox(width: 12),
+                            _buildFilterChip(
+                              "Sent",
+                              HeroiconsOutline.arrowUp,
+                              selectedFilter == "Sent",
+                              () {
+                                setState(() {
+                                  selectedFilter = "Sent";
+                                });
+                              },
                             ),
                           ],
                         ),
                       ),
-                    ),
-            ),
-
-          if (responseData != null &&
-              responseData['wallet_history'] != null &&
-              responseData['wallet_history'].length == 0)
-            SliverToBoxAdapter(
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(
-                      HeroiconsOutline.wallet,
-                      size: 64,
-                      color: kGreyColor.withValues(alpha: 0.5),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      "No wallet transactions yet!",
-                      style: TextStyle(color: kGreyColor, fontSize: 16),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
+            if (responseData == null || !responseData['success'])
+              SliverToBoxAdapter(
+                child: isLoading
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: kDefaultPadding * 2,
+                          ),
+                          child: SpinKitWave(
+                            color: kSecondaryColor,
+                            size: getProportionateScreenWidth(kDefaultPadding),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: kDefaultPadding * 2,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                HeroiconsOutline.arrowsUpDown,
+                                size: 60,
+                                color: kGreyColor.withValues(alpha: 0.5),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                "No wallet history found!",
+                                style: TextStyle(
+                                  color: kGreyColor,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                "Add funds to your wallet",
+                                style: TextStyle(
+                                  color: kGreyColor.withValues(alpha: 0.6),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
 
-          // Transactions List
-          if (responseData != null &&
-              responseData['wallet_history'] != null &&
-              responseData['wallet_history'].length != 0)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(childCount: 1, (
-                BuildContext context,
-                int index,
-              ) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: kDefaultPadding),
-                  child: _buildTransactionsList(),
-                );
-              }),
-            ),
-        ],
+            if (responseData != null &&
+                responseData['wallet_history'] != null &&
+                responseData['wallet_history'].length == 0)
+              SliverToBoxAdapter(
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        HeroiconsOutline.wallet,
+                        size: 64,
+                        color: kGreyColor.withValues(alpha: 0.5),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "No wallet transactions yet!",
+                        style: TextStyle(color: kGreyColor, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Transactions List
+            if (responseData != null &&
+                responseData['wallet_history'] != null &&
+                responseData['wallet_history'].length != 0)
+              SliverList(
+                delegate: SliverChildBuilderDelegate(childCount: 1, (
+                  BuildContext context,
+                  int index,
+                ) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: kDefaultPadding),
+                    child: _buildTransactionsList(),
+                  );
+                }),
+              ),
+          ],
+        ),
       ),
     );
   }

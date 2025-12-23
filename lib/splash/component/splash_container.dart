@@ -80,7 +80,7 @@ class _SplashContainerState extends State<SplashContainer> {
   }
 
   void _getAppKeys() async {
-    debugPrint("in _getAppKeys=====");
+    // debugPrint("in _getAppKeys=====");
     var data = await CoreServices.appKeys(context);
     if (data != null && data['success']) {
       if (mounted)

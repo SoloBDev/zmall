@@ -82,38 +82,44 @@ class _TelebirrUssdState extends State<TelebirrUssd> {
         //   onPressed: () => Navigator.of(context).pop(),
         // ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pay Using Telebirr',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Powered by Ethiotelecom',
-                  style: TextStyle(fontSize: 21, color: Colors.black45),
-                ),
-              ],
-            ),
-            Image.asset(
-              "images/payment/telebirr.png",
-              height: getProportionateScreenHeight(kDefaultPadding * 10),
-              width: getProportionateScreenWidth(kDefaultPadding * 10),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            SpinKitPouringHourGlassRefined(color: kBlackColor),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            Text(
-              "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
-              textAlign: TextAlign.center,
-            ),
-          ],
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pay Using Telebirr',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Powered by Ethiotelecom',
+                    style: TextStyle(fontSize: 21, color: Colors.black45),
+                  ),
+                ],
+              ),
+              Image.asset(
+                "images/payment/telebirr.png",
+                height: getProportionateScreenHeight(kDefaultPadding * 10),
+                width: getProportionateScreenWidth(kDefaultPadding * 10),
+              ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              SpinKitPouringHourGlassRefined(color: kBlackColor),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              Text(
+                "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

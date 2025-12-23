@@ -37,28 +37,25 @@ class _TabScreenState extends State<TabScreen> {
     final isLogged = await Service.readBool('logged');
     //debugPrint("=====isLogged $isLogged========");
     if (isLogged == true) {
-      //debugPrint("=====  IN IF =====");
       // User is logged in, check the backend flag
       final userData = await Service.getUser();
       //debugPrint("=====userData $userData========");
       if (userData != null && userData['user'] != null) {
-        //debugPrint("=====  IN IF 2 =====");
         // Check for 'is_chatbot_active' key in user data
         // Default to false if key doesn't exist
         _isChatbotEnabled = userData['is_chatbot_active'] ?? false;
+        // ================DEBUG===========================================
         //debugPrint("=====_isChatbotEnabled11 $_isChatbotEnabled========");
         // _isChatbotEnabled = true; //for debug purpose
         //debugPrint("=====_isChatbotEnabled22 $_isChatbotEnabled========");
+        // ================DEBUG===========================================
       } else {
-        //debugPrint("=====  IN ELSE =====");
+        // Fallback to false
         _isChatbotEnabled = false;
-        //debugPrint("=====_isChatbotEnabled33 $_isChatbotEnabled========");
       }
     } else {
       // Guest user - chatbot disabled
-      //debugPrint("=====  IN ELSE 2 =====");
       _isChatbotEnabled = false;
-      //debugPrint("=====_isChatbotEnabled44 $_isChatbotEnabled========");
     }
 
     setState(() {

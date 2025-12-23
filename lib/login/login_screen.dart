@@ -14,7 +14,6 @@ import 'package:zmall/forgot_password/forgot_password_screen.dart';
 import 'package:zmall/login/otp_screen.dart';
 import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
-import 'package:zmall/register/components/custom_suffix_icon.dart';
 import 'package:zmall/services/service.dart';
 import 'package:zmall/services/biometric_services/biometric_service.dart';
 import 'package:zmall/services/biometric_services/biometric_credentials_manager.dart';

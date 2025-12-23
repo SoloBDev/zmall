@@ -7,11 +7,8 @@ import 'package:zmall/utils/size_config.dart';
 class EventSantimPayScreen extends StatefulWidget {
   final String url;
   final String title;
-  const EventSantimPayScreen({
-    Key? key,
-    required this.url,
-    required this.title,
-  }) : super(key: key);
+  const EventSantimPayScreen({Key? key, required this.url, required this.title})
+    : super(key: key);
   @override
   _EventSantimState createState() => _EventSantimState();
 }
@@ -39,38 +36,39 @@ class _EventSantimState extends State<EventSantimPayScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text(widget.title, style: TextStyle(color: kBlackColor)),
         leadingWidth: getProportionateScreenWidth(75.0),
       ),
-      body: Stack(children: [
-        InAppWebView(
-          initialSettings: settings,
-          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-          shouldOverrideUrlLoading: (controller, navigationAction) async {
-            return NavigationActionPolicy.ALLOW; // Allow all navigations
-          },
-          onLoadStart: (InAppWebViewController controller, Uri? url) {
-            setState(() {
-              _loading = true;
-            });
-          },
-          onLoadStop: (InAppWebViewController controller, Uri? url) {
-            setState(() {
-              _loading = false;
-            });
-          },
-        ),
-        if (_loading)
-          Center(
-            child: SpinKitWave(
-              color: kSecondaryColor,
-              size: getProportionateScreenWidth(kDefaultPadding),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            InAppWebView(
+              initialSettings: settings,
+              initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                return NavigationActionPolicy.ALLOW; // Allow all navigations
+              },
+              onLoadStart: (InAppWebViewController controller, Uri? url) {
+                setState(() {
+                  _loading = true;
+                });
+              },
+              onLoadStop: (InAppWebViewController controller, Uri? url) {
+                setState(() {
+                  _loading = false;
+                });
+              },
             ),
-          )
-      ]),
+            if (_loading)
+              Center(
+                child: SpinKitWave(
+                  color: kSecondaryColor,
+                  size: getProportionateScreenWidth(kDefaultPadding),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

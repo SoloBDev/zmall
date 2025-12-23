@@ -73,10 +73,7 @@ class _TelebirrState extends State<Telebirr> {
     return _loading
         ? Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
               // leading: TextButton(
               //   child: Text("Done"),
               //   onPressed: () => Navigator.of(context).pop(),
@@ -91,21 +88,20 @@ class _TelebirrState extends State<Telebirr> {
           )
         : Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
               // leading: TextButton(
               //   child: Text("Done"),
               //   onPressed: () => Navigator.of(context).pop(),
               // ),
             ),
-            body: InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(url: WebUri(telebirrUrl)),
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
+            body: SafeArea(
+              child: InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(telebirrUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
+              ),
             ),
             // withZoom: true,
             // displayZoomControls: true,
@@ -130,29 +126,29 @@ class _TelebirrState extends State<Telebirr> {
       "amount": widget.hisab,
       "trace_no": widget.traceNo,
       "appId": "1234",
-      "returnUrl": "/"
+      "returnUrl": "/",
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;

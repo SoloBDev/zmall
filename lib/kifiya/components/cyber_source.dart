@@ -31,17 +31,16 @@ class _CyberSourceState extends State<CyberSource> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "BoA Cybersource",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("BoA Cybersource", style: TextStyle(color: kBlackColor)),
       ),
-      body: InAppWebView(
-        initialSettings: settings,
-        initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-        shouldOverrideUrlLoading: (controller, navigationAction) async {
-          return NavigationActionPolicy.ALLOW; // Allow all navigations
-        },
+      body: SafeArea(
+        child: InAppWebView(
+          initialSettings: settings,
+          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+          shouldOverrideUrlLoading: (controller, navigationAction) async {
+            return NavigationActionPolicy.ALLOW; // Allow all navigations
+          },
+        ),
       ),
     );
   }

@@ -104,12 +104,15 @@ class _HomeBodyState extends State<HomeBody> {
   List<bool> isPromotionalItemOpen = [];
   List<bool> isProximitylItemOpen = [];
   List<bool> isNearbyStoreOpen = [];
-  late ScrollController _scrollController;
+  // late ScrollController _scrollController;
   // bool _isCollapsed = false;
 
   // Proximity Orders
   List<Map<String, dynamic>> proximityOrdersList = [];
   Timer? _proximityOrderTimer;
+  String proximityOrderName = '';
+  bool isProximityActive = false;
+  int proximityIndex = 0;
   //////////////////////////////
 
   @override
@@ -155,27 +158,6 @@ class _HomeBodyState extends State<HomeBody> {
     getServices();
     getNearByServices();
     getNearByMerchants();
-
-    // Initialize proximity orders
-    // Initial fetch after 2 seconds
-    Future.delayed(Duration(seconds: 2), () {
-      if (mounted) _getProximityOrders();
-    });
-
-    // Auto-refresh every 30 seconds
-    _proximityOrderTimer = Timer.periodic(Duration(seconds: 30), (timer) {
-      if (mounted) _getProximityOrders();
-    });
-
-    ///page scrolling
-    // _scrollController = ScrollController()
-    //   ..addListener(() {
-    //     if (_scrollController.hasClients) {
-    //       setState(() {
-    //         _isCollapsed = _scrollController.offset > kToolbarHeight;
-    //       });
-    //     }
-    //   });
   }
 
   @override
@@ -183,7 +165,7 @@ class _HomeBodyState extends State<HomeBody> {
     timer?.cancel();
     _locationTimer?.cancel();
     _proximityOrderTimer?.cancel();
-    _scrollController.dispose();
+    // _scrollController.dispose();
     super.dispose();
   }
 
@@ -1035,6 +1017,7 @@ class _HomeBodyState extends State<HomeBody> {
         servicesData = data;
         services = servicesData['deliveries'];
       });
+      checkProximityService(services);
     }
   }
 
@@ -1069,6 +1052,63 @@ class _HomeBodyState extends State<HomeBody> {
         setState(() {
           isLaundryActive = false;
         });
+    }
+  }
+
+  void checkProximityService(List serviceList) {
+    setState(() {
+      proximityIndex = -1;
+      isProximityActive = false; // reset first
+      _proximityOrderTimer?.cancel(); // cancel any old timer
+    });
+    for (var i = 0; i < serviceList.length; i++) {
+      final serviceName = serviceList[i]['delivery_name']
+          .toString()
+          .toLowerCase();
+      final serviceDescription = serviceList[i]['description']
+          .toString()
+          .toLowerCase();
+      if (serviceName == "proximity" ||
+          serviceName == "nearby orders" ||
+          serviceName == "orders near you" ||
+          serviceDescription.contains("proximity")) {
+        // if (mounted) {
+        setState(() {
+          isProximityActive = true;
+          proximityIndex = i;
+          proximityOrderName = serviceName;
+        });
+
+        // debugPrint("====>\nisProximityActive $isProximityActive\n=======>");
+        // debugPrint("====>\nChecking proximity order\n=======>");
+        // debugPrint( "====> Proximity service detected! Starting auto-refresh...",);
+
+        // Cancel any existing timer
+        _proximityOrderTimer?.cancel();
+
+        // Initial fetch
+        Future.delayed(Duration(seconds: 2), () {
+          if (mounted) _getProximityOrders();
+        });
+
+        // Start periodic refresh
+        _proximityOrderTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+          if (mounted) {
+            // debugPrint("=> Auto-refreshing proximity orders...");
+            _getProximityOrders();
+          }
+        });
+
+        return; // Exit loop early since we found it
+      }
+    }
+    if (proximityIndex == -1) {
+      if (mounted)
+        setState(() {
+          isProximityActive = false;
+        });
+
+      _proximityOrderTimer?.cancel();
     }
   }
 
@@ -1171,6 +1211,7 @@ class _HomeBodyState extends State<HomeBody> {
     if (servicesData != null && servicesData['success']) {
       services = servicesData['deliveries'];
       // debugPrint("\t=> \tGet Services Completed");
+      checkProximityService(services);
     } else {
       if (mounted && responseData != null) {
         Service.showMessage(
@@ -1269,7 +1310,9 @@ class _HomeBodyState extends State<HomeBody> {
         return firstSpecPrice.toStringAsFixed(2);
       }
     } else {
-      return item['new_price'].toStringAsFixed(2);
+      return item['new_price'] != null
+          ? item['new_price'].toStringAsFixed(2)
+          : "0.00";
     }
 
     return "0.00";
@@ -1478,9 +1521,10 @@ class _HomeBodyState extends State<HomeBody> {
                                   kDefaultPadding / 2,
                                 ),
                                 bottom: getProportionateScreenHeight(
-                                  userData != null
-                                      ? kDefaultPadding / 8
-                                      : kDefaultFontSize / 2,
+                                  kDefaultPadding / 2,
+                                  // userData != null
+                                  //     ? kDefaultPadding / 4
+                                  //     : kDefaultFontSize / 2,
                                 ),
                               ),
                               child: InkWell(
@@ -1769,12 +1813,14 @@ class _HomeBodyState extends State<HomeBody> {
                                               isPromotionalItemOpen[index], // to check if store is closed
                                           imageUrl:
                                               promotionalItems != null &&
-                                                  item['image_url'].length > 0
+                                                  (item['image_url'] != null &&
+                                                      item['image_url'].length >
+                                                          0)
                                               ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
                                               : "www.google.com",
-                                          itemName: "${item['name']}",
+                                          itemName: item['name'] ?? '',
                                           newPrice:
-                                              "${item['price'].toStringAsFixed(2)}\t",
+                                              "${item['price'] != null ? item['price'].toStringAsFixed(2) : 0}\t",
                                           originalPrice:
                                               // item['new_price'] != null &&
                                               //     item['new_price'] != 0
@@ -1782,10 +1828,11 @@ class _HomeBodyState extends State<HomeBody> {
                                               // :
                                               _getPromotionalItemPrice(item),
 
-                                          // _getPromotionalItemPrice(item),
-                                          isDiscounted: item['discount'],
-                                          storeName: item['store_name'],
-                                          specialOffer: item['special_offer'],
+                                          isDiscounted:
+                                              item['discount'] ?? false,
+                                          storeName: item['store_name'] ?? '',
+                                          specialOffer:
+                                              item['special_offer'] ?? '',
                                           storePress: () async {
                                             bool isOp =
                                                 isPromotionalItemOpen[index];
@@ -2021,7 +2068,10 @@ class _HomeBodyState extends State<HomeBody> {
 
                     // : SliverToBoxAdapter(child: SizedBox.shrink()),
                     //////////////Proximity Orders section/////////////////
-                    if (proximityOrdersList.isNotEmpty &&
+                    if (services != null &&
+                        services != '' &&
+                        isProximityActive &&
+                        proximityOrdersList.isNotEmpty &&
                         proximityOrdersList.length > 0)
                       SliverToBoxAdapter(
                         child: Container(
@@ -2046,7 +2096,9 @@ class _HomeBodyState extends State<HomeBody> {
                                   ),
                                 ),
                                 child: SectionTitle(
-                                  sectionTitle: "Orders Near You",
+                                  sectionTitle: Service.capitalizeFirstLetters(
+                                    proximityOrderName,
+                                  ),
                                   //  "Nearby Orders",
                                   subTitle: " ",
                                   // "${proximityOrdersList.length} available",
@@ -2087,8 +2139,7 @@ class _HomeBodyState extends State<HomeBody> {
                                         ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${imageUrls[0]}"
                                         : "";
 
-                                    final double price = (item['item_price'])
-                                        .toDouble();
+                                    // final double price = (item['item_price']).toDouble();
                                     final String storeName = item['store_name'];
                                     final storeDetail = item['store_detail'];
                                     final storeLocation =
@@ -2434,8 +2485,16 @@ class _HomeBodyState extends State<HomeBody> {
                                   final serviceName = service['delivery_name']
                                       ?.toString()
                                       .toLowerCase();
+                                  final serviceDescription =
+                                      service['description']
+                                          .toString()
+                                          .toLowerCase();
+                                  bool isProximityOrder =
+                                      serviceName! == proximityOrderName ||
+                                      serviceDescription.contains("proximity");
                                   // Skip services that are handled elsewhere (e.g., Laundry in categories)
-                                  if (serviceName == 'laundry') {
+                                  if (serviceName == 'laundry' ||
+                                      isProximityOrder) {
                                     return SizedBox.shrink();
                                   }
                                   return Column(

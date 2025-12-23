@@ -87,38 +87,44 @@ class _CbeUssdState extends State<CbeUssd> {
         title: Text(widget.title, style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pay Using CBE Birr',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Powered by CBE',
-                  style: TextStyle(fontSize: 21, color: Colors.black45),
-                ),
-              ],
-            ),
-            Image.asset(
-              "images/payment/cbebirr.png",
-              height: getProportionateScreenHeight(kDefaultPadding * 10),
-              width: getProportionateScreenWidth(kDefaultPadding * 10),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            SpinKitPouringHourGlassRefined(color: kBlackColor),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            Text(
-              "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
-              textAlign: TextAlign.center,
-            ),
-          ],
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pay Using CBE Birr',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Powered by CBE',
+                    style: TextStyle(fontSize: 21, color: Colors.black45),
+                  ),
+                ],
+              ),
+              Image.asset(
+                "images/payment/cbebirr.png",
+                height: getProportionateScreenHeight(kDefaultPadding * 10),
+                width: getProportionateScreenWidth(kDefaultPadding * 10),
+              ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              SpinKitPouringHourGlassRefined(color: kBlackColor),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              Text(
+                "Please complete payment through the USSD prompt. \nWaiting for payment to be completed....",
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

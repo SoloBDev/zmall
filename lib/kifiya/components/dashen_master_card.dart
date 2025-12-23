@@ -57,7 +57,11 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
     var data = await initDashenMasterCard();
     if (data != null && data['success']) {
       Service.showMessage(
-          context: context, title: "Loading...", error: false, duration: 6);
+        context: context,
+        title: "Loading...",
+        error: false,
+        duration: 6,
+      );
       setState(() {
         masterCardUrl = data['mastercardUrl'];
       });
@@ -79,10 +83,7 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
     return _loading
         ? Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
             ),
             body: Center(
               child: SpinKitWave(
@@ -93,48 +94,46 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
           )
         : Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
               bottom: PreferredSize(
                 preferredSize: Size.fromHeight(
-                    getProportionateScreenHeight(kDefaultPadding * 2)),
+                  getProportionateScreenHeight(kDefaultPadding * 2),
+                ),
                 child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                        horizontal:
-                            getProportionateScreenWidth(kDefaultPadding / 2),
-                        vertical:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
-                    decoration: BoxDecoration(
-                      color: kSecondaryColor,
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(
+                      kDefaultPadding / 2,
                     ),
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Press here after completing payment',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: kWhiteColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: kDefaultPadding * 1.2,
-                        ),
+                    vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+                  ),
+                  decoration: BoxDecoration(color: kSecondaryColor),
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Press here after completing payment',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: kWhiteColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: kDefaultPadding * 1.2,
                       ),
-                    )),
+                    ),
+                  ),
+                ),
               ),
             ),
-            body: InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(
-                url: WebUri(masterCardUrl),
+            body: SafeArea(
+              child: InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(masterCardUrl)),
+                // onWebViewCreated: (controller) {
+                //   _webViewController = controller; // Store controller if needed
+                // },
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
               ),
-              // onWebViewCreated: (controller) {
-              //   _webViewController = controller; // Store controller if needed
-              // },
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
             ),
           );
   }
@@ -158,22 +157,22 @@ class _DashenMasterCardState extends State<DashenMasterCard> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(widget.url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(widget.url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 15),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 15),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         responseData = json.decode(response.body);
         this._loading = false;

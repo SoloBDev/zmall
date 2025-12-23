@@ -70,39 +70,39 @@ class _ChapaScreenState extends State<ChapaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text(widget.title, style: TextStyle(color: kBlackColor)),
       ),
-      body: _loading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SpinKitWave(
-                    color: kSecondaryColor,
-                    size: getProportionateScreenWidth(kDefaultPadding * 2),
-                  ),
-                  SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding)),
-                  Text(
-                    "Connecting to Chapa...",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: kBlackColor.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ],
+      body: SafeArea(
+        child: _loading
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SpinKitWave(
+                      color: kSecondaryColor,
+                      size: getProportionateScreenWidth(kDefaultPadding * 2),
+                    ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
+                    Text(
+                      "Connecting to Chapa...",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: kBlackColor.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
               ),
-            )
-          : InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
-            ),
+      ),
     );
   }
 
@@ -118,30 +118,30 @@ class _ChapaScreenState extends State<ChapaScreen> {
       "customization": {
         "title": "ZMall Delivery Payment",
         "description": "Order Payment to ZMall Delivery",
-        "logo": null
-      }
+        "logo": null,
+      },
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;

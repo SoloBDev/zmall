@@ -43,8 +43,8 @@ class _YagoutPayState extends State<YagoutPay> {
     allowsInlineMediaPlayback: true,
 
     ///
-
-    javaScriptCanOpenWindowsAutomatically: true, domStorageEnabled: true,
+    javaScriptCanOpenWindowsAutomatically: true,
+    domStorageEnabled: true,
     // Consider adding a userAgent for better compatibility
     userAgent:
         "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36",
@@ -94,35 +94,33 @@ class _YagoutPayState extends State<YagoutPay> {
     return Scaffold(
       appBar: AppBar(
         leading: CustomBackButton(),
-        title: Text(
-          "YagoutPay",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("YagoutPay", style: TextStyle(color: kBlackColor)),
       ),
-      body: _loading || initUrl.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_loading || _isError || initUrl.isEmpty)
-                    SpinKitWave(
-                      color: kSecondaryColor,
-                      size: getProportionateScreenWidth(kDefaultPadding * 2),
+      body: SafeArea(
+        child: _loading || initUrl.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_loading || _isError || initUrl.isEmpty)
+                      SpinKitWave(
+                        color: kSecondaryColor,
+                        size: getProportionateScreenWidth(kDefaultPadding * 2),
+                      ),
+                    SizedBox(
+                      height: getProportionateScreenHeight(kDefaultPadding),
                     ),
-                  SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding)),
-                  Text(
-                    message,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: kBlackColor.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ],
-              ),
-            )
-          : SafeArea(
-              child: InAppWebView(
+                    Text(
+                      message,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: kBlackColor.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : InAppWebView(
                 initialSettings: settings,
                 initialUrlRequest: URLRequest(url: WebUri(initUrl)),
                 shouldOverrideUrlLoading: (controller, navigationAction) async {
@@ -138,7 +136,7 @@ class _YagoutPayState extends State<YagoutPay> {
                   });
                 },
               ),
-            ),
+      ),
     );
   }
 
@@ -169,19 +167,19 @@ class _YagoutPayState extends State<YagoutPay> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       // print("Raw response>>> ${response.body}");
 

@@ -762,8 +762,9 @@ class Service {
             // Check if urgent (created more than 30 minutes ago)
             DateTime createdAt = DateTime.parse(order['created_at']);
             Duration timeSinceCreation = DateTime.now().difference(createdAt);
-            bool isUrgent = timeSinceCreation.inMinutes > 30;
-
+            // bool isUrgent = timeSinceCreation.inMinutes > 30;
+            bool isUrgent = timeSinceCreation.inMinutes < 2880;
+            // 20000; //2*24*60 = 2880 minutes
             // Extract items from order
             var orderDetails = cartDetail['order_details'] as List? ?? [];
             var storeDetail = order['store_detail'] ?? {};
@@ -799,8 +800,9 @@ class Service {
                   'distance_from_user': distance,
                   'is_urgent': isUrgent,
                 };
-
-                proximityItems.add(enrichedItem);
+                if (isUrgent) {
+                  proximityItems.add(enrichedItem);
+                }
               }
             }
           }

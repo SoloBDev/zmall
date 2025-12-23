@@ -120,21 +120,23 @@ class _AddisPayState extends State<AddisPay> {
                 ],
               ),
             )
-          : InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
-              onReceivedError: (controller, request, error) {
-                setState(() {
-                  _loading = false;
-                  message = "Failed to initiate payment. Please try again.";
-                  // Force rebuild to show error message
-                  initUrl =
-                      ""; // Clear the URL so the error message is shown instead of the webview
-                });
-              },
+          : SafeArea(
+              child: InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
+                onReceivedError: (controller, request, error) {
+                  setState(() {
+                    _loading = false;
+                    message = "Failed to initiate payment. Please try again.";
+                    // Force rebuild to show error message
+                    initUrl =
+                        ""; // Clear the URL so the error message is shown instead of the webview
+                  });
+                },
+              ),
             ),
     );
   }

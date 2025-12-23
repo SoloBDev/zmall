@@ -297,7 +297,7 @@ class HelpScreen extends StatelessWidget {
                 title: "Privacy Policy",
                 onTap: () {
                   Service.launchInWebViewOrVC(
-                    "https://app.zmallshop.com/terms.html",
+                    "https://app.zmall.et/privacy.html",
                   );
                 },
               ),
@@ -310,7 +310,7 @@ class HelpScreen extends StatelessWidget {
                 title: "Terms and Conditions",
                 onTap: () {
                   Service.launchInWebViewOrVC(
-                    "https://app.zmallshop.com/terms.html",
+                    "https://app.zmall.et/terms.html",
                   );
                 },
               ),

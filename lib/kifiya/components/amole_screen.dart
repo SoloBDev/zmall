@@ -88,71 +88,80 @@ class _AmoleScreenState extends State<AmoleScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(
-                  getProportionateScreenWidth(kDefaultPadding),
-                ),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(
+              getProportionateScreenWidth(kDefaultPadding),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(
                     getProportionateScreenWidth(kDefaultPadding),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Amole",
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(
+                      getProportionateScreenWidth(kDefaultPadding),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Pay ብር ${widget.hisab.toStringAsFixed(2)} with Amole",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 2),
-                    ),
-                    Text(
-                      "Please enter the verification pin sent from Amole.",
-                      style: TextStyle(color: kGreyColor),
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding / 2),
-                    ),
-                    TextField(
-                      style: TextStyle(color: kBlackColor),
-                      keyboardType: TextInputType.number,
-                      onChanged: (val) {
-                        otp = val;
-                      },
-                      decoration: textFieldInputDecorator.copyWith(
-                        labelText: "OTP",
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(kDefaultPadding),
-                    ),
-                    _loading
-                        ? SpinKitWave(
-                            color: kSecondaryColor,
-                            size: getProportionateScreenWidth(kDefaultPadding),
-                          )
-                        : CustomButton(
-                            title: "Submit",
-                            press: () async {
-                              verifyOTP();
-                            },
-                            color: kSecondaryColor,
-                          ),
-                  ],
+                      Text(
+                        "Please enter the verification pin sent from Amole.",
+                        style: TextStyle(color: kGreyColor),
+                        textAlign: TextAlign.justify,
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 2,
+                        ),
+                      ),
+                      TextField(
+                        style: TextStyle(color: kBlackColor),
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) {
+                          otp = val;
+                        },
+                        decoration: textFieldInputDecorator.copyWith(
+                          labelText: "OTP",
+                        ),
+                      ),
+                      SizedBox(
+                        height: getProportionateScreenHeight(kDefaultPadding),
+                      ),
+                      _loading
+                          ? SpinKitWave(
+                              color: kSecondaryColor,
+                              size: getProportionateScreenWidth(
+                                kDefaultPadding,
+                              ),
+                            )
+                          : CustomButton(
+                              title: "Submit",
+                              press: () async {
+                                verifyOTP();
+                              },
+                              color: kSecondaryColor,
+                            ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

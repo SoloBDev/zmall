@@ -278,78 +278,86 @@ class _TelebirrInAppState extends State<TelebirrInApp> {
           },
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Initiating Payment',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: kBlackColor,
-                    letterSpacing: 0.8,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(getProportionateScreenWidth(kDefaultPadding)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Initiating Payment',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: kBlackColor,
+                      letterSpacing: 0.8,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 4),
-                ),
-                Text(
-                  'Powered by Ethiotelecom',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: kGreyColor,
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 4),
                   ),
-                  textAlign: TextAlign.center,
+                  Text(
+                    'Powered by Ethiotelecom',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: kGreyColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding * 2),
+              ),
+
+              // Telebirr Logo
+              ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  getProportionateScreenWidth(kDefaultPadding / 2),
                 ),
-              ],
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
-
-            // Telebirr Logo
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                getProportionateScreenWidth(kDefaultPadding / 2),
+                child: Image.asset(
+                  "images/payment/telebirr.png",
+                  height: getProportionateScreenHeight(kDefaultPadding * 12),
+                  width: getProportionateScreenWidth(kDefaultPadding * 12),
+                  fit: BoxFit.contain,
+                ),
               ),
-              child: Image.asset(
-                "images/payment/telebirr.png",
-                height: getProportionateScreenHeight(kDefaultPadding * 12),
-                width: getProportionateScreenWidth(kDefaultPadding * 12),
-                fit: BoxFit.contain,
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding * 2),
               ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding * 2)),
 
-            // Loading Indicator
-            SpinKitPouringHourGlassRefined(
-              color: kGreyColor,
-              size: getProportionateScreenWidth(kDefaultPadding * 3),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-
-            // Loading Text
-            Text(
-              "Waiting for your payment to be confirmed...",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: kBlackColor.withValues(alpha: 0.8),
-                fontWeight: FontWeight.w600,
+              // Loading Indicator
+              SpinKitPouringHourGlassRefined(
+                color: kGreyColor,
+                size: getProportionateScreenWidth(kDefaultPadding * 3),
               ),
-            ),
-            SizedBox(height: getProportionateScreenHeight(kDefaultPadding / 2)),
-            Text(
-              "Please complete the transaction in the Telebirr app.",
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: kGreyColor),
-            ),
-          ],
+              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+
+              // Loading Text
+              Text(
+                "Waiting for your payment to be confirmed...",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: kBlackColor.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(
+                height: getProportionateScreenHeight(kDefaultPadding / 2),
+              ),
+              Text(
+                "Please complete the transaction in the Telebirr app.",
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: kGreyColor),
+              ),
+            ],
+          ),
         ),
       ),
     );

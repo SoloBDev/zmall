@@ -71,10 +71,7 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
     return _loading
         ? Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
             ),
             body: Center(
               child: SpinKitWave(
@@ -85,32 +82,32 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
           )
         : Scaffold(
             appBar: AppBar(
-              title: Text(
-                widget.title,
-                style: TextStyle(color: kBlackColor),
-              ),
+              title: Text(widget.title, style: TextStyle(color: kBlackColor)),
             ),
-            body: InAppWebView(
-              initialSettings: settings,
-              initialUrlRequest: URLRequest(url: WebUri(initUrl)),
-              shouldOverrideUrlLoading: (controller, navigationAction) async {
-                // debugPrint("Navigating to: ${navigationAction.request.url}");
-                return NavigationActionPolicy.ALLOW; // Allow all navigations
-              },
-              onLoadStart: (controller, url) {
-                // debugPrint("Started loading: $url");
-              },
-              onLoadStop: (controller, url) {
-                // debugPrint("Finished loading: $url");
-              },
-              onReceivedError: (controller, request, error) {
-                // debugPrint("Error loading ${request.url}: ${error.description}");
+            body: SafeArea(
+              child: InAppWebView(
+                initialSettings: settings,
+                initialUrlRequest: URLRequest(url: WebUri(initUrl)),
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  // debugPrint("Navigating to: ${navigationAction.request.url}");
+                  return NavigationActionPolicy.ALLOW; // Allow all navigations
+                },
+                onLoadStart: (controller, url) {
+                  // debugPrint("Started loading: $url");
+                },
+                onLoadStop: (controller, url) {
+                  // debugPrint("Finished loading: $url");
+                },
+                onReceivedError: (controller, request, error) {
+                  // debugPrint("Error loading ${request.url}: ${error.description}");
 
-                Service.showMessage(
+                  Service.showMessage(
                     context: context,
                     title: "Failed to load payment page: ${error.description}",
-                    error: true);
-              },
+                    error: true,
+                  );
+                },
+              ),
             ),
           );
   }
@@ -126,29 +123,29 @@ class _EthSwitchScreenState extends State<EthSwitchScreen> {
       "amount": widget.hisab * 100,
       "description": "ZMall Delivery Order Payment",
       "issued_to": "0${widget.phone}",
-      "appId": "1234"
+      "appId": "1234",
     };
 
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       setState(() {
         this._loading = false;

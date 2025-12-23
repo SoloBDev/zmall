@@ -282,7 +282,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         if (response['error'] == true) {
           // Handle error from API
           _addBotMessage(
-            "Sorry, I'm having trouble connecting right now. 😔\n'Please try again later.'}\nYou can also:\n Call: +251 967 575757\n Email: info@zmallshop.com",
+            "Sorry, I'm having trouble connecting right now. 😔\nPlease try again later.\nYou can also:\n Call: +251 967 575757\n Email: info@zmallshop.com",
             // "Sorry, I'm having trouble connecting right now. 😔\n${response['message'] ?? 'Please try again later.'}\nYou can also:\n Call: +251 967 575757\n Email: info@zmallshop.com",
           );
         } else {
@@ -300,7 +300,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       } else {
         // Response is null
         _addBotMessage(
-          "Sorry, I couldn't connect to the server. 😔\nPlease check your internet connection and try again.\nYou can also:\n Call: +251 967 575757\n Email: info@zmallshop.com",
+          "Sorry, I'm having trouble connecting right now. 😔\nPlease check your internet connection and try again.\nYou can also:\n Call: +251 967 575757\n Email: info@zmallshop.com",
         );
       }
     } catch (e) {
