@@ -13,8 +13,7 @@ import 'package:zmall/models/metadata.dart';
 import 'package:zmall/models/cart.dart';
 import 'package:zmall/services/core_services.dart';
 import 'package:zmall/utils/size_config.dart';
-
-import '../utils/constants.dart';
+import 'package:zmall/utils/constants.dart';
 
 class Service {
   // Secure storage instance for sensitive data

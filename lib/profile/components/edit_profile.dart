@@ -389,6 +389,7 @@ class _EditProfileState extends State<EditProfile> {
                     CustomTextField(
                       cursorColor: kSecondaryColor,
                       style: TextStyle(color: kBlackColor),
+                      keyboardType: TextInputType.visiblePassword,
                       obscureText: !_showPassword,
                       onChanged: (val) {
                         setState(() {
@@ -543,6 +544,7 @@ class _EditProfileState extends State<EditProfile> {
                       CustomTextField(
                         obscureText: !showOldPassword,
                         hintText: "Enter your old password",
+                        keyboardType: TextInputType.visiblePassword,
                         onChanged: (val) {
                           oldPassword = val;
                         },
@@ -580,7 +582,7 @@ class _EditProfileState extends State<EditProfile> {
                       CustomTextField(
                         obscureText: !showNewPassword,
                         hintText: "Enter your new password",
-                        keyboardType: TextInputType.emailAddress,
+                        keyboardType: TextInputType.visiblePassword,
                         onChanged: (val) {
                           sheetSetState(() {
                             newPassword = val;
@@ -619,6 +621,7 @@ class _EditProfileState extends State<EditProfile> {
                       ),
                       CustomTextField(
                         hintText: "Confirm your new password",
+                        keyboardType: TextInputType.visiblePassword,
                         onChanged: (val) {
                           sheetSetState(() {
                             confirmPassword = val;

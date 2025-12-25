@@ -8,7 +8,7 @@ import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/services/service.dart';
-import '../utils/constants.dart';
+import 'package:zmall/utils/constants.dart';
 
 class CoreServices {
   static Future<dynamic> getCategoryList({
@@ -445,6 +445,40 @@ class CoreServices {
       return json.decode(response.body);
     } catch (e) {
       // print("Error fetching orders list: $e");
+      return null;
+    }
+  }
+
+  static Future<dynamic> getRecapServices({
+    required String userId,
+    required String serverToken,
+    required BuildContext context,
+  }) async {
+    var url =
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/get_user_recap";
+    Map data = {"user_id": userId, "server_token": serverToken};
+    // debugPrint("body $data");
+    var body = json.encode(data);
+    try {
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
+      // debugPrint("${json.decode(response.body)}");
+      return json.decode(response.body);
+    } catch (e) {
+      // debugPrint("====error:\n $e\n==========");
       return null;
     }
   }

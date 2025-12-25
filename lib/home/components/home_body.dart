@@ -15,6 +15,8 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/aliexpress/ali_product_screen.dart';
 import 'package:zmall/cart/cart_screen.dart';
+import 'package:zmall/home/magazine/screens/magazine_list_screen.dart';
+import 'package:zmall/home/yearly_recap/screens/recap_screen.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/controllers/controllers.dart';
 import 'package:zmall/services/core_services.dart';
@@ -113,6 +115,12 @@ class _HomeBodyState extends State<HomeBody> {
   String proximityOrderName = '';
   bool isProximityActive = false;
   int proximityIndex = 0;
+  // Recap
+  Map<String, dynamic> recapData = {};
+  String recapServiceName = '';
+  bool isRecapActive = false;
+  int recapIndex = 0;
+
   //////////////////////////////
 
   @override
@@ -1017,7 +1025,11 @@ class _HomeBodyState extends State<HomeBody> {
         servicesData = data;
         services = servicesData['deliveries'];
       });
-      checkProximityService(services);
+      if (userData != null && userData['user'] != null) {
+        // debugPrint( "====>\Current User ${userData['user']['first_name']}\n=======>",);
+        checkProximityService(services);
+        checkRecapService(services);
+      }
     }
   }
 
@@ -1109,6 +1121,71 @@ class _HomeBodyState extends State<HomeBody> {
         });
 
       _proximityOrderTimer?.cancel();
+    }
+  }
+
+  //Recap service
+  void checkRecapService(List serviceList) async {
+    setState(() {
+      recapIndex = -1;
+      isRecapActive = false; // reset first
+    });
+    // debugPrint("====>\isRecapActive $isRecapActive\n=======>");
+    // debugPrint("====> services $serviceList");
+
+    for (var i = 0; i < serviceList.length; i++) {
+      final serviceName = serviceList[i]['delivery_name']
+          .toString()
+          .toLowerCase();
+      final serviceDescription = serviceList[i]['description']
+          .toString()
+          .toLowerCase();
+
+      if (serviceName == "zmall recap" ||
+          serviceName == "recap" ||
+          serviceName == "wrapped" ||
+          serviceDescription.contains("recap") ||
+          serviceDescription.contains("wrapped")) {
+        // if (mounted) {
+        setState(() {
+          isRecapActive = true;
+          recapIndex = i;
+          recapServiceName = serviceName;
+        });
+
+        // debugPrint("====>\nisRecapActive $isRecapActive\n=======>");
+        // debugPrint("====>\nrecapServiceName $recapServiceName\n=======>");
+        // debugPrint("====> services $serviceList");
+
+        if (isRecapActive) {
+          // call API to get user recap data
+          var recapResponseData = await CoreServices.getRecapServices(
+            userId: userData['user']['_id'],
+            serverToken: userData['user']['server_token'],
+            context: context,
+          );
+          if (recapResponseData != null && recapResponseData['success']) {
+            // debugPrint("\t=>\tGet recapData ...");
+            if (!mounted) return;
+            setState(() {
+              recapData = recapResponseData['recap'];
+            });
+            // debugPrint("====>recapData=>\n$recapData\n====>");
+          }
+          // else {
+          //   // debugPrint("recap data message=>\n${recapData['message']}\n====>");
+          //   setState(() {
+          //     isRecapActive = false;
+          //   });
+          // }
+        }
+      }
+    }
+    if (recapIndex == -1) {
+      if (mounted)
+        setState(() {
+          isRecapActive = false;
+        });
     }
   }
 
@@ -1211,7 +1288,11 @@ class _HomeBodyState extends State<HomeBody> {
     if (servicesData != null && servicesData['success']) {
       services = servicesData['deliveries'];
       // debugPrint("\t=> \tGet Services Completed");
-      checkProximityService(services);
+      if (userData != null && userData['user'] != null) {
+        // debugPrint(  "====>\Current User ${userData['user']['first_name']}\n=======>", );
+        checkProximityService(services);
+        checkRecapService(services);
+      }
     } else {
       if (mounted && responseData != null) {
         Service.showMessage(
@@ -1600,6 +1681,177 @@ class _HomeBodyState extends State<HomeBody> {
                         ),
                       ),
                     ),
+                    //////////////Recap Section///////////////////
+                    if (services != null &&
+                        services != '' &&
+                        isRecapActive &&
+                        recapData.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    RecapScreen(recapData: recapData),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.symmetric(
+                              horizontal: kDefaultPadding,
+                              vertical: kDefaultPadding / 2,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFFED2437),
+                                  const Color(0xFFc91f2f),
+                                ],
+                                // colors: [
+                                //   // Color(0xFF0f0f23),
+                                //   // Color(0xFF1a1a2e),
+                                //   kSecondaryColor,
+                                //   kPrimaryColor,
+                                // ],
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                kDefaultPadding * 1.1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: kPrimaryColor.withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                // Decorative circles
+                                Positioned(
+                                  right: -30,
+                                  top: -30,
+                                  child: Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: kPrimaryColor.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: -20,
+                                  bottom: -20,
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: kPrimaryColor.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Content
+                                Padding(
+                                  padding: EdgeInsets.all(
+                                    kDefaultPadding * 1.3,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Icon
+                                      Container(
+                                        padding: EdgeInsets.all(
+                                          kDefaultPadding / 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: kPrimaryColor.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            kDefaultPadding / 1.3,
+                                          ),
+                                          border: Border.all(
+                                            color: kPrimaryColor.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.auto_awesome,
+                                          color: kPrimaryColor,
+                                          size: 30,
+                                        ),
+                                      ),
+
+                                      SizedBox(width: kDefaultPadding),
+
+                                      // Text content
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Your ${DateTime.now().year} ${Service.capitalizeFirstLetters(recapServiceName)}",
+                                              style: TextStyle(
+                                                color: kPrimaryColor,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: kDefaultPadding / 5,
+                                            ),
+                                            Text(
+                                              "See your year in review ✨",
+                                              style: TextStyle(
+                                                color: kPrimaryColor.withValues(
+                                                  alpha: 0.7,
+                                                ),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Arrow icon
+                                      Container(
+                                        padding: EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: kPrimaryColor.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.white,
+                                          size: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    ///
                     //////////////Categories Section///////////////////
                     SliverToBoxAdapter(
                       child: Container(
@@ -2490,13 +2742,25 @@ class _HomeBodyState extends State<HomeBody> {
                                           .toString()
                                           .toLowerCase();
                                   bool isProximityOrder =
-                                      serviceName! == proximityOrderName ||
+                                      serviceName == "proximity" ||
+                                      serviceName == "nearby orders" ||
+                                      serviceName == "orders near you" ||
                                       serviceDescription.contains("proximity");
+                                  bool isRecap =
+                                      serviceName == "zmall recap" ||
+                                      serviceName == "recap" ||
+                                      serviceName == "wrapped" ||
+                                      serviceDescription.contains("recap") ||
+                                      serviceDescription.contains("wrapped");
                                   // Skip services that are handled elsewhere (e.g., Laundry in categories)
                                   if (serviceName == 'laundry' ||
-                                      isProximityOrder) {
+                                      isProximityOrder ||
+                                      isRecap) {
                                     return SizedBox.shrink();
                                   }
+                                  // serviceName = serviceName.contains('magazin')
+                                  //     ? "Magazin"
+                                  //     : serviceName;
                                   return Column(
                                     mainAxisSize: MainAxisSize.min,
                                     spacing: getProportionateScreenHeight(
@@ -2550,6 +2814,12 @@ class _HomeBodyState extends State<HomeBody> {
                                               );
                                               // 'https://www.ethiolottery.et/am?affiliate=68308ad291bef6c92f841c8b');
                                               break;
+                                            case 'z-magazine':
+                                              screen = MagazineListScreen(
+                                                title: serviceName,
+                                                url: service['description'],
+                                                magazines: [],
+                                              );
                                             case 'aliexpress':
                                               screen = AliProductListScreen();
                                               break;

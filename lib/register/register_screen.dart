@@ -71,8 +71,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     setState(() {
-      address =
-          areaCode == "+251" ? "Addis Ababa, Ethiopia" : "Juba, South Sudan";
+      address = areaCode == "+251"
+          ? "Addis Ababa, Ethiopia"
+          : "Juba, South Sudan";
       _loading = true;
     });
     var data = await register();
@@ -85,18 +86,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       await MyApp.analytics.logEvent(name: "user_registered");
       Navigator.pushNamedAndRemoveUntil(
-          context, LoginScreen.routeName, (Route<dynamic> route) => false);
+        context,
+        LoginScreen.routeName,
+        (Route<dynamic> route) => false,
+      );
     } else {
       setState(() {
         _loading = false;
       });
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       if (data['error_code'] == 503) {
         Navigator.pushNamedAndRemoveUntil(
-            context, LoginScreen.routeName, (Route<dynamic> route) => false);
+          context,
+          LoginScreen.routeName,
+          (Route<dynamic> route) => false,
+        );
       }
     }
   }
@@ -123,45 +131,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     TextStyle titleStyle = TextStyle(
-        fontSize: 16, fontWeight: FontWeight.bold, color: kBlackColor);
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: kBlackColor,
+    );
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         backgroundColor: kPrimaryColor,
         bottomNavigationBar:
             _isCollapsed && (_formKey.currentState!.validate() && _isSelected)
-                ? SizedBox.shrink()
-                : SafeArea(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Already have an account?",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: kBlackColor),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            Provider.of<ZLanguage>(context).login,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: kSecondaryColor),
-                          ),
-                        )
-                      ],
+            ? SizedBox.shrink()
+            : SafeArea(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account?",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: kBlackColor,
+                      ),
                     ),
-                  ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        Provider.of<ZLanguage>(context).login,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: kSecondaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
         appBar: AppBar(
           elevation: 0.0,
           automaticallyImplyLeading: false,
           backgroundColor: kPrimaryColor,
           surfaceTintColor: kPrimaryColor,
-          title: Text(
-            "Create an Account",
-          ),
+          title: Text("Create an Account"),
         ),
         body: SafeArea(
           child: ModalProgressHUD(
@@ -186,12 +198,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: getProportionateScreenHeight(
-                                kDefaultPadding / 1.5),
+                              kDefaultPadding / 1.5,
+                            ),
                             children: [
-                              Text(
-                                "User Info",
-                                style: titleStyle,
-                              ),
+                              Text("User Info", style: titleStyle),
                               buildFirstNameFormField(),
                               buildLastNameFormField(),
                             ],
@@ -199,93 +209,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: getProportionateScreenHeight(
-                                kDefaultPadding / 1.5),
+                              kDefaultPadding / 1.5,
+                            ),
                             children: [
-                              Text(
-                                "Contact Info",
-                                style: titleStyle,
-                              ),
+                              Text("Contact Info", style: titleStyle),
                               buildEmailFormField(),
                               buildPhoneNumberFormField(),
                             ],
                           ),
                           Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              spacing: getProportionateScreenHeight(
-                                  kDefaultPadding / 1.5),
-                              children: [
-                                Text(
-                                  "Security",
-                                  style: titleStyle,
-                                ),
-                                buildPasswordFormField(),
-                                buildConformPassFormField(),
-                                Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Checkbox.adaptive(
-                                        value: _isSelected,
-                                        fillColor: WidgetStateProperty
-                                            .resolveWith<Color>((
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: getProportionateScreenHeight(
+                              kDefaultPadding / 1.5,
+                            ),
+                            children: [
+                              Text("Security", style: titleStyle),
+                              buildPasswordFormField(),
+                              buildConformPassFormField(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Checkbox.adaptive(
+                                    value: _isSelected,
+                                    fillColor:
+                                        WidgetStateProperty.resolveWith<Color>((
                                           states,
                                         ) {
-                                          if (states
-                                              .contains(WidgetState.selected)) {
+                                          if (states.contains(
+                                            WidgetState.selected,
+                                          )) {
                                             return kSecondaryColor;
                                           }
                                           return kWhiteColor;
                                         }),
-                                        side: BorderSide(
-                                          color: kBlackColor.withValues(
-                                              alpha: 0.4),
-                                          width: 2,
-                                        ),
-                                        onChanged: (bool? value) {
-                                          setState(() {
-                                            _isSelected = value ?? false;
-                                          });
+                                    side: BorderSide(
+                                      color: kBlackColor.withValues(alpha: 0.4),
+                                      width: 2,
+                                    ),
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        _isSelected = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "By continuing your confirm that you agree with our",
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          Service.launchInWebViewOrVC(
+                                            "https://app.zmallshop.com/terms.html",
+                                          );
                                         },
+                                        child: Text(
+                                          "Terms & Conditions",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: kSecondaryColor,
+                                              ),
+                                          softWrap: true,
+                                        ),
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              "By continuing your confirm that you agree with our",
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall),
-                                          InkWell(
-                                            onTap: () {
-                                              Service.launchInWebViewOrVC(
-                                                  "https://app.zmallshop.com/terms.html");
-                                            },
-                                            child: Text(
-                                              "Terms & Conditions",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    color: kSecondaryColor,
-                                                  ),
-                                              softWrap: true,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ]),
-                              ]),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding / 8),
-                              vertical: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
-                            ).copyWith(
-                                bottom: getProportionateScreenWidth(
-                                    kDefaultPadding)),
+                            padding:
+                                EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding / 8,
+                                  ),
+                                  vertical: getProportionateScreenHeight(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ).copyWith(
+                                  bottom: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                ),
                             child: CustomButton(
                               title: "Complete",
                               color: _isSelected
@@ -316,7 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-///////////////////text ffild widgets////////////////////////////////////////
+  ///////////////////text ffild widgets////////////////////////////////////////
   ///user info section////
   Widget buildFirstNameFormField() {
     return CustomTextField(
@@ -333,9 +347,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
       // labelText: "First Name",
       hintText: "Enter your first name",
-      prefixIcon: CustomSuffixIcon(
-        iconData: HeroiconsOutline.user,
-      ),
+      prefixIcon: CustomSuffixIcon(iconData: HeroiconsOutline.user),
     );
   }
 
@@ -352,13 +364,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
         return null;
       },
-      prefixIcon: CustomSuffixIcon(
-        iconData: HeroiconsOutline.user,
-      ),
+      prefixIcon: CustomSuffixIcon(iconData: HeroiconsOutline.user),
     );
   }
 
-///////////contact info inputs///////////
+  ///////////contact info inputs///////////
   Widget buildPhoneNumberFormField() {
     return CustomTextField(
       // counterText: '',
@@ -392,8 +402,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       isPhoneWithFlag: true,
       initialSelection:
           Provider.of<ZMetaData>(context, listen: false).areaCode == "+251"
-              ? 'ET'
-              : 'SS',
+          ? 'ET'
+          : 'SS',
       countryFilter: ['ET', 'SS'],
       onFlagChanged: (CountryCode code) {
         setState(() {
@@ -442,13 +452,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // labelText: "Email",
       hintText: "Enter your email",
       floatingLabelBehavior: FloatingLabelBehavior.always,
-      prefixIcon: CustomSuffixIcon(
-        iconData: HeroiconsOutline.envelope,
-      ),
+      prefixIcon: CustomSuffixIcon(iconData: HeroiconsOutline.envelope),
     );
   }
 
-//////security inputs////
+  //////security inputs////
   bool _showPassword = false;
   bool _showConfirmPassword = false;
   Widget buildPasswordFormField() {
@@ -476,11 +484,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           });
         },
         icon: Icon(
-            _showPassword ? HeroiconsOutline.eyeSlash : HeroiconsOutline.eye),
+          _showPassword ? HeroiconsOutline.eyeSlash : HeroiconsOutline.eye,
+        ),
       ),
-      prefixIcon: CustomSuffixIcon(
-        iconData: HeroiconsOutline.lockClosed,
-      ),
+      prefixIcon: CustomSuffixIcon(iconData: HeroiconsOutline.lockClosed),
     );
   }
 
@@ -510,17 +517,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
             _showConfirmPassword = !_showConfirmPassword;
           });
         },
-        icon: Icon(_showConfirmPassword
-            ? HeroiconsOutline.eyeSlash
-            : HeroiconsOutline.eye),
+        icon: Icon(
+          _showConfirmPassword
+              ? HeroiconsOutline.eyeSlash
+              : HeroiconsOutline.eye,
+        ),
       ),
-      prefixIcon: CustomSuffixIcon(
-        iconData: HeroiconsOutline.lockClosed,
-      ),
+      prefixIcon: CustomSuffixIcon(iconData: HeroiconsOutline.lockClosed),
     );
   }
 
-//////////API Call///////
+  //////////API Call///////
 
   Future<dynamic> register() async {
     var url = "$setUrl/api/user/register";
@@ -531,8 +538,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       "first_name": firstName,
       "last_name": lastName,
       "password": password,
-      "country_phone_code":
-          Provider.of<ZMetaData>(context, listen: false).areaCode,
+      "country_phone_code": Provider.of<ZMetaData>(
+        context,
+        listen: false,
+      ).areaCode,
       "city": Provider.of<ZMetaData>(context, listen: false).cityId,
       "referral_code": "referralCode",
       "address": address,
@@ -543,19 +552,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 30),
-        onTimeout: () {
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
 
       // debugPrint("resp ${json.decode(response.body)}");
       return json.decode(response.body);
