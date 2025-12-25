@@ -171,8 +171,8 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   void _previousPage() {
     if (currentPage > 1) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOutCubic, // Smoother, more book-like curve
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic, // Natural page curl deceleration
       );
     }
   }
@@ -180,8 +180,8 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   void _nextPage() {
     if (currentPage < totalPages) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOutCubic, // Smoother, more book-like curve
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOutCubic, // Natural page curl deceleration
       );
     }
   }
@@ -215,19 +215,25 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
     final pageNumber = index + 1;
     final cachedPage = _pageCache[pageNumber];
 
-    // More realistic book page turn effect
-    final double rotationAngle = value * math.pi; // Full 180-degree rotation
+    // Realistic book page curl effect
     final bool isFlippingForward = value < 0;
     final double absValue = value.abs();
 
-    // Apply perspective and rotation for 3D effect
-    Matrix4 transform = Matrix4.identity()
-      ..setEntry(3, 2, 0.002) // Stronger perspective for depth
-      ..rotateY(rotationAngle);
+    // Calculate curl angle (0 to 180 degrees) with enhanced curve
+    final double curlAngle = absValue * math.pi;
 
-    // Add slight scaling during flip for realism
-    final double scaleValue = 1.0 - (absValue * 0.1);
-    transform = Matrix4.diagonal3Values(scaleValue, scaleValue, 1.0) *
+    // Apply 3D perspective transformation for page curl
+    Matrix4 transform = Matrix4.identity()
+      ..setEntry(3, 2, 0.0015) // Stronger perspective for more pronounced curve
+      ..rotateY(isFlippingForward ? -curlAngle : curlAngle);
+
+    // Enhanced vertical shift during curl (page lifts more prominently)
+    final double verticalShift = math.sin(curlAngle) * -30;
+    // Add horizontal shift to create more visible curl from edge to center
+    final double horizontalShift =
+        math.sin(curlAngle) * (isFlippingForward ? 15 : -15);
+    transform =
+        Matrix4.translationValues(horizontalShift, verticalShift, 0.0) *
         transform;
 
     return Transform(
@@ -237,91 +243,242 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
           : Alignment.centerLeft,
       child: Stack(
         children: [
-          // The page content
-          cachedPage != null
-              ? Center(
-                  child: Image.memory(
-                    cachedPage.bytes,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.broken_image_outlined,
-                              color: Colors.white54,
-                              size: 48,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Cannot display page $pageNumber',
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 14,
+          // Book page container with realistic styling
+          Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: kDefaultPadding,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFCF5), // Cream paper color
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                // Main shadow
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -5,
+                ),
+                // Inner shadow for depth
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(-5, 0),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Stack(
+                children: [
+                  // The page content
+                  cachedPage != null
+                      ? Center(
+                          child: Image.memory(
+                            cachedPage.bytes,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.broken_image_outlined,
+                                      color: Colors.grey[400],
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Cannot display page $pageNumber',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : FutureBuilder<PdfPageImage?>(
+                          future: _renderPage(pageNumber),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFFED2437),
+                                ),
+                              );
+                            }
+
+                            if (snapshot.hasData && snapshot.data != null) {
+                              // Cache the page after rendering
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() {
+                                    _pageCache[pageNumber] = snapshot.data!;
+                                  });
+                                }
+                              });
+
+                              return Center(
+                                child: Image.memory(
+                                  snapshot.data!.bytes,
+                                  fit: BoxFit.contain,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              );
+                            }
+
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: Colors.grey[400],
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Error loading page $pageNumber',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                            );
+                          },
+                        ),
+
+                  // Subtle page texture overlay
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.1),
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.02),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                )
-              : FutureBuilder<PdfPageImage?>(
-                  future: _renderPage(pageNumber),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFED2437),
-                        ),
-                      );
-                    }
-
-                    if (snapshot.hasData && snapshot.data != null) {
-                      // Cache the page after rendering
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _pageCache[pageNumber] = snapshot.data!;
-                          });
-                        }
-                      });
-
-                      return Center(
-                        child: Image.memory(
-                          snapshot.data!.bytes,
-                          fit: BoxFit.contain,
-                        ),
-                      );
-                    }
-
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.white54,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error loading page $pageNumber',
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
 
-          // Shadow overlay during page flip for depth effect
+                  // Book spine shadow (left edge)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 20,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.15),
+                            Colors.black.withValues(alpha: 0.05),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Enhanced curl shadow - more prominent gradient
           if (absValue > 0.05)
-            Container(color: Colors.black.withValues(alpha: absValue * 0.3)),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: isFlippingForward
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    radius: 1.5,
+                    colors: [
+                      Colors.black.withValues(alpha: absValue * 0.5),
+                      Colors.black.withValues(alpha: absValue * 0.3),
+                      Colors.black.withValues(alpha: absValue * 0.15),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                    stops: const [0.0, 0.3, 0.6, 1.0],
+                  ),
+                ),
+              ),
+            ),
+
+          // Enhanced page curl highlight - wider and more visible
+          if (absValue > 0.08 && absValue < 0.95)
+            Positioned.fill(
+              child: Align(
+                alignment: isFlippingForward
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 50 * absValue, // Wider highlight area
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: isFlippingForward
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      end: isFlippingForward
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.0),
+                        Colors.white.withValues(alpha: absValue * 0.4),
+                        Colors.white.withValues(alpha: absValue * 0.25),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.3, 0.7, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Additional shadow along curl edge for depth
+          if (absValue > 0.15 && absValue < 0.85)
+            Positioned.fill(
+              child: Align(
+                alignment: isFlippingForward
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 8,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: isFlippingForward
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      end: isFlippingForward
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      colors: [
+                        Colors.black.withValues(alpha: absValue * 0.6),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -477,21 +634,25 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isLoading ? Colors.white : Colors.black,
+      backgroundColor: kPrimaryColor,
+      // isLoading ? Colors.white : Colors.black,
       appBar: AppBar(
-        backgroundColor: isLoading ? Colors.white : Colors.black,
+        backgroundColor: kPrimaryColor,
+        // isLoading ? Colors.white : Colors.black,
         elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.close,
-            color: isLoading ? Colors.black : Colors.white,
+            color: kBlackColor,
+            // isLoading ? Colors.black : Colors.white,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           widget.magazine.title,
           style: TextStyle(
-            color: isLoading ? Colors.black : Colors.white,
+            color: kBlackColor,
+            // isLoading ? Colors.black : Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -550,7 +711,32 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                       }
                     },
                     child: Container(
-                      color: Colors.black,
+                      // Book reading surface background
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFFF5F5F0), // Light cream
+                            const Color(0xFFE8E8DC), // Darker cream
+                          ],
+                        ),
+                        // border: Border.all(
+                        //   width: 3,
+                        //   color: const Color(0xFF8B7355), // Book brown
+                        // ),
+                        borderRadius: BorderRadius.circular(kDefaultPadding),
+                        boxShadow: [
+                          // Outer shadow for depth
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      // margin: EdgeInsets.all(kDefaultPadding),
                       child: AnimatedBuilder(
                         animation: _pageController,
                         builder: (context, child) {
@@ -573,7 +759,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
                   // Page indicator overlay
                   Positioned(
-                    bottom: 40,
+                    bottom: 30,
                     left: 0,
                     right: 0,
                     child: Center(
@@ -601,8 +787,8 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                   // Protected content indicator
                   if (widget.magazine.isProtected)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 20,
+                      right: kDefaultPadding,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -615,11 +801,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.lock,
-                              size: 12,
-                              color: Colors.white70,
-                            ),
+                            Icon(Icons.lock, size: 12, color: Colors.white70),
                             SizedBox(width: 4),
                             Text(
                               'PROTECTED',

@@ -24,7 +24,7 @@ class RecapScreen extends StatefulWidget {
 }
 
 class _YearWrappedStoriesState extends State<RecapScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   DateTime today = DateTime.now();
   int currentStoryIndex = 0;
   late AnimationController _progressController;
@@ -37,6 +37,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
   List<StorySlide> stories = [];
   bool hasReachedEnd = false;
   bool isPaused = false;
+  bool wasPlayingBeforeBackground = false;
 
   final ScreenshotController screenshotController = ScreenshotController();
   final ScreenshotController summaryScreenshotController =
@@ -46,6 +47,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeControllers();
     _loadWrappedData();
 
@@ -59,6 +61,41 @@ class _YearWrappedStoriesState extends State<RecapScreen>
         // debugPrint('Error initializing audio: $e');
       }
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.paused:
+        // App went to background (user shared to social media or switched apps)
+        if (audioPlayer.playing) {
+          wasPlayingBeforeBackground = true;
+          audioPlayer.pause();
+          debugPrint('Audio paused - app in background');
+        }
+        break;
+
+      case AppLifecycleState.resumed:
+        // App came back to foreground
+        if (wasPlayingBeforeBackground && !audioPlayer.playing) {
+          audioPlayer.play();
+          wasPlayingBeforeBackground = false;
+          debugPrint('Audio resumed - app in foreground');
+        }
+        break;
+
+      case AppLifecycleState.inactive:
+        // App is transitioning (e.g., sharing dialog)
+        // Don't do anything here, wait for paused state
+        break;
+
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        // App is being destroyed or hidden
+        break;
+    }
   }
 
   Future<void> _toggleMusic() async {
@@ -434,6 +471,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _progressController.dispose();
     _slideController.dispose();
     audioPlayer.dispose();
