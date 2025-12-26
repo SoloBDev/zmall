@@ -21,13 +21,13 @@ const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // Ethiopia production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
-// const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
+const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
 
 // Ethiopia test
 // const BASE_URL_TEST = "http://196.189.44.49:7000"; //test
-const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
+// const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
 
-const BASE_URL = BASE_URL_TEST; // BASE_URL_PROD;
+const BASE_URL = BASE_URL_PROD;
 // const BASE_URL = kDebugMode ? BASE_URL_TEST : BASE_URL_PROD;
 
 //

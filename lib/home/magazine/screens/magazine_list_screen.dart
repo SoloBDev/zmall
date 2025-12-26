@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
 import 'package:zmall/home/magazine/widgets/magazine_card.dart';
 import 'package:zmall/home/magazine/screens/magazine_reader_screen.dart';
-import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/utils/size_config.dart';
 
@@ -127,7 +126,7 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          Service.capitalizeFirstLetters(widget.title ?? 'Z - Magazines'),
+          'Z - Magazines',
           style: TextStyle(
             color: kBlackColor,
             fontSize: 20,
