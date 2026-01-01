@@ -762,7 +762,7 @@ class Service {
             DateTime createdAt = DateTime.parse(order['created_at']);
             Duration timeSinceCreation = DateTime.now().difference(createdAt);
             // bool isUrgent = timeSinceCreation.inMinutes > 30;
-            bool isUrgent = timeSinceCreation.inMinutes < 2880;
+            bool isUrgent = timeSinceCreation.inMinutes < 10;
             // 20000; //2*24*60 = 2880 minutes
             // Extract items from order
             var orderDetails = cartDetail['order_details'] as List? ?? [];

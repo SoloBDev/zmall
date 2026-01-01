@@ -5,6 +5,7 @@ import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
@@ -32,6 +33,7 @@ class _EditProfileState extends State<EditProfile> {
   String lastName = "";
   String email = "";
   String address = "";
+  String dateOfBirth = "";
   String phone = "";
   List<File> imageList = [];
   String password = "";
@@ -56,206 +58,226 @@ class _EditProfileState extends State<EditProfile> {
     firstName = widget.userData['user']['first_name'];
     lastName = widget.userData['user']['last_name'];
     email = widget.userData['user']['email'];
-    //address = widget.userData['user']['address'];
     address = widget.userData['user']['address'] ?? 'Addis Ababa, Ethiopia';
     phone = widget.userData['user']['phone'];
+    dateOfBirth = widget.userData['user']['date_of_birth'] ?? '';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kPrimaryColor,
-      bottomNavigationBar: enabled
-          ? Padding(
-              padding:
-                  EdgeInsets.symmetric(
-                    horizontal: getProportionateScreenWidth(
-                      kDefaultPadding * 2,
-                    ),
-                  ).copyWith(
-                    bottom: getProportionateScreenWidth(kDefaultPadding / 2),
-                  ),
-              child: SafeArea(
-                child: CustomButton(
-                  title: 'Update',
-                  // icon: HeroiconsOutline.arrowPath,
-                  press: () {
-                    _showPasswordBottomSheet();
-                  },
-                ),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus!.unfocus(),
+      child: Scaffold(
+        backgroundColor: kPrimaryColor,
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: getProportionateScreenWidth(kDefaultPadding * 1.5),
+          ).copyWith(bottom: getProportionateScreenWidth(kDefaultPadding / 3)),
+          child: SafeArea(
+            child: Opacity(
+              opacity: enabled ? 1.0 : 0.5,
+              child: CustomButton(
+                title: 'Update Profile',
+                press: enabled
+                    ? () {
+                        _showPasswordBottomSheet();
+                      }
+                    : () {}, // Empty function when disabled
+                color: enabled
+                    ? kSecondaryColor
+                    : kSecondaryColor.withValues(alpha: 0.5),
+                titleColor: kWhiteColor,
               ),
-            )
-          : SizedBox.shrink(),
-      appBar: AppBar(
-        title: Text(
-          "${Provider.of<ZLanguage>(context).edit} ${Provider.of<ZLanguage>(context).profilePage}",
-          style: TextStyle(color: kBlackColor),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(
-            getProportionateScreenWidth(kDefaultPadding * 1.5),
+            ),
           ),
-          child: Column(
-            children: [
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey[300]!, width: 2),
-                      image: imageEdited
-                          ? DecorationImage(
-                              fit: BoxFit.cover,
-                              image: FileImage(imageList[0]),
+        ),
+        appBar: AppBar(
+          title: Text(
+            "${Provider.of<ZLanguage>(context).edit} ${Provider.of<ZLanguage>(context).profilePage}",
+            style: TextStyle(color: kBlackColor),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  enabled = !enabled;
+                });
+              },
+              icon: Icon(
+                enabled
+                    ? HeroiconsOutline.xCircle
+                    : HeroiconsOutline.pencilSquare,
+              ),
+              tooltip: enabled ? 'Cancel' : 'Edit Profile',
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: getProportionateScreenWidth(kDefaultPadding * 1.5),
+              vertical: getProportionateScreenWidth(kDefaultPadding / 2),
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Container(
+                      width: 115,
+                      height: 115,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey[300]!, width: 2),
+                        image: imageEdited
+                            ? DecorationImage(
+                                fit: BoxFit.cover,
+                                image: FileImage(imageList[0]),
+                              )
+                            : null,
+                      ),
+                      child: !imageEdited
+                          ? ClipOval(
+                              child: ImageContainer(
+                                url:
+                                    "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.userData['user']['image_url']}",
+                              ),
                             )
                           : null,
                     ),
-                    child: !imageEdited
-                        ? ClipOval(
-                            child: ImageContainer(
-                              url:
-                                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${widget.userData['user']['image_url']}",
-                            ),
-                          )
-                        : null,
-                  ),
-                  if (enabled)
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: kGreyColor.withValues(alpha: 0.2),
-                        // kSecondaryColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: kPrimaryColor, width: 2),
-                      ),
-                      child: GestureDetector(
-                        onTap: getImage,
-                        child: Center(
+                    if (enabled)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: getImage,
                           child: Container(
-                            padding: const EdgeInsetsGeometry.all(8),
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
+                              color: kSecondaryColor,
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: kPrimaryColor,
-                                width: 1.5,
-                              ),
+                              border: Border.all(color: kWhiteColor, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Icon(
                               Icons.camera_alt,
-                              size: 22,
-                              color: kPrimaryColor,
+                              size: 20,
+                              color: kWhiteColor,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _customActionButton(
-                title: enabled ? "Cancle" : "Edit",
-                padding: kDefaultPadding / 2,
-                textColor: kGreyColor,
-                backgroundColor: kWhiteColor,
-                icon: enabled
-                    ? HeroiconsOutline.xCircle
-                    : HeroiconsOutline.pencilSquare,
-                width: MediaQuery.sizeOf(context).width * 0.23,
-                onTap: () {
-                  setState(() {
-                    enabled = !enabled;
-                  });
-                },
-              ),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(icon: HeroiconsOutline.user, title: "First Name"),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              CustomTextField(
-                enabled: enabled,
-                initialValue: firstName,
-                // label: "First Name",
-                keyboardType: TextInputType.text,
-                onChanged: (val) {
-                  firstName = val;
-                },
-              ),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(icon: HeroiconsOutline.user, title: "Last Name"),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              CustomTextField(
-                // label: 'Last Name',
-                initialValue: lastName,
-                onChanged: (val) => lastName = val,
-                enabled: enabled,
-              ),
-              if (!email.toLowerCase().contains("telebirr") &&
-                  !email.toLowerCase().contains("dashen"))
-                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              if (!email.toLowerCase().contains("telebirr") &&
-                  !email.toLowerCase().contains("dashen"))
-                _buildLable(icon: HeroiconsOutline.envelope, title: "Email"),
-              if (!email.toLowerCase().contains("telebirr") &&
-                  !email.toLowerCase().contains("dashen"))
+                  ],
+                ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding * 2),
+                ),
+                _buildLable(icon: HeroiconsOutline.user, title: "First Name"),
                 SizedBox(
                   height: getProportionateScreenHeight(kDefaultPadding / 2),
                 ),
-              if (!email.toLowerCase().contains("telebirr") &&
-                  !email.toLowerCase().contains("dashen"))
                 CustomTextField(
-                  // label: 'Email',
-                  initialValue: email,
-                  onChanged: (val) => email = val,
                   enabled: enabled,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-              SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
-              _buildLable(icon: HeroiconsOutline.mapPin, title: "Address"),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              CustomTextField(
-                // label: 'Address',
-                initialValue: address,
-                onChanged: (val) => address = val,
-                enabled: enabled,
-              ),
-              SizedBox(
-                height: getProportionateScreenHeight(kDefaultPadding / 2),
-              ),
-              if (enabled) Divider(color: kWhiteColor),
-              if (enabled)
-                SizedBox(
-                  height: getProportionateScreenHeight(kDefaultPadding / 2),
-                ),
-              if (enabled)
-                ProfileListTile(
-                  borderColor: kWhiteColor,
-                  showTrailing: false,
-                  icon: Icon(HeroiconsOutline.lockClosed),
-                  title: 'Change Password',
-                  onTap: () {
-                    _showChangePasswordBottomSheet();
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => ChangePassword(
-                    //       userData: widget.userData,
-                    //     ),
-                    //   ),
-                    // );
+                  initialValue: firstName,
+                  // label: "First Name",
+                  keyboardType: TextInputType.text,
+                  onChanged: (val) {
+                    firstName = val;
                   },
                 ),
-            ],
+                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                _buildLable(icon: HeroiconsOutline.user, title: "Last Name"),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
+                CustomTextField(
+                  // label: 'Last Name',
+                  initialValue: lastName,
+                  onChanged: (val) => lastName = val,
+                  enabled: enabled,
+                ),
+                if (!email.toLowerCase().contains("telebirr") &&
+                    !email.toLowerCase().contains("dashen")) ...[
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding),
+                  ),
+                  _buildLable(icon: HeroiconsOutline.envelope, title: "Email"),
+
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding / 2),
+                  ),
+                  CustomTextField(
+                    // label: 'Email',
+                    initialValue: email,
+                    onChanged: (val) => email = val,
+                    enabled: enabled,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ],
+
+                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                _buildLable(icon: HeroiconsOutline.mapPin, title: "Address"),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
+                CustomTextField(
+                  // label: 'Address',
+                  initialValue: address,
+                  onChanged: (val) => address = val,
+                  enabled: enabled,
+                ),
+                SizedBox(height: getProportionateScreenHeight(kDefaultPadding)),
+                _buildLable(
+                  icon: HeroiconsOutline.calendar,
+                  title: "Date of Birth",
+                ),
+                SizedBox(
+                  height: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
+                GestureDetector(
+                  onTap: !enabled ? null : _selectDateOfBirth,
+                  child: AbsorbPointer(
+                    child: CustomTextField(
+                      enabled: enabled,
+                      // initialValue: dateOfBirth,
+                      controller: TextEditingController(
+                        text: dateOfBirth.isNotEmpty
+                            ? DateFormat(
+                                'MMM d, yyyy',
+                              ).format(DateTime.parse(dateOfBirth))
+                            : '',
+                      ),
+                    ),
+                  ),
+                ),
+
+                // SizedBox(
+                //   height: getProportionateScreenHeight(kDefaultPadding / 2),
+                // ),
+                // if (enabled) Divider(color: kWhiteColor),
+                if (enabled) ...[
+                  SizedBox(
+                    height: getProportionateScreenHeight(kDefaultPadding),
+                  ),
+                  ProfileListTile(
+                    borderColor: kWhiteColor,
+                    showTrailing: false,
+                    icon: Icon(HeroiconsOutline.lockClosed),
+                    title: 'Change Password',
+                    onTap: () {
+                      _showChangePasswordBottomSheet();
+                    },
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -411,46 +433,28 @@ class _EditProfileState extends State<EditProfile> {
                       ),
                     ),
                     SizedBox(height: kDefaultPadding * 1.5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          child: Text(
-                            'Submit',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: kSecondaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
-                          onPressed: () async {
-                            if (password.isNotEmpty) {
-                              setState(() => _loading = true);
-                              Navigator.of(context).pop();
-                              var data = await updateUser();
-                              if (data != null && data['success']) {
-                                userDetails();
-                                setState(() {
-                                  enabled = false;
-                                  _loading = false;
-                                });
-                              }
-                            } else {
-                              Service.showMessage(
-                                context: context,
-                                title: 'Please enter your password',
-                                error: true,
-                              );
-                            }
-                          },
-                        ),
-                      ],
+                    CustomButton(
+                      title: 'Submit',
+                      press: () async {
+                        if (password.isNotEmpty) {
+                          setState(() => _loading = true);
+                          Navigator.of(context).pop();
+                          var data = await updateUser();
+                          if (data != null && data['success']) {
+                            userDetails();
+                            setState(() {
+                              enabled = false;
+                              _loading = false;
+                            });
+                          }
+                        } else {
+                          Service.showMessage(
+                            context: context,
+                            title: 'Please enter your password',
+                            error: true,
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -460,6 +464,36 @@ class _EditProfileState extends State<EditProfile> {
         );
       },
     );
+  }
+
+  Future<void> _selectDateOfBirth() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: dateOfBirth.isNotEmpty
+          ? DateTime.parse(dateOfBirth)
+          : DateTime(2000, 1, 1),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: kSecondaryColor,
+              onPrimary: kPrimaryColor,
+              surface: kPrimaryColor,
+              onSurface: kBlackColor,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked.toIso8601String() != dateOfBirth) {
+      setState(() {
+        dateOfBirth = picked.toIso8601String();
+      });
+    }
   }
 
   String oldPassword = "";
@@ -843,6 +877,7 @@ class _EditProfileState extends State<EditProfile> {
     setState(() {
       this._loading = true;
     });
+    // debugPrint("dob $dateOfBirth");
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/update";
     var postUri = Uri.parse(url);
@@ -854,6 +889,7 @@ class _EditProfileState extends State<EditProfile> {
         ..fields['last_name'] = lastName
         ..fields['email'] = email
         ..fields['address'] = address
+        ..fields['date_of_birth'] = dateOfBirth
         ..fields['old_password'] = password
         ..fields['new_password'] = password;
       if (imageList.isNotEmpty && imageList.length > 0) {

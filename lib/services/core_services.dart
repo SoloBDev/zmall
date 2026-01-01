@@ -222,7 +222,7 @@ class CoreServices {
       "latitude": latitude,
       "longitude": longitude,
     };
-
+    // debugPrint("promotional >> $data");
     var body = json.encode(data);
     try {
       http.Response response = await http

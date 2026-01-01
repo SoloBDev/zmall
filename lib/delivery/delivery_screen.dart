@@ -1094,7 +1094,8 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                         receiverName = val;
                       },
                       labelText: Provider.of<ZLanguage>(context).name,
-                      hintText: "Reciver name",
+                      hintText: "Reciever name",
+                      // reciever
                     ),
                     CustomTextField(
                       style: TextStyle(color: kBlackColor),

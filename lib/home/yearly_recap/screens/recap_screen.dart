@@ -8,16 +8,24 @@ import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:zmall/home/yearly_recap/models/wrapped_data.dart';
+import 'package:zmall/home/yearly_recap/service/recap_service.dart';
 import 'package:zmall/home/yearly_recap/widgets/story_slide_widget.dart';
 import 'package:zmall/home/yearly_recap/widgets/progress_bars.dart';
-import 'package:zmall/home/yearly_recap/widgets/confetti_widget.dart';
+import 'package:zmall/home/yearly_recap/widgets/confetti_widget.dart'
+    as recap_confetti;
 import 'package:zmall/services/service.dart';
 
 class RecapScreen extends StatefulWidget {
-  final String? userId;
+  final String userId;
+  final String serverToken;
   final dynamic recapData;
 
-  const RecapScreen({super.key, this.userId, this.recapData});
+  const RecapScreen({
+    super.key,
+    required this.userId,
+    this.recapData,
+    required this.serverToken,
+  });
 
   @override
   State<RecapScreen> createState() => _YearWrappedStoriesState();
@@ -73,7 +81,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
         if (audioPlayer.playing) {
           wasPlayingBeforeBackground = true;
           audioPlayer.pause();
-          debugPrint('Audio paused - app in background');
+          // debugPrint('Audio paused - app in background');
         }
         break;
 
@@ -82,7 +90,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
         if (wasPlayingBeforeBackground && !audioPlayer.playing) {
           audioPlayer.play();
           wasPlayingBeforeBackground = false;
-          debugPrint('Audio resumed - app in foreground');
+          // debugPrint('Audio resumed - app in foreground');
         }
         break;
 
@@ -95,6 +103,29 @@ class _YearWrappedStoriesState extends State<RecapScreen>
       case AppLifecycleState.hidden:
         // App is being destroyed or hidden
         break;
+    }
+  }
+
+  // Helper method to get the correct recap year
+  // Shows current year during Dec 15 - Jan 31 transition period
+  // Otherwise shows previous year
+  int getRecapYear() {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+    final currentDay = now.day;
+
+    // If we're in late December (Dec 15-31), show current year
+    if (currentMonth == 12 && currentDay >= 15) {
+      return currentYear;
+    }
+    // If we're in early January (Jan 1-31), show previous year
+    else if (currentMonth == 1) {
+      return currentYear - 1;
+    }
+    // For all other months (Feb-Nov), show previous year
+    else {
+      return currentYear - 1;
     }
   }
 
@@ -134,7 +165,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
 
   Future<void> _loadWrappedData() async {
     setState(() => isLoading = true);
-    debugPrint("data: ${widget.recapData}");
+    // debugPrint("data: ${widget.recapData}");
     YearWrappedData? data;
     // Use provided recapData if available, otherwise fall back to mock data
     if (widget.recapData != null) {
@@ -151,7 +182,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
     }
     YearWrappedData noData = YearWrappedData(
       userId: '',
-      year: today.year,
+      year: getRecapYear(),
       totalOrders: 0,
       totalSpent: 0,
       rewardsEarned: 0,
@@ -173,6 +204,12 @@ class _YearWrappedStoriesState extends State<RecapScreen>
       stories = _generateStories(data ?? noData);
       isLoading = false;
     });
+    RecapService.trackRecapOpened(
+      context: context,
+      userId: widget.userId,
+      year: wrappedData!.year,
+      serverToken: widget.serverToken,
+    );
     _startStory();
   }
 
@@ -184,7 +221,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
       return [
         StorySlide(
           type: 'welcome',
-          title: 'Your ${data.year}\nWrapped',
+          title: 'Your ${getRecapYear()}\nWrapped',
           subtitle: 'Let\'s look back at your\nZMall journey',
           gradient: [const Color(0xFF0f0f23), const Color(0xFF1a1a2e)],
           useLogo: true,
@@ -218,7 +255,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
       // Funfact you triied 23 new restorants this year
       StorySlide(
         type: 'welcome',
-        title: 'Your ${data.year}\nWrapped',
+        title: 'Your ${getRecapYear()}\nWrapped',
         subtitle: 'Let\'s look back at your\nZMall journey',
         gradient: [const Color(0xFF0f0f23), const Color(0xFF1a1a2e)],
         useLogo: true,
@@ -400,7 +437,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
           ShareParams(
             files: [XFile(imagePath)],
             text:
-                '🎉 My ZMall Year Wrapped ${today.year}! Order smarter with ZMall! 🚀',
+                '🎉 My ZMall Year Wrapped ${wrappedData?.year ?? getRecapYear()}! Order smarter with ZMall! 🚀',
           ),
         );
 
@@ -450,7 +487,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
           ShareParams(
             files: [XFile(imagePath)],
             text:
-                '🎉 My ZMall Year Wrapped ${today.year}! Order smarter with ZMall! 🚀',
+                '🎉 My ZMall Year Wrapped ${wrappedData?.year ?? getRecapYear()}! Order smarter with ZMall! 🚀',
           ),
         );
 
@@ -526,7 +563,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
                       onTap: () {},
                     ),
                     if (stories[currentStoryIndex].showConfetti)
-                      const ConfettiWidget(),
+                      const recap_confetti.RecapConfettiWidget(),
                   ],
                 ),
               ),
@@ -856,7 +893,7 @@ class _YearWrappedStoriesState extends State<RecapScreen>
                 const SizedBox(height: 40),
 
                 Text(
-                  'MY ${today.year} WRAPPED',
+                  'MY ${wrappedData!.year} WRAPPED',
                   style: TextStyle(
                     fontSize: 60,
                     fontWeight: FontWeight.w900,

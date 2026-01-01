@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -111,9 +110,14 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
         setState(() {
           orderAsap = false;
           scheduledOrder = true;
-          _scheduledDate =
-              DateTime(dateTime.year, dateTime.month, dateTime.day, 9, 0, 0)
-                  .add(Duration(days: 1));
+          _scheduledDate = DateTime(
+            dateTime.year,
+            dateTime.month,
+            dateTime.day,
+            9,
+            0,
+            0,
+          ).add(Duration(days: 1));
           onlyScheduledOrder = true;
         });
       } else {
@@ -137,8 +141,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
     var data = await getTotalDistance(cart);
     if (data != null && data['rows'][0]['elements'][0]['status'] == 'OK') {
       setState(() {
-        distance =
-            data['rows'][0]['elements'][0]['distance']['value'].toDouble();
+        distance = data['rows'][0]['elements'][0]['distance']['value']
+            .toDouble();
         time = data['rows'][0]['elements'][0]['duration']['value'].toDouble();
       });
       _getCartInvoice();
@@ -196,10 +200,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Checkout",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("Checkout", style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),
       body: ModalProgressHUD(
@@ -217,21 +218,23 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                   color: kPrimaryColor,
                   border: Border.all(color: kWhiteColor),
                   borderRadius: BorderRadius.circular(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   // boxShadow: [boxShadow],
                 ),
                 padding: EdgeInsets.symmetric(
-                    horizontal:
-                        getProportionateScreenWidth(kDefaultPadding / 2),
-                    vertical:
-                        getProportionateScreenHeight(kDefaultPadding / 2)),
+                  horizontal: getProportionateScreenWidth(kDefaultPadding / 2),
+                  vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Delivery Options",
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          color: kBlackColor, fontWeight: FontWeight.bold),
+                        color: kBlackColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     CheckboxListTile(
                       secondary: Icon(
@@ -307,18 +310,17 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                               TextButton(
                                 child: Text(
                                   cart!.scheduleStart != null
-                                      ? cart!.scheduleStart
-                                          .toString()
-                                          .split('.')[0]
+                                      ? cart!.scheduleStart.toString().split(
+                                          '.',
+                                        )[0]
                                       : " Add Date & Time ",
-                                  style: TextStyle(
-                                    color: kSecondaryColor,
-                                  ),
+                                  style: TextStyle(color: kSecondaryColor),
                                 ),
                                 style: ButtonStyle(
                                   elevation: WidgetStateProperty.all(1.0),
-                                  backgroundColor:
-                                      WidgetStateProperty.all(kPrimaryColor),
+                                  backgroundColor: WidgetStateProperty.all(
+                                    kPrimaryColor,
+                                  ),
                                 ),
                                 onPressed: () async {
                                   if (!cart!.isOpen) {
@@ -339,24 +341,29 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                     firstDate: !cart!.isOpen
                                         ? _now.add(Duration(days: 1))
                                         : _now,
-                                    lastDate: _now.add(
-                                      Duration(days: 7),
-                                    ),
+                                    lastDate: _now.add(Duration(days: 7)),
                                   );
                                   TimeOfDay? time = await showTimePicker(
-                                      context: context,
-                                      initialTime: TimeOfDay.fromDateTime(
-                                          DateTime.now()));
+                                    context: context,
+                                    initialTime: TimeOfDay.fromDateTime(
+                                      DateTime.now(),
+                                    ),
+                                  );
 
                                   setState(() {
-                                    _scheduledDate = pickedDate!.add(Duration(
+                                    _scheduledDate = pickedDate!.add(
+                                      Duration(
                                         hours: time!.hour,
-                                        minutes: time!.minute));
+                                        minutes: time!.minute,
+                                      ),
+                                    );
                                     cart!.scheduleStart = _scheduledDate;
                                     cart!.isSchedule = true;
                                   });
                                   await Service.save(
-                                      'abroad_cart', cart!.toJson());
+                                    'abroad_cart',
+                                    cart!.toJson(),
+                                  );
                                   getCart();
                                 },
                               ),
@@ -376,28 +383,32 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                   ),
                 ),
                 padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding / 2)),
+                  getProportionateScreenWidth(kDefaultPadding / 2),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Delivery Details",
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                          color: kBlackColor, fontWeight: FontWeight.bold),
+                        color: kBlackColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 2)),
+                      height: getProportionateScreenHeight(kDefaultPadding / 2),
+                    ),
                     DetailsRow(title: "Name", subtitle: widget.receiverName),
                     SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 3)),
+                      height: getProportionateScreenHeight(kDefaultPadding / 3),
+                    ),
                     DetailsRow(
-                        title: "Phone",
-                        subtitle: "+251${widget.receiverPhone}"),
+                      title: "Phone",
+                      subtitle: "+251${widget.receiverPhone}",
+                    ),
                     SizedBox(
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding / 3)),
+                      height: getProportionateScreenHeight(kDefaultPadding / 3),
+                    ),
                     DetailsRow(
                       title: "Delivery Address",
                       subtitle: cart != null
@@ -405,7 +416,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                           : "",
                     ),
                     SizedBox(
-                        height: getProportionateScreenHeight(kDefaultPadding)),
+                      height: getProportionateScreenHeight(kDefaultPadding),
+                    ),
                   ],
                 ),
               ),
@@ -420,22 +432,24 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                         ),
                       ),
                       padding: EdgeInsets.all(
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                        getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             "Delivery Details",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium!
+                            style: Theme.of(context).textTheme.titleMedium!
                                 .copyWith(
-                                    color: kBlackColor,
-                                    fontWeight: FontWeight.bold),
+                                  color: kBlackColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
                           DetailsRow(
                             title: "Service Price",
                             subtitle: promoCodeApplied
@@ -443,8 +457,10 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 : "ብር ${responseData['order_payment']['total_delivery_price'].toStringAsFixed(2)}",
                           ),
                           SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 3,
+                            ),
+                          ),
                           DetailsRow(
                             title: "Total Order Price",
                             subtitle: promoCodeApplied
@@ -452,8 +468,10 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 : "ብር ${responseData['order_payment']['total_order_price'].toStringAsFixed(2)}",
                           ),
                           SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 3,
+                            ),
+                          ),
                           DetailsRow(
                             title: "Promo Payment",
                             subtitle: promoCodeApplied
@@ -461,16 +479,20 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 : "ብር ${responseData['order_payment']['promo_payment'].toStringAsFixed(2)}",
                           ),
                           SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 3)),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 3,
+                            ),
+                          ),
                           DetailsRow(
                             title: Provider.of<ZLanguage>(context).tip,
                             subtitle:
                                 "${Provider.of<ZMetaData>(context, listen: false).currency} ${tip!.toStringAsFixed(2)}",
                           ),
                           SizedBox(
-                              height: getProportionateScreenHeight(
-                                  kDefaultPadding / 2)),
+                            height: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
                           Center(
                             child: Column(
                               children: [
@@ -478,12 +500,15 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                   "Total",
                                   style: TextStyle(
                                     fontSize: getProportionateScreenWidth(
-                                        kDefaultPadding * .7),
+                                      kDefaultPadding * .7,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 3)),
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding / 3,
+                                  ),
+                                ),
                                 Text(
                                   promoCodeApplied
                                       ? "ብር ${promoCodeData['order_payment']['user_pay_payment'].toStringAsFixed(2)}"
@@ -514,17 +539,21 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                       context: context,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(30.0),
-                                            topRight: Radius.circular(30.0)),
+                                          topLeft: Radius.circular(30.0),
+                                          topRight: Radius.circular(30.0),
+                                        ),
                                       ),
                                       builder: (BuildContext context) {
                                         return Padding(
-                                          padding:
-                                              MediaQuery.of(context).viewInsets,
+                                          padding: MediaQuery.of(
+                                            context,
+                                          ).viewInsets,
                                           child: Container(
                                             padding: EdgeInsets.all(
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding)),
+                                              getProportionateScreenHeight(
+                                                kDefaultPadding,
+                                              ),
+                                            ),
                                             child: Wrap(
                                               children: <Widget>[
                                                 Text(
@@ -540,12 +569,14 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                 Container(
                                                   height:
                                                       getProportionateScreenHeight(
-                                                          kDefaultPadding),
+                                                        kDefaultPadding,
+                                                      ),
                                                 ),
 
                                                 TextField(
                                                   style: TextStyle(
-                                                      color: kBlackColor),
+                                                    color: kBlackColor,
+                                                  ),
                                                   keyboardType:
                                                       TextInputType.text,
                                                   onChanged: (val) {
@@ -554,14 +585,16 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                   decoration:
                                                       textFieldInputDecorator
                                                           .copyWith(
-                                                              labelText:
-                                                                  "Promo Code"),
+                                                            labelText:
+                                                                "Promo Code",
+                                                          ),
                                                 ),
 
                                                 Container(
                                                   height:
                                                       getProportionateScreenHeight(
-                                                          kDefaultPadding / 2),
+                                                        kDefaultPadding / 2,
+                                                      ),
                                                 ),
                                                 //                                          transferError
                                                 //                                              ? Text(
@@ -585,7 +618,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                         color: kSecondaryColor,
                                                         size:
                                                             getProportionateScreenWidth(
-                                                                kDefaultPadding),
+                                                              kDefaultPadding,
+                                                            ),
                                                       )
                                                     : CustomButton(
                                                         title: "Apply",
@@ -598,12 +632,12 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                                             });
                                                             _applyPromoCode();
                                                             Navigator.of(
-                                                                    context)
-                                                                .pop();
+                                                              context,
+                                                            ).pop();
                                                           } else {
                                                             Navigator.of(
-                                                                    context)
-                                                                .pop();
+                                                              context,
+                                                            ).pop();
                                                             Service.showMessage(
                                                               context: context,
                                                               title:
@@ -753,9 +787,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 },
                                 child: Text(
                                   "Apply Promo Code",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
+                                  style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(
                                         color: kSecondaryColor,
                                         decoration: TextDecoration.underline,
@@ -770,132 +802,164 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                     context: context,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(30.0),
-                                          topRight: Radius.circular(30.0)),
+                                        topLeft: Radius.circular(30.0),
+                                        topRight: Radius.circular(30.0),
+                                      ),
                                     ),
                                     builder: (BuildContext context) {
-                                      return StatefulBuilder(builder:
-                                          (BuildContext context,
-                                              StateSetter setState) {
-                                        return Padding(
-                                          padding:
-                                              MediaQuery.of(context).viewInsets,
-                                          child: Container(
-                                            padding: EdgeInsets.all(
-                                                getProportionateScreenHeight(
-                                                    kDefaultPadding)),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                Text(
-                                                  Provider.of<ZLanguage>(
+                                      return StatefulBuilder(
+                                        builder:
+                                            (
+                                              BuildContext context,
+                                              StateSetter setState,
+                                            ) {
+                                              return Padding(
+                                                padding: MediaQuery.of(
+                                                  context,
+                                                ).viewInsets,
+                                                child: Container(
+                                                  padding: EdgeInsets.all(
+                                                    getProportionateScreenHeight(
+                                                      kDefaultPadding,
+                                                    ),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      SizedBox(
+                                                        height:
+                                                            getProportionateScreenHeight(
+                                                              kDefaultPadding,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        Provider.of<ZLanguage>(
                                                           context,
-                                                          listen: false)
-                                                      .addTip,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleLarge
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                          listen: false,
+                                                        ).addTip,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .titleLarge
+                                                            ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
                                                       ),
-                                                ),
-                                                SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                TextField(
-                                                  style: TextStyle(
-                                                      color: kBlackColor),
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  onChanged: (val) {
-                                                    tipTemp = double.parse(val);
-                                                  },
-                                                  decoration: textFieldInputDecorator
-                                                      .copyWith(
-                                                          labelText: Provider
-                                                                  .of<ZLanguage>(
-                                                                      context)
-                                                              .tip),
-                                                ),
-                                                SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        tip = 20.00;
-                                                        Navigator.pop(context);
-                                                        _getCartInvoice();
-                                                      },
-                                                      child: CustomTag(
-                                                        text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                      SizedBox(
+                                                        height:
+                                                            getProportionateScreenHeight(
+                                                              kDefaultPadding,
+                                                            ),
                                                       ),
-                                                    ),
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        tip = 30.00;
-                                                        Navigator.pop(context);
-                                                        _getCartInvoice();
-                                                      },
-                                                      child: CustomTag(
-                                                        text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                      TextField(
+                                                        style: TextStyle(
+                                                          color: kBlackColor,
+                                                        ),
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        onChanged: (val) {
+                                                          tipTemp =
+                                                              double.parse(val);
+                                                        },
+                                                        decoration: textFieldInputDecorator
+                                                            .copyWith(
+                                                              labelText:
+                                                                  Provider.of<
+                                                                        ZLanguage
+                                                                      >(context)
+                                                                      .tip,
+                                                            ),
                                                       ),
-                                                    ),
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        tip = 40.00;
-                                                        Navigator.pop(context);
-                                                        _getCartInvoice();
-                                                      },
-                                                      child: CustomTag(
-                                                        text:
-                                                            "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                      SizedBox(
+                                                        height:
+                                                            getProportionateScreenHeight(
+                                                              kDefaultPadding,
+                                                            ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceAround,
+                                                        children: [
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              tip = 20.00;
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                              _getCartInvoice();
+                                                            },
+                                                            child: CustomTag(
+                                                              text:
+                                                                  "${Provider.of<ZLanguage>(context, listen: false).addTip} +20 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                            ),
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              tip = 30.00;
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                              _getCartInvoice();
+                                                            },
+                                                            child: CustomTag(
+                                                              text:
+                                                                  "${Provider.of<ZLanguage>(context, listen: false).addTip} +30 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                            ),
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              tip = 40.00;
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                              _getCartInvoice();
+                                                            },
+                                                            child: CustomTag(
+                                                              text:
+                                                                  "${Provider.of<ZLanguage>(context, listen: false).addTip} +40 ${Provider.of<ZMetaData>(context, listen: false).currency}",
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        height:
+                                                            getProportionateScreenHeight(
+                                                              kDefaultPadding,
+                                                            ),
+                                                      ),
+                                                      CustomButton(
+                                                        title:
+                                                            Provider.of<
+                                                                  ZLanguage
+                                                                >(
+                                                                  context,
+                                                                  listen: false,
+                                                                )
+                                                                .submit,
+                                                        color: kSecondaryColor,
+                                                        press: () async {
+                                                          tip = tipTemp;
+                                                          Navigator.pop(
+                                                            context,
+                                                          );
+                                                          _getCartInvoice();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                                SizedBox(
-                                                  height:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                ),
-                                                CustomButton(
-                                                  title: Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .submit,
-                                                  color: kSecondaryColor,
-                                                  press: () async {
-                                                    tip = tipTemp;
-                                                    Navigator.pop(context);
-                                                    _getCartInvoice();
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      });
+                                              );
+                                            },
+                                      );
                                     },
                                   ).whenComplete(() {
                                     setState(() {});
@@ -1025,7 +1089,8 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                     Icon(
                                       Icons.monetization_on_outlined,
                                       size: getProportionateScreenHeight(
-                                          kDefaultPadding * 1.2),
+                                        kDefaultPadding * 1.2,
+                                      ),
                                       color: kSecondaryColor,
                                     ),
                                   ],
@@ -1054,17 +1119,14 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                                 builder: (context) {
                                   return GlobalKifiya(
                                     price: promoCodeApplied
-                                        ? promoCodeData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble()
-                                        : responseData['order_payment']
-                                                ['user_pay_payment']
-                                            .toDouble(),
+                                        ? promoCodeData['order_payment']['user_pay_payment']
+                                              .toDouble()
+                                        : responseData['order_payment']['user_pay_payment']
+                                              .toDouble(),
                                     orderPaymentId:
                                         responseData['order_payment']['_id'],
                                     orderPaymentUniqueId:
-                                        responseData['order_payment']
-                                                ['unique_id']
+                                        responseData['order_payment']['unique_id']
                                             .toString(),
                                     onlyCashless: onlyCashless!,
                                   );
@@ -1086,14 +1148,12 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                               builder: (context) {
                                 return GlobalKifiya(
                                   price: promoCodeApplied
-                                      ? promoCodeData['order_payment']
-                                              ['user_pay_payment']
-                                          .toDouble()
-                                      : responseData['order_payment']
-                                              ['user_pay_payment']
-                                          .toDouble(),
-                                  orderPaymentId: responseData['order_payment']
-                                      ['_id'],
+                                      ? promoCodeData['order_payment']['user_pay_payment']
+                                            .toDouble()
+                                      : responseData['order_payment']['user_pay_payment']
+                                            .toDouble(),
+                                  orderPaymentId:
+                                      responseData['order_payment']['_id'],
                                   orderPaymentUniqueId:
                                       responseData['order_payment']['unique_id']
                                           .toString(),
@@ -1105,7 +1165,7 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
                         }
                       },
                       color: kSecondaryColor,
-                    )
+                    ),
             ],
           ),
         ),
@@ -1117,21 +1177,23 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
     var url =
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${cart.storeLocation!.lat!.toStringAsFixed(6)},${cart.storeLocation!.long!.toStringAsFixed(6)}&destinations=${cart.destinationAddress!.lat},${cart.destinationAddress!.long}&key=$apiKey";
     try {
-      http.Response response = await http.get(Uri.parse(url)).timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+      http.Response response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this._loading = false;
       });
@@ -1166,34 +1228,34 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
       "is_user_drop_order": true,
       "express_option": "normal",
       "server_token": cart!.serverToken,
-      "tip": tip
+      "tip": tip,
     };
     var body = json.encode(data);
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this.responseData = json.decode(response.body);
         this._loading = false;
@@ -1230,28 +1292,28 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this.promoCodeData = json.decode(response.body);
         this._loading = false;
@@ -1275,36 +1337,34 @@ class _GlobalCheckoutState extends State<GlobalCheckout> {
   Future<dynamic> getStoreDetail() async {
     var url =
         "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/user_get_store_product_item_list";
-    Map data = {
-      "store_id": cart!.storeId,
-    };
+    Map data = {"store_id": cart!.storeId};
     var body = json.encode(data);
 
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 20),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 20),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       setState(() {
         this.storeDetail = json.decode(response.body);
       });

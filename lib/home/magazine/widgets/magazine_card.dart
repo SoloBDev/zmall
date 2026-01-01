@@ -2,12 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
 import 'package:zmall/utils/constants.dart';
+import 'package:zmall/utils/size_config.dart';
 
 class MagazineCard extends StatelessWidget {
   final Magazine magazine;
   final VoidCallback onTap;
+  final VoidCallback? onLike;
+  final VoidCallback? onInfo;
 
-  const MagazineCard({super.key, required this.magazine, required this.onTap});
+  const MagazineCard({
+    super.key,
+    required this.magazine,
+    required this.onTap,
+    this.onLike,
+    this.onInfo,
+  });
 
   // Helper method to validate URL
   bool _isValidUrl(String url) {
@@ -57,11 +66,12 @@ class MagazineCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cover Image
+            // Cover Image (3/4 of card)
             Expanded(
-              flex: 4,
+              flex: 3,
               child: Stack(
                 children: [
                   Container(
@@ -140,11 +150,7 @@ class MagazineCard extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.lock,
-                              size: 10,
-                              color: kWhiteColor,
-                            ),
+                            Icon(Icons.lock, size: 10, color: kWhiteColor),
                             SizedBox(width: 3),
                             Text(
                               'PROTECTED',
@@ -198,66 +204,160 @@ class MagazineCard extends StatelessWidget {
               ),
             ),
 
-            // Magazine info
+            // Details section (1/4 of card)
             Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Title
-                    Flexible(
-                      child: Text(
-                        magazine.title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: kBlackColor,
-                          height: 1.2,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+              flex: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Magazine info (compact)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: getProportionateScreenWidth(
+                        kDefaultPadding / 2,
+                      ),
+                      vertical: getProportionateScreenHeight(
+                        kDefaultPadding / 3,
                       ),
                     ),
-
-                    // Category and date
-                    Column(
+                    child: Column(
+                      spacing: getProportionateScreenHeight(2),
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Category
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFED2437,
-                            ).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            magazine.category,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFFED2437),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        // Date
+                        // Title
                         Text(
-                          magazine.formattedDate,
-                          style: TextStyle(fontSize: 10, color: kGreyColor),
+                          magazine.title,
+                          style: TextStyle(
+                            fontSize: getProportionateScreenWidth(11),
+                            fontWeight: FontWeight.w600,
+                            color: kBlackColor,
+                            height: 1.1,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        // Category
+                        Text(
+                          magazine.category.isNotEmpty
+                              ? magazine.category
+                              : magazine.formattedDate,
+                          style: TextStyle(
+                            fontSize: getProportionateScreenWidth(8),
+                            color: kGreyColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+
+                  // Engagement metrics row (TikTok style)
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getProportionateScreenWidth(
+                          kDefaultPadding / 2,
+                        ),
+                        vertical: getProportionateScreenHeight(
+                          kDefaultPadding / 3,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: kGreyColor.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          // Like button with count
+                          if (onLike != null)
+                            GestureDetector(
+                              onTap: onLike,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    magazine.userEngagement.hasLiked
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: getProportionateScreenWidth(18),
+                                    color: magazine.userEngagement.hasLiked
+                                        ? const Color(0xFFED2437)
+                                        : kGreyColor,
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(2),
+                                  ),
+                                  Text(
+                                    magazine.formattedLikesCount,
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenWidth(9),
+                                      color: kGreyColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // Views with count
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.visibility_outlined,
+                                size: getProportionateScreenWidth(18),
+                                color: kGreyColor,
+                              ),
+                              SizedBox(height: getProportionateScreenHeight(2)),
+                              Text(
+                                magazine.formattedViewsCount,
+                                style: TextStyle(
+                                  fontSize: getProportionateScreenWidth(9),
+                                  color: kGreyColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Info button (preview)
+                          if (onInfo != null)
+                            GestureDetector(
+                              onTap: onInfo,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: getProportionateScreenWidth(18),
+                                    color: kGreyColor,
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(2),
+                                  ),
+                                  Text(
+                                    'Info',
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenWidth(9),
+                                      color: kGreyColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

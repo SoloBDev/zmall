@@ -6,6 +6,7 @@ import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:zmall/services/url_launcher_service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/login/login_screen.dart';
@@ -264,9 +265,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                       InkWell(
                                         onTap: () {
-                                          Service.launchInWebViewOrVC(
-                                            "https://app.zmallshop.com/terms.html",
+                                          UrlLauncherService.openInAppWebView(
+                                            "https://app.zmall.et/terms.html",
                                           );
+                                          // old domain
+                                          // Service.launchInWebViewOrVC(
+                                          //   "https://app.zmallshop.com/terms.html",
+                                          // );
                                         },
                                         child: Text(
                                           "Terms & Conditions",

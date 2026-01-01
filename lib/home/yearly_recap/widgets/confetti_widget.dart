@@ -1,146 +1,87 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:confetti/confetti.dart';
 
-class ConfettiWidget extends StatefulWidget {
-  const ConfettiWidget({super.key});
+class RecapConfettiWidget extends StatefulWidget {
+  const RecapConfettiWidget({super.key});
 
   @override
-  State<ConfettiWidget> createState() => _ConfettiWidgetState();
+  State<RecapConfettiWidget> createState() => _RecapConfettiWidgetState();
 }
 
-class _ConfettiWidgetState extends State<ConfettiWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  final List<ConfettiParticle> particles = [];
-  final random = math.Random();
+class _RecapConfettiWidgetState extends State<RecapConfettiWidget> {
+  late ConfettiController _confettiControllerLeft;
+  late ConfettiController _confettiControllerRight;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
+    // Use Duration.zero to make confetti run indefinitely
+    _confettiControllerLeft = ConfettiController();
+    _confettiControllerRight = ConfettiController();
 
-    // Generate confetti particles
-    for (var i = 0; i < 50; i++) {
-      particles.add(
-        ConfettiParticle(
-          x: random.nextDouble(),
-          y: random.nextDouble() * -0.5,
-          color: _getRandomColor(),
-          size: random.nextDouble() * 8 + 4,
-          speed: random.nextDouble() * 0.5 + 0.3,
-          rotation: random.nextDouble() * math.pi * 2,
-          rotationSpeed: random.nextDouble() * 0.2 - 0.1,
-        ),
-      );
-    }
-  }
-
-  Color _getRandomColor() {
-    final colors = [
-      Colors.red,
-      Colors.blue,
-      Colors.yellow,
-      Colors.green,
-      Colors.purple,
-      Colors.orange,
-      Colors.pink,
-      Colors.cyan,
-    ];
-    return colors[random.nextInt(colors.length)];
+    // Start confetti immediately
+    _confettiControllerLeft.play();
+    _confettiControllerRight.play();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _confettiControllerLeft.dispose();
+    _confettiControllerRight.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          size: MediaQuery.of(context).size,
-          painter: ConfettiPainter(
-            particles: particles,
-            progress: _controller.value,
+    return Stack(
+      children: [
+        // Left confetti
+        Align(
+          alignment: Alignment.topLeft,
+          child: ConfettiWidget(
+            confettiController: _confettiControllerLeft,
+            blastDirection: -3.14 / 4, // DOWN-RIGHT
+            emissionFrequency: 0.05,
+            numberOfParticles: 10,
+            maxBlastForce: 20,
+            minBlastForce: 5,
+            gravity: 0.2,
+            colors: const [
+              Colors.red,
+              Colors.blue,
+              Colors.green,
+              Colors.yellow,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple,
+              Colors.cyan,
+            ],
           ),
-        );
-      },
+        ),
+        // Right confetti
+        Align(
+          alignment: Alignment.topRight,
+          child: ConfettiWidget(
+            confettiController: _confettiControllerRight,
+            blastDirection: -3 * 3.14 / 4, // DOWN-LEFT
+            emissionFrequency: 0.02,
+            numberOfParticles: 10,
+            maxBlastForce: 20,
+            minBlastForce: 5,
+            gravity: 0.2,
+            colors: const [
+              Colors.red,
+              Colors.blue,
+              Colors.green,
+              Colors.yellow,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple,
+              Colors.cyan,
+            ],
+          ),
+        ),
+      ],
     );
   }
-}
-
-class ConfettiParticle {
-  double x;
-  double y;
-  final Color color;
-  final double size;
-  final double speed;
-  double rotation;
-  final double rotationSpeed;
-
-  ConfettiParticle({
-    required this.x,
-    required this.y,
-    required this.color,
-    required this.size,
-    required this.speed,
-    required this.rotation,
-    required this.rotationSpeed,
-  });
-}
-
-class ConfettiPainter extends CustomPainter {
-  final List<ConfettiParticle> particles;
-  final double progress;
-
-  ConfettiPainter({required this.particles, required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (var particle in particles) {
-      // Update position
-      particle.y += particle.speed * 0.02;
-      particle.rotation += particle.rotationSpeed;
-
-      // Reset if off screen
-      if (particle.y > 1.2) {
-        particle.y = -0.1;
-      }
-
-      final paint = Paint()
-        ..color = particle.color.withValues(alpha: 0.8)
-        ..style = PaintingStyle.fill;
-
-      final x = particle.x * size.width;
-      final y = particle.y * size.height;
-
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(particle.rotation);
-
-      // Draw confetti piece (small rectangle)
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(
-            center: Offset.zero,
-            width: particle.size,
-            height: particle.size * 1.5,
-          ),
-          const Radius.circular(2),
-        ),
-        paint,
-      );
-
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

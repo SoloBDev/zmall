@@ -96,7 +96,7 @@ class YearWrappedData {
         '${streak ?? 0} ${streak != 1 ? 'days' : 'day'}';
     return YearWrappedData(
       userId: json['userId'] ?? '',
-      year: recapData['year'] ?? DateTime.now().year,
+      year: recapData['year'] ?? getRecapYear(),
       totalOrders: recapData['total_orders_delivered'] ?? 0,
       totalSpent: 0.0, // Not provided in API
       rewardsEarned: walletEarnings,
@@ -132,6 +132,26 @@ class YearWrappedData {
     if (categoryLower.contains('drink') || categoryLower.contains('juice'))
       return '🥤';
     return '🍽️'; // Default food emoji
+  }
+
+  static int getRecapYear() {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+    final currentDay = now.day;
+
+    // If we're in late December (Dec 15-31), show current year
+    if (currentMonth == 12 && currentDay >= 15) {
+      return currentYear;
+    }
+    // If we're in early January (Jan 1-31), show previous year
+    else if (currentMonth == 1) {
+      return currentYear - 1;
+    }
+    // For all other months (Feb-Nov), show previous year
+    else {
+      return currentYear - 1;
+    }
   }
 
   Map<String, dynamic> toJson() {

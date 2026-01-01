@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/help/components/help_action_cards.dart';
+import 'package:zmall/services/url_launcher_service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/profile/components/profile_list_tile.dart';
 import 'package:zmall/services/service.dart';
@@ -49,9 +50,9 @@ class HelpScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         HelpActionCards(
-                          onTap: () {
-                            launchUrl(
-                              Uri(scheme: 'tel', path: '+251967575757'),
+                          onTap: () async {
+                            await UrlLauncherService.makePhoneCall(
+                              '+251967575757',
                             );
                           },
                           title: "Call Now",
@@ -60,18 +61,18 @@ class HelpScreen extends StatelessWidget {
                         ),
                         HelpActionCards(
                           onTap: () {
-                            launchUrl(
-                              Uri(scheme: 'mailto', path: "info@zmallshop.com"),
-                            );
-                            // launch("mailto:info@zmallshop.com");
+                            // await UrlLauncherService.openEmail(
+                            //   "info@zmallshop.com",
+                            // );
+                            launch("mailto:info@zmallshop.com");
                           },
                           title: "E-Mail",
                           iconColor: Colors.redAccent,
                           icon: HeroiconsSolid.envelope,
                         ),
                         HelpActionCards(
-                          onTap: () {
-                            launchUrl(Uri(scheme: 'tel', path: '+2518707'));
+                          onTap: () async {
+                            await UrlLauncherService.makePhoneCall('+2518707');
                           },
                           icon: Icons.support_agent_rounded,
                           title: "HOTLINE",
@@ -191,9 +192,9 @@ class HelpScreen extends StatelessWidget {
                           icon: FontAwesomeIcons.instagram,
                           iconColor: Colors.redAccent,
                           title: "Instagram",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
-                              "https://www.instagram.com/zmall_delivery/?hl=en",
+                          onTap: () async {
+                            UrlLauncherService.openUrl(
+                              await "https://www.instagram.com/zmall_delivery/?hl=en",
                             );
                           },
                         ),
@@ -214,8 +215,8 @@ class HelpScreen extends StatelessWidget {
                           icon: FontAwesomeIcons.tiktok,
                           iconColor: kBlackColor,
                           title: "Tiktok",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
+                          onTap: () async {
+                            await UrlLauncherService.openUrl(
                               "https://www.tiktok.com/@zmall_delivery",
                             );
                           },
@@ -225,8 +226,8 @@ class HelpScreen extends StatelessWidget {
                           icon: FontAwesomeIcons.facebookF,
                           iconColor: Colors.blue,
                           title: "Facebook",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
+                          onTap: () async {
+                            await UrlLauncherService.openUrl(
                               "https://www.facebook.com/Zmallshop/",
                             );
                           },
@@ -244,8 +245,8 @@ class HelpScreen extends StatelessWidget {
                           icon: FontAwesomeIcons.linkedin,
                           iconColor: Colors.blue,
                           title: "LinkedIn",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
+                          onTap: () async {
+                            await UrlLauncherService.openUrl(
                               "https://www.linkedin.com/company/zmall/",
                             );
                           },
@@ -256,8 +257,8 @@ class HelpScreen extends StatelessWidget {
                           icon: FontAwesomeIcons.xTwitter,
                           iconColor: kBlackColor,
                           title: "X",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
+                          onTap: () async {
+                            await UrlLauncherService.openUrl(
                               "https://x.com/Zmall_Delivery",
                             );
                           },
@@ -267,8 +268,8 @@ class HelpScreen extends StatelessWidget {
                           icon: HeroiconsOutline.globeAlt,
                           iconColor: Colors.blue,
                           title: "Website",
-                          onTap: () {
-                            Service.launchInWebViewOrVC(
+                          onTap: () async {
+                            await UrlLauncherService.openInAppWebView(
                               "https://www.zmalldelivery.com",
                             );
                           },
@@ -278,16 +279,16 @@ class HelpScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              ProfileListTile(
-                icon: Icon(
-                  HeroiconsOutline.questionMarkCircle,
-                  color: kBlackColor,
-                ),
-                title: "FAQ",
-                onTap: () {
-                  Navigator.pushNamed(context, FAQScreen.routeName);
-                },
-              ),
+              // ProfileListTile(
+              //   icon: Icon(
+              //     HeroiconsOutline.questionMarkCircle,
+              //     color: kBlackColor,
+              //   ),
+              //   title: "FAQ",
+              //   onTap: () {
+              //     Navigator.pushNamed(context, FAQScreen.routeName);
+              //   },
+              // ),
               ProfileListTile(
                 icon: Icon(
                   // Icons.lock,
@@ -295,8 +296,8 @@ class HelpScreen extends StatelessWidget {
                   color: kBlackColor,
                 ),
                 title: "Privacy Policy",
-                onTap: () {
-                  Service.launchInWebViewOrVC(
+                onTap: () async {
+                  await UrlLauncherService.openInAppWebView(
                     "https://app.zmall.et/privacy.html",
                   );
                 },
@@ -308,8 +309,8 @@ class HelpScreen extends StatelessWidget {
                   color: kBlackColor,
                 ),
                 title: "Terms and Conditions",
-                onTap: () {
-                  Service.launchInWebViewOrVC(
+                onTap: () async {
+                  await UrlLauncherService.openInAppWebView(
                     "https://app.zmall.et/terms.html",
                   );
                 },

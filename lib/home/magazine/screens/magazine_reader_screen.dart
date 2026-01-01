@@ -1,10 +1,14 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:page_flip/page_flip.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
+import 'package:zmall/home/magazine/services/magazine_service.dart';
+import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/constants.dart';
 
 class MagazineReaderScreen extends StatefulWidget {
@@ -18,14 +22,23 @@ class MagazineReaderScreen extends StatefulWidget {
 
 class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   late PdfDocument _pdfDocument;
-  late PageController _pageController;
+  final _pageFlipController = GlobalKey<PageFlipWidgetState>();
   int currentPage = 1;
   int totalPages = 0;
   bool isLoading = true;
   String? errorMessage;
+  bool isWebFlipbook = false;
 
   // Cache for preloaded pages
   Map<int, PdfPageImage> _pageCache = {};
+
+  // WebView controller
+  InAppWebViewController? webViewController;
+  double webViewProgress = 0;
+
+  // Track page turns to hide hint
+  int pageTurnCount = 0;
+  bool showNavigationHint = true;
 
   // Screenshot prevention method channel
   static const platform = MethodChannel('com.zmall.user/security');
@@ -33,12 +46,100 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+
+    // Track magazine view
+    _trackMagazineView();
+
+    // Check if URL is a web-based flipbook (e.g., Heyzine, FlipHTML5, etc.)
+    isWebFlipbook = _isWebBasedFlipbook(widget.magazine.pdfUrl);
+
     // Only enable screenshot prevention if magazine is protected
     if (widget.magazine.isProtected) {
       _enableScreenshotPrevention();
     }
-    _initializePdf();
+
+    if (isWebFlipbook) {
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      _initializePdf();
+    }
+  }
+
+  // Track magazine view
+  Future<void> _trackMagazineView() async {
+    try {
+      // Get user data
+      final userData = await Service.read('user');
+      if (userData == null) return;
+
+      final magazineViews =
+          userData['user']['magazine_views'] as Map<String, dynamic>?;
+      final hasAlreadyViewed = magazineViews?[widget.magazine.id] == true;
+
+      // Only track view if not already viewed
+      if (!hasAlreadyViewed) {
+        await MagazineService.updateUserMagazineInteraction(
+          context: context,
+          interactionType: 'view',
+          year: DateTime.now().year,
+          magazineId: widget.magazine.id,
+          userId: userData['user']['_id'],
+          serverToken: userData['user']['server_token'],
+        );
+
+        debugPrint('Magazine view tracked for: ${widget.magazine.title}');
+      } else {
+        debugPrint(
+          'Magazine already viewed, skipping view tracking: ${widget.magazine.title}',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error tracking magazine view: $e');
+      // Don't show error to user, just log it
+    }
+  }
+
+  // Check if URL is a web-based flipbook
+  bool _isWebBasedFlipbook(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return false;
+
+    // Check if URL ends with .pdf - if so, it's not a web flipbook
+    if (url.toLowerCase().endsWith('.pdf')) {
+      return false;
+    }
+
+    // Check for common flipbook hosting domains
+    final flipbookDomains = [
+      'heyzine.com',
+      'fliphtml5.com',
+      'issuu.com',
+      'flipsnack.com',
+      'yumpu.com',
+      'calameo.com',
+      'anyflip.com',
+      'publuu.com',
+      'google.com', // Google Docs/Workspace
+      'docs.google.com',
+      'workspace.google.com',
+    ];
+
+    // If it matches known flipbook domains or patterns, it's a web flipbook
+    final matchesFlipbookDomain = flipbookDomains.any(
+      (domain) => uri.host.contains(domain),
+    );
+    final matchesFlipbookPattern =
+        url.contains('/flip-book/') ||
+        url.contains('/flipbook/') ||
+        url.contains('/magazine/');
+
+    // If URL doesn't end with .pdf and matches domains/patterns, treat as web flipbook
+    // Also, if URL is an http/https link but not a PDF, treat as web flipbook by default
+    return matchesFlipbookDomain ||
+        matchesFlipbookPattern ||
+        (uri.scheme.startsWith('http') && !url.toLowerCase().endsWith('.pdf'));
   }
 
   // Enable screenshot prevention
@@ -69,9 +170,24 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
     if (widget.magazine.pdfUrl.isNotEmpty) {
       // Download PDF from network
       debugPrint('Loading PDF from: ${widget.magazine.pdfUrl}');
+
+      // Check if URL ends with .pdf
+      final isPdfUrl = widget.magazine.pdfUrl.toLowerCase().endsWith('.pdf');
+      if (!isPdfUrl) {
+        throw Exception(
+          'URL is not a PDF file. Please use a valid PDF URL or web flipbook URL.',
+        );
+      }
+
       final response = await http.get(Uri.parse(widget.magazine.pdfUrl));
 
       if (response.statusCode == 200) {
+        // Check if response is actually a PDF
+        final contentType = response.headers['content-type'] ?? '';
+        if (!contentType.contains('pdf') && response.bodyBytes.length < 100) {
+          throw Exception('Downloaded file is not a valid PDF');
+        }
+
         // Load PDF from downloaded bytes
         debugPrint('PDF loaded successfully from network');
         return await PdfDocument.openData(response.bodyBytes);
@@ -79,8 +195,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         throw Exception('Failed to download PDF: ${response.statusCode}');
       }
     } else {
-      // Load from assets as fallback
-      return await PdfDocument.openAsset('assets/sample_magazine.pdf');
+      throw Exception('No PDF URL provided');
     }
   }
 
@@ -161,28 +276,128 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   @override
   void dispose() {
     _disableScreenshotPrevention();
-    _pageController.dispose();
-    if (!isLoading && errorMessage == null) {
+    // Clear the page cache to prevent using closed document
+    _pageCache.clear();
+    if (!isLoading && errorMessage == null && !isWebFlipbook) {
       _pdfDocument.close();
     }
     super.dispose();
   }
 
+  Widget _buildWebFlipbook() {
+    return Stack(
+      children: [
+        InAppWebView(
+          initialUrlRequest: URLRequest(url: WebUri(widget.magazine.pdfUrl)),
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            supportZoom: true,
+            useOnLoadResource: true,
+            useShouldOverrideUrlLoading: true,
+            mediaPlaybackRequiresUserGesture: false,
+            allowsInlineMediaPlayback: true,
+            transparentBackground: true,
+            disableHorizontalScroll: false,
+            disableVerticalScroll: false,
+          ),
+          onWebViewCreated: (controller) {
+            webViewController = controller;
+          },
+          onLoadStart: (controller, url) {
+            setState(() {
+              webViewProgress = 0;
+            });
+          },
+          onProgressChanged: (controller, progress) {
+            setState(() {
+              webViewProgress = progress / 100;
+            });
+          },
+          onLoadStop: (controller, url) async {
+            setState(() {
+              webViewProgress = 1;
+            });
+          },
+          onReceivedError: (controller, request, error) {
+            setState(() {
+              errorMessage =
+                  'Failed to load magazine.\nPlease check your connection.';
+            });
+          },
+        ),
+        // Loading progress bar
+        if (webViewProgress < 1)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LinearProgressIndicator(
+              value: webViewProgress,
+              backgroundColor: Colors.grey[200],
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFFED2437),
+              ),
+            ),
+          ),
+        // Protected content indicator
+        if (widget.magazine.isProtected)
+          Positioned(
+            top: 20,
+            right: kDefaultPadding,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lock, size: 12, color: Colors.white70),
+                  SizedBox(width: 4),
+                  Text(
+                    'PROTECTED',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   void _previousPage() {
     if (currentPage > 1) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOutCubic, // Natural page curl deceleration
-      );
+      setState(() {
+        currentPage--;
+        // Track page turns and hide hint after 3 turns
+        pageTurnCount++;
+        if (pageTurnCount >= 3) {
+          showNavigationHint = false;
+        }
+      });
+      _pageFlipController.currentState?.goToPage(currentPage - 1); // 0-indexed
+      _prefetchSurroundingPages(currentPage);
     }
   }
 
   void _nextPage() {
     if (currentPage < totalPages) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOutCubic, // Natural page curl deceleration
-      );
+      setState(() {
+        currentPage++;
+        // Track page turns and hide hint after 3 turns
+        pageTurnCount++;
+        if (pageTurnCount >= 3) {
+          showNavigationHint = false;
+        }
+      });
+      _pageFlipController.currentState?.goToPage(currentPage - 1); // 0-indexed
+      _prefetchSurroundingPages(currentPage);
     }
   }
 
@@ -202,284 +417,90 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
     }
   }
 
-  Widget _buildPageWithFlipEffect(int index) {
-    double value = 0.0;
-
-    if (_pageController.position.haveDimensions) {
-      value = (_pageController.page ?? 0) - index;
-    }
-
-    // Clamp value between -1 and 1
-    value = value.clamp(-1.0, 1.0);
-
-    final pageNumber = index + 1;
+  // Build a single page for the flip widget
+  Widget _buildPage(int pageNumber) {
     final cachedPage = _pageCache[pageNumber];
 
-    // Realistic book page curl effect
-    final bool isFlippingForward = value < 0;
-    final double absValue = value.abs();
+    return VisibilityDetector(
+      key: Key('page_$pageNumber'),
+      onVisibilityChanged: (info) {
+        // Update current page when this page becomes visible (>50% visible)
+        if (info.visibleFraction > 0.5 && mounted) {
+          Future.microtask(() {
+            if (mounted && currentPage != pageNumber) {
+              setState(() {
+                currentPage = pageNumber;
+                // Track page turns for hint hiding
+                pageTurnCount++;
+                if (pageTurnCount >= 3) {
+                  showNavigationHint = false;
+                }
+              });
+              _prefetchSurroundingPages(currentPage);
+            }
+          });
+        }
+      },
+      child: Container(
+        color: Colors.white, // Background color
+        child: cachedPage != null
+            ? Image.memory(
+                cachedPage.bytes,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            : FutureBuilder<PdfPageImage?>(
+                future: _renderPage(pageNumber),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFED2437),
+                      ),
+                    );
+                  }
 
-    // Calculate curl angle (0 to 180 degrees) with enhanced curve
-    final double curlAngle = absValue * math.pi;
+                  if (snapshot.hasData && snapshot.data != null) {
+                    // Cache the page after rendering
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _pageCache[pageNumber] = snapshot.data!;
+                        });
+                      }
+                    });
 
-    // Apply 3D perspective transformation for page curl
-    Matrix4 transform = Matrix4.identity()
-      ..setEntry(3, 2, 0.0015) // Stronger perspective for more pronounced curve
-      ..rotateY(isFlippingForward ? -curlAngle : curlAngle);
+                    return Image.memory(
+                      snapshot.data!.bytes,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                    );
+                  }
 
-    // Enhanced vertical shift during curl (page lifts more prominently)
-    final double verticalShift = math.sin(curlAngle) * -30;
-    // Add horizontal shift to create more visible curl from edge to center
-    final double horizontalShift =
-        math.sin(curlAngle) * (isFlippingForward ? 15 : -15);
-    transform =
-        Matrix4.translationValues(horizontalShift, verticalShift, 0.0) *
-        transform;
-
-    return Transform(
-      transform: transform,
-      alignment: isFlippingForward
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
-      child: Stack(
-        children: [
-          // Book page container with realistic styling
-          Container(
-            margin: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: kDefaultPadding,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFCF5), // Cream paper color
-              borderRadius: BorderRadius.circular(4),
-              boxShadow: [
-                // Main shadow
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                  spreadRadius: -5,
-                ),
-                // Inner shadow for depth
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(-5, 0),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Stack(
-                children: [
-                  // The page content
-                  cachedPage != null
-                      ? Center(
-                          child: Image.memory(
-                            cachedPage.bytes,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.broken_image_outlined,
-                                      color: Colors.grey[400],
-                                      size: 48,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Cannot display page $pageNumber',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Colors.grey[400],
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error loading page $pageNumber',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
                           ),
-                        )
-                      : FutureBuilder<PdfPageImage?>(
-                          future: _renderPage(pageNumber),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFFED2437),
-                                ),
-                              );
-                            }
-
-                            if (snapshot.hasData && snapshot.data != null) {
-                              // Cache the page after rendering
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  setState(() {
-                                    _pageCache[pageNumber] = snapshot.data!;
-                                  });
-                                }
-                              });
-
-                              return Center(
-                                child: Image.memory(
-                                  snapshot.data!.bytes,
-                                  fit: BoxFit.contain,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              );
-                            }
-
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: Colors.grey[400],
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Error loading page $pageNumber',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
                         ),
-
-                  // Subtle page texture overlay
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.1),
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.02),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Book spine shadow (left edge)
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 20,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.15),
-                            Colors.black.withValues(alpha: 0.05),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Enhanced curl shadow - more prominent gradient
-          if (absValue > 0.05)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: isFlippingForward
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    radius: 1.5,
-                    colors: [
-                      Colors.black.withValues(alpha: absValue * 0.5),
-                      Colors.black.withValues(alpha: absValue * 0.3),
-                      Colors.black.withValues(alpha: absValue * 0.15),
-                      Colors.black.withValues(alpha: 0.0),
-                    ],
-                    stops: const [0.0, 0.3, 0.6, 1.0],
-                  ),
-                ),
-              ),
-            ),
-
-          // Enhanced page curl highlight - wider and more visible
-          if (absValue > 0.08 && absValue < 0.95)
-            Positioned.fill(
-              child: Align(
-                alignment: isFlippingForward
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
-                child: Container(
-                  width: 50 * absValue, // Wider highlight area
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: isFlippingForward
-                          ? Alignment.centerLeft
-                          : Alignment.centerRight,
-                      end: isFlippingForward
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: absValue * 0.4),
-                        Colors.white.withValues(alpha: absValue * 0.25),
-                        Colors.white.withValues(alpha: 0.0),
-                      ],
-                      stops: const [0.0, 0.3, 0.7, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Additional shadow along curl edge for depth
-          if (absValue > 0.15 && absValue < 0.85)
-            Positioned.fill(
-              child: Align(
-                alignment: isFlippingForward
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
-                child: Container(
-                  width: 8,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: isFlippingForward
-                          ? Alignment.centerLeft
-                          : Alignment.centerRight,
-                      end: isFlippingForward
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      colors: [
-                        Colors.black.withValues(alpha: absValue * 0.6),
-                        Colors.transparent,
                       ],
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-            ),
-        ],
       ),
     );
   }
@@ -634,10 +655,10 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kPrimaryColor,
+      // backgroundColor: kPrimaryColor,
       // isLoading ? Colors.white : Colors.black,
       appBar: AppBar(
-        backgroundColor: kPrimaryColor,
+        // backgroundColor: kPrimaryColor,
         // isLoading ? Colors.white : Colors.black,
         elevation: 0,
         leading: IconButton(
@@ -660,7 +681,45 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         centerTitle: false,
       ),
       body: SafeArea(
-        child: isLoading
+        child: isWebFlipbook
+            ? errorMessage != null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.red,
+                              size: 64,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              errorMessage!,
+                              style: const TextStyle(
+                                color: kBlackColor,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFED2437),
+                              ),
+                              child: const Text(
+                                'Go Back',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : _buildWebFlipbook()
+            : isLoading
             ? _buildLoadingShimmer()
             : errorMessage != null
             ? Center(
@@ -671,14 +730,14 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                     children: [
                       const Icon(
                         Icons.error_outline,
-                        color: Colors.white54,
+                        color: Colors.red,
                         size: 64,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         errorMessage!,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: kBlackColor,
                           fontSize: 16,
                         ),
                         textAlign: TextAlign.center,
@@ -710,56 +769,32 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                         _nextPage();
                       }
                     },
-                    child: Container(
-                      // Book reading surface background
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            const Color(0xFFF5F5F0), // Light cream
-                            const Color(0xFFE8E8DC), // Darker cream
-                          ],
-                        ),
-                        // border: Border.all(
-                        //   width: 3,
-                        //   color: const Color(0xFF8B7355), // Book brown
-                        // ),
-                        borderRadius: BorderRadius.circular(kDefaultPadding),
-                        boxShadow: [
-                          // Outer shadow for depth
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                            spreadRadius: 2,
+                    child: PageFlipWidget(
+                      key: _pageFlipController,
+                      backgroundColor: Colors.transparent,
+                      lastPage: Container(
+                        color: const Color(0xFFFFFCF5),
+                        child: const Center(
+                          child: Text(
+                            'End of Magazine',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                      // margin: EdgeInsets.all(kDefaultPadding),
-                      child: AnimatedBuilder(
-                        animation: _pageController,
-                        builder: (context, child) {
-                          return PageView.builder(
-                            controller: _pageController,
-                            itemCount: totalPages,
-                            onPageChanged: (page) {
-                              setState(() => currentPage = page + 1);
-                              // Prefetch surrounding pages in background
-                              _prefetchSurroundingPages(page + 1);
-                            },
-                            itemBuilder: (context, index) {
-                              return _buildPageWithFlipEffect(index);
-                            },
-                          );
-                        },
+                      children: List.generate(
+                        totalPages,
+                        (index) => _buildPage(index + 1),
                       ),
                     ),
                   ),
 
                   // Page indicator overlay
                   Positioned(
-                    bottom: 30,
+                    bottom: kDefaultPadding,
                     left: 0,
                     right: 0,
                     child: Center(
@@ -816,39 +851,43 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                       ),
                     ),
 
-                  // Navigation hints (show on first page)
-                  if (currentPage == 1)
+                  // Navigation hints (hide after 3 page turns)
+                  if (showNavigationHint)
                     Positioned(
                       bottom: 100,
                       left: 0,
                       right: 0,
                       child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.touch_app,
-                                color: Colors.white70,
-                                size: 18,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Tap left or right to turn pages',
-                                style: TextStyle(
+                        child: AnimatedOpacity(
+                          opacity: showNavigationHint ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 300),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.touch_app,
                                   color: Colors.white70,
-                                  fontSize: 12,
+                                  size: 18,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 8),
+                                Text(
+                                  'Tap left or right to turn pages',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

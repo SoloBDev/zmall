@@ -1,92 +1,182 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
+import 'package:zmall/models/metadata.dart';
 
 class MagazineService {
-  // Fetch magazines from API
-  static Future<List<Magazine>> fetchMagazines() async {
-    // TODO: Implement actual API call
-    // For now, return mock data
-    await Future.delayed(const Duration(seconds: 1));
-    return _getMockMagazines();
+  // Fetch magazines from API /api/user/get_magazine_list
+  static Future<List<Magazine>> fetchMagazines({
+    required String userId,
+    required String serverToken,
+    required BuildContext context,
+    int? year,
+  }) async {
+    try {
+      final currentYear = year ?? DateTime.now().year;
+      final response = await getMagazineList(
+        year: currentYear,
+        userId: userId,
+        serverToken: serverToken,
+        context: context,
+      );
+
+      if (response != null && response['success'] == true) {
+        final magazinesData = response['magazines'] as List?;
+        if (magazinesData != null) {
+          return magazinesData.map((json) => Magazine.fromJson(json)).toList();
+        }
+      }
+
+      // Return empty list if no data
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching magazines: $e');
+      return [];
+    }
+  }
+
+  static Future<dynamic> getMagazineList({
+    required int year,
+    required String userId,
+    required String serverToken,
+    required BuildContext context,
+    int maxRetries = 3,
+  }) async {
+    final baseUrl = Provider.of<ZMetaData>(context, listen: false).baseUrl;
+    final url = "$baseUrl/api/user/get_magazine_list";
+
+    Map<String, dynamic> data = {
+      "year": "$year",
+      "user_id": userId,
+      "is_show_recap": true,
+      "server_token": serverToken,
+      "timestamp": DateTime.now().toIso8601String(),
+    };
+    // debugPrint('data $data');
+    try {
+      // debugPrint( 'Tracking recap opened - Attempt ${attempt + 1}/$maxRetries', );
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: json.encode(data),
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
+
+      final responseData = json.decode(response.body);
+      // debugPrint('magazin list: $responseData');
+
+      return responseData;
+    } catch (e) {
+      debugPrint('Error $e');
+    }
+  }
+
+  static Future<dynamic> updateUserMagazineInteraction({
+    required int year,
+    required String userId,
+    required String magazineId,
+    required String serverToken,
+    required BuildContext context,
+    required String interactionType,
+  }) async {
+    final baseUrl = Provider.of<ZMetaData>(context, listen: false).baseUrl;
+    final url = "$baseUrl/api/user/magazine_interaction";
+
+    Map<String, dynamic> data = {
+      "year": "$year",
+      "user_id": userId,
+      "magazine_id": magazineId,
+      "server_token": serverToken,
+      "type": interactionType, //view or like
+      "timestamp": DateTime.now().toIso8601String(),
+    };
+
+    try {
+      // debugPrint( 'Tracking recap opened - Attempt ${attempt + 1}/$maxRetries', );
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: json.encode(data),
+          )
+          .timeout(
+            Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
+
+      final responseData = json.decode(response.body);
+      debugPrint('magazine tracinteractionking response: $responseData');
+
+      return responseData;
+    } catch (e) {
+      debugPrint('Error $e');
+    }
   }
 
   // Fetch magazine by ID
-  static Future<Magazine?> fetchMagazineById(String id) async {
-    final magazines = await fetchMagazines();
+  static Future<Magazine?> fetchMagazineById({
+    required String id,
+    required String userId,
+    required String serverToken,
+    required BuildContext context,
+    int? year,
+  }) async {
     try {
-      return magazines.firstWhere((mag) => mag.id == id);
+      final magazines = await fetchMagazines(
+        userId: userId,
+        serverToken: serverToken,
+        context: context,
+        year: year,
+      );
+      return magazines.firstWhere(
+        (mag) => mag.id == id,
+        orElse: () => throw Exception('Magazine not found'),
+      );
     } catch (e) {
+      debugPrint('Error fetching magazine by ID: $e');
       return null;
     }
   }
 
   // Fetch magazines by category
-  static Future<List<Magazine>> fetchMagazinesByCategory(
-    String category,
-  ) async {
-    final magazines = await fetchMagazines();
-    return magazines.where((mag) => mag.category == category).toList();
-  }
-
-  // Mock data for testing
-  // Using archive.org public domain content as demo
-  static const String _mockPdfUrl =
-      // 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf?utm_source=chatgpt.com';
-      'https://ia800503.us.archive.org/21/items/treasureisland0000unse_k0j8/treasureisland0000unse_k0j8.pdf';
-
-  static List<Magazine> _getMockMagazines() {
-    return [
-      Magazine(
-        id: '1',
-        title: 'ZMall Monthly - January 2025',
-        description:
-            'Discover the latest products, deals, and trends for the new year. Featuring exclusive interviews with our top sellers.',
-        coverImage: '',
-        pdfUrl: _mockPdfUrl,
-        pageCount: 160,
-        category: 'Monthly',
-        publishedDate: DateTime(2025, 1, 1),
-        isNew: true,
-        tags: ['Featured', 'New Year', 'Deals'],
-      ),
-      Magazine(
-        id: '2',
-        title: 'Food & Dining Guide 2025',
-        description:
-            'Your ultimate guide to the best restaurants, cafes, and food delivery options in your area.',
-        coverImage: '',
-        pdfUrl: _mockPdfUrl,
-        pageCount: 160,
-        category: 'Food',
-        publishedDate: DateTime(2024, 12, 15),
-        isNew: false,
-        tags: ['Food', 'Restaurants', 'Guide'],
-      ),
-      Magazine(
-        id: '3',
-        title: 'Tech & Gadgets Catalog',
-        description:
-            'Explore the latest smartphones, laptops, and tech accessories available on ZMall.',
-        coverImage: '',
-        pdfUrl: _mockPdfUrl,
-        pageCount: 160,
-        category: 'Technology',
-        publishedDate: DateTime(2024, 12, 1),
-        isNew: false,
-        tags: ['Technology', 'Gadgets', 'Electronics'],
-      ),
-      Magazine(
-        id: '4',
-        title: 'Fashion & Style Winter Collection',
-        description:
-            'Stay warm and stylish this winter with our curated collection of clothing and accessories.',
-        coverImage: '',
-        pdfUrl: _mockPdfUrl,
-        pageCount: 160,
-        category: 'Fashion',
-        publishedDate: DateTime(2024, 11, 20),
-        isNew: false,
-        tags: ['Fashion', 'Winter', 'Clothing'],
-      ),
-    ];
+  static Future<List<Magazine>> fetchMagazinesByCategory({
+    required String category,
+    required String userId,
+    required String serverToken,
+    required BuildContext context,
+    int? year,
+  }) async {
+    try {
+      final magazines = await fetchMagazines(
+        userId: userId,
+        serverToken: serverToken,
+        context: context,
+        year: year,
+      );
+      return magazines.where((mag) => mag.category == category).toList();
+    } catch (e) {
+      debugPrint('Error fetching magazines by category: $e');
+      return [];
+    }
   }
 }

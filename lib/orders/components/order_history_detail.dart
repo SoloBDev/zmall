@@ -41,10 +41,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
 
   RateMyApp _rateMyApp = RateMyApp(
     preferencesPrefix: 'rateMyApp_',
-    minLaunches: 5,
-    minDays: 7,
-    remindLaunches: 5,
-    remindDays: 3,
+    minLaunches: 3, //5
+    minDays: 0, //7
+    remindLaunches: 3, //5
+    remindDays: 2, //3
     appStoreIdentifier: 'com.enigma.zmall',
     googlePlayIdentifier: 'com.enigma.zmall',
   );
@@ -52,49 +52,52 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
   void initState() {
     super.initState();
     getUser();
-    _rateMyApp.init().then((_) => {
-          if (_rateMyApp.shouldOpenDialog)
-            {
-              _rateMyApp.showStarRateDialog(
-                context,
-                title: "Enjoying ZMall?",
-                message: "Please leave a rating!",
-                dialogStyle: DialogStyle(
-                  titleAlign: TextAlign.center,
-                  messageAlign: TextAlign.center,
-                  messagePadding: EdgeInsets.only(bottom: 20.0),
-                ),
-                starRatingOptions: StarRatingOptions(initialRating: 5),
-                actionsBuilder: actionsBuilder,
-              )
-            }
-        });
+    _rateMyApp.init().then(
+      (_) => {
+        if (_rateMyApp.shouldOpenDialog)
+          {
+            _rateMyApp.showStarRateDialog(
+              context,
+              title: "Enjoying ZMall?",
+              message: "Please leave a rating!",
+              dialogStyle: DialogStyle(
+                titleAlign: TextAlign.center,
+                messageAlign: TextAlign.center,
+                messagePadding: EdgeInsets.only(bottom: 20.0),
+              ),
+              starRatingOptions: StarRatingOptions(initialRating: 5),
+              actionsBuilder: actionsBuilder,
+            ),
+          },
+      },
+    );
   }
 
   List<Widget> actionsBuilder(BuildContext context, double? stars) =>
       stars == null
-          ? [buildCancelButton()]
-          : [buildOkButton(stars), buildCancelButton()];
+      ? [buildCancelButton()]
+      : [buildOkButton(stars), buildCancelButton()];
 
   Widget buildOkButton(double stars) => TextButton(
-        child: Text('OK'),
-        onPressed: () async {
-          final launchAppStore = stars >= 4;
+    child: Text('OK'),
+    onPressed: () async {
+      final launchAppStore = stars >= 4;
 
-          Service.showMessage(
-              context: context,
-              title: "Thanks for your feedback!",
-              error: true);
-          final event = RateMyAppEventType.rateButtonPressed;
-          await _rateMyApp.callEvent(event);
-
-          if (launchAppStore) {
-            _rateMyApp.launchStore();
-          }
-
-          Navigator.of(context).pop();
-        },
+      Service.showMessage(
+        context: context,
+        title: "Thanks for your feedback!",
+        error: true,
       );
+      final event = RateMyAppEventType.rateButtonPressed;
+      await _rateMyApp.callEvent(event);
+
+      if (launchAppStore) {
+        _rateMyApp.launchStore();
+      }
+
+      Navigator.of(context).pop();
+    },
+  );
   Widget buildCancelButton() => RateMyAppNoButton(_rateMyApp, text: "Cancel");
 
   void getUser() async {
@@ -142,9 +145,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                     ),
                     Text(
                       Provider.of<ZLanguage>(context, listen: false).details,
-                      style: TextStyle(
-                        color: kBlackColor,
-                      ),
+                      style: TextStyle(color: kBlackColor),
                     ),
                   ],
                 ),
@@ -152,15 +153,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
               Tab(
                 icon: Column(
                   children: [
-                    Icon(
-                      HeroiconsOutline.documentText,
-                      color: kSecondaryColor,
-                    ),
+                    Icon(HeroiconsOutline.documentText, color: kSecondaryColor),
                     Text(
                       Provider.of<ZLanguage>(context, listen: false).invoice,
-                      style: TextStyle(
-                        color: kBlackColor,
-                      ),
+                      style: TextStyle(color: kBlackColor),
                     ),
                   ],
                 ),
@@ -168,19 +164,14 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
               Tab(
                 icon: Column(
                   children: [
-                    Icon(
-                      HeroiconsOutline.shoppingBag,
-                      color: kSecondaryColor,
-                    ),
+                    Icon(HeroiconsOutline.shoppingBag, color: kSecondaryColor),
                     Text(
                       Provider.of<ZLanguage>(context, listen: false).cart,
-                      style: TextStyle(
-                        color: kBlackColor,
-                      ),
+                      style: TextStyle(color: kBlackColor),
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -197,7 +188,8 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
               height: MediaQuery.of(context).size.height,
               child: Padding(
                 padding: EdgeInsets.all(
-                    getProportionateScreenWidth(kDefaultPadding / 2)),
+                  getProportionateScreenWidth(kDefaultPadding / 2),
+                ),
                 child: TabBarView(
                   children: [
                     /////order histry detail
@@ -205,33 +197,39 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                         ? SingleChildScrollView(
                             child: Column(
                               spacing: getProportionateScreenHeight(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                               children: [
                                 ///////Order Details section/////
                                 Container(
                                   padding: EdgeInsets.symmetric(
                                     vertical: getProportionateScreenHeight(
-                                        kDefaultPadding / 1.5),
+                                      kDefaultPadding / 1.5,
+                                    ),
                                     horizontal: getProportionateScreenWidth(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                   ),
                                   decoration: BoxDecoration(
                                     color: kPrimaryColor,
                                     border: Border.all(color: kWhiteColor),
                                     borderRadius: BorderRadius.circular(
                                       getProportionateScreenWidth(
-                                          kDefaultPadding),
+                                        kDefaultPadding,
+                                      ),
                                     ),
                                   ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     spacing: getProportionateScreenHeight(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                     children: [
                                       Row(
                                         spacing: getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
+                                          kDefaultPadding / 2,
+                                        ),
                                         children: [
                                           Icon(
                                             HeroiconsOutline
@@ -239,23 +237,26 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             color: kBlackColor,
                                           ),
                                           Text(
-                                              Provider.of<ZLanguage>(context,
-                                                      listen: false)
-                                                  .orderDetails,
-                                              style: TextStyle(
-                                                  fontSize:
-                                                      getProportionateScreenHeight(
-                                                          kDefaultPadding),
-                                                  color: kBlackColor,
-                                                  fontWeight: FontWeight.bold)),
+                                            Provider.of<ZLanguage>(
+                                              context,
+                                              listen: false,
+                                            ).orderDetails,
+                                            style: TextStyle(
+                                              fontSize:
+                                                  getProportionateScreenHeight(
+                                                    kDefaultPadding,
+                                                  ),
+                                              color: kBlackColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          if (responseData['store_detail']
-                                                  ['name'] ==
+                                          if (responseData['store_detail']['name'] ==
                                               null)
                                             Flexible(
                                               child: OrderStatusRow(
@@ -269,57 +270,53 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                             child: OrderStatusRow(
                                               icon: HeroiconsOutline.user,
                                               value: Service.capitalizeFirstLetters(
-                                                  responseData['order_list']
-                                                              ['cart_detail'][
-                                                          'destination_addresses']
-                                                      [
-                                                      0]['user_details']['name']),
+                                                responseData['order_list']['cart_detail']['destination_addresses'][0]['user_details']['name'],
+                                              ),
                                               title: Provider.of<ZLanguage>(
-                                                      context,
-                                                      listen: false)
-                                                  .receivedBy,
+                                                context,
+                                                listen: false,
+                                              ).receivedBy,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      if (responseData['store_detail']
-                                              ['name'] !=
+                                      if (responseData['store_detail']['name'] !=
                                           null)
                                         orderDetailRow(
-                                            isStore: true,
-                                            isRated: responseData['order_list']
-                                                ['is_user_rated_to_store'],
-                                            isCompleted:
-                                                responseData['order_list']
-                                                        ['order_status'] ==
-                                                    25,
-                                            value: responseData['store_detail']
-                                                        ['name'] !=
-                                                    null
-                                                ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
-                                                : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
-                                            imageUrl:
-                                                "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                            onRatePressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) {
-                                                    return OrderRating(
-                                                      userId: widget.userId!,
-                                                      orderId: widget.orderId!,
-                                                      serverToken:
-                                                          widget.serverToken!,
-                                                      imageUrl:
-                                                          "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
-                                                      name:
-                                                          "${responseData['store_detail']['name']}",
-                                                      isStore: true,
-                                                    );
-                                                  },
-                                                ),
-                                              ).then((value) => getUser());
-                                            }),
+                                          isStore: true,
+                                          isRated:
+                                              responseData['order_list']['is_user_rated_to_store'],
+                                          isCompleted:
+                                              responseData['order_list']['order_status'] ==
+                                              25,
+                                          value:
+                                              responseData['store_detail']['name'] !=
+                                                  null
+                                              ? "${Service.capitalizeFirstLetters(responseData['store_detail']['name'])}"
+                                              : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['pickup_addresses'][0]['user_details']['name'])}",
+                                          imageUrl:
+                                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                          onRatePressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) {
+                                                  return OrderRating(
+                                                    userId: widget.userId!,
+                                                    orderId: widget.orderId!,
+                                                    serverToken:
+                                                        widget.serverToken!,
+                                                    imageUrl:
+                                                        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['store_detail']['image_url']}",
+                                                    name:
+                                                        "${responseData['store_detail']['name']}",
+                                                    isStore: true,
+                                                  );
+                                                },
+                                              ),
+                                            ).then((value) => getUser());
+                                          },
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -327,59 +324,67 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                 ///////Delivery Details section/////
                                 Container(
                                   decoration: BoxDecoration(
-                                      color: kPrimaryColor,
-                                      border: Border.all(color: kWhiteColor),
-                                      borderRadius: BorderRadius.circular(
-                                          getProportionateScreenWidth(
-                                              kDefaultPadding))),
+                                    color: kPrimaryColor,
+                                    border: Border.all(color: kWhiteColor),
+                                    borderRadius: BorderRadius.circular(
+                                      getProportionateScreenWidth(
+                                        kDefaultPadding,
+                                      ),
+                                    ),
+                                  ),
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(
                                       vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 1.5),
+                                        kDefaultPadding / 1.5,
+                                      ),
                                       horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
+                                        kDefaultPadding,
+                                      ),
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       spacing: getProportionateScreenHeight(
-                                          kDefaultPadding),
+                                        kDefaultPadding,
+                                      ),
                                       children: [
                                         Row(
                                           spacing: getProportionateScreenWidth(
-                                              kDefaultPadding / 2),
+                                            kDefaultPadding / 2,
+                                          ),
                                           children: [
                                             Icon(
                                               HeroiconsOutline.truck,
                                               color: kBlackColor,
                                             ),
                                             Text(
-                                                Provider.of<ZLanguage>(context,
-                                                        listen: false)
-                                                    .deliveryDetails,
-                                                style: TextStyle(
-                                                    fontSize:
-                                                        getProportionateScreenHeight(
-                                                            kDefaultPadding),
-                                                    color: kBlackColor,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                              Provider.of<ZLanguage>(
+                                                context,
+                                                listen: false,
+                                              ).deliveryDetails,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    getProportionateScreenHeight(
+                                                      kDefaultPadding,
+                                                    ),
+                                                color: kBlackColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ],
                                         ),
 
-                                        if (responseData['order_list']
-                                                ['order_status'] ==
+                                        if (responseData['order_list']['order_status'] ==
                                             25)
                                           orderDetailRow(
                                             isStore: false,
                                             isCompleted:
-                                                responseData['order_list']
-                                                        ['order_status'] ==
-                                                    25,
+                                                responseData['order_list']['order_status'] ==
+                                                25,
                                             value:
                                                 "${responseData['provider_detail']['first_name']} ${responseData['provider_detail']['last_name']}",
-                                            isRated: responseData['order_list']
-                                                ['is_user_rated_to_provider'],
+                                            isRated:
+                                                responseData['order_list']['is_user_rated_to_provider'],
                                             imageUrl:
                                                 "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${responseData['provider_detail']['image_url']}",
                                             onRatePressed: () {
@@ -443,10 +448,10 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           spacing: getProportionateScreenHeight(
-                                              kDefaultPadding),
+                                            kDefaultPadding,
+                                          ),
                                           children: [
-                                            if (responseData['order_list']
-                                                    ['order_status'] !=
+                                            if (responseData['order_list']['order_status'] !=
                                                 25)
                                               OrderStatusRow(
                                                 icon: HeroiconsOutline.xCircle,
@@ -456,18 +461,14 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                               ),
                                             OrderStatusRow(
                                               icon: HeroiconsOutline.mapPin,
-                                              value: responseData['order_list']
-                                                          ['cart_detail']
-                                                      ['destination_addresses']
-                                                  [0]['address'],
+                                              value:
+                                                  responseData['order_list']['cart_detail']['destination_addresses'][0]['address'],
                                               title: "Delivery Address",
                                             ),
                                             OrderStatusRow(
                                               icon: HeroiconsOutline.mapPin,
-                                              value: responseData['order_list']
-                                                          ['cart_detail']
-                                                      ['pickup_addresses'][0]
-                                                  ['address'],
+                                              value:
+                                                  responseData['order_list']['cart_detail']['pickup_addresses'][0]['address'],
                                               title: "Pickup address",
                                             ),
                                             Row(
@@ -550,45 +551,54 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                     color: kPrimaryColor,
                                     border: Border.all(color: kWhiteColor),
                                     borderRadius: BorderRadius.circular(
-                                        getProportionateScreenWidth(
-                                            kDefaultPadding)),
+                                      getProportionateScreenWidth(
+                                        kDefaultPadding,
+                                      ),
+                                    ),
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(
                                       vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 1.5),
+                                        kDefaultPadding / 1.5,
+                                      ),
                                       horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding),
+                                        kDefaultPadding,
+                                      ),
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       spacing: getProportionateScreenHeight(
-                                          kDefaultPadding / 2),
+                                        kDefaultPadding / 2,
+                                      ),
                                       children: [
                                         Text(
-                                          Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .enjoyingZmall,
+                                          Provider.of<ZLanguage>(
+                                            context,
+                                            listen: false,
+                                          ).enjoyingZmall,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleMedium
                                               ?.copyWith(
-                                                  fontWeight: FontWeight.bold),
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                         Text(
-                                          Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .rateReviewBlock,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelLarge,
+                                          Provider.of<ZLanguage>(
+                                            context,
+                                            listen: false,
+                                          ).rateReviewBlock,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.labelLarge,
                                           textAlign: TextAlign.justify,
                                         ),
                                         CustomButton(
-                                          title: Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .rateUs,
+                                          title: Provider.of<ZLanguage>(
+                                            context,
+                                            listen: false,
+                                          ).rateUs,
                                           press: () {
                                             _rateMyApp.showStarRateDialog(
                                               context,
@@ -598,12 +608,13 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                 titleAlign: TextAlign.center,
                                                 messageAlign: TextAlign.center,
                                                 messagePadding: EdgeInsets.only(
-                                                    bottom: 20.0),
+                                                  bottom: 20.0,
+                                                ),
                                               ),
                                               starRatingOptions:
                                                   StarRatingOptions(
-                                                initialRating: 5,
-                                              ),
+                                                    initialRating: 5,
+                                                  ),
                                               actionsBuilder: actionsBuilder,
                                             );
                                           },
@@ -612,7 +623,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                       ],
                                     ),
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           )
@@ -623,21 +634,27 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                         children: [
                           Container(
                             padding: EdgeInsets.symmetric(
-                              vertical:
-                                  getProportionateScreenHeight(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                kDefaultPadding,
+                              ),
                               horizontal: getProportionateScreenWidth(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                             ),
                             decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                                border: Border.all(color: kWhiteColor),
-                                borderRadius: BorderRadius.circular(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 1.5))),
+                              color: kPrimaryColor,
+                              border: Border.all(color: kWhiteColor),
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                  kDefaultPadding / 1.5,
+                                ),
+                              ),
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               spacing: getProportionateScreenWidth(
-                                  kDefaultPadding / 2),
+                                kDefaultPadding / 2,
+                              ),
                               children: [
                                 Flexible(
                                   child: OrderStatusRow(
@@ -657,14 +674,18 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                 ),
                                 Flexible(
                                   child: OrderStatusRow(
-                                      icon: HeroiconsOutline.creditCard,
-                                      value: Service.capitalizeFirstLetters(
-                                          Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .cash),
-                                      title: Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .payments),
+                                    icon: HeroiconsOutline.creditCard,
+                                    value: Service.capitalizeFirstLetters(
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).cash,
+                                    ),
+                                    title: Provider.of<ZLanguage>(
+                                      context,
+                                      listen: false,
+                                    ).payments,
+                                  ),
                                 ),
                                 // Row(
                                 //   children: [
@@ -695,47 +716,61 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                           ),
 
                           SizedBox(
-                              height:
-                                  getProportionateScreenWidth(kDefaultPadding)),
+                            height: getProportionateScreenWidth(
+                              kDefaultPadding,
+                            ),
+                          ),
 
                           ///total prices///
                           Container(
                             padding: EdgeInsets.symmetric(
-                              vertical:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                kDefaultPadding,
+                              ),
+                              horizontal: getProportionateScreenWidth(
+                                kDefaultPadding,
+                              ),
                             ),
                             decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                                border: Border.all(color: kWhiteColor),
-                                borderRadius: BorderRadius.circular(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 1.5))),
+                              color: kPrimaryColor,
+                              border: Border.all(color: kWhiteColor),
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                  kDefaultPadding / 1.5,
+                                ),
+                              ),
+                            ),
                             child: Column(
                               children: [
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(Provider.of<ZLanguage>(context,
-                                            listen: false)
-                                        .servicePrice),
                                     Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}"),
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).servicePrice,
+                                    ),
+                                    Text(
+                                      "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_service_price'].toStringAsFixed(2)}",
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 4)),
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4,
+                                  ),
+                                ),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .totalServicePrive,
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).totalServicePrive,
                                       style: TextStyle(color: kSecondaryColor),
                                     ),
                                     Text(
@@ -745,85 +780,97 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                   ],
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 4)),
-                                responseData['order_list']
-                                                ['order_payment_detail']
-                                            ['promo_payment'] !=
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4,
+                                  ),
+                                ),
+                                responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                         0
                                     ? Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .promo),
                                           Text(
-                                              "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
+                                            Provider.of<ZLanguage>(
+                                              context,
+                                              listen: false,
+                                            ).promo,
+                                          ),
+                                          Text(
+                                            "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}",
+                                          ),
                                         ],
                                       )
                                     : Container(),
-                                responseData['order_list']
-                                                ['order_payment_detail']
-                                            ['promo_payment'] !=
+                                responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                         0
                                     ? SizedBox(
                                         height: getProportionateScreenHeight(
-                                            kDefaultPadding / 4))
+                                          kDefaultPadding / 4,
+                                        ),
+                                      )
                                     : Container(),
-                                responseData['order_list']
-                                                ['order_payment_detail']
-                                            ['promo_payment'] !=
+                                responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                         0
                                     ? Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            Provider.of<ZLanguage>(context,
-                                                    listen: false)
-                                                .totalPromo,
+                                            Provider.of<ZLanguage>(
+                                              context,
+                                              listen: false,
+                                            ).totalPromo,
                                             style: TextStyle(
-                                                color: kSecondaryColor),
+                                              color: kSecondaryColor,
+                                            ),
                                           ),
                                           Text(
                                             "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}",
                                             style: TextStyle(
-                                                color: kSecondaryColor),
+                                              color: kSecondaryColor,
+                                            ),
                                           ),
                                         ],
                                       )
                                     : Container(),
-                                responseData['order_list']
-                                                ['order_payment_detail']
-                                            ['promo_payment'] !=
+                                responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                         0
                                     ? SizedBox(
                                         height: getProportionateScreenHeight(
-                                            kDefaultPadding / 4))
+                                          kDefaultPadding / 4,
+                                        ),
+                                      )
                                     : Container(),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(Provider.of<ZLanguage>(context,
-                                            listen: false)
-                                        .cartPrice),
                                     Text(
-                                        "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}"),
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).cartPrice,
+                                    ),
+                                    Text(
+                                      "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total_cart_price'].toStringAsFixed(2)}",
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenHeight(
-                                        kDefaultPadding / 4)),
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding / 4,
+                                  ),
+                                ),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      Provider.of<ZLanguage>(context,
-                                              listen: false)
-                                          .totalCartPrice,
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).totalCartPrice,
                                       style: TextStyle(color: kSecondaryColor),
                                     ),
                                     Text(
@@ -838,30 +885,35 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                           Spacer(),
 
                           ///////payments and total price////
-
                           SizedBox(
-                              height:
-                                  getProportionateScreenWidth(kDefaultPadding)),
+                            height: getProportionateScreenWidth(
+                              kDefaultPadding,
+                            ),
+                          ),
 
                           Container(
                             padding: EdgeInsets.symmetric(
-                              vertical:
-                                  getProportionateScreenHeight(kDefaultPadding),
-                              horizontal:
-                                  getProportionateScreenWidth(kDefaultPadding),
+                              vertical: getProportionateScreenHeight(
+                                kDefaultPadding,
+                              ),
+                              horizontal: getProportionateScreenWidth(
+                                kDefaultPadding,
+                              ),
                             ),
                             decoration: BoxDecoration(
-                                color: kPrimaryColor,
-                                border: Border.all(color: kWhiteColor),
-                                borderRadius: BorderRadius.circular(
-                                    getProportionateScreenWidth(
-                                        kDefaultPadding / 1.5))),
+                              color: kPrimaryColor,
+                              border: Border.all(color: kWhiteColor),
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                  kDefaultPadding / 1.5,
+                                ),
+                              ),
+                            ),
                             child: Column(
                               children: [
                                 Row(
-                                  mainAxisAlignment: responseData['order_list']
-                                                  ['order_payment_detail']
-                                              ['promo_payment'] !=
+                                  mainAxisAlignment:
+                                      responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                           0
                                       ? MainAxisAlignment.spaceBetween
                                       : MainAxisAlignment.spaceEvenly,
@@ -869,57 +921,59 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                     ////degital payment section
                                     Row(
                                       children: [
-                                        responseData['order_list']
-                                                    ['order_payment_detail']
-                                                ['is_paid_from_wallet']
+                                        responseData['order_list']['order_payment_detail']['is_paid_from_wallet']
                                             ? Icon(
                                                 Icons
                                                     .account_balance_wallet_outlined,
                                                 size:
                                                     getProportionateScreenHeight(
-                                                        kDefaultPadding),
+                                                      kDefaultPadding,
+                                                    ),
                                               )
                                             : Icon(
                                                 HeroiconsOutline
                                                     .devicePhoneMobile,
                                                 size:
                                                     getProportionateScreenHeight(
-                                                        kDefaultPadding),
+                                                      kDefaultPadding,
+                                                    ),
                                               ),
                                         SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding / 2)),
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2,
+                                          ),
+                                        ),
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            responseData['order_list']
-                                                        ['order_payment_detail']
-                                                    ['is_paid_from_wallet']
-                                                ? Text(Provider.of<ZLanguage>(
-                                                        context,
-                                                        listen: false)
-                                                    .wallet)
-                                                : Text(Provider.of<ZLanguage>(
-                                                        context,
-                                                        listen: false)
-                                                    .online),
-                                            responseData['order_list']
-                                                        ['order_payment_detail']
-                                                    ['is_paid_from_wallet']
+                                            responseData['order_list']['order_payment_detail']['is_paid_from_wallet']
                                                 ? Text(
-                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['wallet_payment'].toStringAsFixed(2)}")
+                                                    Provider.of<ZLanguage>(
+                                                      context,
+                                                      listen: false,
+                                                    ).wallet,
+                                                  )
                                                 : Text(
-                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['card_payment'].toStringAsFixed(2)}"),
+                                                    Provider.of<ZLanguage>(
+                                                      context,
+                                                      listen: false,
+                                                    ).online,
+                                                  ),
+                                            responseData['order_list']['order_payment_detail']['is_paid_from_wallet']
+                                                ? Text(
+                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['wallet_payment'].toStringAsFixed(2)}",
+                                                  )
+                                                : Text(
+                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['card_payment'].toStringAsFixed(2)}",
+                                                  ),
                                           ],
-                                        )
+                                        ),
                                       ],
                                     ),
 
                                     /////Promo payment section
-                                    responseData['order_list']
-                                                    ['order_payment_detail']
-                                                ['promo_payment'] !=
+                                    responseData['order_list']['order_payment_detail']['promo_payment'] !=
                                             0
                                         ? Row(
                                             children: [
@@ -927,24 +981,30 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                 HeroiconsOutline.gift,
                                                 size:
                                                     getProportionateScreenHeight(
-                                                        kDefaultPadding),
+                                                      kDefaultPadding,
+                                                    ),
                                               ),
                                               SizedBox(
-                                                  width:
-                                                      getProportionateScreenWidth(
-                                                          kDefaultPadding / 2)),
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding / 2,
+                                                    ),
+                                              ),
                                               Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(Provider.of<ZLanguage>(
-                                                          context,
-                                                          listen: false)
-                                                      .promo),
                                                   Text(
-                                                      "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}"),
+                                                    Provider.of<ZLanguage>(
+                                                      context,
+                                                      listen: false,
+                                                    ).promo,
+                                                  ),
+                                                  Text(
+                                                    "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['promo_payment'].toStringAsFixed(2)}",
+                                                  ),
                                                 ],
-                                              )
+                                              ),
                                             ],
                                           )
                                         : Container(),
@@ -954,66 +1014,85 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                         Icon(
                                           HeroiconsOutline.banknotes,
                                           size: getProportionateScreenHeight(
-                                              kDefaultPadding),
+                                            kDefaultPadding,
+                                          ),
                                         ),
                                         SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding / 2)),
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding / 2,
+                                          ),
+                                        ),
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(Service.capitalizeFirstLetters(
-                                                Provider.of<ZLanguage>(context,
-                                                        listen: false)
-                                                    .cash)),
                                             Text(
-                                                "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['cash_payment'].toStringAsFixed(2)}"),
+                                              Service.capitalizeFirstLetters(
+                                                Provider.of<ZLanguage>(
+                                                  context,
+                                                  listen: false,
+                                                ).cash,
+                                              ),
+                                            ),
+                                            Text(
+                                              "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['cash_payment'].toStringAsFixed(2)}",
+                                            ),
                                           ],
-                                        )
+                                        ),
                                       ],
-                                    )
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenWidth(
-                                        kDefaultPadding / 2)),
+                                  height: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
                                 Column(
                                   children: [
-                                    Text(Service.capitalizeFirstLetters(
+                                    Text(
+                                      Service.capitalizeFirstLetters(
                                         responseData['payment_gateway_name']
-                                            .toString())),
+                                            .toString(),
+                                      ),
+                                    ),
                                     Text(
                                       "${Provider.of<ZMetaData>(context, listen: false).currency}  ${responseData['order_list']['order_payment_detail']['total'].toStringAsFixed(2)}",
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineSmall
                                           ?.copyWith(
-                                              fontWeight: FontWeight.w700),
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                     ),
-                                    Text(Provider.of<ZLanguage>(context,
-                                            listen: false)
-                                        .total),
+                                    Text(
+                                      Provider.of<ZLanguage>(
+                                        context,
+                                        listen: false,
+                                      ).total,
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
-                                    height: getProportionateScreenWidth(
-                                        kDefaultPadding / 2)),
-                                responseData['order_list']
-                                            ['is_user_show_invoice'] ||
-                                        responseData['order_list']
-                                                ['order_status'] !=
+                                  height: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
+                                responseData['order_list']['is_user_show_invoice'] ||
+                                        responseData['order_list']['order_status'] !=
                                             25
                                     ? Container()
                                     : Padding(
                                         padding: EdgeInsets.symmetric(
-                                            vertical:
-                                                getProportionateScreenWidth(
-                                                    kDefaultPadding / 2)),
+                                          vertical: getProportionateScreenWidth(
+                                            kDefaultPadding / 2,
+                                          ),
+                                        ),
                                         child: CustomButton(
-                                          title: Provider.of<ZLanguage>(context,
-                                                  listen: false)
-                                              .submit,
+                                          title: Provider.of<ZLanguage>(
+                                            context,
+                                            listen: false,
+                                          ).submit,
                                           press: () {},
                                           color: kBlackColor,
                                         ),
@@ -1044,60 +1123,67 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                 flex: 3,
                                 child: ListView.separated(
                                   shrinkWrap: true,
-                                  itemCount: responseData['order_list']
-                                          ['cart_detail']['order_details']
-                                      .length,
+                                  itemCount:
+                                      responseData['order_list']['cart_detail']['order_details']
+                                          .length,
                                   separatorBuilder: (context, index) =>
                                       SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 2)),
+                                        height: getProportionateScreenHeight(
+                                          kDefaultPadding / 2,
+                                        ),
+                                      ),
                                   itemBuilder: (context, index) {
                                     String extractProductName(
-                                        String? noteForItem) {
+                                      String? noteForItem,
+                                    ) {
                                       if (noteForItem == null ||
-                                          noteForItem.isEmpty) return '';
+                                          noteForItem.isEmpty)
+                                        return '';
                                       return noteForItem.split(': ').first;
                                     }
 
                                     return Container(
                                       width: double.infinity,
                                       padding: EdgeInsets.symmetric(
-                                          vertical:
-                                              getProportionateScreenHeight(
-                                                  kDefaultPadding),
-                                          horizontal:
-                                              getProportionateScreenWidth(
-                                                  kDefaultPadding)),
+                                        vertical: getProportionateScreenHeight(
+                                          kDefaultPadding,
+                                        ),
+                                        horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding,
+                                        ),
+                                      ),
                                       decoration: BoxDecoration(
                                         color: kPrimaryColor,
                                         border: Border.all(color: kWhiteColor),
                                         borderRadius: BorderRadius.circular(
                                           getProportionateScreenWidth(
-                                              kDefaultPadding),
+                                            kDefaultPadding,
+                                          ),
                                         ),
                                       ),
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         spacing: getProportionateScreenHeight(
-                                            kDefaultPadding / 3),
+                                          kDefaultPadding / 3,
+                                        ),
                                         children: [
                                           CategoryContainer(
-                                              title: responseData['order_list']['cart_detail']
-                                                                  ['order_details'][index]
-                                                              ['product_name']
-                                                          .toString()
-                                                          .toLowerCase() ==
-                                                      "aliexpress"
-                                                  ? "${Service.capitalizeFirstLetters(extractProductName(responseData['order_list']['cart_detail']['order_details'][index]['items'][0]['note_for_item']))}"
-                                                  : responseData['order_list']['cart_detail']['order_details'][index]['product_name'] !=
-                                                          null
-                                                      ? Service.capitalizeFirstLetters(
-                                                          responseData['order_list']
-                                                                  ['cart_detail']['order_details'][index]
-                                                              ['product_name'])
-                                                      : Service.capitalizeFirstLetters(
-                                                          responseData['order_list']['cart_detail']['order_details'][index]['product_detail']['name'])),
+                                            title:
+                                                responseData['order_list']['cart_detail']['order_details'][index]['product_name']
+                                                        .toString()
+                                                        .toLowerCase() ==
+                                                    "aliexpress"
+                                                ? "${Service.capitalizeFirstLetters(extractProductName(responseData['order_list']['cart_detail']['order_details'][index]['items'][0]['note_for_item']))}"
+                                                : responseData['order_list']['cart_detail']['order_details'][index]['product_name'] !=
+                                                      null
+                                                ? Service.capitalizeFirstLetters(
+                                                    responseData['order_list']['cart_detail']['order_details'][index]['product_name'],
+                                                  )
+                                                : Service.capitalizeFirstLetters(
+                                                    responseData['order_list']['cart_detail']['order_details'][index]['product_detail']['name'],
+                                                  ),
+                                          ),
                                           // title: responseData['order_list']
                                           //                     ['cart_detail']
                                           //                 ['order_details']
@@ -1121,18 +1207,21 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                               color: kPrimaryColor,
                                               borderRadius:
                                                   BorderRadius.circular(
-                                                getProportionateScreenWidth(
-                                                    kDefaultPadding),
-                                              ),
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding,
+                                                    ),
+                                                  ),
                                             ),
                                             child: Padding(
                                               padding: EdgeInsets.symmetric(
                                                 horizontal:
                                                     getProportionateScreenWidth(
-                                                        kDefaultPadding / 2),
+                                                      kDefaultPadding / 2,
+                                                    ),
                                                 vertical:
                                                     getProportionateScreenHeight(
-                                                        kDefaultPadding),
+                                                      kDefaultPadding,
+                                                    ),
                                               ),
                                               child: ListView.separated(
                                                 shrinkWrap: true,
@@ -1140,27 +1229,25 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                     ClampingScrollPhysics(),
                                                 separatorBuilder:
                                                     (context, index) => Divider(
-                                                  color: kWhiteColor,
-                                                ),
-                                                itemCount: responseData[
-                                                                    'order_list']
-                                                                ['cart_detail']
-                                                            ['order_details']
-                                                        [index]['items']
-                                                    .length,
+                                                      color: kWhiteColor,
+                                                    ),
+                                                itemCount:
+                                                    responseData['order_list']['cart_detail']['order_details'][index]['items']
+                                                        .length,
                                                 itemBuilder: (context, idx) {
                                                   String extractItemName(
-                                                      String? noteForItem) {
+                                                    String? noteForItem,
+                                                  ) {
                                                     if (noteForItem == null ||
                                                         noteForItem.isEmpty)
                                                       return '';
-                                                    var parts =
-                                                        noteForItem.split(': ');
+                                                    var parts = noteForItem
+                                                        .split(': ');
                                                     return parts.length >= 3
                                                         ? "${parts[2]}:\n${parts[1]}"
                                                         : parts.length >= 2
-                                                            ? "${parts[1]}"
-                                                            : '';
+                                                        ? "${parts[1]}"
+                                                        : '';
                                                   }
 
                                                   return Row(
@@ -1174,17 +1261,14 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                                   .start,
                                                           children: [
                                                             Text(
-                                                              responseData['order_list']['cart_detail']['order_details'][index]
-                                                                              [
-                                                                              'product_name']
+                                                              responseData['order_list']['cart_detail']['order_details'][index]['product_name']
                                                                           .toString()
                                                                           .toLowerCase() ==
                                                                       "aliexpress"
                                                                   ? "${extractItemName(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['note_for_item'])}"
                                                                   : "${Service.capitalizeFirstLetters(responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['item_name'])}",
                                                               softWrap: true,
-                                                              style: Theme.of(
-                                                                      context)
+                                                              style: Theme.of(context)
                                                                   .textTheme
                                                                   .titleMedium
                                                                   ?.copyWith(
@@ -1195,21 +1279,23 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                                                             ),
                                                             Text(
                                                               "${Provider.of<ZLanguage>(context, listen: false).quantity}: ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['quantity']}",
-                                                              style: Theme.of(
-                                                                      context)
-                                                                  .textTheme
-                                                                  .bodySmall,
-                                                            )
+                                                              style:
+                                                                  Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .textTheme
+                                                                      .bodySmall,
+                                                            ),
                                                           ],
                                                         ),
                                                       ),
                                                       Text(
                                                         "${Provider.of<ZMetaData>(context, listen: false).currency} ${responseData['order_list']['cart_detail']['order_details'][index]['items'][idx]['total_price'].toStringAsFixed(2)}",
                                                         style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w700),
-                                                      )
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
                                                     ],
                                                   );
                                                 },
@@ -1266,28 +1352,28 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Something went wrong!"),
-              backgroundColor: kSecondaryColor,
-            ),
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Something went wrong!"),
+                  backgroundColor: kSecondaryColor,
+                ),
+              );
+              throw TimeoutException("The connection has timed out!");
+            },
           );
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
       if (json.decode(response.body) != null) {
         setState(() {
           responseData = json.decode(response.body);
@@ -1312,8 +1398,11 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
     }
   }
 
-  Widget addressDetailRow(
-      {required IconData icon, required String title, Color? iconColor}) {
+  Widget addressDetailRow({
+    required IconData icon,
+    required String title,
+    Color? iconColor,
+  }) {
     return Row(
       spacing: getProportionateScreenWidth(kDefaultPadding / 2),
       children: [
@@ -1322,12 +1411,7 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
           size: getProportionateScreenHeight(kDefaultPadding / .75),
           color: iconColor ?? kBlackColor,
         ),
-        Expanded(
-          child: Text(
-            title,
-            softWrap: true,
-          ),
-        )
+        Expanded(child: Text(title, softWrap: true)),
       ],
     );
   }
@@ -1343,7 +1427,8 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
   }) {
     return Container(
       padding: EdgeInsets.symmetric(
-          vertical: getProportionateScreenHeight(kDefaultPadding / 2)),
+        vertical: getProportionateScreenHeight(kDefaultPadding / 2),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         spacing: getProportionateScreenWidth(kDefaultPadding / 2),
@@ -1354,7 +1439,8 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
             shape: BoxShape.rectangle,
             border: Border.all(color: kWhiteColor),
             borderRadius: BorderRadius.circular(
-                getProportionateScreenWidth(kDefaultPadding / 1.2)),
+              getProportionateScreenWidth(kDefaultPadding / 1.2),
+            ),
             width: getProportionateScreenWidth(kDefaultPadding * 3.5),
             height: getProportionateScreenHeight(kDefaultPadding * 3.5),
           ),
@@ -1369,18 +1455,20 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                   maxLines: 2,
                   softWrap: true,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: kBlackColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: kBlackColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   isStore
                       ? "Store"
-                      : Provider.of<ZLanguage>(context, listen: false)
-                          .deliveredBy,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: kGreyColor,
-                      ),
+                      : Provider.of<ZLanguage>(
+                          context,
+                          listen: false,
+                        ).deliveredBy,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(color: kGreyColor),
                 ),
               ],
             ),
@@ -1401,15 +1489,17 @@ class _OrderHistoryDetailState extends State<OrderHistoryDetail> {
                 Flexible(
                   child: Text(
                     isRated
-                        ? Provider.of<ZLanguage>(context, listen: false)
-                            .thankYou
+                        ? Provider.of<ZLanguage>(
+                            context,
+                            listen: false,
+                          ).thankYou
                         : Provider.of<ZLanguage>(context, listen: false).rateUs,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: isRated ? kGreyColor : kBlackColor,
-                        ),
+                      color: isRated ? kGreyColor : kBlackColor,
+                    ),
                   ),
                 ),
               ],

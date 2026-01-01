@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:confetti/confetti.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,6 +39,7 @@ import 'package:zmall/models/language.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/notifications/notification_store.dart';
 import 'package:zmall/product/product_screen.dart';
+import 'package:zmall/profile/components/edit_profile.dart';
 import 'package:zmall/search/search_screen.dart';
 import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/size_config.dart';
@@ -114,18 +116,36 @@ class _HomeBodyState extends State<HomeBody> {
   Timer? _proximityOrderTimer;
   String proximityOrderName = '';
   bool isProximityActive = false;
+  // bool isProximityOrder = false;
   int proximityIndex = 0;
-  // Recap
+  // Recap or Holiday splash
   Map<String, dynamic> recapData = {};
-  String recapServiceName = '';
-  bool isRecapActive = false;
-  int recapIndex = 0;
+  String holidaySplashServiceName = '';
+  bool isHolidaySplashActive = false;
+  int holidaySplashIndex = 0;
+  bool isRecap = false;
+  bool isHolidaySplash = false;
+
+  // Holiday celebration dialog
+  bool _hasShownHolidayDialog = false;
+  Timer? _holidayDialogTimer;
+  late ConfettiController _confettiControllerLeft;
+  late ConfettiController _confettiControllerRight;
 
   //////////////////////////////
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize confetti controllers
+    _confettiControllerLeft = ConfettiController(
+      duration: const Duration(seconds: 5),
+    );
+    _confettiControllerRight = ConfettiController(
+      duration: const Duration(seconds: 5),
+    );
+
     getCart();
     isAbroad();
     CoreServices.registerNotification(context);
@@ -134,6 +154,11 @@ class _HomeBodyState extends State<HomeBody> {
     getUser();
     getLocalPromotionalItems();
     getLocalPromotionalStores();
+
+    // Show holiday celebration dialog
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _showHolidayCelebration();
+    // });
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       // debugPrint("Opened by notification open by app");
 
@@ -173,6 +198,9 @@ class _HomeBodyState extends State<HomeBody> {
     timer?.cancel();
     _locationTimer?.cancel();
     _proximityOrderTimer?.cancel();
+    _holidayDialogTimer?.cancel();
+    _confettiControllerLeft.dispose();
+    _confettiControllerRight.dispose();
     // _scrollController.dispose();
     super.dispose();
   }
@@ -495,7 +523,89 @@ class _HomeBodyState extends State<HomeBody> {
       getUserOrderCount();
       _getPromotionalItems();
       _getUserOrder();
+
+      // Check if date_of_birth is missing and show dialog
+      if (userData['user']['date_of_birth'] == null ||
+          userData['user']['date_of_birth'].toString().isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showUpdateProfileDialog();
+        });
+      }
     }
+  }
+
+  void _showUpdateProfileDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: kPrimaryColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: Color(0xFFED2437), size: 28),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Complete Your Profile',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: kBlackColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Please update your date of birth to complete your profile and enjoy personalized features.',
+            style: TextStyle(
+              fontSize: 14,
+              color: kBlackColor.withValues(alpha: 0.7),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Later',
+                style: TextStyle(color: kBlackColor, fontSize: 16),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Navigate to edit profile page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditProfile(userData: userData),
+                  ),
+                ).then((_) {
+                  // Refresh user data when returning from edit profile
+                  getUser();
+                });
+              },
+              child: Text(
+                'Update Profile',
+                style: TextStyle(
+                  color: kSecondaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _getUserDetails(userId, serverToken) async {
@@ -859,6 +969,7 @@ class _HomeBodyState extends State<HomeBody> {
         getLocalPromotionalStores();
       }
       // debugPrint( "promotionalStores ${promotionalStores["promotional_stores"][1]}");
+      // 24_7 , discount, exclusive, healthy_option, healthy, holiday_special, limited_offer, local_cuisine, most_popular, new_on_zmall, seasonal, store_closed, top_rated, top_selling, trending
     } else {
       setState(() {
         _loading = false;
@@ -1027,8 +1138,11 @@ class _HomeBodyState extends State<HomeBody> {
       });
       if (userData != null && userData['user'] != null) {
         // debugPrint( "====>\Current User ${userData['user']['first_name']}\n=======>",);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showHolidayCelebration();
+        });
         checkProximityService(services);
-        checkRecapService(services);
+        checkHolidaySplashService(services);
       }
     }
   }
@@ -1073,27 +1187,29 @@ class _HomeBodyState extends State<HomeBody> {
       isProximityActive = false; // reset first
       _proximityOrderTimer?.cancel(); // cancel any old timer
     });
+
     for (var i = 0; i < serviceList.length; i++) {
-      final serviceName = serviceList[i]['delivery_name']
-          .toString()
-          .toLowerCase();
-      final serviceDescription = serviceList[i]['description']
-          .toString()
-          .toLowerCase();
-      if (serviceName == "proximity" ||
-          serviceName == "nearby orders" ||
-          serviceName == "orders near you" ||
-          serviceDescription.contains("proximity")) {
-        // if (mounted) {
+      final tags = serviceList[i]['famous_products_tags'] as List?;
+
+      // Check if service has proximity tags
+      bool hasProximityTag =
+          tags?.any(
+            (tag) =>
+                tag.toString().toLowerCase() == 'proximity' ||
+                tag.toString().toLowerCase() == 'nearby' ||
+                tag.toString().toLowerCase() == 'nearby orders' ||
+                tag.toString().toLowerCase() == 'orders near you',
+          ) ??
+          false;
+
+      if (hasProximityTag) {
         setState(() {
           isProximityActive = true;
           proximityIndex = i;
-          proximityOrderName = serviceName;
+          proximityOrderName = serviceList[i]['delivery_name']
+              .toString()
+              .toLowerCase();
         });
-
-        // debugPrint("====>\nisProximityActive $isProximityActive\n=======>");
-        // debugPrint("====>\nChecking proximity order\n=======>");
-        // debugPrint( "====> Proximity service detected! Starting auto-refresh...",);
 
         // Cancel any existing timer
         _proximityOrderTimer?.cancel();
@@ -1106,14 +1222,14 @@ class _HomeBodyState extends State<HomeBody> {
         // Start periodic refresh
         _proximityOrderTimer = Timer.periodic(Duration(seconds: 30), (timer) {
           if (mounted) {
-            // debugPrint("=> Auto-refreshing proximity orders...");
             _getProximityOrders();
           }
         });
 
-        return; // Exit loop early since we found it
+        break; // Exit loop early since we found it
       }
     }
+
     if (proximityIndex == -1) {
       if (mounted)
         setState(() {
@@ -1125,39 +1241,47 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   //Recap service
-  void checkRecapService(List serviceList) async {
+  void checkHolidaySplashService(List serviceList) async {
     setState(() {
-      recapIndex = -1;
-      isRecapActive = false; // reset first
+      holidaySplashIndex = -1;
+      isHolidaySplashActive = false; // reset first
     });
-    // debugPrint("====>\isRecapActive $isRecapActive\n=======>");
-    // debugPrint("====> services $serviceList");
 
     for (var i = 0; i < serviceList.length; i++) {
-      final serviceName = serviceList[i]['delivery_name']
-          .toString()
-          .toLowerCase();
-      final serviceDescription = serviceList[i]['description']
-          .toString()
-          .toLowerCase();
+      final tags = serviceList[i]['famous_products_tags'] as List?;
 
-      if (serviceName == "zmall recap" ||
-          serviceName == "recap" ||
-          serviceName == "wrapped" ||
-          serviceDescription.contains("recap") ||
-          serviceDescription.contains("wrapped")) {
-        // if (mounted) {
+      // Check if service has recap or holiday splash tags
+      bool isRecapLocal =
+          tags?.any(
+            (tag) =>
+                tag.toString().toLowerCase() == 'recap' ||
+                tag.toString().toLowerCase() == 'wrapped' ||
+                tag.toString().toLowerCase() == 'yearly_recap',
+          ) ??
+          false;
+
+      bool isHolidaySplashLocal =
+          tags?.any(
+            (tag) =>
+                tag.toString().toLowerCase() == 'holiday_splash' ||
+                tag.toString().toLowerCase() == 'holiday' ||
+                tag.toString().toLowerCase() == 'splash' ||
+                tag.toString().toLowerCase() == 'promotion',
+          ) ??
+          false;
+
+      if (isRecapLocal || isHolidaySplashLocal) {
         setState(() {
-          isRecapActive = true;
-          recapIndex = i;
-          recapServiceName = serviceName;
+          isHolidaySplashActive = true;
+          holidaySplashIndex = i;
+          holidaySplashServiceName = serviceList[i]['delivery_name']
+              .toString()
+              .toLowerCase();
+          // Prioritize recap if both tags exist
+          isRecap = isRecapLocal;
+          isHolidaySplash = isHolidaySplashLocal && !isRecapLocal;
         });
-
-        // debugPrint("====>\nisRecapActive $isRecapActive\n=======>");
-        // debugPrint("====>\nrecapServiceName $recapServiceName\n=======>");
-        // debugPrint("====> services $serviceList");
-
-        if (isRecapActive) {
+        if (isHolidaySplashActive && isRecapLocal) {
           // call API to get user recap data
           var recapResponseData = await CoreServices.getRecapServices(
             userId: userData['user']['_id'],
@@ -1165,28 +1289,282 @@ class _HomeBodyState extends State<HomeBody> {
             context: context,
           );
           if (recapResponseData != null && recapResponseData['success']) {
-            // debugPrint("\t=>\tGet recapData ...");
             if (!mounted) return;
             setState(() {
               recapData = recapResponseData['recap'];
             });
-            // debugPrint("====>recapData=>\n$recapData\n====>");
           }
-          // else {
-          //   // debugPrint("recap data message=>\n${recapData['message']}\n====>");
-          //   setState(() {
-          //     isRecapActive = false;
-          //   });
-          // }
+        }
+        break; // Found the special service, no need to continue
+      }
+    }
+
+    if (holidaySplashIndex == -1) {
+      if (mounted)
+        setState(() {
+          isHolidaySplashActive = false;
+        });
+    }
+  }
+
+  int getRecapYear() {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+    final currentDay = now.day;
+
+    // If we're in late December (Dec 15-31), show current year
+    if (currentMonth == 12 && currentDay >= 15) {
+      return currentYear + 1;
+    }
+    // If we're in early January (Jan 1-31), show previous year
+    else if (currentMonth >= 1) {
+      return currentYear;
+    }
+    // For all other months (Feb-Nov), show previous year
+    else {
+      return currentYear;
+    }
+  }
+
+  void _showHolidayCelebration() {
+    if (_hasShownHolidayDialog || !mounted) return;
+
+    // Check if there's a service with celebration tag
+    Map<String, dynamic>? celebrationService;
+    if (services != null && services is List) {
+      for (var service in services) {
+        final tags = service['famous_products_tags'] as List?;
+        final hasCelebration =
+            tags?.any(
+              (tag) =>
+                  tag.toString().toLowerCase() == 'celebration' ||
+                  tag.toString().toLowerCase() == 'new year' ||
+                  tag.toString().toLowerCase() == 'confetti' ||
+                  tag.toString().toLowerCase() == 'new year celebration',
+            ) ??
+            false;
+
+        if (hasCelebration) {
+          celebrationService = service;
+          break;
         }
       }
     }
-    if (recapIndex == -1) {
-      if (mounted)
-        setState(() {
-          isRecapActive = false;
-        });
+
+    // Don't show if no celebration tag found in services
+    if (celebrationService == null) {
+      return;
     }
+
+    // Check if current date is within celebration period (until Jan 3, 2026)
+    // final now = DateTime.now();
+    // final celebrationEndDate = DateTime(2026,1,3,23,59,59,); // January 3, 2026 at 23:59:59
+
+    // Don't show if past the celebration period
+    // if (now.isAfter(celebrationEndDate)) {
+    //   return;
+    // }
+
+    _hasShownHolidayDialog = true;
+
+    // Show after a short delay to ensure UI is ready
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withValues(alpha: 0.7),
+        builder: (BuildContext context) {
+          final imageUrl = celebrationService!['image_url'];
+          final hasImage = imageUrl != null && imageUrl.toString().isNotEmpty;
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Main dialog container
+                Container(
+                  padding: hasImage
+                      ? EdgeInsets.zero
+                      : EdgeInsets.all(kDefaultPadding * 2),
+                  decoration: BoxDecoration(
+                    image: hasImage
+                        ? DecorationImage(
+                            image: CachedNetworkImageProvider(
+                              "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/$imageUrl",
+                            ),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    gradient: !hasImage
+                        ? LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFFFD700),
+                              Color(0xFFFF6B6B),
+                              Color(0xFFFF6B6B),
+                              Color(0xFFFFD700),
+                            ],
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(kDefaultPadding * 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.yellow.withValues(alpha: 0.5),
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: hasImage
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            kDefaultPadding * 2,
+                          ),
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: Container(), // Just show the image
+                          ),
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Celebration emoji/icon
+                            Text('🎉', style: TextStyle(fontSize: 80)),
+                            SizedBox(height: kDefaultPadding),
+
+                            // Service name
+                            Text(
+                              celebrationService['delivery_name']?.toString() ??
+                                  'Happy New Year!',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 10,
+                                    offset: Offset(2, 2),
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: kDefaultPadding / 2),
+
+                            // Service description
+                            if (celebrationService['description'] != null &&
+                                celebrationService['description']
+                                    .toString()
+                                    .isNotEmpty)
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: kDefaultPadding,
+                                ),
+                                child: Text(
+                                  celebrationService['description'].toString(),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: Offset(1, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            SizedBox(height: kDefaultPadding),
+
+                            // Decorative emojis
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('✨', style: TextStyle(fontSize: 24)),
+                                SizedBox(width: kDefaultPadding / 2),
+                                Text('🎊', style: TextStyle(fontSize: 24)),
+                                SizedBox(width: kDefaultPadding / 2),
+                                Text('🎆', style: TextStyle(fontSize: 24)),
+                                SizedBox(width: kDefaultPadding / 2),
+                                Text('🎁', style: TextStyle(fontSize: 24)),
+                              ],
+                            ),
+                          ],
+                        ),
+                ),
+
+                // Left confetti - positioned at top-left corner of dialog
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: ConfettiWidget(
+                    confettiController: _confettiControllerLeft,
+                    blastDirection: -3.14 / 4, // radians - DOWN-RIGHT
+                    emissionFrequency: 0.05,
+                    numberOfParticles: 20,
+                    maxBlastForce: 100,
+                    minBlastForce: 50,
+                    gravity: 0.1,
+                    colors: const [
+                      Colors.red,
+                      Colors.red,
+                      Colors.orange,
+                      Colors.red,
+                    ],
+                  ),
+                ),
+
+                // Right confetti - positioned at top-right corner of dialog
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: ConfettiWidget(
+                    confettiController: _confettiControllerRight,
+                    blastDirection: -3 * 3.14 / 4, // radians - DOWN-LEFT
+                    emissionFrequency: 0.05,
+                    numberOfParticles: 20,
+                    maxBlastForce: 100,
+                    minBlastForce: 50,
+                    gravity: 0.1,
+                    colors: const [
+                      Colors.red,
+                      Colors.red,
+                      Colors.orange,
+                      Colors.red,
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      // Start confetti animations
+      _confettiControllerLeft.play();
+      _confettiControllerRight.play();
+
+      // Auto-dismiss after 7 seconds (between 5-10)
+      _holidayDialogTimer = Timer(Duration(seconds: 7), () {
+        if (mounted) {
+          _confettiControllerLeft.stop();
+          _confettiControllerRight.stop();
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+      });
+    });
   }
 
   void getNearByMerchants() async {
@@ -1290,8 +1668,9 @@ class _HomeBodyState extends State<HomeBody> {
       // debugPrint("\t=> \tGet Services Completed");
       if (userData != null && userData['user'] != null) {
         // debugPrint(  "====>\Current User ${userData['user']['first_name']}\n=======>", );
+        _showHolidayCelebration();
         checkProximityService(services);
-        checkRecapService(services);
+        checkHolidaySplashService(services);
       }
     } else {
       if (mounted && responseData != null) {
@@ -1681,172 +2060,60 @@ class _HomeBodyState extends State<HomeBody> {
                         ),
                       ),
                     ),
-                    //////////////Recap Section///////////////////
+                    //////////////Holiday splash Section///////////////////
                     if (services != null &&
                         services != '' &&
-                        isRecapActive &&
-                        recapData.isNotEmpty)
+                        isHolidaySplashActive &&
+                        (isHolidaySplash || (isRecap && recapData.isNotEmpty)))
                       SliverToBoxAdapter(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    RecapScreen(recapData: recapData),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            margin: EdgeInsets.symmetric(
-                              horizontal: kDefaultPadding,
-                              vertical: kDefaultPadding / 2,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  const Color(0xFFED2437),
-                                  const Color(0xFFc91f2f),
-                                ],
-                                // colors: [
-                                //   // Color(0xFF0f0f23),
-                                //   // Color(0xFF1a1a2e),
-                                //   kSecondaryColor,
-                                //   kPrimaryColor,
-                                // ],
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                kDefaultPadding * 1.1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimaryColor.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                // Decorative circles
-                                Positioned(
-                                  right: -30,
-                                  top: -30,
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: kPrimaryColor.withValues(
-                                        alpha: 0.05,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: -20,
-                                  bottom: -20,
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: kPrimaryColor.withValues(
-                                        alpha: 0.05,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Content
-                                Padding(
-                                  padding: EdgeInsets.all(
-                                    kDefaultPadding * 1.3,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // Icon
-                                      Container(
-                                        padding: EdgeInsets.all(
-                                          kDefaultPadding / 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: kPrimaryColor.withValues(
-                                            alpha: 0.15,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            kDefaultPadding / 1.3,
-                                          ),
-                                          border: Border.all(
-                                            color: kPrimaryColor.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.auto_awesome,
-                                          color: kPrimaryColor,
-                                          size: 30,
+                          onTap: !isRecap
+                              ? null
+                              : () {
+                                  if (isRecap) {
+                                    // Navigate to recap screen
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => RecapScreen(
+                                          recapData: recapData,
+                                          userId: userData['user']['_id'],
+                                          serverToken:
+                                              userData['user']['server_token'],
                                         ),
                                       ),
-
-                                      SizedBox(width: kDefaultPadding),
-
-                                      // Text content
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Your ${DateTime.now().year} ${Service.capitalizeFirstLetters(recapServiceName)}",
-                                              style: TextStyle(
-                                                color: kPrimaryColor,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: kDefaultPadding / 5,
-                                            ),
-                                            Text(
-                                              "See your year in review ✨",
-                                              style: TextStyle(
-                                                color: kPrimaryColor.withValues(
-                                                  alpha: 0.7,
-                                                ),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Arrow icon
-                                      Container(
-                                        padding: EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: kPrimaryColor.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                                    );
+                                  }
+                                  // else if (isHolidaySplash) {
+                                  //   // Navigate to holiday promotion (you can customize this)
+                                  //   // For now, could be a web view, custom screen, etc.
+                                  //   final url =
+                                  //       services[holidaySplashIndex]['description']
+                                  //           ?.split('webUrl-')
+                                  //           .last;
+                                  //   if (url != null && url.isNotEmpty) {
+                                  //     Navigator.push(
+                                  //       context,
+                                  //       MaterialPageRoute(
+                                  //         builder: (context) => WebViewScreen(
+                                  //           url: url,
+                                  //           title:
+                                  //               services[holidaySplashIndex]['delivery_name'],
+                                  //         ),
+                                  //       ),
+                                  //     );
+                                  //   }
+                                  // }
+                                },
+                          child: recapHolidayWidget(
+                            isRecap: isRecap,
+                            imageUrl:
+                                services[holidaySplashIndex]['image_url'] !=
+                                        null &&
+                                    services[holidaySplashIndex]['image_url']
+                                        .toString()
+                                        .isNotEmpty
+                                ? services[holidaySplashIndex]['image_url']
+                                : null,
                           ),
                         ),
                       ),
@@ -2347,14 +2614,27 @@ class _HomeBodyState extends State<HomeBody> {
                                     kDefaultPadding,
                                   ),
                                 ),
-                                child: SectionTitle(
-                                  sectionTitle: Service.capitalizeFirstLetters(
-                                    proximityOrderName,
-                                  ),
-                                  //  "Nearby Orders",
-                                  subTitle: " ",
-                                  // "${proximityOrdersList.length} available",
-                                  // onSubTitlePress: null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SectionTitle(
+                                      sectionTitle:
+                                          Service.capitalizeFirstLetters(
+                                            proximityOrderName,
+                                          ),
+                                      //  "Nearby Orders",
+                                      subTitle: " ",
+                                      // "${proximityOrdersList.length} available",
+                                      // onSubTitlePress: null,
+                                    ),
+                                    if (services[proximityIndex]['description'] !=
+                                            null &&
+                                        services[proximityIndex]['description']
+                                            .isNotEmpty)
+                                      Text(
+                                        services[proximityIndex]['description'],
+                                      ),
+                                  ],
                                 ),
                               ),
                               // Horizontal Item List
@@ -2734,28 +3014,87 @@ class _HomeBodyState extends State<HomeBody> {
                                 ),
                                 itemBuilder: (context, index) {
                                   final service = services[index];
-                                  final serviceName = service['delivery_name']
+                                  var serviceName = service['delivery_name']
                                       ?.toString()
                                       .toLowerCase();
-                                  final serviceDescription =
-                                      service['description']
-                                          .toString()
-                                          .toLowerCase();
+
+                                  // Check tags to identify special services
+                                  final tags =
+                                      service['famous_products_tags'] as List?;
+                                  bool isMagazine =
+                                      tags?.any(
+                                        (tag) =>
+                                            tag.toString().toLowerCase() ==
+                                                'magazine' ||
+                                            tag
+                                                .toString()
+                                                .toLowerCase()
+                                                .contains("magazine"),
+                                      ) ??
+                                      false;
+                                  serviceName = isMagazine
+                                      ? "magazine"
+                                      : serviceName;
+
+                                  // Check tags to identify special services
                                   bool isProximityOrder =
-                                      serviceName == "proximity" ||
-                                      serviceName == "nearby orders" ||
-                                      serviceName == "orders near you" ||
-                                      serviceDescription.contains("proximity");
-                                  bool isRecap =
-                                      serviceName == "zmall recap" ||
-                                      serviceName == "recap" ||
-                                      serviceName == "wrapped" ||
-                                      serviceDescription.contains("recap") ||
-                                      serviceDescription.contains("wrapped");
+                                      tags?.any(
+                                        (tag) =>
+                                            tag.toString().toLowerCase() ==
+                                                'proximity' ||
+                                            tag.toString().toLowerCase() ==
+                                                'nearby' ||
+                                            tag.toString().toLowerCase() ==
+                                                'nearby orders' ||
+                                            tag.toString().toLowerCase() ==
+                                                'orders near you',
+                                      ) ??
+                                      false;
+
+                                  bool isRecapService =
+                                      tags?.any(
+                                        (tag) =>
+                                            tag.toString().toLowerCase() ==
+                                                'recap' ||
+                                            tag.toString().toLowerCase() ==
+                                                'wrapped' ||
+                                            tag.toString().toLowerCase() ==
+                                                'yearly_recap',
+                                      ) ??
+                                      false;
+
+                                  bool isHolidaySplashService =
+                                      tags?.any(
+                                        (tag) =>
+                                            tag.toString().toLowerCase() ==
+                                                'holiday_splash' ||
+                                            tag.toString().toLowerCase() ==
+                                                'holiday' ||
+                                            tag.toString().toLowerCase() ==
+                                                'splash' ||
+                                            tag.toString().toLowerCase() ==
+                                                'promotion',
+                                      ) ??
+                                      false;
+                                  bool isCconfetti =
+                                      tags?.any(
+                                        (tag) =>
+                                            tag.toString().toLowerCase() ==
+                                                'celebration' ||
+                                            tag.toString().toLowerCase() ==
+                                                'new year' ||
+                                            tag.toString().toLowerCase() ==
+                                                'confetti' ||
+                                            tag.toString().toLowerCase() ==
+                                                'new year celebration',
+                                      ) ??
+                                      false;
                                   // Skip services that are handled elsewhere (e.g., Laundry in categories)
                                   if (serviceName == 'laundry' ||
                                       isProximityOrder ||
-                                      isRecap) {
+                                      isRecapService ||
+                                      isCconfetti ||
+                                      isHolidaySplashService) {
                                     return SizedBox.shrink();
                                   }
                                   // serviceName = serviceName.contains('magazin')
@@ -2814,12 +3153,20 @@ class _HomeBodyState extends State<HomeBody> {
                                               );
                                               // 'https://www.ethiolottery.et/am?affiliate=68308ad291bef6c92f841c8b');
                                               break;
-                                            case 'z-magazine':
-                                              screen = MagazineListScreen(
-                                                title: serviceName,
-                                                url: service['description'],
-                                                magazines: [],
-                                              );
+                                            case 'magazine':
+                                              // Navigate to magazine list screen
+                                              if (userData != null) {
+                                                screen = MagazineListScreen(
+                                                  userData: userData,
+                                                  userId:
+                                                      userData['user']['_id'],
+                                                  serverToken:
+                                                      userData['user']['server_token'],
+                                                  title:
+                                                      service['delivery_name'],
+                                                );
+                                              }
+                                              break;
                                             case 'aliexpress':
                                               screen = AliProductListScreen();
                                               break;
@@ -3040,6 +3387,163 @@ class _HomeBodyState extends State<HomeBody> {
     );
   }
 
+  Widget recapHolidayWidget({String? imageUrl, required bool isRecap}) {
+    return Container(
+      width: double.infinity,
+      height: imageUrl != null ? 88 : null,
+      margin: EdgeInsets.symmetric(
+        horizontal: kDefaultPadding,
+        vertical: kDefaultPadding / 2,
+      ),
+      decoration: BoxDecoration(
+        image: imageUrl != null
+            //  && !isRecap
+            ? DecorationImage(
+                image: CachedNetworkImageProvider(
+                  "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${services[holidaySplashIndex]['image_url']}",
+                ),
+                fit: BoxFit.contain,
+              )
+            : null,
+        gradient: imageUrl == null
+            // || isRecap
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [const Color(0xFFED2437), const Color(0xFFc91f2f)],
+              )
+            : null,
+        border: Border.all(color: kWhiteColor),
+        borderRadius: BorderRadius.circular(kDefaultPadding * 1.1),
+        boxShadow: [
+          BoxShadow(
+            color: kPrimaryColor.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: imageUrl != null
+          // && !isRecap
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(kDefaultPadding * 2),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(), // Just show the image
+              ),
+            )
+          : Stack(
+              children: [
+                Positioned(
+                  right: -30,
+                  top: -30,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: -20,
+                  bottom: -20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ),
+
+                // Content
+                Padding(
+                  padding: EdgeInsets.all(kDefaultPadding * 1.3),
+                  child: Row(
+                    children: [
+                      // Icon
+                      Container(
+                        padding: EdgeInsets.all(kDefaultPadding / 2),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(
+                            kDefaultPadding / 1.3,
+                          ),
+                          border: Border.all(
+                            color: kPrimaryColor.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          color: kPrimaryColor,
+                          size: 30,
+                        ),
+                      ),
+
+                      SizedBox(width: kDefaultPadding),
+
+                      // Text content
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Only show title for recap
+                            if (isRecap)
+                              Text(
+                                "Your ${services[holidaySplashIndex]['delivery_name']}",
+                                style: TextStyle(
+                                  color: kPrimaryColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            if (isRecap) SizedBox(height: kDefaultPadding / 5),
+                            Text(
+                              isRecap
+                                  ? "See your year in review ✨"
+                                  : (services[holidaySplashIndex]['description']
+                                            ?.toString()
+                                            .split('webUrl-')
+                                            .first ??
+                                        "Tap to view"),
+                              style: TextStyle(
+                                color: kPrimaryColor.withValues(alpha: 0.7),
+                                fontSize: 12,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Arrow icon
+                      Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_ios,
+                          color: kPrimaryColor,
+                          size: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
   Future<dynamic> getCategoryList(
     double longitude,
     double latitude,
@@ -3111,7 +3615,7 @@ class _HomeBodyState extends State<HomeBody> {
       "latitude": latitude,
       "delivery_type": 2,
     };
-
+    // debugPrint("body $data");
     var body = json.encode(data);
     try {
       http.Response response = await http

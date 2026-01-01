@@ -1,20 +1,26 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
+import 'package:zmall/home/magazine/services/magazine_service.dart';
 import 'package:zmall/home/magazine/widgets/magazine_card.dart';
 import 'package:zmall/home/magazine/screens/magazine_reader_screen.dart';
+import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/utils/size_config.dart';
 
 class MagazineListScreen extends StatefulWidget {
-  final String url;
+  final String userId;
   final String? title;
-  final List<Magazine>? magazines;
+  final dynamic userData;
+  final String serverToken;
   const MagazineListScreen({
     super.key,
-    required this.url,
     this.title,
-    this.magazines,
+    required this.userId,
+    required this.userData,
+    required this.serverToken,
   });
 
   @override
@@ -28,80 +34,52 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadMagazinesFromUrls();
+    _fetchMagazinesFromAPI();
   }
 
-  Future<void> _loadMagazinesFromUrls() async {
+  Future<void> _onRefresh() async {
+    await _fetchMagazinesFromAPI();
+  }
+
+  Future<void> _fetchMagazinesFromAPI() async {
     setState(() => isLoading = true);
-    // debugPrint("url ${widget.url}");
+
     try {
-      // Trim the input to remove any leading/trailing whitespace
-      final cleanedUrl = widget.url.trim();
+      final fetchedMagazines = await MagazineService.fetchMagazines(
+        userId: widget.userId,
+        serverToken: widget.serverToken,
+        context: context,
+      );
 
-      // Parse JSON data
-      final jsonData = json.decode(cleanedUrl) as List;
-      final loadedMagazines = jsonData.asMap().entries.map((entry) {
-        final index = entry.key;
-        final data = entry.value as Map<String, dynamic>;
+      // Get user data to check liked magazines
+      final userData = await Service.read('user');
+      final magazineLikes =
+          userData?['user']['magazine_likes'] as Map<String, dynamic>?;
 
-        // Parse date
-        DateTime publishedDate;
-        try {
-          publishedDate = DateTime.parse(data['date'] ?? '');
-        } catch (e) {
-          publishedDate = DateTime.now();
-        }
-
-        // Clean and trim the URL to remove any whitespace or line breaks
-        final cleanUrl = (data['url'] ?? '').toString().trim().replaceAll(
-          RegExp(r'\s+'),
-          '',
-        );
-
-        // Get cover image from either 'cover_image' or 'coverImage' field
-        final coverImage = (data['cover_image'] ?? data['coverImage'] ?? '')
-            .toString()
-            .trim();
-
-        return Magazine(
-          id: 'magazine_$index',
-          title: data['title'] ?? 'Z Magazine ${index + 1}',
-          description:
-              data['description'] ?? 'Discover amazing content in this edition',
-          coverImage: coverImage,
-          pdfUrl: cleanUrl,
-          pageCount: data['pageCount'] ?? 0,
-          category: data['category'] ?? 'Magazine',
-          publishedDate: publishedDate,
-          isNew: _isNewMagazine(publishedDate),
-          isProtected: data['is_protected'] ?? false,
-          tags: data['tags'] != null ? List<String>.from(data['tags']) : [],
+      // Update magazines with liked status from user data
+      final updatedMagazines = fetchedMagazines.map((magazine) {
+        final hasLiked = magazineLikes?[magazine.id] == true;
+        return magazine.copyWith(
+          userEngagement: magazine.userEngagement.copyWith(hasLiked: hasLiked),
         );
       }).toList();
 
       setState(() {
-        magazines = loadedMagazines;
+        magazines = updatedMagazines;
         isLoading = false;
       });
     } catch (e) {
-      // debugPrint('Error loading magazines: $e');
+      debugPrint('Error fetching magazines: $e');
       setState(() => isLoading = false);
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load magazines: $e'),
-            backgroundColor: Colors.red,
-          ),
+        Service.showMessage(
+          error: true,
+          context: context,
+          title: 'Failed to load magazines',
         );
       }
     }
-  }
-
-  // Helper method to determine if a magazine is new (published within last 30 days)
-  bool _isNewMagazine(DateTime publishedDate) {
-    final now = DateTime.now();
-    final difference = now.difference(publishedDate).inDays;
-    return difference <= 30;
   }
 
   void _openMagazine(Magazine magazine) {
@@ -112,21 +90,91 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
     );
   }
 
+  void _handleLike(int index) async {
+    final magazine = magazines[index];
+
+    // Check if already liked in the current UI state (prevents double-tap)
+    if (magazine.userEngagement.hasLiked) {
+      // Service.showMessage(
+      //   error: true,
+      //   context: context,
+      //   title: 'You have already liked this magazine',
+      // );
+      return;
+    }
+
+    // Get user data
+    final userData = await Service.read('user');
+    if (userData == null) return;
+
+    // Optimistically update UI
+    final updatedEngagement = magazine.userEngagement.copyWith(hasLiked: true);
+
+    setState(() {
+      magazines[index] = magazine.copyWith(
+        likesCount: magazine.likesCount + 1,
+        userEngagement: updatedEngagement,
+      );
+    });
+
+    // Sync with API
+    try {
+      final response = await MagazineService.updateUserMagazineInteraction(
+        year: DateTime.now().year,
+        userId: userData['user']['_id'],
+        magazineId: magazine.id,
+        serverToken: userData['user']['server_token'],
+        context: context,
+        interactionType: 'like',
+      );
+
+      // Update user data with the new likes from API response
+      if (response != null && response['success'] == true) {
+        // Reload user data to get updated magazine_likes
+        final updatedUserData = await Service.read('user');
+        if (updatedUserData != null) {
+          // Update the magazine likes count from API response
+          final actualLikesCount =
+              response['likes_count'] ?? magazine.likesCount + 1;
+
+          if (mounted) {
+            setState(() {
+              magazines[index] = magazine.copyWith(
+                likesCount: actualLikesCount,
+                userEngagement: updatedEngagement,
+              );
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error liking magazine: $e');
+      // Revert on error
+      if (mounted) {
+        setState(() {
+          magazines[index] = magazine.copyWith(
+            likesCount: magazine.likesCount,
+            userEngagement: magazine.userEngagement,
+          );
+        });
+        Service.showMessage(
+          error: true,
+          context: context,
+          title: 'Failed to like magazine',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: kWhiteColor,
       appBar: AppBar(
-        backgroundColor: kWhiteColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kBlackColor),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: Text(
-          'Z - Magazines',
+          widget.title ?? 'Z - Magazines',
           style: TextStyle(
             color: kBlackColor,
             fontSize: 20,
@@ -135,54 +183,602 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
         ),
         centerTitle: false,
       ),
-      body: SafeArea(
-        child: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFFED2437)),
-              )
-            : magazines.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.auto_stories_outlined,
-                      size: 64,
-                      color: kGreyColor,
+      body: RefreshIndicator(
+        color: kPrimaryColor,
+        backgroundColor: kSecondaryColor,
+        onRefresh: _onRefresh,
+        child: SafeArea(
+          child: isLoading
+              ? _buildShimmerLoading()
+              : magazines.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        HeroiconsOutline.bookOpen,
+                        // Icons.auto_stories_outlined,
+                        size: 64,
+                        color: kGreyColor,
+                      ),
+                      SizedBox(height: getProportionateScreenHeight(16)),
+                      Text(
+                        'No magazines available',
+                        style: TextStyle(color: kGreyColor, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                )
+              : GridView.builder(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenHeight(kDefaultPadding),
+                  ),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: getProportionateScreenWidth(
+                      kDefaultPadding,
                     ),
-                    SizedBox(height: getProportionateScreenHeight(16)),
-                    Text(
-                      'No magazines available',
-                      style: TextStyle(color: kGreyColor, fontSize: 16),
+                    mainAxisSpacing: getProportionateScreenHeight(
+                      kDefaultPadding,
+                    ),
+                    childAspectRatio: 0.50, // Makes cards taller
+                  ),
+                  itemCount: magazines.length,
+                  itemBuilder: (context, index) {
+                    final magazine = magazines[index];
+                    return MagazineCard(
+                      magazine: magazine,
+                      onTap: () => _openMagazine(magazine),
+                      onLike: () => _handleLike(index),
+                      onInfo: () => _showMagazineInfo(magazine),
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
+  }
+
+  void _showMagazineInfo(Magazine magazine) {
+    final dialogHeight = MediaQuery.of(context).size.height * 0.85;
+    final imageHeight = dialogHeight * 0.8;
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: getProportionateScreenWidth(20),
+          vertical: getProportionateScreenHeight(40),
+        ),
+        child: Container(
+          height: dialogHeight,
+          decoration: BoxDecoration(
+            color: kWhiteColor,
+            borderRadius: BorderRadius.circular(
+              getProportionateScreenWidth(16),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Close button
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: kBlackColor,
+                    size: getProportionateScreenWidth(24),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              // Magazine preview (scrollable)
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Images gallery or cover image (80% of dialog height)
+                      SizedBox(
+                        height: imageHeight,
+                        child: magazine.images.isNotEmpty
+                            ? ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                ),
+                                itemCount: magazine.images.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      right: getProportionateScreenWidth(12),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(12),
+                                      ),
+                                      child: CachedNetworkImage(
+                                        imageUrl: magazine.images[index],
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                            0.75,
+                                        height: imageHeight,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            Container(
+                                              width:
+                                                  MediaQuery.of(
+                                                    context,
+                                                  ).size.width *
+                                                  0.75,
+                                              height: imageHeight,
+                                              color: kGreyColor.withValues(
+                                                alpha: 0.2,
+                                              ),
+                                              child: const Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      color: Color(0xFFED2437),
+                                                      strokeWidth: 2,
+                                                    ),
+                                              ),
+                                            ),
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                              width:
+                                                  MediaQuery.of(
+                                                    context,
+                                                  ).size.width *
+                                                  0.75,
+                                              height: imageHeight,
+                                              color: kGreyColor.withValues(
+                                                alpha: 0.2,
+                                              ),
+                                              child: Icon(
+                                                // Icons.broken_image,
+                                                HeroiconsOutline.photo,
+                                                size:
+                                                    getProportionateScreenWidth(
+                                                      48,
+                                                    ),
+                                                color: kGreyColor,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                    kDefaultPadding,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    getProportionateScreenWidth(12),
+                                  ),
+                                  child: magazine.coverImage.isNotEmpty
+                                      ? CachedNetworkImage(
+                                          imageUrl: magazine.coverImage,
+                                          width: double.infinity,
+                                          height: imageHeight,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              Container(
+                                                height: imageHeight,
+                                                color: kGreyColor.withValues(
+                                                  alpha: 0.2,
+                                                ),
+                                                child: const Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Color(
+                                                          0xFFED2437,
+                                                        ),
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              ),
+                                          errorWidget: (context, url, error) =>
+                                              Container(
+                                                height: imageHeight,
+                                                color: kGreyColor.withValues(
+                                                  alpha: 0.2,
+                                                ),
+                                                child: Center(
+                                                  child: Icon(
+                                                    // Icons.broken_image,
+                                                    HeroiconsOutline.photo,
+                                                    size:
+                                                        getProportionateScreenWidth(
+                                                          64,
+                                                        ),
+                                                    color: kGreyColor,
+                                                  ),
+                                                ),
+                                              ),
+                                        )
+                                      : Container(
+                                          height: imageHeight,
+                                          color: kGreyColor.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          child: Center(
+                                            child: Icon(
+                                              // Icons.auto_stories,
+                                              HeroiconsOutline.bookOpen,
+                                              size: getProportionateScreenWidth(
+                                                64,
+                                              ),
+                                              color: kGreyColor,
+                                            ),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                      ),
+                      SizedBox(height: getProportionateScreenHeight(16)),
+                      // Details section (scrollable content)
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getProportionateScreenWidth(
+                            kDefaultPadding,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            Text(
+                              magazine.title,
+                              style: TextStyle(
+                                fontSize: getProportionateScreenWidth(18),
+                                fontWeight: FontWeight.bold,
+                                color: kBlackColor,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              // textAlign: TextAlign.right,
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(8)),
+                            // Category and date
+                            Wrap(
+                              spacing: getProportionateScreenWidth(8),
+                              runSpacing: getProportionateScreenHeight(8),
+                              children: [
+                                if (magazine.category.isNotEmpty)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: getProportionateScreenWidth(
+                                        10,
+                                      ),
+                                      vertical: getProportionateScreenHeight(5),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFFED2437,
+                                      ).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(
+                                        getProportionateScreenWidth(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      magazine.category,
+
+                                      style: TextStyle(
+                                        fontSize: getProportionateScreenWidth(
+                                          11,
+                                        ),
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFFED2437),
+                                      ),
+                                    ),
+                                  ),
+                                Text(
+                                  magazine.formattedDate,
+                                  style: TextStyle(
+                                    fontSize: getProportionateScreenWidth(11),
+                                    color: kGreyColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(12)),
+                            // Description
+                            Text(
+                              magazine.description,
+                              style: TextStyle(
+                                fontSize: getProportionateScreenWidth(13),
+                                color: kBlackColor,
+                                height: 1.4,
+                              ),
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                              // textAlign: TextAlign.right,
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(12)),
+                            // Stats
+                            Wrap(
+                              spacing: getProportionateScreenWidth(12),
+                              runSpacing: getProportionateScreenHeight(8),
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.visibility_outlined,
+                                      size: getProportionateScreenWidth(14),
+                                      color: kGreyColor,
+                                    ),
+                                    SizedBox(
+                                      width: getProportionateScreenWidth(4),
+                                    ),
+                                    Text(
+                                      '${magazine.formattedViewsCount} views',
+                                      style: TextStyle(
+                                        fontSize: getProportionateScreenWidth(
+                                          11,
+                                        ),
+                                        color: kGreyColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.favorite,
+                                      size: getProportionateScreenWidth(14),
+                                      color: const Color(0xFFED2437),
+                                    ),
+                                    SizedBox(
+                                      width: getProportionateScreenWidth(4),
+                                    ),
+                                    Text(
+                                      '${magazine.formattedLikesCount} likes',
+                                      style: TextStyle(
+                                        fontSize: getProportionateScreenWidth(
+                                          11,
+                                        ),
+                                        color: kGreyColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.menu_book,
+                                      size: getProportionateScreenWidth(14),
+                                      color: kGreyColor,
+                                    ),
+                                    SizedBox(
+                                      width: getProportionateScreenWidth(4),
+                                    ),
+                                    Text(
+                                      '${magazine.pageCount} pages',
+                                      style: TextStyle(
+                                        fontSize: getProportionateScreenWidth(
+                                          11,
+                                        ),
+                                        color: kGreyColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(16)),
+                            // Read button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _openMagazine(magazine);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFED2437),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: getProportionateScreenHeight(14),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      getProportionateScreenWidth(12),
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Read Magazine',
+                                  style: TextStyle(
+                                    fontSize: getProportionateScreenWidth(15),
+                                    fontWeight: FontWeight.bold,
+                                    color: kWhiteColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(16)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: getProportionateScreenWidth(18),
+            height: getProportionateScreenWidth(18),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(height: getProportionateScreenHeight(2)),
+          Container(
+            width: getProportionateScreenWidth(20),
+            height: getProportionateScreenHeight(9),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return GridView.builder(
+      padding: EdgeInsets.symmetric(
+        horizontal: getProportionateScreenWidth(kDefaultPadding),
+        vertical: getProportionateScreenHeight(kDefaultPadding),
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: getProportionateScreenWidth(kDefaultPadding),
+        mainAxisSpacing: getProportionateScreenHeight(kDefaultPadding),
+        childAspectRatio: 0.50,
+      ),
+      itemCount: 6, // Show 6 shimmer placeholders
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            color: kWhiteColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: kBlackColor.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cover Image shimmer (3/4 of card)
+              Expanded(
+                flex: 3,
+                child: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Details section shimmer (1/4 of card)
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    // Magazine info shimmer
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getProportionateScreenWidth(8),
+                        vertical: getProportionateScreenHeight(4),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title shimmer
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: double.infinity,
+                              height: getProportionateScreenHeight(11),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: getProportionateScreenHeight(2)),
+                          // Category shimmer
+                          Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: getProportionateScreenWidth(60),
+                              height: getProportionateScreenHeight(9),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Engagement metrics row shimmer
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getProportionateScreenWidth(8),
+                          vertical: getProportionateScreenHeight(6),
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: kGreyColor.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Like icon shimmer
+                            _buildIconShimmer(),
+                            // Views icon shimmer
+                            _buildIconShimmer(),
+                            // Info icon shimmer
+                            _buildIconShimmer(),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              )
-            : GridView.builder(
-                padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(kDefaultPadding),
-                  vertical: getProportionateScreenHeight(kDefaultPadding),
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: getProportionateScreenWidth(
-                    kDefaultPadding,
-                  ),
-                  mainAxisSpacing: getProportionateScreenHeight(
-                    kDefaultPadding,
-                  ),
-                  childAspectRatio: 0.65,
-                ),
-                itemCount: magazines.length,
-                itemBuilder: (context, index) {
-                  final magazine = magazines[index];
-                  return MagazineCard(
-                    magazine: magazine,
-                    onTap: () => _openMagazine(magazine),
-                  );
-                },
               ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

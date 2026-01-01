@@ -712,7 +712,7 @@ class _BorsaScreenState extends State<BorsaScreen> {
               ),
             ),
             subtitle: Text(
-              "${transaction['updated_at'].split("T")[0]} ${transaction['updated_at'].split("T")[1].split('.')[0]}",
+              "${transaction['created_at'].split("T")[0]} ${transaction['created_at'].split("T")[1].split('.')[0]}",
               style: TextStyle(fontSize: 12, color: kGreyColor),
             ),
             trailing: RichText(
