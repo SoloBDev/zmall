@@ -6,6 +6,8 @@ import 'package:zmall/home/magazine/models/magazine_model.dart';
 import 'package:zmall/home/magazine/services/magazine_service.dart';
 import 'package:zmall/home/magazine/widgets/magazine_card.dart';
 import 'package:zmall/home/magazine/screens/magazine_reader_screen.dart';
+import 'package:zmall/login/login_screen.dart';
+import 'package:zmall/services/core_services.dart';
 import 'package:zmall/services/service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/utils/size_config.dart';
@@ -30,6 +32,7 @@ class MagazineListScreen extends StatefulWidget {
 class _MagazineListScreenState extends State<MagazineListScreen> {
   List<Magazine> magazines = [];
   bool isLoading = true;
+  var updatedUsserData;
 
   @override
   void initState() {
@@ -69,7 +72,7 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
         isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error fetching magazines: $e');
+      //debugPrint('Error fetching magazines: $e');
       setState(() => isLoading = false);
 
       if (mounted) {
@@ -78,6 +81,29 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
           context: context,
           title: 'Failed to load magazines',
         );
+      }
+    }
+  }
+
+  Future<void> _getUserDetails({userId, serverToken}) async {
+    var data = await CoreServices.getUserDetail(userId, serverToken, context);
+
+    if (data != null && data['success']) {
+      if (mounted) {
+        updatedUsserData = data;
+        await Service.save('user', updatedUsserData);
+        setState(() {});
+      }
+    } else {
+      if (data != null && data['error_code'] == 999) {
+        await Service.saveBool('logged', false);
+        await Service.remove('user');
+        Service.showMessage(
+          context: context,
+          title: "${errorCodes['${data['error_code']}']}!",
+          error: true,
+        );
+        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
       }
     }
   }
@@ -130,25 +156,27 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
 
       // Update user data with the new likes from API response
       if (response != null && response['success'] == true) {
-        // Reload user data to get updated magazine_likes
-        final updatedUserData = await Service.read('user');
-        if (updatedUserData != null) {
-          // Update the magazine likes count from API response
-          final actualLikesCount =
-              response['likes_count'] ?? magazine.likesCount + 1;
+        // Fetch fresh user data from server to get updated magazine_likes
+        await _getUserDetails(
+          userId: userData['user']['_id'],
+          serverToken: userData['user']['server_token'],
+        );
 
-          if (mounted) {
-            setState(() {
-              magazines[index] = magazine.copyWith(
-                likesCount: actualLikesCount,
-                userEngagement: updatedEngagement,
-              );
-            });
-          }
+        // Update the magazine likes count from API response
+        final actualLikesCount =
+            response['likes_count'] ?? magazine.likesCount + 1;
+
+        if (mounted) {
+          setState(() {
+            magazines[index] = magazine.copyWith(
+              likesCount: actualLikesCount,
+              userEngagement: updatedEngagement,
+            );
+          });
         }
       }
     } catch (e) {
-      debugPrint('Error liking magazine: $e');
+      //debugPrint('Error liking magazine: $e');
       // Revert on error
       if (mounted) {
         setState(() {

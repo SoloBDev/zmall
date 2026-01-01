@@ -89,14 +89,12 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
           serverToken: userData['user']['server_token'],
         );
 
-        debugPrint('Magazine view tracked for: ${widget.magazine.title}');
+        // //debugPrint('Magazine view tracked for: ${widget.magazine.title}');
       } else {
-        debugPrint(
-          'Magazine already viewed, skipping view tracking: ${widget.magazine.title}',
-        );
+        // //debugPrint('Magazine already viewed, skipping view tracking: ${widget.magazine.title}', );
       }
     } catch (e) {
-      debugPrint('Error tracking magazine view: $e');
+      // //debugPrint('Error tracking magazine view: $e');
       // Don't show error to user, just log it
     }
   }
@@ -146,9 +144,9 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   Future<void> _enableScreenshotPrevention() async {
     try {
       await platform.invokeMethod('disableScreenshot');
-      debugPrint('Screenshot prevention enabled for protected magazine');
+      //debugPrint('Screenshot prevention enabled for protected magazine');
     } catch (e) {
-      debugPrint('Screenshot prevention not available: $e');
+      //debugPrint('Screenshot prevention not available: $e');
     }
   }
 
@@ -159,9 +157,9 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
     try {
       await platform.invokeMethod('enableScreenshot');
-      debugPrint('Screenshot prevention disabled');
+      //debugPrint('Screenshot prevention disabled');
     } catch (e) {
-      debugPrint('Could not re-enable screenshot: $e');
+      //debugPrint('Could not re-enable screenshot: $e');
     }
   }
 
@@ -169,7 +167,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
     // Load PDF from network URL or asset
     if (widget.magazine.pdfUrl.isNotEmpty) {
       // Download PDF from network
-      debugPrint('Loading PDF from: ${widget.magazine.pdfUrl}');
+      //debugPrint('Loading PDF from: ${widget.magazine.pdfUrl}');
 
       // Check if URL ends with .pdf
       final isPdfUrl = widget.magazine.pdfUrl.toLowerCase().endsWith('.pdf');
@@ -189,7 +187,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         }
 
         // Load PDF from downloaded bytes
-        debugPrint('PDF loaded successfully from network');
+        //debugPrint('PDF loaded successfully from network');
         return await PdfDocument.openData(response.bodyBytes);
       } else {
         throw Exception('Failed to download PDF: ${response.statusCode}');
@@ -211,7 +209,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         totalPages = pageCount;
       });
 
-      debugPrint('Magazine loaded: $totalPages pages');
+      //debugPrint('Magazine loaded: $totalPages pages');
 
       // Preload first few pages only
       await _preloadInitialPages();
@@ -222,9 +220,9 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         isLoading = false;
       });
 
-      debugPrint('Initial pages preloaded successfully');
+      //debugPrint('Initial pages preloaded successfully');
     } catch (e) {
-      debugPrint('Error loading magazine: $e');
+      //debugPrint('Error loading magazine: $e');
       if (!mounted) return;
 
       setState(() {
@@ -243,11 +241,11 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         final pageImage = await _renderPage(i);
         if (pageImage != null) {
           _pageCache[i] = pageImage;
-          debugPrint('Preloaded page $i');
+          //debugPrint('Preloaded page $i');
         }
       }
     } catch (e) {
-      debugPrint('Error preloading initial pages: $e');
+      //debugPrint('Error preloading initial pages: $e');
     }
   }
 
@@ -268,7 +266,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         setState(() {
           _pageCache[pageNum] = pageImage;
         });
-        debugPrint('Prefetched page $pageNum');
+        //debugPrint('Prefetched page $pageNum');
       }
     }
   }
@@ -412,7 +410,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
       await page.close();
       return pageImage;
     } catch (e) {
-      debugPrint('Error rendering page $pageNumber: $e');
+      //debugPrint('Error rendering page $pageNumber: $e');
       return null;
     }
   }

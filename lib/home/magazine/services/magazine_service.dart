@@ -34,7 +34,7 @@ class MagazineService {
       // Return empty list if no data
       return [];
     } catch (e) {
-      debugPrint('Error fetching magazines: $e');
+      // debugPrint('Error fetching magazines: $e');
       return [];
     }
   }
@@ -81,7 +81,7 @@ class MagazineService {
 
       return responseData;
     } catch (e) {
-      debugPrint('Error $e');
+      // debugPrint('Error $e');
     }
   }
 
@@ -125,11 +125,11 @@ class MagazineService {
           );
 
       final responseData = json.decode(response.body);
-      debugPrint('magazine tracinteractionking response: $responseData');
+      // debugPrint('magazine tracinteractionking response: $responseData');
 
       return responseData;
     } catch (e) {
-      debugPrint('Error $e');
+      // debugPrint('Error $e');
     }
   }
 
@@ -153,7 +153,7 @@ class MagazineService {
         orElse: () => throw Exception('Magazine not found'),
       );
     } catch (e) {
-      debugPrint('Error fetching magazine by ID: $e');
+      // debugPrint('Error fetching magazine by ID: $e');
       return null;
     }
   }
@@ -175,7 +175,7 @@ class MagazineService {
       );
       return magazines.where((mag) => mag.category == category).toList();
     } catch (e) {
-      debugPrint('Error fetching magazines by category: $e');
+      // debugPrint('Error fetching magazines by category: $e');
       return [];
     }
   }
