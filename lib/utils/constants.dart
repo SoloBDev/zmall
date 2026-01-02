@@ -21,13 +21,13 @@ const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // Ethiopia production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
-// const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
+const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
 
 // Ethiopia test
 // const BASE_URL_TEST = "http://196.189.44.49:7000"; //test
-const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
+// const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
 
-const BASE_URL = BASE_URL_TEST;
+const BASE_URL = BASE_URL_PROD;
 // const BASE_URL = kDebugMode ? BASE_URL_TEST : BASE_URL_PROD;
 
 //
@@ -145,11 +145,11 @@ final RegExp emailValidatorRegExp = RegExp(
   r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
 );
 final RegExp passwordRegex = RegExp(
-  r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+  r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$',
 );
 
 const String kPasswordErrorMessage =
-    "Password must be at least 8 characters long, one uppercase letter, one lowercase letter, one number, and one special character (@, !, %, ?, &, \$, *).";
+    "Password must be at least 8 characters long, one uppercase letter, one lowercase letter, one number, and one special character (@, !, %, ?, &, \$, *, #).";
 const String kEmailNullError = "Please Enter your email";
 const String kInvalidEmailError = "Please Enter Valid Email";
 const String kPassNullError = "Please Enter your password";

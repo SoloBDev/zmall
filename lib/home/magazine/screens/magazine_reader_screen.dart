@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:heroicons_flutter/heroicons_flutter.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
@@ -9,7 +11,9 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:zmall/home/magazine/models/magazine_model.dart';
 import 'package:zmall/home/magazine/services/magazine_service.dart';
 import 'package:zmall/services/service.dart';
+import 'package:zmall/services/screenshot_protection_service.dart';
 import 'package:zmall/utils/constants.dart';
+import 'package:zmall/widgets/screenshot_protection_overlay.dart';
 
 class MagazineReaderScreen extends StatefulWidget {
   final Magazine magazine;
@@ -21,13 +25,13 @@ class MagazineReaderScreen extends StatefulWidget {
 }
 
 class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
-  late PdfDocument _pdfDocument;
   final _pageFlipController = GlobalKey<PageFlipWidgetState>();
-  int currentPage = 1;
-  int totalPages = 0;
+  late PdfDocument _pdfDocument;
+  bool isWebFlipbook = false;
   bool isLoading = true;
   String? errorMessage;
-  bool isWebFlipbook = false;
+  int currentPage = 1;
+  int totalPages = 0;
 
   // Cache for preloaded pages
   Map<int, PdfPageImage> _pageCache = {};
@@ -40,12 +44,26 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   int pageTurnCount = 0;
   bool showNavigationHint = true;
 
-  // Screenshot prevention method channel
-  static const platform = MethodChannel('com.zmall.user/security');
+  // Full-screen mode control
+  bool showAppBar = false;
+
+  // Zoom control
+  bool isZoomed = false;
+  TransformationController _transformationController =
+      TransformationController();
+  double _currentScale = 1.0;
+  final double _minScale = 1.0;
+  final double _maxScale = 3.0;
+
+  // Screenshot protection overlay
+  bool showProtectionOverlay = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Enable full-screen mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     // Track magazine view
     _trackMagazineView();
@@ -143,10 +161,31 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   // Enable screenshot prevention
   Future<void> _enableScreenshotPrevention() async {
     try {
-      await platform.invokeMethod('disableScreenshot');
-      //debugPrint('Screenshot prevention enabled for protected magazine');
+      // Initialize screenshot protection service
+      await ScreenshotProtectionService.init(
+        onScreenshotTaken: () {
+          // Log when screenshot is taken
+          //debugPrint('Screenshot attempted on protected magazine');
+          // You can add analytics logging here if needed
+        },
+        onScreenRecordingChanged: (isRecording) {
+          //debugPrint('Screen recording changed: $isRecording');
+        },
+        onOverlayChanged: (shouldShow) {
+          // Update overlay state
+          if (mounted) {
+            setState(() {
+              showProtectionOverlay = shouldShow;
+            });
+          }
+        },
+      );
+
+      // Enable protection
+      await ScreenshotProtectionService.enableProtection();
+      //debugPrint('Screenshot protection enabled for protected magazine');
     } catch (e) {
-      //debugPrint('Screenshot prevention not available: $e');
+      //debugPrint('Screenshot protection not available: $e');
     }
   }
 
@@ -156,10 +195,10 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
     if (!widget.magazine.isProtected) return;
 
     try {
-      await platform.invokeMethod('enableScreenshot');
-      //debugPrint('Screenshot prevention disabled');
+      await ScreenshotProtectionService.disableProtection();
+      //debugPrint('Screenshot protection disabled');
     } catch (e) {
-      //debugPrint('Could not re-enable screenshot: $e');
+      //debugPrint('Could not disable screenshot protection: $e');
     }
   }
 
@@ -273,6 +312,13 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
   @override
   void dispose() {
+    // Restore system UI
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+
+    _transformationController.dispose();
     _disableScreenshotPrevention();
     // Clear the page cache to prevent using closed document
     _pageCache.clear();
@@ -283,94 +329,188 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
   }
 
   Widget _buildWebFlipbook() {
-    return Stack(
-      children: [
-        InAppWebView(
-          initialUrlRequest: URLRequest(url: WebUri(widget.magazine.pdfUrl)),
-          initialSettings: InAppWebViewSettings(
-            javaScriptEnabled: true,
-            supportZoom: true,
-            useOnLoadResource: true,
-            useShouldOverrideUrlLoading: true,
-            mediaPlaybackRequiresUserGesture: false,
-            allowsInlineMediaPlayback: true,
-            transparentBackground: true,
-            disableHorizontalScroll: false,
-            disableVerticalScroll: false,
-          ),
-          onWebViewCreated: (controller) {
-            webViewController = controller;
-          },
-          onLoadStart: (controller, url) {
-            setState(() {
-              webViewProgress = 0;
-            });
-          },
-          onProgressChanged: (controller, progress) {
-            setState(() {
-              webViewProgress = progress / 100;
-            });
-          },
-          onLoadStop: (controller, url) async {
-            setState(() {
-              webViewProgress = 1;
-            });
-          },
-          onReceivedError: (controller, request, error) {
-            setState(() {
-              errorMessage =
-                  'Failed to load magazine.\nPlease check your connection.';
-            });
-          },
-        ),
-        // Loading progress bar
-        if (webViewProgress < 1)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: LinearProgressIndicator(
-              value: webViewProgress,
-              backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFFED2437),
+    return GestureDetector(
+      onDoubleTap: () {
+        setState(() {
+          showAppBar = !showAppBar;
+        });
+      },
+      child: Container(
+        color: kBlackColor.withValues(alpha: 0.8),
+        child: Stack(
+          children: [
+            InAppWebView(
+              initialUrlRequest: URLRequest(
+                url: WebUri(widget.magazine.pdfUrl),
               ),
-            ),
-          ),
-        // Protected content indicator
-        if (widget.magazine.isProtected)
-          Positioned(
-            top: 20,
-            right: kDefaultPadding,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(16),
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                supportZoom: true,
+                useOnLoadResource: true,
+                useShouldOverrideUrlLoading: true,
+                mediaPlaybackRequiresUserGesture: false,
+                allowsInlineMediaPlayback: true,
+                transparentBackground: false,
+                disableHorizontalScroll: false,
+                disableVerticalScroll: false,
+                mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+                allowsBackForwardNavigationGestures: false,
+                clearCache: false,
+                cacheEnabled: true,
+                thirdPartyCookiesEnabled: true,
+                domStorageEnabled: true,
+                databaseEnabled: true,
+                javaScriptCanOpenWindowsAutomatically: true,
+                allowsLinkPreview: false,
+                isFraudulentWebsiteWarningEnabled: false,
+                incognito: false,
+
+                // Android specific
+                useHybridComposition: true,
+                safeBrowsingEnabled: false,
+
+                // iOS specific
+                limitsNavigationsToAppBoundDomains: false,
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock, size: 12, color: Colors.white70),
-                  SizedBox(width: 4),
-                  Text(
-                    'PROTECTED',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
+              onWebViewCreated: (controller) async {
+                webViewController = controller;
+                debugPrint('WebView Created');
+
+                // Set a proper user agent
+                await controller.setSettings(
+                  settings: InAppWebViewSettings(
+                    userAgent:
+                        'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
                   ),
-                ],
-              ),
+                );
+              },
+              onLoadStart: (controller, url) {
+                debugPrint('WebView Loading');
+                setState(() {
+                  webViewProgress = 0;
+                });
+              },
+              onProgressChanged: (controller, progress) {
+                setState(() {
+                  webViewProgress = progress / 100;
+                });
+                debugPrint('WebView webViewProgress $webViewProgress');
+              },
+              onLoadStop: (controller, url) async {
+                setState(() {
+                  webViewProgress = 1;
+                });
+                debugPrint('WebView stoped');
+              },
+              onReceivedError: (controller, request, error) {
+                debugPrint(
+                  'WebView Error: ${error.type} - ${error.description}',
+                );
+                debugPrint('Failed URL: ${request.url}');
+                setState(() {
+                  errorMessage =
+                      'Failed to load magazine.\nError: ${error.description}';
+                });
+              },
+              onReceivedHttpError: (controller, request, response) {
+                debugPrint(
+                  'HTTP Error: ${response.statusCode} for ${request.url}',
+                );
+              },
+              onConsoleMessage: (controller, consoleMessage) {
+                debugPrint(
+                  'WebView Console [${consoleMessage.messageLevel}]: ${consoleMessage.message}',
+                );
+              },
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                debugPrint('Navigation to: ${navigationAction.request.url}');
+                return NavigationActionPolicy.ALLOW;
+              },
             ),
-          ),
-      ],
+            // Loading progress bar
+            if (webViewProgress < 1)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  value: webViewProgress,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFFED2437),
+                  ),
+                ),
+              ),
+            // Protected content indicator
+            if (widget.magazine.isProtected && !showAppBar)
+              Positioned(
+                top: 25,
+                left: kDefaultPadding,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock, size: 12, color: kWhiteColor),
+                      SizedBox(width: 4),
+                      Text(
+                        'PROTECTED',
+                        style: TextStyle(
+                          color: kWhiteColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Toggle full-screen button - always visible
+            if (!showAppBar)
+              Positioned(
+                top: 20,
+                right: kDefaultPadding,
+                child: Material(
+                  color: Colors.transparent,
+                  child: IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        showAppBar ? Icons.fullscreen : Icons.fullscreen_exit,
+                        color: kPrimaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        showAppBar = !showAppBar;
+                      });
+                    },
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
   void _previousPage() {
     if (currentPage > 1) {
+      // Reset zoom when changing pages
+      _resetZoom();
+
       setState(() {
         currentPage--;
         // Track page turns and hide hint after 3 turns
@@ -386,6 +526,9 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
   void _nextPage() {
     if (currentPage < totalPages) {
+      // Reset zoom when changing pages
+      _resetZoom();
+
       setState(() {
         currentPage++;
         // Track page turns and hide hint after 3 turns
@@ -397,6 +540,35 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
       _pageFlipController.currentState?.goToPage(currentPage - 1); // 0-indexed
       _prefetchSurroundingPages(currentPage);
     }
+  }
+
+  void _zoomIn() {
+    setState(() {
+      _currentScale = (_currentScale + 0.5).clamp(_minScale, _maxScale);
+      _transformationController.value = Matrix4.diagonal3Values(
+        _currentScale,
+        _currentScale,
+        1.0,
+      );
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _currentScale = (_currentScale - 0.5).clamp(_minScale, _maxScale);
+      _transformationController.value = Matrix4.diagonal3Values(
+        _currentScale,
+        _currentScale,
+        1.0,
+      );
+    });
+  }
+
+  void _resetZoom() {
+    setState(() {
+      _currentScale = 1.0;
+      _transformationController.value = Matrix4.identity();
+    });
   }
 
   Future<PdfPageImage?> _renderPage(int pageNumber) async {
@@ -440,7 +612,8 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
         }
       },
       child: Container(
-        color: Colors.white, // Background color
+        color: kBlackColor.withValues(alpha: 0.8),
+        // kPrimaryColor, // Background color
         child: cachedPage != null
             ? Image.memory(
                 cachedPage.bytes,
@@ -505,9 +678,9 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
   Widget _buildLoadingShimmer() {
     return Container(
-      color: Colors.white,
+      color: kPrimaryColor,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(vertical: kDefaultPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -519,16 +692,16 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: kPrimaryColor,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[200]!, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: kWhiteColor),
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //     color: Colors.black.withValues(alpha: 0.05),
+                  //     blurRadius: 10,
+                  //     offset: const Offset(0, 4),
+                  //   ),
+                  // ],
                 ),
                 child: Shimmer.fromColors(
                   baseColor: Colors.grey[300]!,
@@ -541,7 +714,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                         height: 32,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: kPrimaryColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -550,7 +723,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                         height: 20,
                         width: MediaQuery.of(context).size.width * 0.4,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: kPrimaryColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -561,7 +734,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                         height: 180,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: kPrimaryColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
@@ -578,7 +751,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                                 ? MediaQuery.of(context).size.width * 0.3
                                 : double.infinity,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: kPrimaryColor,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -593,7 +766,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                             child: Container(
                               height: 100,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: kPrimaryColor,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -603,7 +776,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                             child: Container(
                               height: 100,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: kPrimaryColor,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -619,7 +792,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                           height: 16,
                           width: 30,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: kPrimaryColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -638,7 +811,7 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
                 width: 80,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: kPrimaryColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
@@ -652,247 +825,485 @@ class _MagazineReaderScreenState extends State<MagazineReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // backgroundColor: kPrimaryColor,
-      // isLoading ? Colors.white : Colors.black,
-      appBar: AppBar(
-        // backgroundColor: kPrimaryColor,
-        // isLoading ? Colors.white : Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.close,
-            color: kBlackColor,
-            // isLoading ? Colors.black : Colors.white,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          widget.magazine.title,
-          style: TextStyle(
-            color: kBlackColor,
-            // isLoading ? Colors.black : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: false,
-      ),
-      body: SafeArea(
-        child: isWebFlipbook
-            ? errorMessage != null
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.red,
-                              size: 64,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              errorMessage!,
-                              style: const TextStyle(
-                                color: kBlackColor,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 24),
-                            ElevatedButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFED2437),
-                              ),
-                              child: const Text(
-                                'Go Back',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : _buildWebFlipbook()
-            : isLoading
-            ? _buildLoadingShimmer()
-            : errorMessage != null
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 64,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        errorMessage!,
-                        style: const TextStyle(
-                          color: kBlackColor,
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: kPrimaryColor,
-                          backgroundColor: const Color(0xFFED2437),
-                        ),
-                        child: const Text('Go Back'),
-                      ),
-                    ],
+    return Stack(
+      children: [
+        Scaffold(
+          // backgroundColor: isWebFlipbook ? Colors.white : null,
+          extendBodyBehindAppBar: isWebFlipbook
+              ? false
+              : (showAppBar || isLoading ? false : true),
+          appBar: showAppBar || isLoading
+              ? AppBar(
+                  elevation: 0,
+                  centerTitle: false,
+                  title: Text(
+                    widget.magazine.title,
+                    style: TextStyle(
+                      fontSize: isLoading ? 18 : 16,
+                      color: Colors.black,
+                      fontWeight: isLoading
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
                   ),
-                ),
-              )
-            : Stack(
-                children: [
-                  // PDF Viewer with page flip effect
-                  GestureDetector(
-                    onTapUp: (details) {
-                      final screenWidth = MediaQuery.of(context).size.width;
-                      final tapPosition = details.globalPosition.dx;
-
-                      if (tapPosition < screenWidth / 2) {
-                        _previousPage();
-                      } else {
-                        _nextPage();
-                      }
+                  leading: IconButton(
+                    icon: Icon(
+                      HeroiconsOutline.xCircle,
+                      color: Colors.black,
+                      size: 25,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
                     },
-                    child: PageFlipWidget(
-                      key: _pageFlipController,
-                      backgroundColor: Colors.transparent,
-                      lastPage: Container(
-                        color: const Color(0xFFFFFCF5),
-                        child: const Center(
-                          child: Text(
-                            'End of Magazine',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ),
-                      children: List.generate(
-                        totalPages,
-                        (index) => _buildPage(index + 1),
-                      ),
-                    ),
                   ),
-
-                  // Page indicator overlay
-                  Positioned(
-                    bottom: kDefaultPadding,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                  backgroundColor: isLoading
+                      ? kWhiteColor
+                      : kBlackColor.withValues(alpha: 0.8),
+                  actions: [
+                    if (!isLoading)
+                      IconButton(
+                        icon: Icon(
+                          showAppBar ? Icons.fullscreen : Icons.fullscreen_exit,
+                          color: Colors.black,
+                          size: 25,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '$currentPage / $totalPages',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        onPressed: () {
+                          setState(() {
+                            showAppBar = !showAppBar;
+                          });
+                        },
                       ),
-                    ),
-                  ),
-
-                  // Protected content indicator
-                  if (widget.magazine.isProtected)
-                    Positioned(
-                      top: 20,
-                      right: kDefaultPadding,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.lock, size: 12, color: Colors.white70),
-                            SizedBox(width: 4),
-                            Text(
-                              'PROTECTED',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                  // Navigation hints (hide after 3 page turns)
-                  if (showNavigationHint)
-                    Positioned(
-                      bottom: 100,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: AnimatedOpacity(
-                          opacity: showNavigationHint ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 300),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
+                  ],
+                )
+              : null,
+          body: isWebFlipbook
+              ? errorMessage != null
+                    ? SafeArea(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.touch_app,
-                                  color: Colors.white70,
-                                  size: 18,
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 64,
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(height: 16),
                                 Text(
-                                  'Tap left or right to turn pages',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                  errorMessage!,
+                                  style: const TextStyle(
+                                    color: kBlackColor,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFED2437),
+                                  ),
+                                  child: const Text(
+                                    'Go Back',
+                                    style: TextStyle(color: kPrimaryColor),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
-      ),
+                      )
+                    : _buildWebFlipbook()
+              : SafeArea(
+                  top: showAppBar || isLoading ? true : false,
+                  bottom: false,
+                  child: isLoading
+                      ? _buildLoadingShimmer()
+                      : errorMessage != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 64,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  errorMessage!,
+                                  style: const TextStyle(
+                                    color: kBlackColor,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: kPrimaryColor,
+                                    backgroundColor: const Color(0xFFED2437),
+                                  ),
+                                  child: const Text('Go Back'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Stack(
+                          children: [
+                            // PDF Viewer with page flip effect
+                            _currentScale > 1.0
+                                ? InteractiveViewer(
+                                    transformationController:
+                                        _transformationController,
+                                    minScale: _minScale,
+                                    maxScale: _maxScale,
+                                    panEnabled: true,
+                                    scaleEnabled: true,
+                                    onInteractionEnd: (details) {
+                                      setState(() {
+                                        _currentScale =
+                                            _transformationController.value
+                                                .getMaxScaleOnAxis();
+                                      });
+                                    },
+                                    child: GestureDetector(
+                                      onDoubleTap: () {
+                                        setState(() {
+                                          showAppBar = !showAppBar;
+                                        });
+                                      },
+                                      child: Container(
+                                        color: kBlackColor.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                        child: _buildPage(currentPage),
+                                      ),
+                                    ),
+                                  )
+                                : GestureDetector(
+                                    onDoubleTap: () {
+                                      setState(() {
+                                        showAppBar = !showAppBar;
+                                      });
+                                    },
+                                    onTapUp: (details) {
+                                      final screenWidth = MediaQuery.of(
+                                        context,
+                                      ).size.width;
+                                      final tapPosition =
+                                          details.globalPosition.dx;
+
+                                      if (tapPosition < screenWidth / 2) {
+                                        // Left tap - previous page
+                                        _previousPage();
+                                      } else {
+                                        // Right tap - next page
+                                        _nextPage();
+                                      }
+                                    },
+                                    child: InteractiveViewer(
+                                      transformationController:
+                                          _transformationController,
+                                      minScale: _minScale,
+                                      maxScale: _maxScale,
+                                      panEnabled: false,
+                                      scaleEnabled: true,
+                                      onInteractionEnd: (details) {
+                                        setState(() {
+                                          _currentScale =
+                                              _transformationController.value
+                                                  .getMaxScaleOnAxis();
+                                        });
+                                      },
+                                      child: PageFlipWidget(
+                                        key: _pageFlipController,
+                                        backgroundColor: Colors.transparent,
+                                        lastPage: Container(
+                                          color: const Color(0xFFFFFCF5),
+                                          child: const Center(
+                                            child: Text(
+                                              'End of Magazine',
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        children: List.generate(
+                                          totalPages,
+                                          (index) => _buildPage(index + 1),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                            // Page indicator overlay
+                            Positioned(
+                              bottom: kDefaultPadding,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Row(
+                                  spacing: kDefaultPadding,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Zoom In
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.zoom_in,
+                                                color: kPrimaryColor,
+                                                size: 24,
+                                              ),
+                                              onPressed:
+                                                  _currentScale < _maxScale
+                                                  ? _zoomIn
+                                                  : null,
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 25,
+                                            width: 1,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          ),
+                                          // Zoom Out
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.zoom_out,
+                                                color: kPrimaryColor,
+                                                size: 24,
+                                              ),
+                                              onPressed:
+                                                  _currentScale > _minScale
+                                                  ? _zoomOut
+                                                  : null,
+                                            ),
+                                          ),
+                                          Container(
+                                            height: 25,
+                                            width: 1,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          ),
+                                          // Reset Zoom
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.fit_screen,
+                                                color: kPrimaryColor,
+                                                size: 24,
+                                              ),
+                                              onPressed: _currentScale != 1.0
+                                                  ? _resetZoom
+                                                  : null,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        '$currentPage / $totalPages',
+                                        style: const TextStyle(
+                                          color: kPrimaryColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Close icon
+                            if (!showAppBar)
+                              Positioned(
+                                top: 20,
+                                right: kDefaultPadding,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: IconButton(
+                                    icon: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        HeroiconsOutline.xCircle,
+
+                                        color: kPrimaryColor,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                            // Protected content indicator
+                            if (widget.magazine.isProtected && !showAppBar)
+                              Positioned(
+                                top: 30,
+                                left: kDefaultPadding,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.lock,
+                                        size: 12,
+                                        color: kWhiteColor,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'PROTECTED',
+                                        style: TextStyle(
+                                          color: kWhiteColor,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                            // Toggle full-screen button - always visible
+                            if (!showAppBar)
+                              Positioned(
+                                top: 20,
+                                right: kDefaultPadding * 5,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: IconButton(
+                                    icon: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.fullscreen_exit,
+                                        color: kPrimaryColor,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        showAppBar = true;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                            // Navigation hints (hide after 3 page turns)
+                            if (showNavigationHint)
+                              Positioned(
+                                bottom: 100,
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: AnimatedOpacity(
+                                    opacity: showNavigationHint ? 1.0 : 0.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.touch_app,
+                                            color: kWhiteColor,
+                                            size: 18,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Tap left or right to turn pages',
+                                            style: TextStyle(
+                                              color: kWhiteColor,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                ),
+        ),
+        // Screenshot protection overlay (iOS only - Flutter-side UI)
+        // Android uses FLAG_SECURE, so no overlay needed
+        if (Platform.isIOS)
+          ScreenshotProtectionOverlay(
+            show: showProtectionOverlay,
+            customMessage:
+                'SCREENSHOT IS NOT ALLOWED\n\nThis magazine is protected',
+          ),
+      ],
     );
   }
 }

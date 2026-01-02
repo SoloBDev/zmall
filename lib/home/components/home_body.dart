@@ -28,6 +28,7 @@ import 'package:zmall/home/components/category_card_widget.dart';
 import 'package:zmall/home/components/custom_banner.dart';
 import 'package:zmall/home/components/featured_nearby_stores.dart.dart';
 import 'package:zmall/home/components/offer_card.dart';
+import 'package:zmall/home/components/proximity_offer_card.dart';
 import 'package:zmall/home/components/stores_card.dart';
 import 'package:zmall/home/components/web_view_screen.dart';
 import 'package:zmall/item/item_screen.dart';
@@ -140,10 +141,10 @@ class _HomeBodyState extends State<HomeBody> {
 
     // Initialize confetti controllers
     _confettiControllerLeft = ConfettiController(
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 4),
     );
     _confettiControllerRight = ConfettiController(
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 4),
     );
 
     getCart();
@@ -525,7 +526,9 @@ class _HomeBodyState extends State<HomeBody> {
       _getUserOrder();
 
       // Check if date_of_birth is missing and show dialog
-      if (userData['user']['date_of_birth'] == null ||
+      if (userData['user']['gender'] == null ||
+          userData['user']['date_of_birth'] == null ||
+          userData['user']['gender'].toString().isEmpty ||
           userData['user']['date_of_birth'].toString().isEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showUpdateProfileDialog();
@@ -586,7 +589,8 @@ class _HomeBodyState extends State<HomeBody> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditProfile(userData: userData),
+                    builder: (context) =>
+                        EditProfile(isEnabled: true, userData: userData),
                   ),
                 ).then((_) {
                   // Refresh user data when returning from edit profile
@@ -1338,9 +1342,10 @@ class _HomeBodyState extends State<HomeBody> {
         final hasCelebration =
             tags?.any(
               (tag) =>
-                  tag.toString().toLowerCase() == 'celebration' ||
                   tag.toString().toLowerCase() == 'new year' ||
                   tag.toString().toLowerCase() == 'confetti' ||
+                  tag.toString().toLowerCase() == 'festival' ||
+                  tag.toString().toLowerCase() == 'celebration' ||
                   tag.toString().toLowerCase() == 'new year celebration',
             ) ??
             false;
@@ -1371,7 +1376,7 @@ class _HomeBodyState extends State<HomeBody> {
     // Show after a short delay to ensure UI is ready
     Future.delayed(Duration(milliseconds: 500), () {
       if (!mounted) return;
-
+      bool isDisposed = false;
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -1440,7 +1445,7 @@ class _HomeBodyState extends State<HomeBody> {
                             // Service name
                             Text(
                               celebrationService['delivery_name']?.toString() ??
-                                  'Happy New Year!',
+                                  '',
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
@@ -1504,7 +1509,24 @@ class _HomeBodyState extends State<HomeBody> {
                           ],
                         ),
                 ),
-
+                // close button
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isDisposed = true;
+                      });
+                      if (mounted) {
+                        _confettiControllerLeft.stop();
+                        _confettiControllerRight.stop();
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(color: kWhiteColor, HeroiconsSolid.xCircle),
+                  ),
+                ),
                 // Left confetti - positioned at top-left corner of dialog
                 Positioned(
                   top: 0,
@@ -1557,8 +1579,8 @@ class _HomeBodyState extends State<HomeBody> {
       _confettiControllerRight.play();
 
       // Auto-dismiss after 7 seconds (between 5-10)
-      _holidayDialogTimer = Timer(Duration(seconds: 7), () {
-        if (mounted) {
+      _holidayDialogTimer = Timer(Duration(seconds: 4), () {
+        if (mounted && !isDisposed) {
           _confettiControllerLeft.stop();
           _confettiControllerRight.stop();
           Navigator.of(context, rootNavigator: true).pop();
@@ -2647,39 +2669,73 @@ class _HomeBodyState extends State<HomeBody> {
                                     kDefaultPadding / 2,
                                   ),
                                 ),
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding,
-                                    ),
-                                  ),
-                                  itemCount:
-                                      proximityOrdersList.isNotEmpty &&
-                                          isProximitylItemOpen.isNotEmpty
-                                      ? isProximitylItemOpen.length
-                                      : 0,
-                                  // proximityOrdersList.length,
-                                  itemBuilder: (context, itemIndex) {
-                                    // proximityOrdersList now contains individual items
-                                    final item = proximityOrdersList[itemIndex];
+                                child: Builder(
+                                  builder: (context) {
+                                    // Get min and max distances - since list is sorted by distance,
+                                    // the first item has min distance and the last has max distance
+                                    double minDistance = 0.0;
+                                    double maxDistance = 0.0;
+                                    if (proximityOrdersList.isNotEmpty) {
+                                      minDistance =
+                                          (proximityOrdersList
+                                                      .first['distance_from_user'] ??
+                                                  0.0)
+                                              .toDouble();
+                                      maxDistance =
+                                          (proximityOrdersList
+                                                      .last['distance_from_user'] ??
+                                                  0.0)
+                                              .toDouble();
+                                    }
 
-                                    // Extract data (already enriched in Service)
-                                    final String itemName = item['item_name'];
-                                    final List imageUrls = item['image_url'];
-                                    final String imageUrl = imageUrls.isNotEmpty
-                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${imageUrls[0]}"
-                                        : "";
+                                    return ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getProportionateScreenWidth(
+                                          kDefaultPadding,
+                                        ),
+                                      ),
+                                      separatorBuilder:
+                                          (BuildContext context, int index) =>
+                                              SizedBox(
+                                                width:
+                                                    getProportionateScreenWidth(
+                                                      kDefaultPadding / 2,
+                                                    ),
+                                              ),
+                                      itemCount:
+                                          proximityOrdersList.isNotEmpty &&
+                                              isProximitylItemOpen.isNotEmpty
+                                          ? isProximitylItemOpen.length
+                                          : 0,
+                                      // proximityOrdersList.length,
+                                      itemBuilder: (context, itemIndex) {
+                                        // proximityOrdersList now contains individual items
+                                        final item =
+                                            proximityOrdersList[itemIndex];
 
-                                    // final double price = (item['item_price']).toDouble();
-                                    final String storeName = item['store_name'];
-                                    final storeDetail = item['store_detail'];
-                                    final storeLocation =
-                                        item['store_location'];
+                                        // Extract data (already enriched in Service)
+                                        final String itemName =
+                                            item['item_name'];
+                                        final List imageUrls =
+                                            item['image_url'];
+                                        final String imageUrl =
+                                            imageUrls.isNotEmpty
+                                            ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${imageUrls[0]}"
+                                            : "";
 
-                                    return Row(
-                                      children: [
-                                        SpecialOfferCard(
+                                        // final double price = (item['item_price']).toDouble();
+                                        final String storeName =
+                                            item['store_name'];
+                                        final storeDetail =
+                                            item['store_detail'];
+                                        final storeLocation =
+                                            item['store_location'];
+                                        final double distance =
+                                            (item['distance_from_user'] ?? 0.0)
+                                                .toDouble();
+
+                                        return ProximityOfferCard(
                                           isOpen:
                                               isProximitylItemOpen[itemIndex],
                                           imageUrl: imageUrl,
@@ -2690,6 +2746,9 @@ class _HomeBodyState extends State<HomeBody> {
                                           isDiscounted: false,
                                           storeName: storeName,
                                           specialOffer: "",
+                                          distance: distance,
+                                          minDistance: minDistance,
+                                          maxDistance: maxDistance,
                                           storePress: () async {
                                             bool isOp =
                                                 await Service.isStoreOpen(
@@ -2767,13 +2826,8 @@ class _HomeBodyState extends State<HomeBody> {
                                               }
                                             }
                                           },
-                                        ),
-                                        SizedBox(
-                                          width: getProportionateScreenWidth(
-                                            kDefaultPadding / 2,
-                                          ),
-                                        ),
-                                      ],
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -3080,11 +3134,13 @@ class _HomeBodyState extends State<HomeBody> {
                                       tags?.any(
                                         (tag) =>
                                             tag.toString().toLowerCase() ==
-                                                'celebration' ||
-                                            tag.toString().toLowerCase() ==
                                                 'new year' ||
                                             tag.toString().toLowerCase() ==
                                                 'confetti' ||
+                                            tag.toString().toLowerCase() ==
+                                                'festival' ||
+                                            tag.toString().toLowerCase() ==
+                                                'celebration' ||
                                             tag.toString().toLowerCase() ==
                                                 'new year celebration',
                                       ) ??

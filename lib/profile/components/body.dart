@@ -6,6 +6,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zmall/borsa/borsa_screen.dart';
+import 'package:zmall/profile/components/change_password.dart';
 import 'package:zmall/services/core_services.dart';
 import 'package:zmall/help/help_screen.dart';
 import 'package:zmall/login/login_screen.dart';
@@ -759,6 +760,22 @@ class _BodyState extends State<Body> {
                       // ),
                       // 5. Account Management Section
                       ProfileListTile(
+                        borderColor: kWhiteColor,
+                        icon: Icon(HeroiconsOutline.lockClosed),
+                        title: 'Change Password',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChangePassword(userData: userData),
+                            ),
+                          );
+                        },
+                        margin: EdgeInsets.only(
+                          top: getProportionateScreenHeight(kDefaultPadding),
+                        ),
+                      ),
+                      ProfileListTile(
                         showTrailing: false,
                         borderColor: kWhiteColor,
                         icon: Icon(HeroiconsOutline.arrowLeftStartOnRectangle),
@@ -772,9 +789,6 @@ class _BodyState extends State<Body> {
                           });
                           _showDialog();
                         },
-                        margin: EdgeInsets.only(
-                          top: getProportionateScreenHeight(kDefaultPadding),
-                        ),
                       ),
                       ProfileListTile(
                         showTrailing: false,

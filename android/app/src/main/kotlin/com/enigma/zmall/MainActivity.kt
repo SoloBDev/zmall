@@ -26,33 +26,53 @@ class MainActivity : FlutterFragmentActivity() {
         flutterEngine.plugins.add(TelebirrInappSdkPlugin())  // Manually registering the plugin
 
 
-        // After Magazine feature implementation
-
         // Setup security method channel for screenshot prevention
+        // Android: Uses FLAG_SECURE (complete prevention)
+        // iOS: Uses detection and Flutter overlay
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SECURITY_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
-                "disableScreenshot" -> {
+                "enableScreenshotProtection" -> {
                     try {
                         // Set FLAG_SECURE to prevent screenshots and screen recording
                         window.setFlags(
                             WindowManager.LayoutParams.FLAG_SECURE,
                             WindowManager.LayoutParams.FLAG_SECURE
                         )
-                        android.util.Log.d("MainActivity", "Screenshot prevention ENABLED - FLAG_SECURE set")
+                        android.util.Log.d("MainActivity", "Screenshot protection ENABLED - FLAG_SECURE set")
                         result.success(true)
                     } catch (e: Exception) {
-                        android.util.Log.e("MainActivity", "Failed to disable screenshot: ${e.message}")
+                        android.util.Log.e("MainActivity", "Failed to enable protection: ${e.message}")
+                        result.error("ERROR", "Failed to enable screenshot protection", e.message)
+                    }
+                }
+                "disableScreenshotProtection" -> {
+                    try {
+                        // Clear FLAG_SECURE to allow screenshots again
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        android.util.Log.d("MainActivity", "Screenshot protection DISABLED - FLAG_SECURE cleared")
+                        result.success(true)
+                    } catch (e: Exception) {
+                        android.util.Log.e("MainActivity", "Failed to disable protection: ${e.message}")
+                        result.error("ERROR", "Failed to disable screenshot protection", e.message)
+                    }
+                }
+                // Keep old method names for backward compatibility
+                "disableScreenshot" -> {
+                    try {
+                        window.setFlags(
+                            WindowManager.LayoutParams.FLAG_SECURE,
+                            WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                        result.success(true)
+                    } catch (e: Exception) {
                         result.error("ERROR", "Failed to disable screenshot", e.message)
                     }
                 }
                 "enableScreenshot" -> {
                     try {
-                        // Clear FLAG_SECURE to allow screenshots again
                         window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                        android.util.Log.d("MainActivity", "Screenshot prevention DISABLED - FLAG_SECURE cleared")
                         result.success(true)
                     } catch (e: Exception) {
-                        android.util.Log.e("MainActivity", "Failed to enable screenshot: ${e.message}")
                         result.error("ERROR", "Failed to enable screenshot", e.message)
                     }
                 }

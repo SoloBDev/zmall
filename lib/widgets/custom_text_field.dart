@@ -132,8 +132,9 @@ class CustomTextField extends StatelessWidget {
                   children: [
                     CountryCodePicker(
                       showFlag: true,
-                      flagWidth:
-                          getProportionateScreenWidth(kDefaultPadding * 2),
+                      flagWidth: getProportionateScreenWidth(
+                        kDefaultPadding * 2,
+                      ),
                       alignLeft: false,
                       hideSearch: hideSearch,
                       hideMainText: true,
@@ -146,59 +147,69 @@ class CustomTextField extends StatelessWidget {
                       countryFilter: countryFilter,
                       showOnlyCountryWhenClosed: false,
                       initialSelection: initialSelection,
-                      dialogSize: dialogSize ??
-                          Size.fromHeight(getProportionateScreenHeight(
-                              kDefaultPadding * 12)),
+                      dialogSize:
+                          dialogSize ??
+                          Size.fromHeight(
+                            getProportionateScreenHeight(kDefaultPadding * 12),
+                          ),
                       boxDecoration: BoxDecoration(
                         color: kPrimaryColor,
                         borderRadius: BorderRadius.circular(kDefaultPadding),
                       ),
                       searchDecoration: InputDecoration(
-                        border: border ??
+                        border:
+                            border ??
                             OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
                             ),
-                        enabledBorder: enabledBorder ??
+                        enabledBorder:
+                            enabledBorder ??
                             OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                  color: kGreyColor.withValues(alpha: 0.15)
-                                  // kWhiteColor
-                                  ),
+                                color: kGreyColor.withValues(alpha: 0.15),
+                                // kWhiteColor
+                              ),
                             ),
-                        focusedBorder: focusedBorder ??
+                        focusedBorder:
+                            focusedBorder ??
                             OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                  color: kGreyColor.withValues(alpha: 0.3)),
+                                color: kGreyColor.withValues(alpha: 0.3),
+                              ),
                             ),
                       ),
                     ),
                     Container(
-                        width: 2,
-                        margin: EdgeInsets.only(
-                            right: getProportionateScreenWidth(
-                                kDefaultPadding / 2)),
-                        height:
-                            getProportionateScreenHeight(kDefaultPadding * 1.8),
-                        color:
-                            // kWhiteColor
-                            Colors.grey.withValues(alpha: 0.08)),
+                      width: 2,
+                      margin: EdgeInsets.only(
+                        right: getProportionateScreenWidth(kDefaultPadding / 2),
+                      ),
+                      height: getProportionateScreenHeight(
+                        kDefaultPadding * 1.8,
+                      ),
+                      color:
+                          // kWhiteColor
+                          Colors.grey.withValues(alpha: 0.08),
+                    ),
                   ],
                 ),
               )
             : prefixIcon,
         prefix: prefix,
         hintStyle: hintStyle ?? TextStyle(fontSize: 14, color: kGreyColor),
-        floatingLabelStyle:
-            WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
+        floatingLabelStyle: WidgetStateTextStyle.resolveWith((
+          Set<WidgetState> states,
+        ) {
           if (states.contains(WidgetState.error)) {
             return TextStyle(color: Colors.red);
           }
           return TextStyle(color: kBlackColor);
         }),
-        labelStyle: labelStyle ??
+        labelStyle:
+            labelStyle ??
             WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
               if (states.contains(WidgetState.error)) {
                 return TextStyle(color: Colors.red);
@@ -209,36 +220,56 @@ class CustomTextField extends StatelessWidget {
         floatingLabelBehavior:
             floatingLabelBehavior ?? FloatingLabelBehavior.always,
         suffixIcon: suffixIcon,
-        border: border ??
+        border:
+            border ??
             OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-        enabledBorder: enabledBorder ??
+        enabledBorder:
+            enabledBorder ??
             OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.15)
-                  // kWhiteColor
-                  ),
+              borderSide: BorderSide(
+                color: kGreyColor.withValues(alpha: 0.15),
+                // kWhiteColor
+              ),
             ),
-        focusedBorder: focusedBorder ??
+        focusedBorder:
+            focusedBorder ??
             OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.3)),
             ),
-        errorBorder: focusedBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  BorderSide(color: kSecondaryColor.withValues(alpha: 0.3)),
-            ),
-        focusedErrorBorder: focusedBorder ??
+        errorBorder:
+            focusedBorder ??
             OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                  width: 2, color: kSecondaryColor.withValues(alpha: 0.3)),
+                color: kSecondaryColor.withValues(alpha: 0.3),
+              ),
             ),
-        // border: border ??
+        focusedErrorBorder:
+            focusedBorder ??
+            OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                width: 2,
+                color: kSecondaryColor.withValues(alpha: 0.3),
+              ),
+            ),
+
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: kDefaultPadding,
+          vertical: kDefaultPadding,
+        ),
+      ),
+    );
+  }
+}
+
+
+  // border: border ??
         //     OutlineInputBorder(
         //       borderRadius: BorderRadius.circular(kDefaultPadding),
         //       borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
@@ -254,9 +285,3 @@ class CustomTextField extends StatelessWidget {
         //       borderRadius: BorderRadius.circular(kDefaultPadding),
         //       borderSide: BorderSide(color: kGreyColor.withValues(alpha: 0.4)),
         //     ),
-        contentPadding: const EdgeInsets.symmetric(
-            horizontal: kDefaultPadding, vertical: kDefaultPadding),
-      ),
-    );
-  }
-}

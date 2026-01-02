@@ -784,6 +784,12 @@ class _YearWrappedStoriesState extends State<RecapScreen>
                             color: Colors.white54,
                             size: 20,
                           ),
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_right,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Tap sides',
