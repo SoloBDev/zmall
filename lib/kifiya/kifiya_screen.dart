@@ -200,6 +200,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
           getCourierSchedule();
           getCourierScheduleDate();
         });
+        debugPrint("courierCart CART>>> ${courierCart!}");
       }
     } else {
       var data = await Service.read('cart');
@@ -232,7 +233,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
   void getImages() async {
     var data = await Service.read('images');
-    // debugPrint("image path  in kifiya $data");
+    debugPrint("image path  in kifiya $data");
     if (data != null) {
       setState(() {
         imagePath = data;
@@ -242,6 +243,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
 
   void getCourierSchedule() async {
     var data = await Service.readBool('is_schedule');
+    debugPrint("getCourierSchedule  in kifiya $data");
     if (data != null) {
       setState(() {
         isCourierSchedule = data;
@@ -705,6 +707,172 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                         // SizedBox(
                         //   height: getProportionateScreenHeight(kDefaultPadding),
                         // ),
+
+                        // Show attached images preview for courier orders
+                        if (widget.isCourier == true &&
+                            imagePath != null &&
+                            imagePath.length > 0)
+                          Container(
+                            margin: EdgeInsets.only(
+                              top: getProportionateScreenHeight(
+                                kDefaultPadding / 8,
+                              ),
+                              bottom: getProportionateScreenHeight(
+                                kDefaultPadding / 2,
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              vertical: getProportionateScreenHeight(
+                                kDefaultPadding / 2,
+                              ),
+                              horizontal: getProportionateScreenWidth(
+                                kDefaultPadding,
+                              ),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF667EEA).withValues(alpha: 0.1),
+                              //  kSecondaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                getProportionateScreenWidth(
+                                  kDefaultPadding / 2,
+                                ),
+                              ),
+                              border: Border.all(
+                                color: kWhiteColor,
+                                //  kSecondaryColor.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header with icon and count
+                                Row(
+                                  spacing: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
+                                  ),
+                                  children: [
+                                    Icon(
+                                      HeroiconsOutline.paperClip,
+                                      color: kBlackColor,
+                                      size: getProportionateScreenWidth(
+                                        kDefaultPadding,
+                                      ),
+                                    ),
+
+                                    Text(
+                                      "${imagePath.length} image(s) attached",
+                                      style: TextStyle(
+                                        color: kBlackColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: getProportionateScreenWidth(
+                                          kDefaultPadding * 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
+                                // Image thumbnails preview
+                                SizedBox(
+                                  height: getProportionateScreenHeight(
+                                    kDefaultPadding * 4,
+                                  ),
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: imagePath.length,
+                                    padding: EdgeInsets.only(
+                                      right: getProportionateScreenWidth(
+                                        kDefaultPadding / 2,
+                                      ),
+                                    ),
+                                    separatorBuilder: (context, index) =>
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding / 3,
+                                          ),
+                                        ),
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        width: getProportionateScreenWidth(
+                                          kDefaultPadding * 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            getProportionateScreenWidth(
+                                              kDefaultPadding / 3,
+                                            ),
+                                          ),
+                                          // border: Border.all(
+                                          //   color: kGreyColor.withValues(
+                                          //     alpha: 0.5,
+                                          //   ),
+                                          //   width: 1.5,
+                                          // ),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            getProportionateScreenWidth(
+                                              kDefaultPadding / 3,
+                                            ),
+                                          ),
+                                          child: Image.file(
+                                            File(imagePath[index]),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              // Show error icon if image can't be loaded
+                                              return Container(
+                                                color: Color(
+                                                  0xFF667EEA,
+                                                ).withValues(alpha: 0.1),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      HeroiconsOutline
+                                                          .exclamationTriangle,
+                                                      color: kSecondaryColor,
+                                                      size:
+                                                          getProportionateScreenWidth(
+                                                            kDefaultPadding *
+                                                                1.5,
+                                                          ),
+                                                    ),
+                                                    SizedBox(
+                                                      height:
+                                                          getProportionateScreenHeight(
+                                                            kDefaultPadding / 4,
+                                                          ),
+                                                    ),
+                                                    Text(
+                                                      "Missing",
+                                                      style: TextStyle(
+                                                        color: kSecondaryColor,
+                                                        fontSize:
+                                                            getProportionateScreenWidth(
+                                                              kDefaultPadding *
+                                                                  0.6,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         Text(
                           Provider.of<ZLanguage>(context).selectPayment,
                           style: Theme.of(context).textTheme.bodyLarge
@@ -2654,31 +2822,72 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
             : ""
         ..fields['vehicle_id'] = widget.vehicleId!;
       if (imagePath != null && imagePath.length > 0) {
-        setState(() {
-          linearProgressIndicator = Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SpinKitWave(
-                  color: kSecondaryColor,
-                  size: getProportionateScreenWidth(kDefaultPadding),
-                ),
-                SizedBox(height: kDefaultPadding * 0.5),
-                Text(
-                  "Uploading image...",
-                  style: TextStyle(color: kBlackColor),
-                ),
-              ],
+        // Validate files exist before showing upload UI
+        List<String> validPaths = [];
+        List<String> invalidPaths = [];
+
+        for (var path in imagePath) {
+          File imageFile = File(path);
+          if (await imageFile.exists()) {
+            validPaths.add(path);
+          } else {
+            invalidPaths.add(path);
+          }
+        }
+
+        // If some files are missing, alert user and stop
+        if (invalidPaths.length > 0) {
+          setState(() {
+            _loading = false;
+            _placeOrder = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Some images are missing or deleted. Please go back and select images again.",
+                style: TextStyle(color: kPrimaryColor),
+              ),
+              backgroundColor: kSecondaryColor,
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: "OK",
+                textColor: kPrimaryColor,
+                onPressed: () {},
+              ),
             ),
           );
-        });
-        for (var i = 0; i < imagePath.length; i++) {
-          http.MultipartFile multipartFile = await http.MultipartFile.fromPath(
-            'file',
-            imagePath[i],
-          );
-          request.files.add(multipartFile);
-          // print("current multipartFile $multipartFile");
+
+          return null;
+        }
+
+        // Only show "Uploading..." if we have valid files
+        if (validPaths.length > 0) {
+          setState(() {
+            linearProgressIndicator = Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SpinKitWave(
+                    color: kSecondaryColor,
+                    size: getProportionateScreenWidth(kDefaultPadding),
+                  ),
+                  SizedBox(height: kDefaultPadding * 0.5),
+                  Text(
+                    "Uploading ${validPaths.length} image(s)...",
+                    style: TextStyle(color: kBlackColor),
+                  ),
+                ],
+              ),
+            );
+          });
+
+          for (var i = 0; i < validPaths.length; i++) {
+            http.MultipartFile multipartFile =
+                await http.MultipartFile.fromPath('file', validPaths[i]);
+            request.files.add(multipartFile);
+            // print("current multipartFile $multipartFile");
+          }
         }
       }
       await request
@@ -2709,7 +2918,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                   title: "${errorCodes['${data['error_code']}']}!",
                   error: true,
                 );
-                // print("else error>>> ${data['error_code']}");
+                print("else error>>> ${data['error_code']}");
                 await Future.delayed(Duration(seconds: 2));
                 if (data['error_code'] == 999) {
                   await Service.saveBool('logged', false);
@@ -2734,19 +2943,47 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
             },
           );
     } catch (e) {
-      // print("catch error>>> $e");
+      print("catch error>>> $e");
+
+      String errorMessage =
+          "Something went wrong. Please check your internet connection!";
+      bool clearImages = false;
+
+      // Detect file-related errors
+      if (e.toString().contains('FileSystemException') ||
+          e.toString().contains('No such file') ||
+          e.toString().contains('Cannot open file')) {
+        errorMessage =
+            "Image upload failed. Some images may be missing. "
+            "Please go back and re-select your images, then try again.";
+        clearImages = true;
+      } else if (e is TimeoutException) {
+        errorMessage =
+            "Request timed out. Please check your internet connection and try again.";
+      } else if (e.toString().contains('SocketException') ||
+          e.toString().contains('HandshakeException')) {
+        errorMessage =
+            "Network error. Please check your internet connection and try again.";
+      }
+
       setState(() {
         this._loading = false;
         this._placeOrder = false;
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            "Something went wrong. Please check your internet connection!",
-          ),
+          content: Text(errorMessage),
           backgroundColor: kSecondaryColor,
+          duration: Duration(seconds: 5),
         ),
       );
+
+      // Only clear images if they're actually invalid (not network errors)
+      if (clearImages) {
+        await Service.remove("images");
+      }
+
       return null;
     }
   }

@@ -8,6 +8,8 @@ import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:zmall/home/components/web_view_screen.dart';
+import 'package:zmall/home/magazine/screens/magazine_list_screen.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/services/core_services.dart';
 import 'package:zmall/custom_widgets/custom_button.dart';
@@ -49,6 +51,9 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
   var categories;
   var promotionalItems;
   List<bool> isPromotionalItemOpen = [];
+
+  Map<String,  dynamic>? magazineService;
+  bool hasMagazine = false;
   // bool _isClosed = false;
   String promptMessage =
       'We are sorry to inform you that we are not operational today';
@@ -124,7 +129,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     });
     getAbroadUser();
     _doLocationTask();
-    _getPromotionalItems();
+    // _getPromotionalItems(); // DISABLED: Promotional items hidden on Global ZMall
     checkAbroad();
   }
 
@@ -196,6 +201,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
         Service.save('categories', categories);
       });
       // debugPrint("categories $categories");
+      _checkMagazineService();
     }
     setState(() {
       _loading = false;
@@ -446,6 +452,114 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     setState(() {});
   }
 
+  // Tag checking logic
+  bool _shouldHideServiceOnGlobal(Map<String, dynamic> service) {
+    final tags = service['famous_products_tags'] as List?;
+    if (tags == null || tags.isEmpty) return false;
+
+    // Tags to hid Global Zmall
+    final hiddenTags = [
+      // Recap tags
+      'recap',
+      'wrapped',
+      'yearly_recap',
+      // Confetti/Celebration tags
+      'new year',
+      'confetti',
+      'festival',
+      'celebration',
+      'new year celebration',
+      // Magazine tags
+      'magazine',
+      // Holiday splash tags
+      'holiday_splash',
+      'holiday',
+      'splash',
+      
+    ];
+
+    return tags.any(
+      (tag) => hiddenTags.contains(tag.toString().toLowerCase()),
+    );
+
+  }
+
+  void _checkMagazineService() {
+    if (categories == null || categories.isEmpty) {
+
+      setState(() {
+        hasMagazine = false;
+        magazineService = null;
+      });
+
+      return;
+    }
+
+    // debugPrint(' [Magazine Check] Scanning ${categories.length} categories for magazine service...');
+
+    for (var category in categories) {
+      final tags = category['famous_products_tags'] as List?;
+      bool isMagazine = tags?.any(
+            (tag) =>
+                tag.toString().toLowerCase() == 'magazine' ||
+                tag.toString().toLowerCase().contains('magazine'),
+          ) ??
+          false;
+      debugPrint(' [Magazine Check] Checking category: ${category['delivery_name']} with tags: $tags');
+      if (isMagazine) {
+        // debugPrint(' [Magazine Found] ========================');
+        // debugPrint(' Name: ${category['delivery_name']}');
+        // debugPrint('==========================================');
+        setState(() {
+          hasMagazine = true;
+          magazineService = Map<String, dynamic>.from(category);
+        });
+        return;
+      }
+    }
+
+    // debugPrint(' [Magazine Check] No magazine service found in categories.');
+    setState(() {
+      hasMagazine = false;
+      magazineService = null;
+    });
+  }
+
+
+  /// MAGAZINE NAVIGATION HANDLER
+  void _openMagazineScreen() async {
+    // Check if global user is registered
+    if (abroadData == null) {
+      Service.showMessage(
+        context: context,
+        title: "Please complete registration to access magazines",
+        error: true,
+      );
+      getAbroadUser();
+      return;
+    }
+
+
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MagazineListScreen(
+          title: magazineService!['delivery_name'] ?? "Z-Magazine",
+          isGlobalUser: true,
+          globalUserName: abroadData!.abroadName,
+          globalUserEmail: abroadData!.abroadEmail,
+
+          userData: null,
+          userId: abroadData!.abroadEmail,
+          serverToken: null,
+        ),
+      ),
+    ).then((value) {
+      checkAbroad();
+    });
+  }
+
   ///////////New Features
   Future<void> _onRefresh() async {
     CoreServices.registerNotification(context);
@@ -457,7 +571,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     });
     getAbroadUser();
     _doLocationTask();
-    _getPromotionalItems();
+    // _getPromotionalItems(); // DISABLED: Promotional items hidden on Global ZMall
     checkAbroad();
   }
 
@@ -551,131 +665,115 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                             ),
                           ),
                         ),
-                        promotionalItems != null &&
-                                promotionalItems['success'] &&
-                                promotionalItems['promotional_items'] != null &&
-                                promotionalItems['promotional_items']
-                                    .isNotEmpty &&
-                                promotionalItems['promotional_items'].length > 0
-                            ? Container(
-                                height: getProportionateScreenHeight(
-                                  kDefaultPadding * 11,
-                                ),
-                                width: double.infinity,
+                        // debugPrint("Promotional Items: $promotionalItems"),
+                        
+                        /// ============================================================
+                        /// PROMOTIONAL ITEMS SECTION - "Specials for your loved ones"
+                        /// ============================================================
+                        /// STATUS: HIDDEN for Global ZMall
+                        /// 
+                        /// REASON: This section displays promotional items from local stores
+                        /// which are not relevant for Global/International users. Global users
+                        /// should only see categories and services available for international
+                        /// delivery (e.g., AliExpress, Magazine, etc.)
+                        /// 
+                        /// TO RE-ENABLE: Uncomment the code below if promotional items
+                        /// should be shown to Global users in the future.
+                        /// 
+                        /// LAST MODIFIED: January 2026
+                        /// ============================================================
 
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: getProportionateScreenWidth(
-                                          kDefaultPadding,
-                                        ),
-                                        vertical: getProportionateScreenHeight(
-                                          kDefaultPadding / 2,
-                                        ),
-                                      ),
-                                      child: SectionTitle(
-                                        sectionTitle:
-                                            "Specials for your loved ones",
-                                        subTitle: " ",
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: ListView.separated(
-                                        scrollDirection: Axis.horizontal,
-                                        separatorBuilder:
-                                            (
-                                              BuildContext context,
-                                              int index,
-                                            ) => SizedBox(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                    kDefaultPadding / 2,
-                                                  ),
-                                            ),
-                                        padding: EdgeInsets.only(
-                                          left: getProportionateScreenWidth(10),
-                                        ),
-                                        itemCount:
-                                            promotionalItems != null &&
-                                                isPromotionalItemOpen.isNotEmpty
-                                            ? isPromotionalItemOpen.length
-                                            : 0,
-
-                                        itemBuilder: (context, index) {
-                                          final item =
-                                              promotionalItems['promotional_items'][index];
-                                          return Row(
-                                            // itemBuilder: (context, index) => Row(
-                                            children: [
-                                              SpecialOfferCard(
-                                                isOpen:
-                                                    isPromotionalItemOpen[index],
-                                                imageUrl:
-                                                    promotionalItems != null &&
-                                                        item['image_url']
-                                                                .length >
-                                                            0
-                                                    ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
-                                                    : "www.google.com",
-                                                itemName: "${item['name']}\n",
-                                                newPrice:
-                                                    "${item['price'].toStringAsFixed(2)}\t",
-                                                originalPrice:
-                                                    "${item['new_price'].toStringAsFixed(2)}",
-                                                isDiscounted: item['discount'],
-                                                storeName: item['store_name'],
-                                                specialOffer:
-                                                    item['special_offer'],
-                                                storePress: () {},
-                                                press: () async {
-                                                  // bool isOp = await storeOpen(
-                                                  //     promotionalItems[
-                                                  //     'promotional_items'][index]);
-                                                  // if (isOp) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) {
-                                                        return GlobalItem(
-                                                          item:
-                                                              promotionalItems['promotional_items'][index],
-                                                          location:
-                                                              promotionalItems['promotional_items'][index]['store_location'],
-                                                          isOpen: true,
-                                                        );
-                                                      },
-                                                    ),
-                                                  );
-                                                  // }
-                                                  // else {
-                                                  //   if (mounted) {
-                                                  //     ScaffoldMessenger.of(context)
-                                                  //         .showSnackBar(
-                                                  //       Service.showMessage(
-                                                  //           "Store is currently closed. We highly recommend you to try other store. We've got them all...",
-                                                  //           false,
-                                                  //           duration: 3),
-                                                  //     );
-                                                  //   }
-                                                  // }
-                                                },
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : SizedBox.shrink(),
-                        SizedBox(
-                          height: getProportionateScreenHeight(
-                            kDefaultPadding / 4,
-                          ),
-                        ),
-                        /////////////////////////////Aliexpress section////////////////
+                        // promotionalItems != null &&
+                        //         promotionalItems['success'] &&
+                        //         promotionalItems['promotional_items'] != null &&
+                        //         promotionalItems['promotional_items']
+                        //             .isNotEmpty &&
+                        //         promotionalItems['promotional_items'].length > 0
+                        //     ? Container(
+                        //         height: getProportionateScreenHeight(
+                        //           kDefaultPadding * 11,
+                        //         ),
+                        //         width: double.infinity,
+                        //         child: Column(
+                        //           children: [
+                        //             Padding(
+                        //               padding: EdgeInsets.symmetric(
+                        //                 horizontal: getProportionateScreenWidth(
+                        //                   kDefaultPadding,
+                        //                 ),
+                        //                 vertical: getProportionateScreenHeight(
+                        //                   kDefaultPadding / 2,
+                        //                 ),
+                        //               ),
+                        //               child: SectionTitle(
+                        //                 sectionTitle: "Specials for your loved ones",
+                        //                 subTitle: " ",
+                        //               ),
+                        //             ),
+                        //             Expanded(
+                        //               child: ListView.separated(
+                        //                 scrollDirection: Axis.horizontal,
+                        //                 separatorBuilder: (BuildContext context, int index) =>
+                        //                     SizedBox(
+                        //                       width: getProportionateScreenWidth(kDefaultPadding / 2),
+                        //                     ),
+                        //                 padding: EdgeInsets.only(
+                        //                   left: getProportionateScreenWidth(10),
+                        //                 ),
+                        //                 itemCount: promotionalItems != null &&
+                        //                         isPromotionalItemOpen.isNotEmpty
+                        //                     ? isPromotionalItemOpen.length
+                        //                     : 0,
+                        //                 itemBuilder: (context, index) {
+                        //                   final item = promotionalItems['promotional_items'][index];
+                        //                   return Row(
+                        //                     children: [
+                        //                       SpecialOfferCard(
+                        //                         isOpen: isPromotionalItemOpen[index],
+                        //                         imageUrl: promotionalItems != null &&
+                        //                                 item['image_url'].length > 0
+                        //                             ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
+                        //                             : "www.google.com",
+                        //                         itemName: "${item['name']}\n",
+                        //                         newPrice: "${item['price'].toStringAsFixed(2)}\t",
+                        //                         originalPrice: "${item['new_price'].toStringAsFixed(2)}",
+                        //                         isDiscounted: item['discount'],
+                        //                         storeName: item['store_name'],
+                        //                         specialOffer: item['special_offer'],
+                        //                         storePress: () {},
+                        //                         press: () async {
+                        //                           Navigator.push(
+                        //                             context,
+                        //                             MaterialPageRoute(
+                        //                               builder: (context) {
+                        //                                 return GlobalItem(
+                        //                                   item: promotionalItems['promotional_items'][index],
+                        //                                   location: promotionalItems['promotional_items'][index]['store_location'],
+                        //                                   isOpen: true,
+                        //                                 );
+                        //                               },
+                        //                             ),
+                        //                           );
+                        //                         },
+                        //                       ),
+                        //                     ],
+                        //                   );
+                        //                 },
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       )
+                        //     : SizedBox.shrink(),
+                        // SizedBox(
+                        //   height: getProportionateScreenHeight(
+                        //     kDefaultPadding / 4,
+                        //   ),
+                        // ),
+                                                /////////////////////////////Aliexpress section////////////////
+                        /// ============================================================
+                        /// END OF PROMOTIONAL ITEMS SECTION
+                        /// ============================================================
                         categories == null ||
                                 (categories.isEmpty ||
                                     !categories.any(
@@ -758,6 +856,68 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                 ),
                               ),
                         //////////////finish aliexpress//////////////////
+                        //============Magazine Section========== //
+                        hasMagazine && magazineService != null
+                        ? Container (
+                          padding: EdgeInsets.only(
+                            bottom: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
+                          margin: EdgeInsets.symmetric(
+                            vertical: getProportionateScreenHeight(
+                              kDefaultPadding / 4,
+                            ),
+                            horizontal: getProportionateScreenHeight(
+                              kDefaultPadding / 2,
+                            ),
+                          ),
+                          decoration: BoxDecoration(color: kPrimaryColor),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenHeight(
+                                    kDefaultPadding / 2,
+                                  ),
+                                ),
+                                child: SectionTitle(
+                                  sectionTitle: magazineService!['delivery_name'] ?? 'Z-Magazine',
+                                  subTitle: " ",
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenHeight(
+                                    kDefaultPadding / 2,
+                                  )
+                                ),
+                                child: CustomBanner(
+                                  isNetworkImage: magazineService!['image_url'] != null &&
+                                      magazineService!['image_url'].toString().isNotEmpty,
+                                  imageUrl: magazineService!['image_url'] != null &&
+                                          magazineService!['image_url'].toString().isNotEmpty
+                                      ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${magazineService!['image_url']}"
+                                      : "images/zmagazine-banner.png",
+                                  title: magazineService!['delivery_name'] ?? 'Z-Magazine',
+                                  subtitle: " ",
+                                  press: () => _openMagazineScreen(),
+                                ),
+                              ),
+                            ],
+                          )
+                        )
+                      :  SizedBox.shrink(),
+                  hasMagazine
+                      ? SizedBox(
+                        height: getProportionateScreenHeight(
+                          kDefaultPadding / 4,
+                        ),
+                      )
+                    : SizedBox.shrink(),
+                        //============End Magazine Section========== //
+
                         Container(
                           color: kPrimaryColor,
                           child: Column(
@@ -781,7 +941,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                 ),
                                 child: GridView.builder(
                                   physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
+                                  shrinkWrap: true, 
                                   // itemCount: categories != null
                                   //     ? categories.length
                                   //     : 0,
@@ -792,7 +952,8 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                                 delivery['delivery_name']
                                                     ?.toString()
                                                     .toLowerCase() !=
-                                                'aliexpress',
+                                                'aliexpress' &&
+                                                !_shouldHideServiceOnGlobal(delivery),
                                           )
                                           .length ??
                                       0,
@@ -815,7 +976,8 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                                               delivery['delivery_name']
                                                   ?.toString()
                                                   .toLowerCase() !=
-                                              'aliexpress',
+                                              'aliexpress' &&
+                                              !_shouldHideServiceOnGlobal(delivery),
                                         )
                                         .toList();
                                     final category = filteredCategories[index];

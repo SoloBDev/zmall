@@ -14,6 +14,7 @@ class MagazineService {
     required String serverToken,
     required BuildContext context,
     int? year,
+    bool isGlobalUser = false,
   }) async {
     try {
       final currentYear = year ?? DateTime.now().year;
@@ -22,6 +23,7 @@ class MagazineService {
         userId: userId,
         serverToken: serverToken,
         context: context,
+        isGlobalUser: isGlobalUser,
       );
 
       if (response != null && response['success'] == true) {
@@ -45,6 +47,7 @@ class MagazineService {
     required String serverToken,
     required BuildContext context,
     int maxRetries = 3,
+    bool isGlobalUser = false,
   }) async {
     final baseUrl = Provider.of<ZMetaData>(context, listen: false).baseUrl;
     final url = "$baseUrl/api/user/get_magazine_list";
@@ -55,8 +58,9 @@ class MagazineService {
       "is_show_recap": true,
       "server_token": serverToken,
       "timestamp": DateTime.now().toIso8601String(),
+      "is_global_user": isGlobalUser,
     };
-    // debugPrint('data $data');
+    debugPrint('data $data');
     try {
       // debugPrint( 'Tracking recap opened - Attempt ${attempt + 1}/$maxRetries', );
 
@@ -77,11 +81,11 @@ class MagazineService {
           );
 
       final responseData = json.decode(response.body);
-      // debugPrint('magazin list: $responseData');
+      debugPrint('magazin list: $responseData');
 
       return responseData;
     } catch (e) {
-      // debugPrint('Error $e');
+      debugPrint('Error $e');
     }
   }
 
@@ -92,6 +96,7 @@ class MagazineService {
     required String serverToken,
     required BuildContext context,
     required String interactionType,
+    bool isGlobalUser = false,
   }) async {
     final baseUrl = Provider.of<ZMetaData>(context, listen: false).baseUrl;
     final url = "$baseUrl/api/user/magazine_interaction";
@@ -103,6 +108,7 @@ class MagazineService {
       "server_token": serverToken,
       "type": interactionType, //view or like
       "timestamp": DateTime.now().toIso8601String(),
+      "is_global_user": isGlobalUser
     };
 
     try {
@@ -140,6 +146,7 @@ class MagazineService {
     required String serverToken,
     required BuildContext context,
     int? year,
+    bool isGlobalUser = false,
   }) async {
     try {
       final magazines = await fetchMagazines(
@@ -147,6 +154,7 @@ class MagazineService {
         serverToken: serverToken,
         context: context,
         year: year,
+        isGlobalUser: isGlobalUser,
       );
       return magazines.firstWhere(
         (mag) => mag.id == id,
@@ -165,6 +173,7 @@ class MagazineService {
     required String serverToken,
     required BuildContext context,
     int? year,
+    bool isGlobalUser = false,
   }) async {
     try {
       final magazines = await fetchMagazines(
@@ -172,6 +181,7 @@ class MagazineService {
         serverToken: serverToken,
         context: context,
         year: year,
+        isGlobalUser: isGlobalUser,
       );
       return magazines.where((mag) => mag.category == category).toList();
     } catch (e) {

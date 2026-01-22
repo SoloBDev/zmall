@@ -101,12 +101,13 @@ class _CourierScreenState extends State<CourierScreen> {
       _loading = true;
     });
     var data = await addCourierToCart(finalSenderName, finalSenderPhone);
-    if (data != null && data['success']) {
-      setState(() {
-        _loading = false;
-      });
+    // if (data != null && data['success']) {
+    setState(() {
+      _loading = false;
+    });
       // debugPrint(data);
-
+    if (data != null && data['success']) {
+      // Success case
       await Service.save('courier', data);
       await Service.save("is_schedule", false);
       await Service.save("schedule_start", null);
@@ -124,17 +125,28 @@ class _CourierScreenState extends State<CourierScreen> {
         ),
       );
     } else {
-      Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
-      await Future.delayed(Duration(seconds: 2));
-      if (data['error_code'] == 999) {
-        await Service.saveBool('logged', false);
-        await Service.remove('user');
-        Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+      if(data != null && data['error_code'] != null) {
+        // Error case: check if data is null first
+        Service.showMessage(
+            context: context,
+            title: "${errorCodes['${data['error_code']}']}!",
+            error: true);
+        await Future.delayed(Duration(seconds: 2));
+        if (data['error_code'] == 999) {
+          await Service.saveBool('logged', false);
+          await Service.remove('user');
+          Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+        }
+      } else {
+          // Handle case: when the data is completely null or missing error_code
+          Service.showMessage(
+            context: context,
+            title: 'Network error. Please try again.',
+            error: true
+          );
       }
     }
+
   }
 
   @override

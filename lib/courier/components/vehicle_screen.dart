@@ -55,6 +55,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
   @override
   void initState() {
     super.initState();
+    // Clear any old images from previous courier orders
+    Service.remove('images');
     _getVehicleList();
   }
 
@@ -76,9 +78,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
       });
 
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -88,7 +91,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
     }
   }
 
-//from gallery
+  //from gallery
   Future getImage() async {
     final image = await imagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -118,8 +121,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
     var data = await getTotalDistance();
     if (data != null && data['rows'][0]['elements'][0]['status'] == 'OK') {
       setState(() {
-        distance =
-            data['rows'][0]['elements'][0]['distance']['value'].toDouble();
+        distance = data['rows'][0]['elements'][0]['distance']['value']
+            .toDouble();
         time = data['rows'][0]['elements'][0]['duration']['value'].toDouble();
       });
       _getCourierInvoice();
@@ -151,9 +154,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
       );
     } else {
       Service.showMessage(
-          context: context,
-          title: "${errorCodes['${data['error_code']}']}!",
-          error: true);
+        context: context,
+        title: "${errorCodes['${data['error_code']}']}!",
+        error: true,
+      );
       await Future.delayed(Duration(seconds: 2));
       if (data['error_code'] == 999) {
         await Service.saveBool('logged', false);
@@ -170,17 +174,15 @@ class _VehicleScreenState extends State<VehicleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Select Vehicle",
-          style: TextStyle(color: kBlackColor),
-        ),
+        title: Text("Select Vehicle", style: TextStyle(color: kBlackColor)),
         elevation: 1.0,
       ),
       bottomNavigationBar: SafeArea(
         minimum: EdgeInsets.only(
-            left: getProportionateScreenWidth(kDefaultPadding),
-            right: getProportionateScreenWidth(kDefaultPadding),
-            bottom: getProportionateScreenHeight(kDefaultPadding / 2)),
+          left: getProportionateScreenWidth(kDefaultPadding),
+          right: getProportionateScreenWidth(kDefaultPadding),
+          bottom: getProportionateScreenHeight(kDefaultPadding / 2),
+        ),
         child: CustomButton(
           title: "Checkout",
           press: () async {
@@ -212,15 +214,13 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 // Enhanced Vehicle Selection Section
                 Container(
                   padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    border: Border.all(
-                      color: kWhiteColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: kWhiteColor, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,22 +240,26 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                                 vertical: getProportionateScreenHeight(
-                                    kDefaultPadding / 4),
+                                  kDefaultPadding / 4,
+                                ),
                               ),
                               decoration: BoxDecoration(
                                 color: kSecondaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                    kDefaultPadding / 2,
+                                  ),
                                 ),
                               ),
                               child: Text(
                                 "${vehicleList['vehicles'].length} Available",
                                 style: TextStyle(
                                   fontSize: getProportionateScreenHeight(
-                                      kDefaultPadding * 0.6),
+                                    kDefaultPadding * 0.6,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                   color: kSecondaryColor,
                                 ),
@@ -266,155 +270,159 @@ class _VehicleScreenState extends State<VehicleScreen> {
                       vehicleList != null && vehicleList['vehicles'].length > 0
                           ? Container(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding * 6),
+                                kDefaultPadding * 6,
+                              ),
                               child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (context, index) => CategoryCard(
-                                        imageUrl: selected == index
-                                            ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
-                                            : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
-                                        //imageUrl:  vehicleList['vehicles'][index]
-                                        //             ['image_url'] !=
-                                        //         null
-                                        //     ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${vehicleList['vehicles'][index]['image_url']}"
-                                        //     : "https://google.com",
-                                        category:
-                                            Service.capitalizeFirstLetters(
-                                          vehicleList['vehicles'][index]
-                                              ['vehicle_name'],
-                                        ),
-                                        press: () {
-                                          setState(() {
-                                            selected = index;
-                                          });
-                                        },
-                                        selected: selected == index,
-                                      ),
-                                  separatorBuilder:
-                                      (BuildContext context, int index) =>
-                                          SizedBox(
-                                            width: getProportionateScreenWidth(
-                                                kDefaultPadding),
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) => CategoryCard(
+                                  imageUrl: selected == index
+                                      ? "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}_selected.png"
+                                      : "images/${vehicleList['vehicles'][index]['vehicle_name'].toString().toLowerCase()}.png",
+                                  //imageUrl:  vehicleList['vehicles'][index]
+                                  //             ['image_url'] !=
+                                  //         null
+                                  //     ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${vehicleList['vehicles'][index]['image_url']}"
+                                  //     : "https://google.com",
+                                  category: Service.capitalizeFirstLetters(
+                                    vehicleList['vehicles'][index]['vehicle_name'],
+                                  ),
+                                  press: () {
+                                    setState(() {
+                                      selected = index;
+                                    });
+                                  },
+                                  selected: selected == index,
+                                ),
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        SizedBox(
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding,
                                           ),
-                                  itemCount: vehicleList['vehicles'] != null
-                                      ? vehicleList['vehicles'].length
-                                      : 0),
+                                        ),
+                                itemCount: vehicleList['vehicles'] != null
+                                    ? vehicleList['vehicles'].length
+                                    : 0,
+                              ),
                             )
                           : _loading
-                              ? Container(
-                                  height: getProportionateScreenHeight(
-                                      kDefaultPadding * 5.5),
-                                  child: ListView.separated(
-                                    itemCount: 3,
-                                    scrollDirection: Axis.horizontal,
-                                    separatorBuilder: (context, index) =>
-                                        SizedBox(
-                                      width: getProportionateScreenWidth(
-                                          kDefaultPadding / 2),
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        width: getProportionateScreenWidth(
-                                            kDefaultPadding * 6),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          spacing: getProportionateScreenHeight(
-                                              kDefaultPadding / 4),
-                                          children: [
-                                            SearchButtonShimmer(
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding * 5),
-                                              height:
-                                                  getProportionateScreenHeight(
-                                                      kDefaultPadding * 3),
-                                              borderRadius: kDefaultPadding / 2,
-                                            ),
-                                            SearchButtonShimmer(
-                                              height:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding * 1.5),
-                                              borderRadius: kDefaultPadding / 2,
-                                              width:
-                                                  getProportionateScreenWidth(
-                                                      kDefaultPadding * 5),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                )
-                              : Container(
-                                  padding: EdgeInsets.all(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding)),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        kSecondaryColor.withValues(alpha: 0.05),
-                                    borderRadius: BorderRadius.circular(
-                                      getProportionateScreenWidth(
-                                          kDefaultPadding),
-                                    ),
-                                    border: Border.all(
-                                      color: kSecondaryColor.withValues(
-                                          alpha: 0.2),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        HeroiconsOutline.exclamationTriangle,
-                                        color: kSecondaryColor,
-                                        size: getProportionateScreenWidth(
-                                            kDefaultPadding * 2),
-                                      ),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 2)),
-                                      Text(
-                                        "No Vehicles Available",
-                                        style: TextStyle(
-                                          fontSize:
-                                              getProportionateScreenHeight(
-                                                  kDefaultPadding * 0.8),
-                                          fontWeight: FontWeight.bold,
-                                          color: kBlackColor,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                          height: getProportionateScreenHeight(
-                                              kDefaultPadding / 4)),
-                                      Text(
-                                        "All our vehicles are busy completing orders.\nPlease try again in a few minutes.",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize:
-                                              getProportionateScreenHeight(
-                                                  kDefaultPadding * 0.65),
-                                          color: kGreyColor,
-                                        ),
-                                      ),
-                                    ],
+                          ? Container(
+                              height: getProportionateScreenHeight(
+                                kDefaultPadding * 5.5,
+                              ),
+                              child: ListView.separated(
+                                itemCount: 3,
+                                scrollDirection: Axis.horizontal,
+                                separatorBuilder: (context, index) => SizedBox(
+                                  width: getProportionateScreenWidth(
+                                    kDefaultPadding / 2,
                                   ),
                                 ),
+                                itemBuilder: (context, index) {
+                                  return Container(
+                                    width: getProportionateScreenWidth(
+                                      kDefaultPadding * 6,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      spacing: getProportionateScreenHeight(
+                                        kDefaultPadding / 4,
+                                      ),
+                                      children: [
+                                        SearchButtonShimmer(
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding * 5,
+                                          ),
+                                          height: getProportionateScreenHeight(
+                                            kDefaultPadding * 3,
+                                          ),
+                                          borderRadius: kDefaultPadding / 2,
+                                        ),
+                                        SearchButtonShimmer(
+                                          height: getProportionateScreenWidth(
+                                            kDefaultPadding * 1.5,
+                                          ),
+                                          borderRadius: kDefaultPadding / 2,
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding * 5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Container(
+                              padding: EdgeInsets.all(
+                                getProportionateScreenWidth(kDefaultPadding),
+                              ),
+                              decoration: BoxDecoration(
+                                color: kSecondaryColor.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(
+                                  getProportionateScreenWidth(kDefaultPadding),
+                                ),
+                                border: Border.all(
+                                  color: kSecondaryColor.withValues(alpha: 0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    HeroiconsOutline.exclamationTriangle,
+                                    color: kSecondaryColor,
+                                    size: getProportionateScreenWidth(
+                                      kDefaultPadding * 2,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                      kDefaultPadding / 2,
+                                    ),
+                                  ),
+                                  Text(
+                                    "No Vehicles Available",
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenHeight(
+                                        kDefaultPadding * 0.8,
+                                      ),
+                                      fontWeight: FontWeight.bold,
+                                      color: kBlackColor,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: getProportionateScreenHeight(
+                                      kDefaultPadding / 4,
+                                    ),
+                                  ),
+                                  Text(
+                                    "All our vehicles are busy completing orders.\nPlease try again in a few minutes.",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: getProportionateScreenHeight(
+                                        kDefaultPadding * 0.65,
+                                      ),
+                                      color: kGreyColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                     ],
                   ),
                 ),
                 // Enhanced Item Quantity Section
                 Container(
                   padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    border: Border.all(
-                      color: kWhiteColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: kWhiteColor, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,17 +448,21 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding / 1.5),
+                                  kDefaultPadding / 1.5,
+                                ),
                                 vertical: getProportionateScreenHeight(
-                                    kDefaultPadding * 0.4),
+                                  kDefaultPadding * 0.4,
+                                ),
                               ),
                               decoration: BoxDecoration(
                                 color: kWhiteColor,
                                 border: Border.all(
-                                    color: kGreyColor.withValues(alpha: 0.1)),
+                                  color: kGreyColor.withValues(alpha: 0.1),
+                                ),
                                 borderRadius: BorderRadius.circular(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                    kDefaultPadding / 2,
+                                  ),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -466,7 +478,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                     ? kBlackColor
                                     : kGreyColor.withValues(alpha: 0.5),
                                 size: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                             ),
                           ),
@@ -474,24 +487,27 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             child: Container(
                               margin: EdgeInsets.symmetric(
                                 horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                               padding: EdgeInsets.symmetric(
                                 vertical: getProportionateScreenHeight(
-                                    kDefaultPadding / 8),
+                                  kDefaultPadding / 8,
+                                ),
                               ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
                                     kSecondaryColor.withValues(alpha: 0.05),
-                                    kSecondaryColor.withValues(alpha: 0.1)
+                                    kSecondaryColor.withValues(alpha: 0.1),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                    kDefaultPadding / 2,
+                                  ),
                                 ),
                                 border: Border.all(
                                   color: kSecondaryColor.withValues(alpha: 0.3),
@@ -502,13 +518,15 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 spacing: getProportionateScreenWidth(
-                                    kDefaultPadding / 2),
+                                  kDefaultPadding / 2,
+                                ),
                                 children: [
                                   Text(
                                     "$quantity",
                                     style: TextStyle(
                                       fontSize: getProportionateScreenHeight(
-                                          kDefaultPadding),
+                                        kDefaultPadding,
+                                      ),
                                       fontWeight: FontWeight.bold,
                                       color: kSecondaryColor,
                                     ),
@@ -538,27 +556,31 @@ class _VehicleScreenState extends State<VehicleScreen> {
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: getProportionateScreenWidth(
-                                    kDefaultPadding / 1.5),
+                                  kDefaultPadding / 1.5,
+                                ),
                                 vertical: getProportionateScreenHeight(
-                                    kDefaultPadding * 0.4),
+                                  kDefaultPadding * 0.4,
+                                ),
                               ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
                                     kSecondaryColor,
-                                    kSecondaryColor.withValues(alpha: 0.9)
+                                    kSecondaryColor.withValues(alpha: 0.9),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding / 2),
+                                    kDefaultPadding / 2,
+                                  ),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color:
-                                        kSecondaryColor.withValues(alpha: 0.3),
+                                    color: kSecondaryColor.withValues(
+                                      alpha: 0.3,
+                                    ),
                                     blurRadius: 10,
                                     offset: Offset(0, 2),
                                   ),
@@ -568,7 +590,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 HeroiconsOutline.plus,
                                 color: kWhiteColor,
                                 size: getProportionateScreenWidth(
-                                    kDefaultPadding),
+                                  kDefaultPadding,
+                                ),
                               ),
                             ),
                           ),
@@ -604,15 +627,13 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 // Payment Method Section with Enhanced UI
                 Container(
                   padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    border: Border.all(
-                      color: kWhiteColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: kWhiteColor, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,8 +645,9 @@ class _VehicleScreenState extends State<VehicleScreen> {
                         icon: HeroiconsOutline.banknotes,
                       ),
                       Row(
-                        spacing:
-                            getProportionateScreenWidth(kDefaultPadding / 2),
+                        spacing: getProportionateScreenWidth(
+                          kDefaultPadding / 2,
+                        ),
                         children: [
                           Expanded(
                             child: GestureDetector(
@@ -638,14 +660,16 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 duration: Duration(milliseconds: 200),
                                 padding: EdgeInsets.all(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding * 0.8),
+                                    kDefaultPadding * 0.8,
+                                  ),
                                 ),
                                 decoration: BoxDecoration(
                                   color: kPrimaryColor,
                                   // color: paidBySender ? null : kWhiteColor,
                                   borderRadius: BorderRadius.circular(
                                     getProportionateScreenWidth(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                   ),
                                   border: Border.all(
                                     color: paidBySender
@@ -656,12 +680,14 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 ),
                                 child: Column(
                                   spacing: getProportionateScreenHeight(
-                                      kDefaultPadding / 3),
+                                    kDefaultPadding / 3,
+                                  ),
                                   children: [
                                     Container(
                                       padding: EdgeInsets.all(
                                         getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
+                                          kDefaultPadding / 2,
+                                        ),
                                       ),
                                       decoration: BoxDecoration(
                                         color: kWhiteColor,
@@ -671,7 +697,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         Icons.person_outline_rounded,
                                         color: kBlackColor,
                                         size: getProportionateScreenWidth(
-                                            kDefaultPadding * 1.2),
+                                          kDefaultPadding * 1.2,
+                                        ),
                                       ),
                                     ),
                                     Text(
@@ -680,7 +707,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         color: kBlackColor,
                                         fontWeight: FontWeight.bold,
                                         fontSize: getProportionateScreenHeight(
-                                            kDefaultPadding * 0.7),
+                                          kDefaultPadding * 0.7,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -699,13 +727,15 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 duration: Duration(milliseconds: 200),
                                 padding: EdgeInsets.all(
                                   getProportionateScreenWidth(
-                                      kDefaultPadding * 0.8),
+                                    kDefaultPadding * 0.8,
+                                  ),
                                 ),
                                 decoration: BoxDecoration(
                                   color: kPrimaryColor,
                                   borderRadius: BorderRadius.circular(
                                     getProportionateScreenWidth(
-                                        kDefaultPadding),
+                                      kDefaultPadding,
+                                    ),
                                   ),
                                   border: Border.all(
                                     color: !paidBySender
@@ -716,12 +746,14 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 ),
                                 child: Column(
                                   spacing: getProportionateScreenHeight(
-                                      kDefaultPadding / 3),
+                                    kDefaultPadding / 3,
+                                  ),
                                   children: [
                                     Container(
                                       padding: EdgeInsets.all(
                                         getProportionateScreenWidth(
-                                            kDefaultPadding / 2),
+                                          kDefaultPadding / 2,
+                                        ),
                                       ),
                                       decoration: BoxDecoration(
                                         color: kWhiteColor,
@@ -731,7 +763,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         Icons.person_pin_outlined,
                                         color: kBlackColor,
                                         size: getProportionateScreenWidth(
-                                            kDefaultPadding * 1.2),
+                                          kDefaultPadding * 1.2,
+                                        ),
                                       ),
                                     ),
                                     Text(
@@ -740,7 +773,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         color: kBlackColor,
                                         fontWeight: FontWeight.bold,
                                         fontSize: getProportionateScreenHeight(
-                                            kDefaultPadding * 0.7),
+                                          kDefaultPadding * 0.7,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -756,15 +790,13 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 // Round Trip Section with Enhanced UI
                 Container(
                   padding: EdgeInsets.all(
-                      getProportionateScreenWidth(kDefaultPadding)),
+                    getProportionateScreenWidth(kDefaultPadding),
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    border: Border.all(
-                      color: kWhiteColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: kWhiteColor, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -801,7 +833,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
                                     vertical: getProportionateScreenHeight(
-                                        kDefaultPadding * 0.8),
+                                      kDefaultPadding * 0.8,
+                                    ),
                                   ),
                                   decoration: BoxDecoration(
                                     gradient: !isRoundTrip
@@ -809,7 +842,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                             colors: [
                                               kSecondaryColor,
                                               kSecondaryColor.withValues(
-                                                  alpha: 0.9)
+                                                alpha: 0.9,
+                                              ),
                                             ],
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
@@ -817,7 +851,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         : null,
                                     borderRadius: BorderRadius.circular(
                                       getProportionateScreenWidth(
-                                          kDefaultPadding * 2),
+                                        kDefaultPadding * 2,
+                                      ),
                                     ),
                                   ),
                                   child: Row(
@@ -829,11 +864,14 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                             ? kWhiteColor
                                             : kGreyColor,
                                         size: getProportionateScreenWidth(
-                                            kDefaultPadding * 0.8),
+                                          kDefaultPadding * 0.8,
+                                        ),
                                       ),
                                       SizedBox(
-                                          width: getProportionateScreenWidth(
-                                              kDefaultPadding / 4)),
+                                        width: getProportionateScreenWidth(
+                                          kDefaultPadding / 4,
+                                        ),
+                                      ),
                                       Text(
                                         "One Way",
                                         style: TextStyle(
@@ -843,7 +881,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                           fontWeight: FontWeight.w600,
                                           fontSize:
                                               getProportionateScreenHeight(
-                                                  kDefaultPadding * 0.7),
+                                                kDefaultPadding * 0.7,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -861,7 +900,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
                                     vertical: getProportionateScreenHeight(
-                                        kDefaultPadding * 0.8),
+                                      kDefaultPadding * 0.8,
+                                    ),
                                   ),
                                   decoration: BoxDecoration(
                                     gradient: isRoundTrip
@@ -869,7 +909,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                             colors: [
                                               kSecondaryColor,
                                               kSecondaryColor.withValues(
-                                                  alpha: 0.9)
+                                                alpha: 0.9,
+                                              ),
                                             ],
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
@@ -877,7 +918,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         : null,
                                     borderRadius: BorderRadius.circular(
                                       getProportionateScreenWidth(
-                                          kDefaultPadding * 2),
+                                        kDefaultPadding * 2,
+                                      ),
                                     ),
                                   ),
                                   child: Row(
@@ -889,11 +931,14 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                             ? kWhiteColor
                                             : kGreyColor,
                                         size: getProportionateScreenWidth(
-                                            kDefaultPadding * 0.8),
+                                          kDefaultPadding * 0.8,
+                                        ),
                                       ),
                                       SizedBox(
-                                          width: getProportionateScreenWidth(
-                                              kDefaultPadding / 4)),
+                                        width: getProportionateScreenWidth(
+                                          kDefaultPadding / 4,
+                                        ),
+                                      ),
                                       Text(
                                         "Round Trip",
                                         style: TextStyle(
@@ -903,7 +948,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                           fontWeight: FontWeight.w600,
                                           fontSize:
                                               getProportionateScreenHeight(
-                                                  kDefaultPadding * 0.7),
+                                                kDefaultPadding * 0.7,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -921,17 +967,14 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 //image section
                 Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: getProportionateScreenWidth(kDefaultPadding),
-                      vertical:
-                          getProportionateScreenWidth(kDefaultPadding / 2)),
+                    horizontal: getProportionateScreenWidth(kDefaultPadding),
+                    vertical: getProportionateScreenWidth(kDefaultPadding / 2),
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(
                       getProportionateScreenWidth(kDefaultPadding),
                     ),
-                    border: Border.all(
-                      color: kWhiteColor,
-                      width: 1,
-                    ),
+                    border: Border.all(color: kWhiteColor, width: 1),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -951,7 +994,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                               onTap: getImage,
                               child: Row(
                                 spacing: getProportionateScreenWidth(
-                                    kDefaultPadding / 4),
+                                  kDefaultPadding / 4,
+                                ),
                                 children: [
                                   Text(
                                     imageList.length > 0 && imageList.length < 2
@@ -981,27 +1025,32 @@ class _VehicleScreenState extends State<VehicleScreen> {
                           ? SizedBox.shrink()
                           : Container(
                               height: getProportionateScreenHeight(
-                                  kDefaultPadding * 6),
+                                kDefaultPadding * 6,
+                              ),
                               child: ListView.separated(
                                 itemCount: imageList.length,
                                 scrollDirection: Axis.horizontal,
                                 padding: EdgeInsets.symmetric(
                                   horizontal: getProportionateScreenWidth(
-                                      kDefaultPadding),
+                                    kDefaultPadding,
+                                  ),
                                 ),
                                 separatorBuilder:
                                     (BuildContext context, int index) =>
                                         SizedBox(
-                                  width: getProportionateScreenWidth(
-                                      kDefaultPadding),
-                                ),
+                                          width: getProportionateScreenWidth(
+                                            kDefaultPadding,
+                                          ),
+                                        ),
                                 itemBuilder: (context, index) => Stack(
                                   children: [
                                     Container(
                                       height: getProportionateScreenHeight(
-                                          kDefaultPadding * 6),
+                                        kDefaultPadding * 6,
+                                      ),
                                       width: getProportionateScreenWidth(
-                                          kDefaultPadding * 5),
+                                        kDefaultPadding * 5,
+                                      ),
                                       child: Image.file(imageList[index]),
                                     ),
                                     Positioned(
@@ -1028,7 +1077,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                             HeroiconsOutline.xCircle,
                                             color: kSecondaryColor,
                                             size: getProportionateScreenWidth(
-                                                kDefaultPadding * 1.3),
+                                              kDefaultPadding * 1.3,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1036,7 +1086,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                   ],
                                 ),
                               ),
-                            )
+                            ),
                     ],
                   ),
                 ),
@@ -1072,22 +1122,22 @@ class _VehicleScreenState extends State<VehicleScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this._loading = false;
       });
@@ -1101,7 +1151,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong. Please check your internet connection!"),
+            "Something went wrong. Please check your internet connection!",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1115,15 +1166,17 @@ class _VehicleScreenState extends State<VehicleScreen> {
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${widget.pickupAddress!.latitude.toStringAsFixed(6)},${widget.pickupAddress!.longitude.toStringAsFixed(6)}&destinations=${widget.destinationAddress!.latitude.toStringAsFixed(6)},${widget.destinationAddress!.longitude}&key=$apiKey";
 
     try {
-      http.Response response = await http.get(Uri.parse(url)).timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+      http.Response response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       // debugPrint(json.decode(response.body));
       return json.decode(response.body);
     } catch (e) {
@@ -1134,7 +1187,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Something went wrong! Please check your internet connectin"),
+            "Something went wrong! Please check your internet connectin",
+          ),
           backgroundColor: kSecondaryColor,
         ),
       );
@@ -1165,22 +1219,22 @@ class _VehicleScreenState extends State<VehicleScreen> {
     try {
       http.Response response = await http
           .post(
-        Uri.parse(url),
-        headers: <String, String>{
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: body,
-      )
+            Uri.parse(url),
+            headers: <String, String>{
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+            body: body,
+          )
           .timeout(
-        Duration(seconds: 10),
-        onTimeout: () {
-          setState(() {
-            this._loading = false;
-          });
-          throw TimeoutException("The connection has timed out!");
-        },
-      );
+            Duration(seconds: 10),
+            onTimeout: () {
+              setState(() {
+                this._loading = false;
+              });
+              throw TimeoutException("The connection has timed out!");
+            },
+          );
       setState(() {
         this._loading = false;
       });
@@ -1193,9 +1247,10 @@ class _VehicleScreenState extends State<VehicleScreen> {
       });
 
       Service.showMessage(
-          context: context,
-          title: "Please check your internet connection",
-          error: true);
+        context: context,
+        title: "Please check your internet connection",
+        error: true,
+      );
       return null;
     }
   }

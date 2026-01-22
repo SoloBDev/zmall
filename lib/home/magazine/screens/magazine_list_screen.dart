@@ -13,16 +13,22 @@ import 'package:zmall/utils/constants.dart';
 import 'package:zmall/utils/size_config.dart';
 
 class MagazineListScreen extends StatefulWidget {
-  final String userId;
+  final String? userId;
   final String? title;
   final dynamic userData;
-  final String serverToken;
+  final String? serverToken;
+  final bool isGlobalUser;
+  final String? globalUserName;
+  final String? globalUserEmail;
   const MagazineListScreen({
     super.key,
     this.title,
-    required this.userId,
-    required this.userData,
-    required this.serverToken,
+    this.userId,
+    this.userData,
+    this.serverToken,
+    this.isGlobalUser = false,
+    this.globalUserName,
+    this.globalUserEmail,
   });
 
   @override
@@ -48,11 +54,22 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
     setState(() => isLoading = true);
 
     try {
+
+      final effectiveUserId = widget.isGlobalUser
+          ? (widget.globalUserEmail ?? 'global_user')
+          : widget.userId ?? '';
+      final effectiveServerToken = widget.isGlobalUser
+          ? 'global_user_token'
+          : widget.serverToken ?? '';
+
       final fetchedMagazines = await MagazineService.fetchMagazines(
-        userId: widget.userId,
-        serverToken: widget.serverToken,
+        userId: effectiveUserId,
+        serverToken: effectiveServerToken,
         context: context,
+        isGlobalUser: widget.isGlobalUser,
       );
+
+      debugPrint('Fetched ${fetchedMagazines.length} magazines');
 
       // Get user data to check liked magazines
       final userData = await Service.read('user');
@@ -117,6 +134,16 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
   }
 
   void _handleLike(int index) async {
+    // Disable likes for global users ( they don't have persistent user data)
+    if (widget.isGlobalUser) {
+      Service.showMessage(
+        error: false,
+        context: context,
+        title: "Login to ZMall to like magazines",
+      );
+      return;
+    }
+
     final magazine = magazines[index];
 
     // Check if already liked in the current UI state (prevents double-tap)
@@ -152,6 +179,7 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
         serverToken: userData['user']['server_token'],
         context: context,
         interactionType: 'like',
+        isGlobalUser: widget.isGlobalUser,
       );
 
       // Update user data with the new likes from API response
