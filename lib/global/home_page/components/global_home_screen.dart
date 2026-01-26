@@ -129,7 +129,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     });
     getAbroadUser();
     _doLocationTask();
-    // _getPromotionalItems(); // DISABLED: Promotional items hidden on Global ZMall
+    _getPromotionalItems();
     checkAbroad();
   }
 
@@ -195,13 +195,16 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       "Ethiopia",
     );
     if (data != null && data['success']) {
-      setState(() {
-        categories = data['deliveries'];
-        responseData = data;
-        Service.save('categories', categories);
-      });
+      if(mounted) {
+        setState(() {
+          categories = data['deliveries'];
+          responseData = data;
+          Service.save('categories', categories);
+        });
+      }
       // debugPrint("categories $categories");
       _checkMagazineService();
+      
     }
     setState(() {
       _loading = false;
@@ -212,57 +215,94 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     setState(() {
       _loading = true;
     });
-    // Ensure app metadata is loaded before checking store status
-    _getAppKeys();
-    isPromotionalItemOpen.clear();
-    var data = await CoreServices.getPromotionalItems(
-      isGlobal: true,
-      userId: "user_id",
-      serverToken: "server_token",
-      ctx: context,
-      userLocation: [
-        Provider.of<ZMetaData>(context, listen: false).latitude,
-        Provider.of<ZMetaData>(context, listen: false).longitude,
-      ],
-    );
+    try {
+      // Ensure app metadata is loaded before checking store status
+      _getAppKeys();
+      isPromotionalItemOpen.clear();
+      
+      var data = await CoreServices.getPromotionalItems(
+        isGlobal: true,
+        userId: "",
+        serverToken: "",
+        ctx: context,
+        userLocation: [
+          Provider.of<ZMetaData>(context, listen: false).latitude,
+          Provider.of<ZMetaData>(context, listen: false).longitude,
+        ],
+      );
+      
+      if (data != null && data['success']) {
+        // debugPrint("Fetched promotional Items....");
+        if (mounted) {
+          // debugPrint(data);
+          Service.save('p_items', data);
+          setState(() {
+            promotionalItems = data;
+          });
+        }
+      } else {
+        // Fetch failed or success: false, try loading from cache
+        await getLocalPromotionalItems();
+      }
+      // only proceed to check store status if promotional items were fetched
+      if(promotionalItems != null && promotionalItems['promotional_items'] != null) {
+        var items = promotionalItems['promotional_items'];
+        // Re-clear to be safe before refilling
+        isPromotionalItemOpen.clear();
 
-    if (data != null && data['success']) {
-      // debugPrint("Fetched promotional Items....");
-      if (mounted) {
-        // debugPrint(data);
-        Service.save('p_items', data);
+        for (int i = 0; i < promotionalItems['promotional_items'].length; i++) {
+          bool isPromoItOpen = await Service.isStoreOpen(items[i]);
+          isPromotionalItemOpen.add(isPromoItOpen);
+        }
+      } else {
+        // Initialize empty list if no items found to prevent
+        promotionalItems = {"success": false, "promotional_items": []};
+      }
+
+    } catch (e) {
+      // TODO
+      //On crash, try cache as last re-sort
+      // debugPrint("Error fetching promotional items: $e");
+      await getLocalPromotionalItems();
+    } finally {
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+        }
+    }
+  }
+
+  Future<void> _checkStoresOpen() async {
+    isPromotionalItemOpen.clear();
+    if (promotionalItems != null && promotionalItems['promotional_items'] != null) {
+      for (var item in promotionalItems['promotional_items']) {
+        bool isOpen = await Service.isStoreOpen(item);
+        isPromotionalItemOpen.add(isOpen);
+      }
+    }
+  }
+
+  Future<void> getLocalPromotionalItems() async {
+  try {
+    var data = await Service.read('p_items');
+    if (data != null && data is Map<String, dynamic>) {
+      if(mounted) {
         setState(() {
           promotionalItems = data;
+          // _loading = false; //? logic moved to finally block
         });
-        getLocalPromotionalItems();
+        await _checkStoresOpen();
       }
-    } else {
-      setState(() {
-        _loading = false;
-      });
     }
-    for (int i = 0; i < promotionalItems['promotional_items'].length; i++) {
-      bool isPromolItOpen = await Service.isStoreOpen(
-        promotionalItems['promotional_items'][i],
-      );
-      isPromotionalItemOpen.add(isPromolItOpen);
-    }
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
+    } catch (e) {
+      // TODO
+      //ignore
+      // debugPrint("Error loading cached promotional items: $e");
     }
   }
 
-  void getLocalPromotionalItems() async {
-    var data = await Service.read('p_items');
-    if (data != null) {
-      setState(() {
-        promotionalItems = data;
-        _loading = false;
-      });
-    }
-  }
+
 
   // void getUser() async {
   //   var data = await Service.read('abroad_user');
@@ -475,6 +515,10 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
       'holiday_splash',
       'holiday',
       'splash',
+
+      // Order near you
+      'near_you',
+      'orders near you'
       
     ];
 
@@ -505,7 +549,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                 tag.toString().toLowerCase().contains('magazine'),
           ) ??
           false;
-      debugPrint(' [Magazine Check] Checking category: ${category['delivery_name']} with tags: $tags');
+      // debugPrint(' [Magazine Check] Checking category: ${category['delivery_name']} with tags: $tags');
       if (isMagazine) {
         // debugPrint(' [Magazine Found] ========================');
         // debugPrint(' Name: ${category['delivery_name']}');
@@ -571,8 +615,7 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     });
     getAbroadUser();
     _doLocationTask();
-    // _getPromotionalItems(); // DISABLED: Promotional items hidden on Global ZMall
-    checkAbroad();
+    _getPromotionalItems(); 
   }
 
   int getServiceIndex(String serviceName) {
@@ -665,8 +708,8 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                             ),
                           ),
                         ),
-                        // debugPrint("Promotional Items: $promotionalItems"),
                         
+                        // debugPrint("Promotional Items: $promotionalItems"),
                         /// ============================================================
                         /// PROMOTIONAL ITEMS SECTION - "Specials for your loved ones"
                         /// ============================================================
@@ -682,95 +725,105 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
                         /// 
                         /// LAST MODIFIED: January 2026
                         /// ============================================================
-
-                        // promotionalItems != null &&
-                        //         promotionalItems['success'] &&
-                        //         promotionalItems['promotional_items'] != null &&
-                        //         promotionalItems['promotional_items']
-                        //             .isNotEmpty &&
-                        //         promotionalItems['promotional_items'].length > 0
-                        //     ? Container(
-                        //         height: getProportionateScreenHeight(
-                        //           kDefaultPadding * 11,
-                        //         ),
-                        //         width: double.infinity,
-                        //         child: Column(
-                        //           children: [
-                        //             Padding(
-                        //               padding: EdgeInsets.symmetric(
-                        //                 horizontal: getProportionateScreenWidth(
-                        //                   kDefaultPadding,
-                        //                 ),
-                        //                 vertical: getProportionateScreenHeight(
-                        //                   kDefaultPadding / 2,
-                        //                 ),
-                        //               ),
-                        //               child: SectionTitle(
-                        //                 sectionTitle: "Specials for your loved ones",
-                        //                 subTitle: " ",
-                        //               ),
-                        //             ),
-                        //             Expanded(
-                        //               child: ListView.separated(
-                        //                 scrollDirection: Axis.horizontal,
-                        //                 separatorBuilder: (BuildContext context, int index) =>
-                        //                     SizedBox(
-                        //                       width: getProportionateScreenWidth(kDefaultPadding / 2),
-                        //                     ),
-                        //                 padding: EdgeInsets.only(
-                        //                   left: getProportionateScreenWidth(10),
-                        //                 ),
-                        //                 itemCount: promotionalItems != null &&
-                        //                         isPromotionalItemOpen.isNotEmpty
-                        //                     ? isPromotionalItemOpen.length
-                        //                     : 0,
-                        //                 itemBuilder: (context, index) {
-                        //                   final item = promotionalItems['promotional_items'][index];
-                        //                   return Row(
-                        //                     children: [
-                        //                       SpecialOfferCard(
-                        //                         isOpen: isPromotionalItemOpen[index],
-                        //                         imageUrl: promotionalItems != null &&
-                        //                                 item['image_url'].length > 0
-                        //                             ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
-                        //                             : "www.google.com",
-                        //                         itemName: "${item['name']}\n",
-                        //                         newPrice: "${item['price'].toStringAsFixed(2)}\t",
-                        //                         originalPrice: "${item['new_price'].toStringAsFixed(2)}",
-                        //                         isDiscounted: item['discount'],
-                        //                         storeName: item['store_name'],
-                        //                         specialOffer: item['special_offer'],
-                        //                         storePress: () {},
-                        //                         press: () async {
-                        //                           Navigator.push(
-                        //                             context,
-                        //                             MaterialPageRoute(
-                        //                               builder: (context) {
-                        //                                 return GlobalItem(
-                        //                                   item: promotionalItems['promotional_items'][index],
-                        //                                   location: promotionalItems['promotional_items'][index]['store_location'],
-                        //                                   isOpen: true,
-                        //                                 );
-                        //                               },
-                        //                             ),
-                        //                           );
-                        //                         },
-                        //                       ),
-                        //                     ],
-                        //                   );
-                        //                 },
-                        //               ),
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       )
-                        //     : SizedBox.shrink(),
-                        // SizedBox(
-                        //   height: getProportionateScreenHeight(
-                        //     kDefaultPadding / 4,
-                        //   ),
-                        // ),
-                                                /////////////////////////////Aliexpress section////////////////
+                        
+                        promotionalItems == null
+                          ? (() {
+                              // debugPrint("Promotional Items: $promotionalItems");
+                              return SizedBox.shrink();
+                            })()
+                          : SizedBox.shrink(),
+                        promotionalItems != null &&
+                            promotionalItems['success'] &&
+                            promotionalItems['promotional_items'] != null &&
+                            promotionalItems['promotional_items']
+                              .isNotEmpty &&
+                            promotionalItems['promotional_items'].length > 0
+                          ? (() {
+                            // debugPrint("PromotionalItems: $promotionalItems");
+                            return Container(
+                              height: getProportionateScreenHeight(
+                              kDefaultPadding * 11,
+                              ),
+                              width: double.infinity,
+                              child: Column(
+                              children: [
+                                Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getProportionateScreenWidth(
+                                  kDefaultPadding,
+                                  ),
+                                  vertical: getProportionateScreenHeight(
+                                  kDefaultPadding / 2,
+                                  ),
+                                ),
+                                child: SectionTitle(
+                                  sectionTitle: "Specials for your loved ones",
+                                  subTitle: " ",
+                                ),
+                                ),
+                                Expanded(
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  separatorBuilder: (BuildContext context, int index) =>
+                                    SizedBox(
+                                    width: getProportionateScreenWidth(kDefaultPadding / 2),
+                                    ),
+                                  padding: EdgeInsets.only(
+                                  left: getProportionateScreenWidth(10),
+                                  ),
+                                  itemCount: promotionalItems != null &&
+                                      isPromotionalItemOpen.isNotEmpty
+                                    ? isPromotionalItemOpen.length
+                                    : 0,
+                                  itemBuilder: (context, index) {
+                                  final item = promotionalItems['promotional_items'][index];
+                                  return Row(
+                                    children: [
+                                    SpecialOfferCard(
+                                      isOpen: isPromotionalItemOpen[index],
+                                      imageUrl: promotionalItems != null &&
+                                          item['image_url'].length > 0
+                                        ? "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/${item['image_url'][0]}"
+                                        : "www.google.com",
+                                      itemName: "${item['name']}\n",
+                                      newPrice: "${item['price'].toStringAsFixed(2)}\t",
+                                      originalPrice: "${item['new_price'].toStringAsFixed(2)}",
+                                      isDiscounted: item['discount'],
+                                      storeName: item['store_name'],
+                                      specialOffer: item['special_offer'],
+                                      storePress: () {},
+                                      press: () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                        builder: (context) {
+                                          return GlobalItem(
+                                          item: promotionalItems['promotional_items'][index],
+                                          location: promotionalItems['promotional_items'][index]['store_location'],
+                                          isOpen: true,
+                                          );
+                                        },
+                                        ),
+                                      );
+                                      },
+                                    ),
+                                    ],
+                                  );
+                                  },
+                                ),
+                                ),
+                              ],
+                              ),
+                            );
+                            })()
+                          : SizedBox.shrink(),
+                        SizedBox(
+                          height: getProportionateScreenHeight(
+                          kDefaultPadding / 4,
+                          ),
+                        ),
+                        
+                                    ///////////////////////////Aliexpress section////////////////
                         /// ============================================================
                         /// END OF PROMOTIONAL ITEMS SECTION
                         /// ============================================================
