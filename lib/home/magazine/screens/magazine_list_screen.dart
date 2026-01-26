@@ -69,7 +69,7 @@ class _MagazineListScreenState extends State<MagazineListScreen> {
         isGlobalUser: widget.isGlobalUser,
       );
 
-      debugPrint('Fetched ${fetchedMagazines.length} magazines');
+      // debugPrint('Fetched ${fetchedMagazines.length} magazines');
 
       // Get user data to check liked magazines
       final userData = await Service.read('user');

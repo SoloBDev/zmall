@@ -60,7 +60,7 @@ class MagazineService {
       "timestamp": DateTime.now().toIso8601String(),
       "is_global_user": isGlobalUser,
     };
-    debugPrint('data $data');
+    // debugPrint('data $data');
     try {
       // debugPrint( 'Tracking recap opened - Attempt ${attempt + 1}/$maxRetries', );
 
@@ -81,11 +81,11 @@ class MagazineService {
           );
 
       final responseData = json.decode(response.body);
-      debugPrint('magazin list: $responseData');
+      // debugPrint('magazin list: $responseData');
 
       return responseData;
     } catch (e) {
-      debugPrint('Error $e');
+      // debugPrint('Error $e');
     }
   }
 
