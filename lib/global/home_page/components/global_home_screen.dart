@@ -273,6 +273,13 @@ class _GlobalHomeScreenState extends State<GlobalHomeScreen> {
     }
   }
 
+  ///=======================================
+  /// PROMOTIONAL ITEMS - STORE OPEN CHECKER
+  /// * This function checks if each store associated with the promotional items
+  /// * is currently open and updates the isPromotionalItemOpen list accordingly.
+  /// * This ensures that only promotional items from open stores are displayed
+  /// * to the user.
+  ///=======================================
   Future<void> _checkStoresOpen() async {
     isPromotionalItemOpen.clear();
     if (promotionalItems != null && promotionalItems['promotional_items'] != null) {
