@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:zmall/services/address_validation_service.dart';
 import 'package:zmall/utils/constants.dart';
 import 'package:zmall/courier/components/locations_list.dart';
 import 'package:zmall/courier/components/vehicle_screen.dart';
@@ -49,6 +50,10 @@ class _CourierScreenState extends State<CourierScreen> {
   bool _loading = false;
   var orderDetail;
 
+  bool _isPickupSet = false;
+  bool _isDropoffSet = false;
+  String? _addressValidationError;
+
   void getUser() async {
     var data = await Service.read('user');
     if (data != null) {
@@ -86,6 +91,36 @@ class _CourierScreenState extends State<CourierScreen> {
 //    }
 //  }
 
+  
+  /// Validates that pickup and dropoff addresses are different locations.
+  /// Returns true if valid, false otherwise.
+  bool _validateAddressesAreDifferent() {
+    if (!_isPickupSet || !_isDropoffSet) {
+      return true; // Skip validation if either address is not set
+    }
+
+    final result = AddressValidationService.validateAddresses(
+      pickupLat: latitude,
+      pickupLon: longitude,
+      dropoffLat: destLatitude,
+      dropoffLon: destLongitude,
+    );
+
+    if(!result.isValid && result.errorType == AddressValidationError.sameLocation) {
+      setState(() {
+        _addressValidationError = result.errorMessage;
+      });
+      return false;
+    }
+
+    setState(() {
+      _addressValidationError = null;
+    });
+
+    return true;
+  }
+
+  
   void _addCourierToCart() async {
     // Use controller values, fallback to user data if empty
     final finalSenderName = _senderNameController.text.isNotEmpty
@@ -192,6 +227,15 @@ class _CourierScreenState extends State<CourierScreen> {
                         context: context,
                         title: "Please enter destination address!",
                         error: true);
+                    return;
+                  }
+
+                  if(!_validateAddressesAreDifferent()) {
+                    Service.showMessage(
+                      context: context,
+                      title: "Pickup and drop-off addresses cannot be the same or too close!",
+                      error: true,
+                    );
                     return;
                   }
 
@@ -310,12 +354,34 @@ class _CourierScreenState extends State<CourierScreen> {
                                     ).then((dynamic value) {
                                       if (value != null) {
                                         DestinationAddress address = value;
+
+                                        // Check if same as dropoff (if dropoff is already set)
+                                        if (_isDropoffSet) {
+                                          final result = AddressValidationService.validateAddresses(
+                                            pickupLat: address.lat,
+                                            pickupLon: address.long,
+                                            dropoffLat: destLatitude,
+                                            dropoffLon: destLongitude,
+                                          );
+
+                                          if (!result.isValid && result.errorType == AddressValidationError.sameLocation) {
+                                            Service.showMessage(
+                                              context: context,
+                                              title: "Pickup address cannot be the same as drop-off address! or too close!",
+                                              error: true,
+                                            );
+                                            return; // Exit without setting pickup
+                                          }
+                                        }
+
                                         setState(() {
                                           _controller.text = address.name!;
                                           longitude = double.parse(
                                               address.long!.toStringAsFixed(6));
                                           latitude = double.parse(
                                               address.lat!.toStringAsFixed(6));
+                                          _isPickupSet = true;
+                                          _addressValidationError = null;
                                         });
                                       }
                                     });
@@ -392,6 +458,26 @@ class _CourierScreenState extends State<CourierScreen> {
                                     ).then((dynamic value) {
                                       if (value != null) {
                                         DestinationAddress address = value;
+
+                                        // Check if same as pickup (if pickup is already set)
+                                        if(_isPickupSet) {
+                                          final result = AddressValidationService.validateAddresses(
+                                            pickupLat: latitude,
+                                            pickupLon: longitude,
+                                            dropoffLat: address.lat,
+                                            dropoffLon: address.long,
+                                          );
+
+                                          if(!result.isValid && result.errorType == AddressValidationError.sameLocation) {
+                                            Service.showMessage(
+                                              context: context,
+                                              title: "Drop-off address cannot be the same as pick-up address! or too close!",
+                                              error: true,
+                                            );
+                                            return; // Exit without setting dropoff
+                                          }
+                                        }
+
                                         setState(() {
                                           _dropOffController.text =
                                               address.name!;
@@ -399,6 +485,8 @@ class _CourierScreenState extends State<CourierScreen> {
                                               address.lat!.toStringAsFixed(6));
                                           destLongitude = double.parse(
                                               address.long!.toStringAsFixed(6));
+                                          _isDropoffSet = true;
+                                          _addressValidationError = null;
                                         });
                                       }
                                     });

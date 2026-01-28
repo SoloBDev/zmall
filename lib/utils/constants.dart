@@ -22,15 +22,15 @@ const BASE_URL_JUBA = "https://juba.zmallapp.com"; //Juba Production
 // const BASE_URL = "http://196.188.187.43:8000"; //new production
 
 // const BASE_URL_PROD = "https://app.zmall.et"; //Eth new domain
-const BASE_URL_HTTP = "http://159.65.147.111:8000";
+// const BASE_URL_HTTP = "http://159.65.147.111:8000";
 
 // Ethiopia test
-// const BASE_URL_TEST = "http://196.189.44.49:7000"; //test
+const BASE_URL_TEST = "http://196.189.44.49:7000"; //test
 // const BASE_URL_TEST = "https://testapp.zmall.et"; //Eth new test domain
 
-// const BASE_URL = BASE_URL_TEST;
+const BASE_URL = BASE_URL_TEST;
 // const BASE_URL = BASE_URL_PROD;
-const BASE_URL = BASE_URL_HTTP;
+// const BASE_URL = BASE_URL_HTTP;
 // const BASE_URL = kDebugMode ? BASE_URL_TEST : BASE_URL_PROD;
 
 //
@@ -303,3 +303,7 @@ const country_id = {
   "South Sudan": "62fef1d6ae93d51e87b468aa",
 };
 const store_delivery_id = {"DonationID": "66472227b2f9514de2636266"};
+
+/// For ADDRESS VALIDATION SERVICE
+/// Minimum distance in meters to consider two addresses as different.
+final double kMinimumDistanceThreshold = 50.0; // 50 meters
