@@ -1060,6 +1060,13 @@ class _VehicleScreenState extends State<VehicleScreen> {
                                         onTap: () {
                                           setState(() {
                                             imageList.removeAt(index);
+                                            // CRITICAL FIX: Also remove from imagePath to keep in sync
+                                            // This prevents removed images from being uploaded
+                                            if (index < imagePath.length) {
+                                              imagePath.removeAt(index);
+                                            }
+                                            // Update canAddImage flag
+                                            canAddImage = imageList.length < 2;
                                           });
                                         },
                                         child: Container(

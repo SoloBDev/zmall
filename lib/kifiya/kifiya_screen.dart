@@ -269,6 +269,47 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     }
   }
 
+  /// SECURITY FIX: Validates that all courier images exist before payment
+  /// Returns true if validation passes, false if any image is missing
+  /// This prevents payment from being processed when images will fail to upload
+  Future<bool> _validateCourierImagesBeforePayment() async {
+    // Skip validation for non-courier orders
+    if (widget.isCourier != true) {
+      return true;
+    }
+
+    // If no images attached, validation passes (images are optional)
+    if (imagePath == null || imagePath.length == 0) {
+      return true;
+    }
+
+    List<String> invalidPaths = [];
+    
+    for (var path in imagePath) {
+      File imageFile = File(path);
+      if (!await imageFile.exists()) {
+        invalidPaths.add(path);
+      }
+    }
+
+    if (invalidPaths.isNotEmpty) {
+      // Clear invalid images from storage
+      await Service.remove('images');
+      
+      // Show user-friendly error
+      Service.showMessage(
+        context: context,
+        title: "Some images are missing or deleted. Please go back to the vehicle selection screen and re-select your images.",
+        error: true,
+        duration: 5,
+      );
+      
+      return false;
+    }
+
+    return true;
+  }
+
   void _getPaymentGateway() async {
     setState(() {
       _loading = true;
@@ -426,6 +467,17 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
   //   }
   // }
   void _payOrderPayment({otp, paymentId = ""}) async {
+    // SECURITY FIX: Validate images exist BEFORE processing payment
+    // This prevents payment deduction when image upload will fail
+    bool imagesValid = await _validateCourierImagesBeforePayment();
+    if (!imagesValid) {
+      setState(() {
+        _loading = false;
+        _placeOrder = false;
+      });
+      return; // Stop payment - images are invalid
+    }
+
     var pId = "";
     if (otp.toString().isNotEmpty) {
       pId = paymentId;
@@ -485,13 +537,30 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     });
     var data = await boaVerify();
     if (data != null && data['success']) {
+      // SECURITY FIX: Validate images before creating order after payment verification
+      bool imagesValid = await _validateCourierImagesBeforePayment();
+      if (!imagesValid) {
+        setState(() {
+          _loading = false;
+          _placeOrder = false;
+        });
+        // Payment was verified but images are invalid - log for potential refund
+        Service.showMessage(
+          context: context,
+          title: "Payment verified but order could not be created due to missing images. Please contact support at 8707 for assistance.",
+          error: true,
+          duration: 5,
+        );
+        return;
+      }
+
       setState(() {
         _loading = false;
         _placeOrder = false;
       });
       Service.showMessage(
         context: context,
-        title: "Payment verification Successfull!",
+        title: "Payment verification Successful!",
         error: false,
         duration: 2,
       );
@@ -1901,7 +1970,7 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                         );
                                                       },
                                                     ),
-                                                  ).then((value) {
+                                                  ).then((value) async {
                                                     // debugPrint( "Value: $value");
                                                     if (value != null) {
                                                       if (value == false) {
@@ -1922,16 +1991,28 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                                                                       .toLowerCase() ==
                                                                   "success")) {
                                                         // debugPrint( "Payment Successful>>>");
-                                                        widget.isCourier!
-                                                            ? _createCourierOrder()
-                                                            : (aliexpressCart !=
-                                                                      null &&
+                                                        // SECURITY FIX: Validate images before creating courier order
+                                                        if (widget.isCourier!) {
+                                                          bool imagesValid = await _validateCourierImagesBeforePayment();
+                                                          if (!imagesValid) {
+                                                            Service.showMessage(
+                                                              context: context,
+                                                              title: "Payment successful but images are missing. Please contact support at 8707 for refund assistance.",
+                                                              error: true,
+                                                              duration: 5,
+                                                            );
+                                                            return;
+                                                          }
+                                                          _createCourierOrder();
+                                                        } else if (aliexpressCart != null &&
                                                                   aliexpressCart!
                                                                           .cart
                                                                           .storeId ==
-                                                                      cart.storeId)
-                                                            ? _createAliexpressOrder()
-                                                            : _createOrder();
+                                                                      cart.storeId) {
+                                                          _createAliexpressOrder();
+                                                        } else {
+                                                          _createOrder();
+                                                        }
                                                       }
                                                     } else {
                                                       // _boaVerify();
@@ -2787,6 +2868,49 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
     }
   }
 
+  /// SECURITY: Log failed order after successful payment for support team to process refund
+  Future<void> _logFailedOrderAfterPayment({
+    required String reason,
+    required String paymentId,
+    required double amount,
+  }) async {
+    try {
+      // Store failed order info locally for user reference
+      Map<String, dynamic> failedOrder = {
+        'timestamp': DateTime.now().toIso8601String(),
+        'order_payment_id': widget.orderPaymentId,
+        'order_payment_unique_id': widget.orderPaymentUniqueId,
+        'amount': amount,
+        'user_id': userData['user']['_id'],
+        'user_phone': userData['user']['phone'],
+        'reason': reason,
+        'payment_id': paymentId,
+        'is_courier': true,
+      };
+      
+      // Store in local storage for user to reference when contacting support
+      List<dynamic> failedOrders = await Service.read('failed_orders') ?? [];
+      failedOrders.add(failedOrder);
+      await Service.save('failed_orders', failedOrders);
+      
+      // Try to notify backend about the failed order (best effort)
+      try {
+        var url = "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/log_failed_order";
+        await http.post(
+          Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(failedOrder),
+        ).timeout(Duration(seconds: 5));
+      } catch (_) {
+        // Silent fail - local log is primary
+      }
+      
+      debugPrint("SECURITY: Logged failed order after payment - ID: ${widget.orderPaymentId}, Amount: $amount, Reason: $reason");
+    } catch (e) {
+      debugPrint("Error logging failed order: $e");
+    }
+  }
+
   Future<dynamic> createCourierOrder() async {
     setState(() {
       linearProgressIndicator = Container(
@@ -2919,6 +3043,16 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                   error: true,
                 );
                 print("else error>>> ${data['error_code']}");
+                
+                // SECURITY: Log failed order when API returns error
+                await _logFailedOrderAfterPayment(
+                  reason: "API error: ${data['error_code']} - ${errorCodes['${data['error_code']}']}",
+                  paymentId: kifiyaMethod != -1 
+                      ? paymentResponse['payment_gateway'][kifiyaMethod]['_id'] ?? ''
+                      : '',
+                  amount: widget.price ?? 0.0,
+                );
+                
                 await Future.delayed(Duration(seconds: 2));
                 if (data['error_code'] == 999) {
                   await Service.saveBool('logged', false);
@@ -2926,6 +3060,14 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                   Navigator.pushReplacementNamed(
                     context,
                     LoginScreen.routeName,
+                  );
+                } else {
+                  // Show support message for non-auth errors
+                  Service.showMessage(
+                    context: context,
+                    title: "If payment was deducted, contact support at 8707. Ref: ${widget.orderPaymentUniqueId}",
+                    error: true,
+                    duration: 8,
                   );
                 }
               }
@@ -2983,6 +3125,28 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
       if (clearImages) {
         await Service.remove("images");
       }
+
+      // SECURITY: Log failed order after payment was already processed
+      // This helps support team track orders that need refunds
+      await _logFailedOrderAfterPayment(
+        reason: "Order creation failed after payment: $e",
+        paymentId: kifiyaMethod != -1 
+            ? paymentResponse['payment_gateway'][kifiyaMethod]['_id'] ?? ''
+            : '',
+        amount: widget.price ?? 0.0,
+      );
+
+      // Show additional message about contacting support
+      Future.delayed(Duration(seconds: 3), () {
+        if (mounted) {
+          Service.showMessage(
+            context: context,
+            title: "If payment was deducted, please contact support at 8707 with reference: ${widget.orderPaymentUniqueId}",
+            error: true,
+            duration: 5,
+          );
+        }
+      });
 
       return null;
     }
