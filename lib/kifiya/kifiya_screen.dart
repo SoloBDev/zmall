@@ -3031,7 +3031,17 @@ class _KifiyaScreenState extends State<KifiyaScreen> {
                   _loading = false;
                   _placeOrder = false;
                 });
-                Navigator.pushReplacementNamed(context, "/report");
+                // Navigate to report screen with isCourier flag for proper back navigation
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportScreen(
+                      price: widget.price,
+                      orderPaymentUniqueId: widget.orderPaymentUniqueId,
+                      isCourier: true,
+                    ),
+                  ),
+                );
               } else {
                 setState(() {
                   _loading = false;

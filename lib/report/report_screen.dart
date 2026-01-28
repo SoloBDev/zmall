@@ -7,6 +7,7 @@ import 'package:zmall/custom_widgets/custom_button.dart';
 import 'package:zmall/main.dart';
 import 'package:zmall/models/metadata.dart';
 import 'package:zmall/utils/size_config.dart';
+import 'package:zmall/courier/courier_screen.dart';
 
 class ReportScreen extends StatefulWidget {
   static String routeName = '/report';
@@ -15,10 +16,12 @@ class ReportScreen extends StatefulWidget {
     super.key,
     @required this.price,
     @required this.orderPaymentUniqueId,
+    this.isCourier = false,
   });
 
   final double? price;
   final String? orderPaymentUniqueId;
+  final bool isCourier;
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -47,19 +50,40 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kPrimaryColor,
-      body: SafeArea(
-        minimum: EdgeInsets.only(
-          left: kDefaultPadding,
-          right: kDefaultPadding,
-          bottom: kDefaultPadding,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Center(
+    return PopScope(
+      canPop: false, // Prevent default back navigation
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        // Navigate based on order type
+        if (widget.isCourier) {
+          // For courier orders, go back to courier form
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            CourierScreen.routeName,
+            (Route<dynamic> route) => route.isFirst,
+          );
+        } else {
+          // For regular orders, go to home
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            "/start",
+            (Route<dynamic> route) => false,
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: kPrimaryColor,
+        body: SafeArea(
+          minimum: EdgeInsets.only(
+            left: kDefaultPadding,
+            right: kDefaultPadding,
+            bottom: kDefaultPadding,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -135,6 +159,7 @@ class _ReportScreenState extends State<ReportScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }
