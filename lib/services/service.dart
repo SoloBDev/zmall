@@ -699,35 +699,38 @@ class Service {
 
     return isOpen;
   }
-
   // ============= Proximity Order Methods =============
 
-  /// Fetch proximity order items using existing orders_list endpoint
+  /// Fetch proximity order items using get_recent_orders endpoint
   /// Returns list of individual items from orders within specified radius from user location
   static Future<List<Map<String, dynamic>>> getProximityOrders({
     required BuildContext context,
     required double userLatitude,
     required double userLongitude,
-    double radiusKm = 5.0,
+    double radius = 5.0,
+    required String serverToken,
+    required String userId,
   }) async {
     try {
-      // Fetch all active delivery orders
-      var response = await CoreServices.getOrdersList(
-        context: context,
-        orderStatus: "all", // All statuses
-        paymentStatus: "all",
-        page: 1,
-        pickupType: "both",
-        createdBy: "both",
-        orderType: "both",
-        searchField: "user_detail.first_name",
-        searchValue: "",
-      );
+      // Get user data from storage
+      // var userData = await Service.getUser();
+      // if (userData == null) {
+      //   return [];
+      // }
 
+      // String userId = userData['user']['_id'];
+      // String serverToken = userData['user']['server_token'];
+
+      var response = await CoreServices.getProximityOrders(
+        userId: userId,
+        serverToken: serverToken,
+        context: context,
+      );
       if (response != null && response['success'] == true) {
         List ordersList = response['orders'] ?? [];
         List<Map<String, dynamic>> proximityItems = [];
-
+        var radiusKm = response['radiusKm'] ?? radius;
+        // debugPrint("respose: $response");
         for (var order in ordersList) {
           // Get destination location
           var cartDetail = order['cart_detail'];
@@ -758,12 +761,11 @@ class Service {
 
           // Filter by radius
           if (distance <= radiusKm) {
-            // Check if urgent (created more than 30 minutes ago)
-            DateTime createdAt = DateTime.parse(order['created_at']);
-            Duration timeSinceCreation = DateTime.now().difference(createdAt);
-            // bool isUrgent = timeSinceCreation.inMinutes > 30;
-            bool isUrgent = timeSinceCreation.inMinutes < 10;
-            // 20000; //2*24*60 = 2880 minutes
+            // Check if urgent (created less than 10 minutes ago)
+            // DateTime createdAt = DateTime.parse(order['created_at']);
+            // Duration timeSinceCreation = DateTime.now().difference(createdAt);
+            // bool isUrgent = timeSinceCreation.inMinutes < 10;
+
             // Extract items from order
             var orderDetails = cartDetail['order_details'] as List? ?? [];
             var storeDetail = order['store_detail'] ?? {};
@@ -797,11 +799,12 @@ class Service {
                   'order_id': order['_id'],
                   'order_unique_id': order['unique_id'],
                   'distance_from_user': distance,
-                  'is_urgent': isUrgent,
+                  // 'is_urgent': isUrgent,
                 };
-                if (isUrgent) {
-                  proximityItems.add(enrichedItem);
-                }
+
+                // if (isUrgent) {
+                proximityItems.add(enrichedItem);
+                // }
               }
             }
           }
@@ -813,7 +816,7 @@ class Service {
           double distB = b['distance_from_user'] ?? double.infinity;
           return distA.compareTo(distB);
         });
-
+        // debugPrint("proximityItems: $proximityItems");
         return proximityItems;
       }
 
@@ -823,6 +826,131 @@ class Service {
       return [];
     }
   }
+
+  ///////////////////////////Proximity Order Methods old Closed ==////////////////////
+  // ============= Proximity Order Methods =============
+
+  /// Fetch proximity order items using existing orders_list endpoint
+  /// Returns list of individual items from orders within specified radius from user location
+  // static Future<List<Map<String, dynamic>>> getProximityOrders({
+  //   required BuildContext context,
+  //   required double userLatitude,
+  //   required double userLongitude,
+  //   double radiusKm = 5.0,
+  // }) async {
+  //   try {
+  //     // Fetch all active delivery orders
+  //     var response = await CoreServices.getOrdersList(
+  //       context: context,
+  //       orderStatus: "all", // All statuses
+  //       paymentStatus: "all",
+  //       page: 1,
+  //       pickupType: "both",
+  //       createdBy: "both",
+  //       orderType: "both",
+  //       searchField: "user_detail.first_name",
+  //       searchValue: "",
+  //     );
+
+  //     if (response != null && response['success'] == true) {
+  //       List ordersList = response['orders'] ?? [];
+  //       List<Map<String, dynamic>> proximityItems = [];
+
+  //       for (var order in ordersList) {
+  //         // Get destination location
+  //         var cartDetail = order['cart_detail'];
+  //         if (cartDetail == null) {
+  //           continue;
+  //         }
+
+  //         var destAddresses = cartDetail['destination_addresses'] as List?;
+  //         if (destAddresses == null || destAddresses.isEmpty) {
+  //           continue;
+  //         }
+
+  //         var destLocation = destAddresses[0]['location'] as List?;
+  //         if (destLocation == null || destLocation.length < 2) {
+  //           continue;
+  //         }
+
+  //         double destLat = destLocation[0].toDouble();
+  //         double destLong = destLocation[1].toDouble();
+
+  //         // Calculate distance from user to delivery destination
+  //         double distance = calculateDistance(
+  //           userLatitude,
+  //           userLongitude,
+  //           destLat,
+  //           destLong,
+  //         );
+
+  //         // Filter by radius
+  //         if (distance <= radiusKm) {
+  //           // Check if urgent (created more than 30 minutes ago)
+  //           DateTime createdAt = DateTime.parse(order['created_at']);
+  //           Duration timeSinceCreation = DateTime.now().difference(createdAt);
+  //           // bool isUrgent = timeSinceCreation.inMinutes > 30;
+  //           bool isUrgent = timeSinceCreation.inMinutes < 10;
+  //           // 20000; //2*24*60 = 2880 minutes
+  //           // Extract items from order
+  //           var orderDetails = cartDetail['order_details'] as List? ?? [];
+  //           var storeDetail = order['store_detail'] ?? {};
+  //           var storeLocation = storeDetail['location'] as List? ?? [];
+
+  //           for (var orderDetail in orderDetails) {
+  //             var items = orderDetail['items'] as List? ?? [];
+
+  //             for (var item in items) {
+  //               // Create enriched item object with store and order info
+  //               Map<String, dynamic> enrichedItem = {
+  //                 // Item details
+  //                 'item_id': item['item_id'],
+  //                 'item_name': item['item_name'],
+  //                 'item_price': item['item_price'],
+  //                 'image_url': item['image_url'],
+  //                 'quantity': item['quantity'],
+  //                 'unique_id': item['unique_id'],
+  //                 'details': item['details'],
+  //                 'max_item_quantity': item['max_item_quantity'],
+  //                 'specifications': item['specifications'],
+  //                 'note_for_item': item['note_for_item'],
+
+  //                 // Store details
+  //                 'store_detail': storeDetail,
+  //                 'store_id': storeDetail['_id'],
+  //                 'store_name': storeDetail['name'],
+  //                 'store_location': storeLocation,
+
+  //                 // Order details
+  //                 'order_id': order['_id'],
+  //                 'order_unique_id': order['unique_id'],
+  //                 'distance_from_user': distance,
+  //                 'is_urgent': isUrgent,
+  //               };
+  //               if (isUrgent) {
+  //                 proximityItems.add(enrichedItem);
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+
+  //       // Sort by distance (closest first)
+  //       proximityItems.sort((a, b) {
+  //         double distA = a['distance_from_user'] ?? double.infinity;
+  //         double distB = b['distance_from_user'] ?? double.infinity;
+  //         return distA.compareTo(distB);
+  //       });
+
+  //       return proximityItems;
+  //     }
+
+  //     return [];
+  //   } catch (e) {
+  //     // print("Error fetching proximity orders: $e");
+  //     return [];
+  //   }
+  // }
 
   ///////////////////////////Proximity Order Methods Closed ==////////////////////
 }

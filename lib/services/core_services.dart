@@ -399,32 +399,17 @@ class CoreServices {
     await Service.remove('s_items');
   }
 
-  /// Get orders list from admin endpoint
-  /// Used to fetch all orders with various filters
-  static Future<dynamic> getOrdersList({
+  // proximity order
+  static Future<dynamic> getProximityOrders({
     required BuildContext context,
-    String orderStatus = "all",
-    String paymentStatus = "all",
-    int page = 1,
-    String pickupType = "both",
-    String createdBy = "both",
-    String orderType = "both",
-    String searchField = "user_detail.first_name",
-    String searchValue = "",
+
+    required String serverToken,
+    required String userId,
   }) async {
     var url =
-        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/orders_list";
-    Map data = {
-      "order_status": orderStatus,
-      "payment_status": paymentStatus,
-      "page": page,
-      "pickup_type": pickupType,
-      "created_by": createdBy,
-      "order_type": orderType,
-      "search_field": searchField,
-      "search_value": searchValue,
-    };
-
+        "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/api/user/get_recent_orders";
+    Map data = {"user_id": userId, "server_token": serverToken};
+    // debugPrint("body: $data");
     var body = json.encode(data);
     try {
       http.Response response = await http
@@ -442,12 +427,63 @@ class CoreServices {
               throw TimeoutException("The connection has timed out!");
             },
           );
+      // debugPrint("respose: ${json.decode(response.body)}");
       return json.decode(response.body);
     } catch (e) {
-      // print("Error fetching orders list: $e");
+      // debugPrint("Error fetching orders list: $e");
       return null;
     }
   }
+
+  /// Get orders list from admin endpoint
+  /// Used to fetch all orders with various filters
+  // static Future<dynamic> getOrdersList({
+  //   required BuildContext context,
+  //   String orderStatus = "all",
+  //   String paymentStatus = "all",
+  //   int page = 1,
+  //   String pickupType = "both",
+  //   String createdBy = "both",
+  //   String orderType = "both",
+  //   String searchField = "user_detail.first_name",
+  //   String searchValue = "",
+  // }) async {
+  //   var url =
+  //       "${Provider.of<ZMetaData>(context, listen: false).baseUrl}/admin/orders_list";
+  //   Map data = {
+  //     "order_status": orderStatus,
+  //     "payment_status": paymentStatus,
+  //     "page": page,
+  //     "pickup_type": pickupType,
+  //     "created_by": createdBy,
+  //     "order_type": orderType,
+  //     "search_field": searchField,
+  //     "search_value": searchValue,
+  //   };
+
+  //   var body = json.encode(data);
+  //   try {
+  //     http.Response response = await http
+  //         .post(
+  //           Uri.parse(url),
+  //           headers: <String, String>{
+  //             "Content-Type": "application/json",
+  //             "Accept": "application/json",
+  //           },
+  //           body: body,
+  //         )
+  //         .timeout(
+  //           Duration(seconds: 15),
+  //           onTimeout: () {
+  //             throw TimeoutException("The connection has timed out!");
+  //           },
+  //         );
+  //     return json.decode(response.body);
+  //   } catch (e) {
+  //     // print("Error fetching orders list: $e");
+  //     return null;
+  //   }
+  // }
 
   static Future<dynamic> getRecapServices({
     required String userId,

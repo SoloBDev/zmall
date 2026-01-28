@@ -308,11 +308,14 @@ class _HomeBodyState extends State<HomeBody> {
     }
     try {
       List<Map<String, dynamic>> orders = await Service.getProximityOrders(
-        context: context,
+         context: context,
         userLatitude: latitude!,
         userLongitude: longitude!,
-        radiusKm: 5.0,
+        userId: userData['user']['_id'],
+        serverToken: userData['user']['server_token'],
       );
+
+      debugPrint('order: $orders');
 
       if (mounted) {
         isProximitylItemOpen.clear();
